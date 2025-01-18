@@ -1,0 +1,20 @@
+@tailwind components;
+@tailwind utilities;
+
+.ant-table-wrapper.table-responsive .ant-table {
+    overflow: auto;
+}
+
+.ant-table-wrapper.table-responsive .ant-table td,
+.ant-table-wrapper.table-responsive .ant-table th {
+    white-space: nowrap;
+}
+
+.ant-table-wrapper .ant-table {
+    border: 1px solid #f0f0f0;
+    border-bottom-width: 0;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+    background: #f0f0f09e;
+}
