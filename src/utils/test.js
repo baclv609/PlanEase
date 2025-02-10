@@ -1,0 +1,7 @@
+'Chủ Nhật',                  =[thứ 2 sự a lặp hằng ngày ]
+  'Thứ Hai',                   =[thứ 2 sự a lặp hằng ngày ]
+  'Thứ Ba',                   =[thứ 2 sự a lặp hằng ngày ]
+  'Thứ Tư',                   =[thứ 2 sự a lặp hằng ngày ]
+  'Thứ Năm',                   =[3 ]
+  'Thứ Sáu',                   =[thứ 2 sự a lặp hằng ngày ]
+  'Thứ Bảy'                  =[thứ 2 sự a lặp hằng ngày ]

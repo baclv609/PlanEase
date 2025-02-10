@@ -1,44 +1,24 @@
-import {createRouter, createWebHistory} from "vue-router";
-import NProgress from "nprogress";
+import { createRouter, createWebHistory } from "vue-router";
+import NProgress, { settings } from "nprogress";
+import dashboard from "./dashboard";
+import auth from "./auth";
+import notFound from "./notFound";
+import schedule from "./schedule";
+import event from "./event";
+import support from "./support";
+import settingsRouter from "./settings";
+import home from "./home";
+
 
 const routes = [
-    {
-        path: '/',
-        name: 'dashboard',
-        component: () => import('@/views/dashboard/Dashboard.vue'),
-    },
-    {
-        path: '/login',
-        name: 'login',
-        component: () => import('@/views/auth/LoginView.vue'),
-        meta: {
-            layout: 'auth',
-            notAuthRequired: false,
-        },
-    },
-    {
-        path: '/register',
-        name: 'register',
-        component: () => import('@/views/auth/RegisterView.vue'),
-        meta: {
-            layout: 'auth',
-            notAuthRequired: false,
-        },
-    },
-    {
-        path: '/not-found',
-        name: 'not-found',
-        component: () => import('@/views/errors/NotFound.vue'),
-        meta: {
-            layout: 'public',
-            notAuthRequired: true,
-        },
-    },
-    {
-        path: '/:catchAll(.*)',
-        redirect: { name: 'not-found' },
-    }
-];
+    ...home,
+    ...auth,
+    ...dashboard,
+    ...schedule,
+    ...event,
+    ...settingsRouter,
+    ...support,
+    ...notFound,];
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -55,7 +35,7 @@ router.beforeEach(async (to, _, next) => {
     //     NProgress.done();
     //     return;
     // }
-    //
+
     // if (isAuthRequired && !isAuthenticated) {
     //     NProgress.done();
     //     return next({ name: 'login' });
@@ -65,4 +45,21 @@ router.beforeEach(async (to, _, next) => {
     NProgress.done();
 });
 
+
+// router.beforeEach((to, _, next) => {
+//     NProgress.start();
+//     const isAuthenticated = !!localStorage.getItem("userToken");
+
+//     if (to.meta.requiresAuth && !isAuthenticated) {
+//         NProgress.done();
+//         return next({ name: "login" });
+//     }
+
+//     if (to.meta.guest && isAuthenticated) {
+//         return next({ name: "dashboard" });
+//     }
+
+//     next();
+//     NProgress.done();
+// });
 export default router;
