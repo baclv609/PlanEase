@@ -13,4 +13,8 @@ export function registerGlobalComponent(app) {
         'PublicLayout',
         defineAsyncComponent(() => import('@/layouts/PublicLayout.vue')),
     );
+    app.component(
+        'DashboardLayout',
+        defineAsyncComponent(() => import('@/layouts/DashboardLayout.vue')),
+    );
 }

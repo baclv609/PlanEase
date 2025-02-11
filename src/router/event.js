@@ -1,10 +1,10 @@
 const event = [
-    // {
-    //     path: "/event",
-    //     name: "event-list",
-    //     component: () => import("@/views/event/EventListView.vue"),
-    //     meta: { requiresAuth: true },
-    // },
+    {
+        path: "/event",
+        name: "event-list",
+        component: () => import('@/views/dashboard/Dashboard.vue'),
+        meta: { requiresAuth: true },
+    },
     // {
     //     path: "/event/create",
     //     name: "event-create",

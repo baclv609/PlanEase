@@ -1,18 +1,9 @@
-<script setup>
-import ScheduleComponent from "@/views/testClender/ScheduleComponent.vue";
-import Notification from "@/components/Notification.vue";
-import AppHeader from "@/components/AppHeader.vue";
-import FullCalendarComponent from "@/views/testClender/FullCalendarComponent.vue";
-</script>
-
 <template>
   <div>
-    <h1>Dashboard</h1>
-    <ScheduleComponent />
-    <!-- <Notification /> -->
-     <!-- <AppHeader /> -->
-      <!-- <FullCalendarComponent /> -->
+    <h1>admin</h1>
   </div>
 </template>
 
-<style scoped></style>
+<script setup></script>
+
+<style></style>

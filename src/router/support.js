@@ -1,10 +1,10 @@
 const support = [
-    // {
-    //     path: "/help",
-    //     name: "help",
-    //     component: () => import("@/views/support/HelpView.vue"),
-    //     meta: { requiresAuth: true },
-    // },
+    {
+        path: "/support",
+        name: "support",
+        component: () => import('@/views/dashboard/Dashboard.vue'),
+        meta: { requiresAuth: true },
+    },
     // {
     //     path: "/contact",
     //     name: "contact",
