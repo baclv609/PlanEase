@@ -17,6 +17,15 @@ const auth = [
             notAuthRequired: false,
         },
     },
+    {
+        path: '/verify',
+        name: 'verify',
+        component: () => import('@/views/auth/Verify.vue'),
+        meta: {
+            layout: 'auth',
+            notAuthRequired: false,
+        },
+    },
     // {
     //     path: "/forgot-password",
     //     name: "forgot-password",

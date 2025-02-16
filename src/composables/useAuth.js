@@ -22,14 +22,17 @@ const userState = ref({
 
 export function useAuth() {
   const setAuthToken = (accessToken, expiresIn) => {
-    expiresIn = Date.now() + expiresIn * 1000;
-    authState.accessToken = accessToken;
-    authState.expiresIn = expiresIn;
-    authState.isLoggedIn = true;
+    expiresIn = Date.now() + expiresIn * 1000; // Chuyển expiresIn từ giây sang timestamp
+    authState.accessToken = accessToken; // Lưu access token vào trạng thái của ứng dụng
+    authState.expiresIn = expiresIn; // Lưu thời gian hết hạn token
+    authState.isLoggedIn = true; // Đánh dấu người dùng đã đăng nhập
+
+    // Lưu thông tin xác thực vào LocalStorage
     localStorage.setItem(LocalStorage.AccessToken, accessToken);
     localStorage.setItem(LocalStorage.ExpiresIn, expiresIn.toString());
     localStorage.setItem(LocalStorage.IsLoggedIn, 'true');
   };
+
 
   const setStatusByDeviceValid = (deviceValid) => {
     authState.deviceValid = deviceValid;
@@ -37,16 +40,11 @@ export function useAuth() {
   };
 
   const login = async (data) => {
-    return await axiosInstance.post('/api/login', data, {
-      headers: {
-        'DeviceId': localStorage.getItem(LocalStorage.DeviceId) || '',
-        'DeviceType': 'web',
-      },
-    });
+    return await axiosInstance.post('/auth/login', data);
   };
 
   const info = async () => {
-    return await axiosInstance.get('/api/info').then((res) => {
+    return await axiosInstance.get('/auth/info').then((res) => {
       userState.value = res.data;
 
       const stateDeviceID = localStorage.getItem(LocalStorage.DeviceId);
@@ -63,33 +61,62 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      await axiosInstance.post('/api/logout');
+      await axiosInstance.post('/auth/logout'); // Gửi yêu cầu đăng xuất đến API Laravel
     } catch (err) {
       console.log(err);
-      message.error('Failed to logout');
+      message.error('Failed to logout'); // Hiển thị thông báo lỗi nếu thất bại
     }
 
+    // Xóa thông tin xác thực
     authState.accessToken = '';
     authState.expiresIn = 0;
     authState.isLoggedIn = false;
     authState.deviceValid = true;
+
+    // Xóa token khỏi LocalStorage
     localStorage.removeItem(LocalStorage.AccessToken);
     localStorage.removeItem(LocalStorage.ExpiresIn);
     localStorage.removeItem(LocalStorage.IsLoggedIn);
     localStorage.removeItem(LocalStorage.DeviceValid);
-    window.location.reload();
+
+    window.location.reload(); // Reload trang để reset trạng thái ứng dụng
   };
+
 
   const register = async (data) => {
-    return await axiosInstance.post('/api/register', data);
+    try {
+      const res = await axiosInstance.post('/auth/register', data);
+      return res; // Trả về response nếu thành công
+    } catch (error) {
+      console.log("Lỗi chi tiết:", error.response); // Kiểm tra lỗi trả về từ backend
+
+      if (error.response) {
+        if (error.response.status === 422 && error.response.data?.errors) {
+          const errors = error.response.data.errors;
+          Object.keys(errors).forEach((key) => {
+            errors[key].forEach((msg) => message.error(msg)); // Hiển thị lỗi cụ thể
+          });
+        } else {
+          message.error(error.response.data?.message || "Đã xảy ra lỗi, vui lòng thử lại.");
+        }
+      } else {
+        message.error("Không thể kết nối tới server.");
+      }
+
+      throw error; // Ném lỗi ra ngoài để `onFinish` có thể xử lý
+    }
   };
 
+
+
+
   const fetchRefreshToken = async () => {
-    return await axiosInstance.post('/api/refresh-token').then((res) => {
+    return await axiosInstance.post('/auth/refresh-token').then((res) => {
       setAuthToken(res.data.access_token, res.data.expires_in);
       return res;
     });
   };
+
 
   const checkAndRefreshToken = () => {
     const interval = setInterval(async () => {

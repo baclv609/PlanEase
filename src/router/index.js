@@ -7,12 +7,12 @@ import schedule from "./schedule";
 import event from "./event";
 import support from "./support";
 import settingsRouter from "./settings";
-import home from "./home";
+import calendar from "./calendar";
 import users from "./users";
 
 
 const routes = [
-    ...home,
+    ...calendar,
     ...auth,
     ...settingsRouter,
     ...users,
@@ -30,7 +30,8 @@ const router = createRouter({
 
 router.beforeEach(async (to, _, next) => {
     NProgress.start();
-    const isAuthenticated = !!localStorage.getItem("userToken");
+    // Lấy token người dùng từ LocalStorage và chuyển đổi thành boolean
+    const isAuthenticated = Boolean(localStorage.getItem("access_token"));
 
     // Nếu là trang dashboard thì cho phép vào mà không cần login
     if (to.name === 'dashboard') {
