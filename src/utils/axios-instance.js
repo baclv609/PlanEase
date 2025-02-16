@@ -5,11 +5,11 @@ import { message as $message } from 'ant-design-vue';
 import router from '@/router';
 import axios from 'axios';
 
-const axiosInstance = axios.create({ baseURL: import.meta.env.VITE_API_ENDPOINT });
+const axiosInstance = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL });
 
-const loginEndpoint = '/api/login';
-const refreshTokenEndpoint = '/api/refresh-token';
-const registerEndpoint = '/api/register';
+const loginEndpoint = '/login';
+const refreshTokenEndpoint = '/refresh-token';
+const registerEndpoint = '/register';
 
 const onRequest = (request) => {
   const AccessToken = localStorage.getItem(LocalStorage.AccessToken);
@@ -52,11 +52,15 @@ const onResponse = async (response) => {
 };
 
 const onError = (error) => {
-  console.error(error);
+  // console.error(error);
+  // if (error.response) {
+  //   console.error(error.response);
+  // }
+
   const { logout } = useAuth();
   const { status, data = {} } = error.response || {};
   const { code = status, message = error?.message, errors } = data;
-  
+
   if (code === 401) {
     logout();
   }
