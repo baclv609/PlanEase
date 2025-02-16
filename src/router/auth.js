@@ -26,17 +26,24 @@ const auth = [
             notAuthRequired: false,
         },
     },
-    // {
-    //     path: "/forgot-password",
-    //     name: "forgot-password",
-    //     component: () => import("@/views/auth/ForgotPassword.vue"),
-    //     meta: { layout: "auth", guest: true },
-    // },
-    // {
-    //     path: "/reset-password",
-    //     name: "reset-password",
-    //     component: () => import("@/views/auth/ResetPassword.vue"),
-    //     meta: { layout: "auth", guest: true },
-    // }
+    {
+        path: "/forgot-password",
+        name: "forgot-password",
+        component: () => import("@/views/auth/ForgotPassword.vue"),
+        meta: { layout: "auth", guest: true },
+    },
+    {
+        path: "/reset-password",
+        name: "reset-password",
+        component: () => import("@/views/auth/ResetPassword.vue"),
+        meta: { layout: "auth", guest: true },
+        beforeEnter: (to, from, next) => {
+            if (from.name !== 'forgot-password') {
+                next({name: 'not-found'});
+            } else {
+                next();
+            }
+        }
+    }
 ];
 export default auth;
