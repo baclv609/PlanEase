@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { message } from "ant-design-vue";
 import axios from "axios";
+import router from "@/router";
 
 const otp = ref(["", "", "", "", "", ""]);
 const isLoading = ref(false);
@@ -39,10 +40,12 @@ const verifyOTP = async () => {
   try {
     const res = await axios.post("http://notibro.test/api/auth/verify", {
       otp: code,
+      email: email.value
     });
-    if (res.data.success) {
+    if (res.data.code == 200) {
       message.success("Xác thực thành công!");
       // Redirect hoặc xử lý tiếp theo nếu cần
+      router.push({ name: "login" });
     } else {
       message.error(res.data.message || "Mã OTP không hợp lệ.");
     }
@@ -64,6 +67,11 @@ const resendOTP = async () => {
 
   try {
     await axios.post("http://notibro.test/api/auth/send-otp", { email: email.value });
+
+    // Reset OTP input
+    otp.value = ["", "", "", "", "", ""]; // Reset lại giá trị của OTP
+    inputs.value[0]?.focus()
+
     message.success("Mã OTP đã được gửi lại!");
   } catch (error) {
     message.error("Không thể gửi lại mã, vui lòng thử lại.");
@@ -103,7 +111,8 @@ const resendOTP = async () => {
               <div class="flex flex-col space-y-4">
                 <a-button type="primary" html-type="submit" :loading="isLoading">Verify Account</a-button>
 
-                <router-link to="/login" class="text-blue-600 font-medium text-sm flex items-center justify-center"> Back to Login</router-link>
+                <router-link to="/login" class="text-blue-600 font-medium text-sm flex items-center justify-center">
+                  Back to Login</router-link>
 
                 <a-button type="link" @click="resendOTP" :loading="isResending">Resend Code</a-button>
               </div>

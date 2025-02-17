@@ -3,6 +3,10 @@ import { reactive, ref } from "vue";
 import { message, Form, Input, Select, Button } from "ant-design-vue";
 import { useAuth } from "@/composables";
 import axios from "axios";
+import router from "@/router";
+
+// console.log(import.meta.env.VITE_API_BASE_URL);
+
 
 const formState = reactive({
   first_name: "",
@@ -87,8 +91,11 @@ const onFinish = async (values) => {
       "http://notibro.test/api/auth/register",
       values
     );
-    console.log(res);
-    if (res?.code === 201 && res?.code == 200 && res.data?.success) {
+    // console.log(res);
+    console.log("res.data.code", res.data.code);
+    console.log("res.status", res.status);
+
+    if (res?.data.code === 201 && res?.status == 200) {
 
       const userEmail = values.email; // Lấy email đã đăng ký
       localStorage.setItem("verifyEmail", userEmail);
