@@ -1,4 +1,3 @@
-
 <template>
   <div class="min-h-screen bg-white">
     <!-- Header -->
@@ -50,9 +49,11 @@
             >
                 Trải nghiệm Notibro
             </a> -->
-      <router-link to="#"
-        class="bg-blue-400 bg-gradient-to-r border-none from-yellow-400 to-green-400 text-white font-bold py-2 px-6 rounded-full">Trải
-        nghiệm Notibro</router-link>
+      <router-link to="#" @click.prevent="handleNavigation"
+        class="bg-blue-400 bg-gradient-to-r border-none from-yellow-400 to-green-400 text-white font-bold py-2 px-6 rounded-full">
+        Trải nghiệm Notibro
+      </router-link>
+
     </main>
 
     <!-- Features Section -->
@@ -91,12 +92,22 @@
 
 <script setup>
 import { ref } from "vue";
-import { RouterLink } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 import FeatureCard from "@/views/home/landingpage/FeatureCard.vue";
 import HowPeopleUseCard from "@/views/home/landingpage/HowPeopleUseCard.vue";
 import iconMap from "@/utils/iconLoader";
 import logo from "@/assets/images/logo.png";
 
+const router = useRouter();
+
+const handleNavigation = () => {
+  const isAuthenticated = !!localStorage.getItem("access_token"); // Giả sử lưu token khi đăng nhập
+  if (isAuthenticated) {
+    router.push("/calendar");
+  } else {
+    router.push("/login");
+  }
+};
 
 // Tạo dữ liệu cho phần "Features"
 const features = ref([
