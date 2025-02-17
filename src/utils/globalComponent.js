@@ -17,4 +17,8 @@ export function registerGlobalComponent(app) {
         'DashboardLayout',
         defineAsyncComponent(() => import('@/layouts/DashboardLayout.vue')),
     );
+    app.component(
+        'SettingLayout',
+        defineAsyncComponent(() => import('@/layouts/SettingLayout.vue')),
+    );
 }

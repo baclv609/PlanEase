@@ -17,16 +17,22 @@
           <TrophyOutlined /> Update Plan
         </a-button>
 
+        <!-- Dùng router-link -->
         <a-tooltip title="Settings">
-          <a-button shape="circle">
-            <SettingOutlined />
-          </a-button>
+          <router-link to="/settings">
+            <a-button shape="circle">
+              <SettingOutlined />
+            </a-button>
+          </router-link>
         </a-tooltip>
+
 
         <!-- User Dropdown -->
         <a-dropdown>
           <a-avatar :size="40" class="cursor-pointer">
-            <template #icon><UserOutlined /></template>
+            <template #icon>
+              <UserOutlined />
+            </template>
           </a-avatar>
           <template #overlay>
             <a-menu>
