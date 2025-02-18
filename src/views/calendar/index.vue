@@ -15,7 +15,7 @@ const router = useRouter();
 const calendarKey = ref(0);
 const events = ref([
   // Sự kiện một lần
-  { id: "1", title: "Họp nhóm", start: "2025-02-20T10:00:00", color: "#1e90ff" },
+  { id: "1", title: "Họp nhóm", start: "2025-02-17 12:11:12", color: "#1e90ff" },
 
   // Sự kiện một lần
   { id: "2", title: "Deadline dự án", start: "2025-02-21T14:00:00", color: "#ff4500" },

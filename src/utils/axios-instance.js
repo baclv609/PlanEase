@@ -7,9 +7,9 @@ import axios from 'axios';
 
 const axiosInstance = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL });
 
-const loginEndpoint = '/login';
-const refreshTokenEndpoint = '/refresh-token';
-const registerEndpoint = '/register';
+const loginEndpoint = '/auth/login';
+// const refreshTokenEndpoint = '/refresh-token';
+const registerEndpoint = '/auth/register';
 
 const onRequest = (request) => {
   const AccessToken = localStorage.getItem(LocalStorage.AccessToken);
@@ -20,16 +20,13 @@ const onRequest = (request) => {
 };
 
 const onResponse = async (response) => {
-  const { fetchRefreshToken, logout, setStatusByDeviceValid } = useAuth();
+  const { fetchRefreshToken, logout } = useAuth();
   const { status, data } = response;
   const { code, message = 'Unknown error', errors } = data || {};
 
-  if (code === 700 || status === 700) {
-    setStatusByDeviceValid(false);
-    $message.error('Device not valid');
-    router.push({ name: 'device' });
-  }
-
+if(code === 200) {
+  
+}
   if (status === 401 || code === 401) {
     if (response.config.url !== refreshTokenEndpoint) {
       try {
