@@ -11,13 +11,16 @@ import router from '@/router';
 import '@/assets/css/main.css';
 import { antdv } from "./plugins";
 import i18n from "./plugins/i18n";
+import axios from "axios";
 
 const app = createApp(App);
 registerGlobalComponent(app);
 
 // app.use(SchedulePlugin);
-// app.use(i18n);
+app.use(i18n);
 app.use(Antd);
 app.use(router);
 app.config.globalProperties.$message = message;
+app.config.globalProperties.$axios = axios;
+
 app.mount('#app');

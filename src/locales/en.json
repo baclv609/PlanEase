@@ -1,7 +1,11 @@
 {
-    "welcome": "Welcome to the Personal Schedule Manager",
-    "login": "Login",
-    "logout": "Logout",
-    "schedule": "Schedule"
+    "edit_profile": "Edit Profile",
+    "change_password": "Change Password",
+    "language": "Language",
+    "select_language": "Select Language",
+    "english": "English",
+    "vietnamese": "Vietnamese",
+    "back": "Back",
+    "time_zone": "Time Zone"
   }
   

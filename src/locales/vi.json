@@ -1,7 +1,11 @@
 {
-    "welcome": "Chào mừng đến với trình quản lý lịch trình cá nhân",
-    "login": "Đăng nhập",
-    "logout": "Đăng xuất",
-    "schedule": "Lịch trình"
+    "edit_profile": "Chỉnh sửa hồ sơ",
+    "change_password": "Đổi mật khẩu",
+    "language": "Ngôn ngữ",
+    "select_language": "Chọn ngôn ngữ",
+    "english": "Tiếng Anh",
+    "vietnamese": "Tiếng Việt",
+    "back": "Quay lại",
+    "time_zone": "Múi giờ"
   }
   

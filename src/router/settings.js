@@ -2,8 +2,11 @@ const settingsRouter = [
     {
         path: "/settings",
         name: "settings",
-        // component: () => import("@/views/settings/SettingsView.vue"),
-        meta: { requiresAuth: true },
+        component: () => import("@/views/settings/SettingsView.vue"),
+        meta: {
+            layout: 'setting',
+            notAuthRequired: true,
+        },
     },
     // {
     //     path: "/settings/profile",

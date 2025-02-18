@@ -1,4 +1,3 @@
-// src/utils/iconLoader.js
 const icons = import.meta.glob("@/assets/icon/*.{png,jpg,jpeg,svg}", { eager: true });
 
 const iconMap = Object.keys(icons).reduce((acc, path) => {

@@ -2,31 +2,17 @@ import { createI18n } from "vue-i18n";
 import en from "@/locales/en.json";
 import vi from "@/locales/vi.json";
 
+// Lấy ngôn ngữ từ localStorage hoặc mặc định là 'en'
+const userLang = localStorage.getItem("user-language") || "en";
+
 const i18n = createI18n({
-    locale: import.meta.env.VITE_DEFAULT_LANGUAGE || "vi",
+    legacy: false,
+    locale: userLang, // Ngôn ngữ mặc định
     fallbackLocale: "en",
     messages: {
         en,
-        vi,
-    },
+        vi
+    }
 });
 
 export default i18n;
-
-{/* <template>
-  <div>
-    <h1>{{ $t("welcome") }}</h1>
-    <button @click="changeLanguage('en')">English</button>
-    <button @click="changeLanguage('vi')">Tiếng Việt</button>
-  </div>
-</template>
-
-<script>
-export default {
-  methods: {
-    changeLanguage(lang) {
-      this.$i18n.locale = lang;
-    },
-  },
-};
-</script> */}
