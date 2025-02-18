@@ -17,13 +17,11 @@
           <TrophyOutlined /> Update Plan
         </a-button>
 
-        <!-- Dùng router-link -->
-        <a-tooltip title="Settings">
-          <router-link to="/settings">
-            <a-button shape="circle">
-              <SettingOutlined />
-            </a-button>
-          </router-link>
+        <!-- Tooltip chứa icon Settings -->
+        <a-tooltip title="">
+          <a-button shape="circle" @click="openSettingsModal">
+            <SettingOutlined />
+          </a-button>
         </a-tooltip>
 
 
@@ -118,6 +116,10 @@
       © 2025 Calendar App. All Rights Reserved. | Terms of Use | Privacy Policy
     </a-layout-footer>
   </a-layout>
+
+  <!-- gọi ra model -->
+  <SettingsView :isModalOpen="isModalOpen" />
+
 </template>
 
 <script setup>
@@ -133,14 +135,20 @@ import {
   UserOutlined,
 } from "@ant-design/icons-vue";
 
-// const currentDate = ref(new Date());
-// const selectedCalendars = ref(["exercise", "dinner"]);
-// const otherCalendars = ref(["vn-holidays"]);
+import SettingsView from '@/views/settings/SettingsView.vue'
 
-// const formattedMonth = computed(() => {
-//   const options = { month: "long", year: "numeric" };
-//   return new Intl.DateTimeFormat("en-US", options).format(currentDate.value);
-// });
+const isModalOpen = ref(false);
+
+// Hàm mở modal
+const openSettingsModal = () => {
+  isModalOpen.value = true;
+};
+
+// Cập nhật trạng thái của modal khi nhận sự kiện từ SettingsView
+const updateModalState = (value) => {
+  isModalOpen.value = value;
+};
+
 
 const changeView = (view) => {
   console.log("Change calendar view to:", view);
