@@ -9,10 +9,12 @@ import rrulePlugin from "@fullcalendar/rrule";
 import { RRule } from "rrule";
 import { useRouter } from "vue-router";
 
-
+import EventModal from "./components/EventModal.vue";
+import dayjs from "dayjs";
 
 const router = useRouter();
 const calendarKey = ref(0);
+const selectedEvent = ref(null);
 const events = ref([
   // Sự kiện một lần
   { id: "1", title: "Họp nhóm", start: "2025-02-17 12:11:12", color: "#1e90ff" },
@@ -152,44 +154,97 @@ const events = ref([
   },
 ]);
 
-
 const showModal = ref(false);
-const eventData = ref({ title: "", start: "", color: "#3788d8", recurrence: "none" });
+const eventData = ref({
+  title: "",
+  start: null, // Sửa "" -> null
+  color: "#3788d8",
+  recurrence: "none",
+  repeatCount: 1,
+  description: "",
+});
+
 const isEditing = ref(false);
+const isModalVisible = ref(false);
+
+// Dữ liệu form sự kiện mới
+const newEvent = ref({
+  title: "",
+  start: "",
+  color: "#3788d8",
+  recurrence: "none",
+});
 
 const handleDateClick = (info) => {
-  eventData.value = { title: "", start: info.dateStr, color: "#3788d8", recurrence: "none" };
-  isEditing.value = false;
-  showModal.value = true;
+  console.log("Click vào ngày:", info.dateStr);
+  selectedEvent.value = {
+    title: "",
+    start: info.dateStr,
+    end: info.dateStr,
+    color: "#3788d8",
+    recurrence: "none",
+  };
+  isModalVisible.value = true;
+  console.log("isModalVisible:", isModalVisible.value);
 };
 
 const handleEventClick = (info) => {
-  eventData.value = { id: info.event.id, title: info.event.title, start: info.event.startStr, color: info.event.backgroundColor, recurrence: "none" };
-  isEditing.value = true;
-  showModal.value = true;
+  console.log("Click vào sự kiện:", info.event);
+  selectedEvent.value = {
+    id: info.event.id,
+    title: info.event.title,
+    start: info.event.startStr,
+    end: info.event.endStr,
+    color: info.event.backgroundColor,
+    recurrence: info.event.extendedProps.recurrence || "none",
+  };
+  isModalVisible.value = true;
+  console.log("isModalVisible:", isModalVisible.value);
 };
 
-const saveEvent = () => {
-  let newEvent = { ...eventData.value, id: String(events.value.length + 1) };
-  if (eventData.value.recurrence !== "none") {
-    newEvent.rrule = {
-      freq: eventData.value.recurrence,
-      dtstart: eventData.value.start,
+const addEvent = (eventData) => {
+  if (eventData.recurrence === "none") {
+    eventData.start = dayjs(eventData.start).format("YYYY-MM-DDTHH:mm:ss");
+  } else {
+    eventData.rrule = {
+      freq: eventData.recurrence,
+      dtstart: dayjs(eventData.start).format("YYYY-MM-DDTHH:mm:ss"),
       count: 10,
     };
-    delete newEvent.start;
+    delete eventData.start;
   }
-  if (isEditing.value) {
-    const index = events.value.findIndex(e => e.id === eventData.value.id);
-    if (index !== -1) events.value[index] = newEvent;
-  } else {
-    events.value.push(newEvent);
-  }
-  showModal.value = false;
+
+  events.value.push({ id: String(events.value.length + 1), ...eventData });
+  showModal.value = false; // Đóng modal sau khi lưu
 };
 
-const handleDeleteEvent = (eventId) => {
-  events.value = events.value.filter(e => e.id !== eventId);
+const saveEvent = (eventData) => {
+  if (eventData.recurrence === "none") {
+    eventData.start = dayjs(eventData.start).format("YYYY-MM-DDTHH:mm:ss");
+  } else {
+    eventData.rrule = {
+      freq: eventData.recurrence,
+      dtstart: dayjs(eventData.start).format("YYYY-MM-DDTHH:mm:ss"),
+      count: eventData.repeatCount,
+    };
+    delete eventData.start;
+  }
+
+  if (eventData.id) {
+    // Chỉnh sửa sự kiện
+    const index = events.value.findIndex((e) => e.id === eventData.id);
+    if (index !== -1) events.value[index] = eventData;
+  } else {
+    // Thêm sự kiện mới
+    eventData.id = String(events.value.length + 1);
+    events.value.push(eventData);
+  }
+
+  isModalVisible.value = false;
+};
+
+const handleCancel = () => {
+  isModalVisible.value = false;
 };
 
 const calendarOptions = ref({
@@ -198,7 +253,7 @@ const calendarOptions = ref({
   headerToolbar: {
     left: "prev,next today",
     center: "title",
-    right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek"
+    right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
   },
   height: 720,
   // calendarWeekends: false, // Mặc định một ngày
@@ -207,13 +262,51 @@ const calendarOptions = ref({
   editable: true,
   selectable: true,
   events: events,
-  dateClick: handleDateClick,
-  eventClick: handleEventClick,
+
+  // Lắng nghe sự kiện khi click vào ngày
+  dateClick: (info) => {
+    console.log("Ngày được click:", info.dateStr);
+    handleDateClick(info);
+    // mở modal tạo sự kiện
+  },
+
+  // Lắng nghe sự kiện khi click vào một sự kiện
+  eventClick: (info) => {
+    console.log("Sự kiện được click:", info.event);
+    handleEventClick(info);
+  },
+
+  // Lắng nghe sự kiện khi kéo thả sự kiện
+  eventDrop: (info) => {
+    console.log("Sự kiện bị di chuyển:", info.event);
+  },
+
+  // Lắng nghe sự kiện khi thay đổi kích thước sự kiện
+  eventResize: (info) => {
+    console.log("Sự kiện bị thay đổi kích thước:", info.event);
+  },
+
+  // Lắng nghe sự kiện khi chọn một khoảng thời gian
+  select: (info) => {
+    console.log("Khoảng thời gian được chọn:", info.startStr, " - ", info.endStr);
+  },
 });
 </script>
 
 <template>
   <div>
+    <a-button type="primary" @click="showModal = true" style="margin-top: 10px">
+      Thêm Sự Kiện
+    </a-button>
+
     <FullCalendar :key="calendarKey" :options="calendarOptions" />
+
+    <EventModal
+      :visible="isModalVisible"
+      :event="selectedEvent"
+      @save="saveEvent"
+      @cancel="handleCancel"
+    />
   </div>
 </template>
+
