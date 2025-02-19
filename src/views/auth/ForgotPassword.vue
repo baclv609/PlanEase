@@ -11,8 +11,8 @@ const formState = ref({ email: "" });
 const errorMail = ref({});
 const rules = {
   email: [
-    { required: true, message: "Vui lòng nhập email", trigger: "blur" },
-    { type: "email", message: "Email không hợp lệ", trigger: ["blur", "change"] },
+    { required: true, message: "Please enter email", trigger: "blur" },
+    { type: "email", message: "Invalid email", trigger: ["blur", "change"] },
   ],
 };
 
@@ -48,10 +48,10 @@ const onSubmit = async () => {
       router.push({name: "reset-password"});
     })
     .catch(error => {
-      message.error("Có lỗi xảy ra");
-      console.log(error);
+      message.error(error.data.message || "An error occurred");
+      // console.log(error);
       errorMail.value = error.response.data.errors
-      console.log(errorMail.value);
+      // console.log(errorMail.value);
     })
     .finally(() => {
       isLoading.value = false;     
@@ -61,28 +61,28 @@ const onSubmit = async () => {
 
 <template>
   <section class="bg-white min-h-screen flex flex-col items-center justify-center">
-    <div class="container max-w-md mx-auto">
+    <div class="container max-w-lg mx-auto py-10">
       <div class="text-center">
-        <img class="w-auto h-7 sm:h-8 mx-auto" src="https://merakiui.com/images/logo.svg" alt="Logo" />
-        <h1 class="mt-4 text-2xl font-semibold tracking-wide text-gray-800">Quên mật khẩu</h1>
-        <p class="mt-2 text-gray-500">Nhập email của bạn để nhận liên kết đặt lại mật khẩu.</p>
+        <img class="w-16 h-14 mx-auto" src="../../assets/images/logo.png" alt="Logo" />
+        <h1 class="mt-4 text-2xl font-semibold tracking-wide text-gray-800">Forgot password</h1>
+        <p class="mt-2 text-gray-500">Enter your email to receive OTP code to reset password.</p>
       </div>
 
       <a-form class="mt-6" layout="vertical" :model="formState" :rules="rules" @finish="onSubmit">
         <a-form-item label="Email" name="email">
-          <a-input v-model:value="formState.email" type="email" placeholder="Nhập email của bạn" :class="{'border-red-500':errorMail.email }"/>
+          <a-input v-model:value="formState.email" class="border border-orange-300" type="email" placeholder="Nhập email của bạn" :class="{'border-red-500':errorMail.email }"/>
 
           <span class="text-red-500" v-if="errorMail.email">{{ errorMail.email[0] }}</span>
         </a-form-item>
         
         <a-form-item>
-          <a-button :loading="isLoading" type="primary" html-type="submit" block>Gửi yêu cầu</a-button>
+          <a-button :loading="isLoading" type="primary" class="gradient-btn" html-type="submit" block>Send</a-button>
         </a-form-item>
       </a-form>
 
       <div class="mt-6 text-center">
-        <router-link to="/login" class="text-sm text-blue-500 hover:underline">
-          Quay lại đăng nhập
+        <router-link to="/login" class="text-sm text-orange-500 hover:underline">
+          Back to login
         </router-link>
       </div>
     </div>
@@ -90,4 +90,19 @@ const onSubmit = async () => {
 </template>
 
 <style scoped>
+.gradient-btn {
+    width: 100%;
+    font-size: 16px;
+    font-weight: bold;
+    color: black;
+    background: linear-gradient(to right, #FFE8A3, #FF9800);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  }
+
+  .gradient-btn:hover {
+    opacity: 0.9;
+  }
 </style>

@@ -15,19 +15,19 @@ const formState = ref({
 
 const rules = {
   reset_token:[
-    {required: true, message: "Vui lòng nhập mã OTP"}
+    {required: true, message: "Please enter OTP code"}
   ],
   password: [
-    { required: true, message: "Vui lòng nhập mật khẩu!" },
-    { min: 8, message: "Mật khẩu phải có ít nhất 8 ký tự" },
+    { required: true, message: "Please enter password!" },
+    { min: 8, message: "Password must be at least 8 characters" },
     {
       pattern:
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
-      message: "Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt",
+      message: "Password must contain uppercase, lowercase, numbers and special characters",
     }
 ],
   password_confirmation: [
-    {required: true, message: "Vui lòng nhập xác nhận mật khẩu"},
+    {required: true, message: "Please enter password confirmation"},
   ]
 };
 
@@ -41,7 +41,7 @@ const onSubmit = async () => {
         router.push({name: 'login'});
     })
     .catch(error => {
-        message.error("Có lỗi xảy ra");
+        message.error("An error occurred");
         // console.log(error.response.data.message);
         resetErrors.value = error.response.data.errors
         if(error.response.data.code == 400) {
@@ -58,48 +58,69 @@ const onSubmit = async () => {
     <section class="bg-white min-h-screen flex flex-col items-center justify-center">
     <div class="container max-w-md mx-auto">
       <div class="text-center">
-        <img class="w-auto h-7 sm:h-8 mx-auto" src="https://merakiui.com/images/logo.svg" alt="Logo" />
-        <h1 class="mt-4 text-2xl font-semibold tracking-wide text-gray-800">Mật khẩu mới</h1>
-        <p class="mt-2 text-gray-500">Nhập mật khẩu mới của bạn.</p>
+        <img class="w-16 h-14" src="../../assets/images/logo.png" alt="Logo" />
+        <h1 class="mt-4 text-2xl font-semibold tracking-wide text-gray-800">Password change</h1>
+        <p class="mt-2 text-gray-500">Enter your new password.</p>
       </div>
 
       <a-form class="mt-6" layout="vertical" :model="formState" :rules="rules" @finish="onSubmit">
-        <a-form-item label="Mã khôi phục mật khẩu" name="reset_token">
+        <a-form-item label="Password recovery code" name="reset_token">
           <a-input v-model:value="formState.reset_token" 
                     type="text" 
-                    placeholder="Nhập mã khôi phục" 
+                    class="border border-orange-300"
+                    placeholder="Enter recovery code" 
                     />
                     <span class="text-red-500" v-if="resetErrors.message">{{ resetErrors.message }}</span>
         </a-form-item>
 
-        <a-form-item label="Mật khẩu mới" name="password">
+        <a-form-item label="New Password" name="password">
           <a-input v-model:value="formState.password" 
                     type="password" 
-                    placeholder="Nhập mật khẩu mới" 
+                    class="border border-orange-300" 
+                    placeholder="Enter new password" 
                     :class="{'text-red-500': resetErrors.password}"
                     />
                     <span class="text-red-500" v-if="resetErrors.password">{{ resetErrors.password[0] }}</span>
         </a-form-item>
 
-        <a-form-item label="Xác nhận mật khẩu" name="password_confirmation">
+        <a-form-item label="Confirm Password" name="password_confirmation">
           <a-input v-model:value="formState.password_confirmation" 
                      type="password"
-                     placeholder="Nhập xác nhận mật khẩu" 
+                     class="border border-orange-300"
+                     placeholder="Enter password confirmation" 
                      :class="{'text-red-500': resetErrors.password_confirmation}"
                      />
                      <span class="text-red-500" v-if="resetErrors.password_confirmation">{{ resetErrors.password_confirmation[0] }}</span>
         </a-form-item>
         
         <a-form-item>
-          <a-button :loading="isLoading" type="primary" html-type="submit" block>Cập nhật mật khẩu</a-button>
+          <a-button :loading="isLoading" type="primary" class="gradient-btn" html-type="submit" block>Change password</a-button>
         </a-form-item>
       </a-form>
 
       <div class="mt-6 text-center">
-        <router-link to="/login" class="text-sm text-blue-500 hover:underline">
-          Quay lại đăng nhập
+        <router-link to="/login" class="text-sm text-gray-400 hover:underline hover:text-gray-600">
+          Back to login
         </router-link>
       </div>
     </div>
   </section>
 </template>
+
+<style scoped>
+  .gradient-btn {
+    width: 100%;
+    font-size: 16px;
+    font-weight: bold;
+    color: black;
+    background: linear-gradient(to right, #FFE8A3, #FF9800);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  }
+
+  .gradient-btn:hover {
+    opacity: 0.9;
+  }
+</style>

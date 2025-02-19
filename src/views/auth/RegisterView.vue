@@ -6,7 +6,7 @@ import axios from "axios";
 import router from "@/router";
 
 // console.log(import.meta.env.VITE_API_BASE_URL);
-
+const dirApi = import.meta.env.VITE_API_BASE_URL;
 
 const formState = reactive({
   first_name: "",
@@ -30,50 +30,52 @@ const resetForm = () => {
 
 const rules = {
   first_name: [
-    { required: true, message: "Vui lòng nhập tên!" },
-    { max: 255, message: "Tên không được quá 255 ký tự" },
+    { required: true, message: "Please enter first name!" },
+    { max: 255, message: "First name cannot exceed 255 characters" },
   ],
   last_name: [
-    { required: true, message: "Vui lòng nhập họ!" },
-    { max: 255, message: "Họ không được quá 255 ký tự" },
+    { required: true, message: "Please enter last name!" },
+    { max: 255, message: "Last name cannot exceed 255 characters" },
   ],
   email: [
-    { required: true, message: "Vui lòng nhập email!" },
-    { type: "email", message: "Email không đúng định dạng" },
-    { max: 255, message: "Email không được quá 255 ký tự" },
+    { required: true, message: "Please enter email!" },
+    { type: "email", message: "Email is not in correct format" },
+    { max: 255, message: "Email must not exceed 255 characters" },
   ],
   password: [
-    { required: true, message: "Vui lòng nhập mật khẩu!" },
-    { min: 8, message: "Mật khẩu phải có ít nhất 8 ký tự" },
+    { required: true, message: "Please enter password!" },
+    { min: 8, message: "Password must be at least 8 characters" },
     {
       pattern:
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
-      message: "Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt",
+      message: "Password must contain uppercase, lowercase, numbers and special characters",
     },
   ],
   confirm_password: [
-    { required: true, message: "Vui lòng xác nhận mật khẩu!" },
+    { required: true, message: "Please confirm password!" },
     {
-      validator: (rule, value, callback) => {
-        if (value !== formState.password) {
-          callback(new Error("Mật khẩu không khớp"));
-        } else {
-          callback();
-        }
+      validator: (rule, value) => {
+        return new Promise((resolve, reject) => {
+          if (value !== formState.password) {
+            reject("Passwords do not match"); // Báo lỗi
+          } else {
+            resolve(); // Hợp lệ
+          }
+        });
       },
     },
   ],
   phone: [
-    { required: true, message: "Vui lòng nhập số điện thoại!" },
+    { required: true, message: "Please enter phone number!" },
     {
       pattern: /^0\d{9}$/,
-      message: "Số điện thoại phải có 10 chữ số và bắt đầu bằng 0",
+      message: "Invalid phone number",
     },
   ],
-  gender: [{ required: true, message: "Vui lòng chọn giới tính!" }],
+  gender: [{ required: true, message: "Please choose gender!" }],
   address: [
-    { required: true, message: "Vui lòng nhập địa chỉ!" },
-    { max: 255, message: "Địa chỉ không được quá 255 ký tự" },
+    { required: true, message: "Please enter address!" },
+    { max: 255, message: "Address cannot exceed 255 characters" },
   ],
 };
 const storeError = ref({}); // Lưu lỗi từ backend
@@ -82,40 +84,40 @@ const onFinish = async (values) => {
   isLoading.value = true; // Bắt đầu loading
   values.password_confirmation = values.confirm_password;
   delete values.confirm_password;
-  console.log(values);
+  // console.log(values);
 
   storeError.value = {}; // Reset lỗi trước khi gọi API
 
   try {
     const res = await axios.post(
-      "http://notibro.test/api/auth/register",
+      `${dirApi}auth/register`,
       values
     );
     // console.log(res);
-    console.log("res.data.code", res.data.code);
-    console.log("res.status", res.status);
+    // console.log("res.data.code", res.data.code);
+    // console.log("res.status", res.status);
 
     if (res?.data.code === 201 && res?.status == 200) {
 
       const userEmail = values.email; // Lấy email đã đăng ký
       localStorage.setItem("verifyEmail", userEmail);
-      message.success("Đăng ký thành công, vui lòng đăng nhập");
+      message.success(res.data.message || "Registration successful, please confirm email");
       resetForm();
-      router.push("/verify"); // Chuyển hướng đến trang xác minh
+      router.push({name: 'verify'}); // Chuyển hướng đến trang xác minh
       
     } else {
-      message.error(res.data?.message || "Đăng ký thất bại");
+      message.error(res.data?.message || "Registration failed");
     }
   } catch (e) {
-    console.error("Lỗi từ backend:", e.response?.data);
+    // console.error("Lỗi từ backend:", e.response?.data);
 
     if (e.response?.data?.errors) {
       storeError.value = { ...e.response.data.errors }; // Cập nhật lỗi từ backend
-      message.error("Đăng ký thất bại, vui lòng kiểm tra lỗi.");
+      message.error("Registration failed, please check again.");
     } else if (e.response?.data?.message) {
       message.error(e.response.data.message);
     } else {
-      message.error("Đã xảy ra lỗi, vui lòng thử lại.");
+      message.error("An error occurred, please try again.");
     }
   } finally {
     isLoading.value = false; // Kết thúc loading
@@ -127,11 +129,9 @@ const onFinish = async (values) => {
   <section class="bg-white">
     <div class="flex justify-center min-h-screen">
       <div
-        class="hidden bg-cover lg:block lg:w-2/5"
-        style="
-          background-image: url('https://images.unsplash.com/photo-1494621930069-4fd4b2e24a11?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=715&q=80');
-        "
-      ></div>
+        class="hidden flex align-center my-auto mx-auto bg-cover lg:block lg:w-2/5">
+          <img class="w-full" src="../../assets/images/Register-To-do-list-amico-1-removebg-preview.png" alt="">
+        </div>
 
       <!-- form -->
       <div
@@ -140,14 +140,13 @@ const onFinish = async (values) => {
         <div class="flex items-center flex-col justify-center">
           <div class="w-full">
             <h1
-              class="text-2xl font-semibold tracking-wider text-gray-800 capitalize"
+              class="text-4xl font-bold tracking-wider text-gray-800 capitalize"
             >
-              Đăng ký Tài Khoản Miễn Phí Của Bạn Bây Giờ.
+              Register
             </h1>
 
             <p class="mt-4 text-gray-500">
-              Tôi sẽ giúp bạn thiết lập bạn có thể xác minh tài khoản cá nhân
-              của mình và bắt đầu thiết lập hồ sơ của mình.
+              Sign up for a free account now to easily manage your schedule and never miss any important tasks!
             </p>
             <a-form
               :layout="'vertical'"
@@ -159,147 +158,184 @@ const onFinish = async (values) => {
               class="grid grid-cols-1 gap-4 pt-8 md:grid-cols-2"
             >
               <a-form-item
-                label="Họ"
+                label="Last name"
                 name="last_name"
-                :validate-status="storeError.last_name ? 'error' : ''"
-                :help="storeError.last_name?.[0]"
+                status="{{storeError.last_name ? 'error' : 'success'}}"
               >
                 <a-input
                   v-model:value="formState.last_name"
                   @input="storeError.last_name = ''"
                   placeholder="John"
-                  class="px-5 py-3"
+                  class="border border-orange-300"
+                  :class="{'border-red-500': storeError.last_name}"
                 />
+                <span v-if="storeError.last_name" class="text-red-500">
+                  {{ storeError.last_name?.[0] }}
+                </span>
               </a-form-item>
 
               <a-form-item
-                label="Tên"
+                label="First name"
                 name="first_name"
-                :validate-status="storeError.first_name ? 'error' : ''"
-                :help="storeError.first_name?.[0]"
+                status="{{storeError.first_name ? 'error' : 'success'}}"
+                :class="{'border-red-500': storeError.first_name}"
               >
                 <a-input
                   v-model:value="formState.first_name"
                   @input="storeError.first_name = ''"
-                  class="px-5 py-3"
+                  class="border border-orange-300"
                   placeholder="Snow"
                 />
+                <span v-if="storeError.first_name" class="text-red-500">
+                  {{ storeError.first_name?.[0] }}
+                </span>
               </a-form-item>
 
               <a-form-item
                 label="Email"
                 name="email"
-                :validate-status="storeError.email ? 'error' : ''"
-                :help="storeError.email?.[0]"
+                status="{{storeError.email ? 'error' : 'success'}}"
               >
                 <a-input
                   v-model:value="formState.email"
                   @input="storeError.email = ''"
-                  class="px-5 py-3"
+                  class="border border-orange-300"
                   placeholder="johnsnow@example.com"
+                  :class="{'border-red-500': storeError.email}"
                 />
+                <span v-if="storeError.email" class="text-red-500">
+                  {{ storeError.email?.[0] }}
+                </span>
               </a-form-item>
 
               <a-form-item
-                label="Số điện thoại"
+                label="Phone number"
                 name="phone"
-                :validate-status="storeError.phone ? 'error' : ''"
-                :help="storeError.phone?.[0]"
+                status="{{storeError.phone ? 'error' : 'success'}}"
               >
                 <a-input
                   v-model:value="formState.phone"
                   @input="storeError.phone = ''"
-                  class="px-5 py-3"
+                  class="border border-orange-300"
                   type="number"
-                  placeholder="XXX-XX-XXXX-XXX"
+                  placeholder="xxx-xxx-xxxx"
+                  :class="{'border-red-500': storeError.phone}"
                 />
+                <span v-if="storeError.phone" class="text-red-500">
+                  {{ storeError.phone?.[0] }}
+                </span>
               </a-form-item>
 
               <a-form-item
-                label="Mật khẩu"
+                label="Password"
                 name="password"
-                :validate-status="storeError.password ? 'error' : ''"
-                :help="storeError.password?.[0]"
+                status="{{storeError.password ? 'error' : 'success'}}"
+                :class="{'border-red-500': storeError.password}"
               >
                 <a-input-password
                   v-model:value="formState.password"
                   @input="storeError.password = ''"
-                  class="px-5 py-3"
-                  placeholder="Nhập mật khẩu của bạn"
+                  class="border border-orange-300"
+                  placeholder="Enter your password"
                 />
+                <span v-if="storeError.password" class="text-red-500">
+                  {{ storeError.password?.[0] }}
+                </span>
               </a-form-item>
 
-              <a-form-item label="Xác nhận mật khẩu" name="confirm_password">
+              <a-form-item label="Confirm password" name="confirm_password">
                 <a-input-password
                   v-model:value="formState.confirm_password"
-                  class="px-5 py-3"
-                  placeholder="Nhập lại mật khẩu của bạn"
+                  class="border border-orange-300"
+                  placeholder="Re-enter your password"
                 />
               </a-form-item>
 
               <a-form-item
-                label="Giới tính"
+                label="Gender"
                 name="gender"
-                :validate-status="storeError.gender ? 'error' : ''"
-                :help="storeError.gender?.[0]"
+                status="{{storeError.gender ? 'error' : 'warning'}}"
+                :class="{'border-red-500': storeError.gender}"
               >
                 <Select
                   v-model:value="formState.gender"
-                  placeholder="Chọn giới tính"
+                  placeholder="Choose gender"
+                  :style="{ border: '1.2px solid #FFCC77', borderRadius: '8px' }"
                 >
-                  <Select.Option value="male">Nam</Select.Option>
-                  <Select.Option value="female">Nữ</Select.Option>
+                  <Select.Option value="male">Male</Select.Option>
+                  <Select.Option value="female">Female</Select.Option>
                 </Select>
+                <span v-if="storeError.gender" class="text-red-500">
+                  {{ storeError.gender?.[0] }}
+                </span>
               </a-form-item>
 
               <a-form-item
-                label="Địa chỉ"
+                label="Address"
                 name="address"
-                :validate-status="storeError.address ? 'error' : ''"
-                :help="storeError.address?.[0]"
+                status="{{storeError.address ? 'error' : 'success'}}"
+                :class="{'border-red-500': storeError.address}"
               >
                 <a-input
                   v-model:value="formState.address"
                   @input="storeError.address = ''"
+                  class="border border-orange-300"
+                  placeholder="Enter your address"
                 />
+                <span v-if="storeError.address" class="text-red-500">
+                  {{ storeError.address?.[0] }}
+                </span>
               </a-form-item>
-              <a-form-item class="col-span-2">
-                <a-button
-                  type="primary"
-                  html-type="submit"
-                  :loading="isLoading"
-                  class="flex items-center justify-center w-full px-6 py-3 text-sm tracking-wide text-white bg-blue-500 rounded-lg transition-colors duration-300 transform hover:bg-blue-600"
-                  >Đăng ký</a-button
-                >
-              </a-form-item>
+                <a-form-item class="col-span-2">
+                  <a-button
+                    type="primary"
+                    html-type="submit"
+                    :loading="isLoading"
+                    class="gradient-btn"
+                    >Register</a-button
+                  >
+                </a-form-item>
 
-              <p
-                class="text-center block m-0 text-sm leading-10 text-gray-600 col-span-2"
-              >
-                Bạn đã có tài khoản
-                <router-link
-                  to="/login"
-                  class="text-sm font-medium text-blue-500 no-underline"
-                  >Đăng nhập ngay</router-link
-                >
-              </p>
+                <p class="text-center block m-0 text-sm leading-10 text-gray-600 col-span-2">
+                  You already have an account
+                  <router-link
+                    to="/login"
+                    class="text-sm font-medium text-orange-500 no-underline"
+                    >Login now</router-link>
+                </p>
             </a-form>
           </div>
         </div>
-
-        <div class="mt-4">
-          <p class="block m-0 text-sm leading-10 text-gray-600">
-            Trải nghiệm không cần đăng ký
-            <router-link
-              to="/"
-              class="text-sm font-medium text-blue-500 no-underline"
-              >bấm tại đây</router-link
-            >
-          </p>
-        </div>
       </div>
+    </div>
+    <div class="flex justify-center -my-10">
+      <p class="block m-0 text-sm leading-10 text-gray-600">
+        Experience without registration
+        <router-link
+          to="/"
+          class="text-sm font-medium text-orange-500 no-underline"
+          >Click here!</router-link
+        >
+      </p>
     </div>
   </section>
 </template>
 
-<style lang=""></style>
+<style scoped>
+  .gradient-btn {
+        width: 100%;
+        font-size: 16px;
+        font-weight: bold;
+        color: black;
+        background: linear-gradient(to right, #FFE8A3, #FF9800);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+  .gradient-btn:hover {
+      opacity: 0.9;
+  }
+
+</style>
