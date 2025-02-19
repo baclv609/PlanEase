@@ -9,23 +9,20 @@
       </div>
 
       <!-- Search -->
-      <a-input-search placeholder="Search" class="w-1/3" />
+      <a-input-search :placeholder="$t('Search')" class="w-1/3" />
 
       <!-- Actions -->
       <div class="flex items-center gap-4">
         <a-button type="primary" class="bg-yellow-500 text-white">
-          <TrophyOutlined /> Update Plan
+          <TrophyOutlined /> {{ $t('Update_plane') }}
         </a-button>
 
-        <!-- Dùng router-link -->
-        <a-tooltip title="Settings">
-          <router-link to="/settings">
-            <a-button shape="circle">
-              <SettingOutlined />
-            </a-button>
-          </router-link>
+        <!-- Tooltip chứa icon Settings -->
+        <a-tooltip title="">
+          <a-button shape="circle" @click="openSettingsModal">
+            <SettingOutlined />
+          </a-button>
         </a-tooltip>
-
 
         <!-- User Dropdown -->
         <a-dropdown>
@@ -36,8 +33,8 @@
           </a-avatar>
           <template #overlay>
             <a-menu>
-              <a-menu-item>Profile</a-menu-item>
-              <a-menu-item>Logout</a-menu-item>
+              <a-menu-item>{{ $t('Profile') }}</a-menu-item>
+              <a-menu-item>{{ $t('Logout') }}</a-menu-item>
             </a-menu>
           </template>
         </a-dropdown>
@@ -133,14 +130,20 @@ import {
   UserOutlined,
 } from "@ant-design/icons-vue";
 
-// const currentDate = ref(new Date());
-// const selectedCalendars = ref(["exercise", "dinner"]);
-// const otherCalendars = ref(["vn-holidays"]);
+import SettingsView from '@/views/settings/SettingsView.vue'
 
-// const formattedMonth = computed(() => {
-//   const options = { month: "long", year: "numeric" };
-//   return new Intl.DateTimeFormat("en-US", options).format(currentDate.value);
-// });
+const isModalOpen = ref(false);
+
+// Hàm mở modal
+const openSettingsModal = () => {
+  isModalOpen.value = true;
+};
+
+// Hàm nhận sự kiện cập nhật trạng thái từ component con
+const updateModalState = (value) => {
+  isModalOpen.value = value;
+};
+
 
 const changeView = (view) => {
   console.log("Change calendar view to:", view);
