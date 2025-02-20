@@ -2,10 +2,12 @@
     "edit_profile": "Chỉnh sửa hồ sơ",
     "change_password": "Đổi mật khẩu",
     "language": "Ngôn ngữ",
-    "select_language": "Chọn ngôn ngữ",
+    "select_language": "Ngôn ngữ",
     "english": "Tiếng Anh",
     "vietnamese": "Tiếng Việt",
     "back": "Quay lại",
-    "time_zone": "Múi giờ"
+    "timezone": "Múi giờ",
+    "Setting": "Cài đặt",
+    "select_timezone": "Chọn múi giờ"
   }
   
