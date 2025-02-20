@@ -2,10 +2,11 @@
     "edit_profile": "Edit Profile",
     "change_password": "Change Password",
     "language": "Language",
-    "select_language": "Select Language",
+    "select_language": "Language",
     "english": "English",
     "vietnamese": "Vietnamese",
-    "back": "Back",
-    "time_zone": "Time Zone"
+    "timezone": "Time Zone",
+    "Setting": "Setting",
+    "select_timezone": "Select timezone"
   }
   
