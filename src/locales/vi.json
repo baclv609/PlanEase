@@ -8,6 +8,8 @@
     "back": "Quay lại",
     "timezone": "Múi giờ",
     "Setting": "Cài đặt",
-    "select_timezone": "Chọn múi giờ"
+    "select_timezone": "Chọn múi giờ",
+    "date_format": "Định dạng ngày",
+    "time_format": "Định dạng giờ"
   }
   
