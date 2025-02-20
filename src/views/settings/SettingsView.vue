@@ -46,7 +46,6 @@
 </template>
 
 
-
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -64,9 +63,6 @@ const { locale } = useI18n();
 const timezones = ref([]);
 const selectedTimezone = ref(localStorage.getItem("user-timezone") || null);
 
-// const token = localStorage.getItem('access_token');
-// console.log("Token hiện tại:", token);
-
 // Date & Time Format
 const dateFormats = ref([
     { value: 'd/m/Y', label: 'DD/MM/YYYY' },
@@ -74,10 +70,13 @@ const dateFormats = ref([
     { value: 'Y-m-d', label: 'YYYY-MM-DD' }
 ]);
 
+const timeFormats = ref([
+    { value: 'h:mmA', label: '12-hour (hh:mm AM/PM)' },
+    { value: 'HH:mm', label: '24-hour (HH:mm)' }
+]);
+
 const selectedDateFormat = ref(localStorage.getItem("user-date-format") || 'd/m/Y');
 const selectedTimeFormat = ref(localStorage.getItem("user-time-format") || 'h:mmA');
-
-
 
 // Đóng modal
 const handleOk = () => {
@@ -87,7 +86,6 @@ const handleCancel = () => {
     emit('update:isModalOpen', false);
 };
 
-
 // Thay đổi ngôn ngữ
 const changeLanguage = async () => {
     locale.value = language.value;
@@ -95,17 +93,15 @@ const changeLanguage = async () => {
 
     try {
         await axios.put('/api/change-setting', { language: language.value }, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
         });
+        // console.log("Cập nhật ngôn ngữ:", language.value);
     } catch (error) {
-        console.error("Error updating language setting:", error);
+        console.error("Lỗi cập nhật ngôn ngữ:", error);
     }
 };
 
-
-// Gọi API để lấy danh sách Timezone
-// console.log("API Base URL:", import.meta.env.VITE_API_BASE_URL);
-
+// Lấy danh sách Timezone từ API
 const fetchTimezones = async () => {
     try {
         const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}timezones`, {
@@ -114,10 +110,10 @@ const fetchTimezones = async () => {
                 Accept: 'application/json'
             }
         });
-        // console.log("Timezones API response:", response.data);
         timezones.value = response.data.data;
+        console.log("✅ Timezones đã tải:", timezones.value);
     } catch (error) {
-        console.error("Error fetching timezones:", error.response?.data || error.message);
+        console.error("❌ Lỗi tải Timezones:", error);
     }
 };
 
@@ -128,8 +124,9 @@ const updateTimezone = async () => {
             headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
         });
         localStorage.setItem("user-timezone", selectedTimezone.value);
+        console.log("✅ Cập nhật Timezone:", selectedTimezone.value);
     } catch (error) {
-        console.error("Error updating timezone setting:", error);
+        console.error("❌ Lỗi cập nhật Timezone:", error);
     }
 };
 
@@ -159,10 +156,10 @@ const updateTimeFormat = async () => {
     }
 };
 
-
 // Gọi API khi component được mounted
 onMounted(fetchTimezones);
 </script>
+
 
 <style scoped>
 h2 {
