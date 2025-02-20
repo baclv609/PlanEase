@@ -255,13 +255,20 @@ const calendarOptions = ref({
     center: "title",
     right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
   },
+  locale: "vi",
+  timeZone: "Asia/Ho_Chi_Minh",
+  initialView: "timeGridWeek",
   height: 720,
+  slotLabelFormat: { hour: 'numeric', minute: '2-digit', hour12: true },
+dayHeaderFormat: { weekday: 'short', day: 'numeric' },
+
   // calendarWeekends: false, // Mặc định một ngày
   // calendaring: "true", // Chương trình đăng ký
   // businessHours: true, // Thời gian lớp học
   editable: true,
   selectable: true,
   events: events,
+  nowIndicator: true,
 
   // Lắng nghe sự kiện khi click vào ngày
   dateClick: (info) => {
@@ -310,3 +317,61 @@ const calendarOptions = ref({
   </div>
 </template>
 
+<style>
+/* Ẩn border thô kệch và làm giao diện nhẹ nhàng hơn */
+.fc-theme-standard .fc-scrollgrid {
+  border: none;
+}
+
+/* Màu nền tiêu đề của từng cột (ngày) */
+.fc-theme-standard th {
+  background-color: #f8f9fa; /* Màu nền nhẹ */
+  font-weight: bold;
+  padding: 10px;
+}
+
+/* Bo góc cho các sự kiện */
+.fc-event {
+  border-radius: 8px !important;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  border: none !important;
+}
+
+/* Tăng khoảng cách giữa các sự kiện */
+.fc-daygrid-event {
+  margin: 4px 0;
+}
+
+/* Hiệu ứng hover */
+.fc-event:hover {
+  background-color: rgba(0, 0, 255, 0.1);
+}
+
+/* Font chữ Google Calendar */
+.fc {
+  font-family: Arial, sans-serif;
+}
+/* Định dạng lại sự kiện để hiển thị giờ bên trái và tiêu đề bên phải */
+.fc-event {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
+  font-size: 14px;
+}
+
+/* Chỉnh lại giờ ở bên trái */
+.fc-event-time {
+  font-weight: bold;
+  color: #555;
+  margin-right: 8px;
+}
+
+/* Định dạng lại tiêu đề */
+.fc-event-title {
+  flex-grow: 1;
+  text-align: left;
+  color: #202124;
+}
+</style>
