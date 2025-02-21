@@ -7,6 +7,8 @@
     "vietnamese": "Vietnamese",
     "timezone": "Time Zone",
     "Setting": "Setting",
-    "select_timezone": "Select timezone"
+    "select_timezone": "Select timezone",
+    "date_format": "Date format",
+    "time_format": "Time format"
   }
   
