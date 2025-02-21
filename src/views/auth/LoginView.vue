@@ -41,6 +41,15 @@ const onFinish = async (values) => {
         message.error(errorMessage);
     }
 };
+
+const loginWithGoogle = async () => {
+    try {
+        const { data } = await axios.get(`${dirApi}auth/google/redirect`);
+        window.location.href = data.url;
+    } catch (error) {
+        console.log('Error:', error);
+    }
+  };
 </script>
 
 <template>
@@ -90,7 +99,7 @@ const onFinish = async (values) => {
                     <p class="text-sm font-medium">Or login with google</p>
                 </div>
 
-                <a href="#" class="no-underline border-google flex items-center justify-center mt-4 text-gray-600 transition-colors duration-300 transform rounded-lg hover:bg-gray-50">
+                <button @click.prevent="loginWithGoogle" class="no-underline border-google flex items-center justify-center mt-4 text-gray-600 transition-colors duration-300 transform rounded-lg hover:bg-gray-50">
                     
                     <div class="px-4 py-2 flex">
                         <svg class="w-6 h-6" viewBox="0 0 40 40">
@@ -110,7 +119,7 @@ const onFinish = async (values) => {
                         <span class="w-5/6 font-bold align-center mx-1">Google</span>
                     </div>
 
-                </a>
+                </button>
 
                 <div class="flex items-center justify-center flex-col gap-4 mt-4">
                     <router-link to="/register"
@@ -148,5 +157,7 @@ const onFinish = async (values) => {
 
     .border-google {
         border: 0.9px solid orange;
+        width: 100%;
+        cursor: pointer;
     }
 </style>
