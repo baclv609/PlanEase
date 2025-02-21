@@ -44,6 +44,22 @@ const auth = [
                 next();
             }
         }
+    },
+    {
+        path: '/auth/google/callback',
+        component: () => import('@/views/auth/GoogleCallback.vue'),
+        meta: {
+            layout: 'auth',
+            notAuthRequired: false,
+        },
+    },
+    {
+        path: '/auth/google/error',
+        component: () => import('@/views/auth/GoogleCallback.vue'),
+        meta: {
+            layout: 'auth',
+            notAuthRequired: false,
+        }, 
     }
 ];
 export default auth;
