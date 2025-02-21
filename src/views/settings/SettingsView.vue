@@ -51,17 +51,19 @@ import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 
+const dirApi = import.meta.env.VITE_API_BASE_URL;
+
 const props = defineProps({
     isModalOpen: Boolean
 });
 const emit = defineEmits(['update:isModalOpen']);
 
-const language = ref(localStorage.getItem("user-language") || 'en');
+const language = ref(localStorage.getItem("user-language") || navigator.language || 'en');
 const { locale } = useI18n();
 
 // Timezone
 const timezones = ref([]);
-const selectedTimezone = ref(localStorage.getItem("user-timezone") || null);
+const selectedTimezone = ref(localStorage.getItem("user-timezone") || Intl.DateTimeFormat().resolvedOptions().timeZone);
 
 // Date & Time Format
 const dateFormats = ref([
@@ -75,8 +77,8 @@ const timeFormats = ref([
     { value: 'HH:mm', label: '24-hour (HH:mm)' }
 ]);
 
-const selectedDateFormat = ref(localStorage.getItem("user-date-format") || 'd/m/Y');
-const selectedTimeFormat = ref(localStorage.getItem("user-time-format") || 'h:mmA');
+const selectedDateFormat = ref(localStorage.getItem("user-date-format") || getDefaultDateFormat());
+const selectedTimeFormat = ref(localStorage.getItem("user-time-format") || getDefaultTimeFormat());
 
 // Đóng modal
 const handleOk = () => {
@@ -92,7 +94,7 @@ const changeLanguage = async () => {
     localStorage.setItem("user-language", language.value);
 
     try {
-        await axios.put('/api/change-setting', { language: language.value }, {
+        await axios.put(`${dirApi}change-setting`, { language: language.value }, {
             headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
         });
         // console.log("Cập nhật ngôn ngữ:", language.value);
@@ -104,60 +106,93 @@ const changeLanguage = async () => {
 // Lấy danh sách Timezone từ API
 const fetchTimezones = async () => {
     try {
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}timezones`, {
+        const response = await axios.get(`${dirApi}timezones`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('access_token')}`,
                 Accept: 'application/json'
             }
         });
         timezones.value = response.data.data;
-        console.log("✅ Timezones đã tải:", timezones.value);
+        console.log("Timezones đã tải:", timezones.value);
     } catch (error) {
-        console.error("❌ Lỗi tải Timezones:", error);
+        console.error("Lỗi tải Timezones:", error);
     }
 };
 
 // Cập nhật timezone
 const updateTimezone = async () => {
     try {
-        await axios.put('/api/change-setting', { timezone_id: selectedTimezone.value }, {
+        await axios.put(`${dirApi}change-setting`, { timezone_id: selectedTimezone.value }, {
             headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
         });
         localStorage.setItem("user-timezone", selectedTimezone.value);
-        console.log("✅ Cập nhật Timezone:", selectedTimezone.value);
+        console.log("Cập nhật Timezone:", selectedTimezone.value);
     } catch (error) {
-        console.error("❌ Lỗi cập nhật Timezone:", error);
+        console.error("Lỗi cập nhật Timezone:", error);
     }
 };
+
+// Lấy mặc định từ người dùng
+function getDefaultDateFormat() {
+    const format = new Date().toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' });
+    if (format.match(/^\d{2}\/\d{2}\/\d{4}$/)) return 'm/d/Y'; // MM/DD/YYYY
+    if (format.match(/^\d{4}-\d{2}-\d{2}$/)) return 'Y-m-d'; // YYYY-MM-DD
+    return 'd/m/Y'; // DD/MM/YYYY mặc định
+}
+
+function getDefaultTimeFormat() {
+    const format = new Date().toLocaleTimeString();
+    return format.includes('AM') || format.includes('PM') ? 'h:mmA' : 'HH:mm';
+}
 
 // Cập nhật Date Format
 const updateDateFormat = async () => {
     try {
-        await axios.put('/api/change-setting', { date_format: selectedDateFormat.value }, {
+        await axios.put(`${dirApi}change-setting`, { date_format: selectedDateFormat.value }, {
             headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
         });
         localStorage.setItem("user-date-format", selectedDateFormat.value);
-        console.log("✅ Cập nhật Date Format:", selectedDateFormat.value);
+        console.log("Cập nhật Date Format:", selectedDateFormat.value);
     } catch (error) {
-        console.error("❌ Lỗi cập nhật Date Format:", error);
+        console.error("Lỗi cập nhật Date Format:", error);
     }
 };
 
 // Cập nhật Time Format
 const updateTimeFormat = async () => {
     try {
-        await axios.put('/api/change-setting', { time_format: selectedTimeFormat.value }, {
+        await axios.put(`${dirApi}change-setting`, { time_format: selectedTimeFormat.value }, {
             headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
         });
         localStorage.setItem("user-time-format", selectedTimeFormat.value);
-        console.log("✅ Cập nhật Time Format:", selectedTimeFormat.value);
+        console.log("Cập nhật Time Format:", selectedTimeFormat.value);
     } catch (error) {
-        console.error("❌ Lỗi cập nhật Time Format:", error);
+        console.error("Lỗi cập nhật Time Format:", error);
     }
 };
 
-// Gọi API khi component được mounted
-onMounted(fetchTimezones);
+// Khi trang tải, tự động lấy thông tin từ trình duyệt
+onMounted(async () => {
+    // Nếu chưa có setting từ localStorage, lấy từ trình duyệt
+    if (!localStorage.getItem("user-language")) {
+        localStorage.setItem("user-language", language.value);
+    }
+    if (!localStorage.getItem("user-timezone")) {
+        localStorage.setItem("user-timezone", selectedTimezone.value);
+    }
+    if (!localStorage.getItem("user-date-format")) {
+        localStorage.setItem("user-date-format", selectedDateFormat.value);
+    }
+    if (!localStorage.getItem("user-time-format")) {
+        localStorage.setItem("user-time-format", selectedTimeFormat.value);
+    }
+
+    // Log thông tin ra
+    // console.log("Ngôn ngữ hiện tại:", language.value);
+    // console.log("Múi giờ hiện tại:", selectedTimezone.value);
+    // console.log("Định dạng ngày hiện tại:", selectedDateFormat.value);
+    // console.log("Định dạng giờ hiện tại:", selectedTimeFormat.value);
+});
 </script>
 
 
