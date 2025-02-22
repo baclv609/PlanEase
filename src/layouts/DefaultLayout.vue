@@ -27,7 +27,9 @@
           <template #overlay>
             <a-menu>
               <a-menu-item>{{ $t('Profile') }}</a-menu-item>
-              <a-menu-item>{{ $t('Logout') }}</a-menu-item>
+              <a-menu-item @click.prevent="handleLogout">
+                {{ $t('Logout') }}
+              </a-menu-item>
             </a-menu>
           </template>
         </a-dropdown>
@@ -73,10 +75,32 @@ import {
 } from "@ant-design/icons-vue";
 
 import SettingsView from '@/views/settings/SettingsView.vue';
+import axios from "axios";
+import { message } from "ant-design-vue";
+import router from "@/router";
+
+const dirApi = import.meta.env.VITE_API_BASE_URL;
 
 const isModalOpen = ref(false);
 
 const openSettingsModal = () => {
   isModalOpen.value = true;
 };
+
+const handleLogout = () => {
+  const token = localStorage.getItem('access_token');
+  console.log(token);
+  axios.post(`${dirApi}auth/logout`, {}, {
+      headers: {
+          Authorization: `Bearer ${token}`
+      }
+  })
+  .then((response) => {
+    localStorage.clear();
+    message.success(response.data.message || 'Logout successfully');
+    router.push({name: 'home'})
+  }).catch((error) => {
+    message.error('Fail');
+  });
+}
 </script>
