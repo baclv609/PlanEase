@@ -40,11 +40,11 @@
 
         <div class="mb-4">
           <h3 class="font-semibold mb-2">My Calendars</h3>
-          <a-checkbox-group v-model:value="selectedCalendars" class="flex flex-col gap-2">
+          <!-- <a-checkbox-group v-model:value="selectedCalendars" class="flex flex-col gap-2">
             <a-checkbox value="exercise">🏋️ Tập thể dục</a-checkbox>
             <a-checkbox value="dinner">🍽️ Ăn tối</a-checkbox>
             <a-checkbox value="outing">🚗 Đi chơi</a-checkbox>
-          </a-checkbox-group>
+          </a-checkbox-group> -->
         </div>
       </a-layout-sider>
 

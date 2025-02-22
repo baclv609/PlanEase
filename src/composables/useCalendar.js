@@ -46,16 +46,12 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
 
   // Chuyển đổi dữ liệu sang dạng FullCalendar
   const transformEvent = (event) => {
-
-
-
-
     if (!event || !event.start_time || !event.end_time) return null;
 
     let fullCalendarEvent = {
       id: event.id?.toString() || undefined,
       title: event.title || "Không có tiêu đề",
-      start: dayjs(event.start_time).toISOString(), // Chuyển sang chuẩn ISO
+      start: dayjs(event.start_time).toISOString(),
       end: dayjs(event.end_time).toISOString(),
       allDay: !!event.is_all_day,
       backgroundColor: event.color_code || "#3788d8",
@@ -64,63 +60,65 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
         location: event.location || "",
         isReminder: event.is_reminder || 0,
         reminder: event.reminder || [],
-        user_ids: event.user_ids || [],
-        isDone: event.is_done || 0,
-        isRepeat: event.is_repeat || 0,
-        isBusy: event.is_busy || 0,
       },
     };
 
-    // Nếu sự kiện có lặp lại
     if (event.is_repeat && event.rrule) {
       try {
-        console.log('co rrule')
-        const rruleOptions = {
+        console.log("Có RRule:", event.rrule);
+        fullCalendarEvent.rrule = {
           freq: convertFreq(event.rrule.date_space),
           interval: event.rrule.repeat_space || 1,
-          dtstart: dayjs(event.start_time).utc().toDate(),
-          until: event.rrule.end_repeat ? dayjs(event.rrule.end_repeat).utc().format("YYYY-MM-DDTHH:mm:ss[Z]") : null,
-          byweekday: event.rrule.day_of_week?.map(convertDayOfWeek).filter(Boolean) || undefined,
-          bymonthday: event.rrule.day_of_month?.length ? event.rrule.day_of_month : undefined,
-          bymonth: event.rrule.by_month?.length ? event.rrule.by_month : undefined,
+          dtstart: dayjs(event.start_time)
+            .utc()
+            .format("YYYY-MM-DDTHH:mm:ss[Z]"),
+          until: event.rrule.end_repeat
+            ? dayjs(event.rrule.end_repeat)
+                .utc()
+                .format("YYYY-MM-DDTHH:mm:ss[Z]")
+            : undefined,
+          byweekday:
+            event.rrule.day_of_week?.map(convertDayOfWeek).filter(Boolean) ||
+            undefined,
+          bymonthday: event.rrule.day_of_month?.length
+            ? event.rrule.day_of_month
+            : undefined,
+          bymonth: event.rrule.by_month?.length
+            ? event.rrule.by_month
+            : undefined,
         };
 
-        // Xóa các giá trị `null` hoặc `undefined`
-        Object.keys(rruleOptions).forEach((key) => {
-          if (rruleOptions[key] === null || rruleOptions[key] === undefined) {
-            delete rruleOptions[key];
-          }
+        // Xóa các giá trị undefined
+        Object.keys(fullCalendarEvent.rrule).forEach((key) => {
+          if (fullCalendarEvent.rrule[key] === undefined)
+            delete fullCalendarEvent.rrule[key];
         });
-        console.log("RRule Options:", rruleOptions);
-        fullCalendarEvent.rrule = {
-          freq: rruleOptions.freq,
-          interval: rruleOptions.interval,
-          dtstart: rruleOptions.dtstart.toISOString(), // Định dạng ISO
-          until: rruleOptions.until ? rruleOptions.until.toISOString() : undefined,
-          byweekday: rruleOptions.byweekday?.map(day => day.toLowerCase()), // Chuyển về viết thường
-          bymonthday: rruleOptions.bymonthday,
-          bymonth: rruleOptions.bymonth,
-        };
-        
-        console.log("Generated RRule:", fullCalendarEvent.rrule);
-        
       } catch (error) {
         console.error("Lỗi khi tạo RRule:", error);
       }
     }
 
-    console.log("Sự kiện trước khi chuyển đổi:", event);
-    console.log("Sự kiện sau khi chuyển đổi:", fullCalendarEvent);
     return fullCalendarEvent;
   };
-
-  watch(events, (newEvents) => {
-    console.log("Dữ liệu sự kiện cập nhật:", newEvents);
-    transformedEvents.value = newEvents.map(transformEvent).filter(Boolean);
-    console.log("Sự kiện sau khi chuyển đổi:", transformedEvents.value);
-    calendarKey.value++;
-  }, { immediate: true });
-
+  watch(
+    events,
+    (newEvents) => {
+      console.log("Dữ liệu sự kiện mới cập nhật:", newEvents);
+  
+      if (!Array.isArray(newEvents)) {
+        console.error("Lỗi: `events` không phải là một mảng!");
+        return;
+      }
+  
+      transformedEvents.value = newEvents.map(transformEvent).filter(Boolean);
+      console.log("Sự kiện sau khi transform:", transformedEvents.value);
+  
+      calendarKey.value++;
+    },
+    { deep: true, immediate: true }
+  );
+  
+  
 
   const handleEventDrop = (info) => {
     const event = info.event;
@@ -129,17 +127,18 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
     event.setProp("start", newStart);
     event.setProp("end", newEnd);
 
-    axios.put(`/api/events/${event.id}`, {
-      start_time: newStart,
-      end_time: newEnd,
-    }).then((response) => {
-      console.log("Event updated successfully:", response.data);
-    }).catch((error) => {
-      console.error("Error updating event:", error);
-    })
-
-
-  }
+    axios
+      .put(`/api/events/${event.id}`, {
+        start_time: newStart,
+        end_time: newEnd,
+      })
+      .then((response) => {
+        console.log("Event updated successfully:", response.data);
+      })
+      .catch((error) => {
+        console.error("Error updating event:", error);
+      });
+  };
 
   const handleDateClick = (info) => {
     selectedEvent.value = {
@@ -165,8 +164,10 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
   };
 
   const calendarOptions = computed(() => {
-
-    console.log("Danh sách sự kiện truyền vào FullCalendar:", transformedEvents.value);
+    console.log(
+      "Danh sách sự kiện truyền vào FullCalendar:",
+      transformedEvents.value
+    );
 
     return {
       plugins: [
@@ -189,16 +190,12 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
       dayHeaderFormat: { weekday: "short", day: "numeric" },
       editable: true,
       selectable: true,
-      events: transformedEvents.value.map(e => ({
-        ...e,
-        rrule: e.rrule ? e.rrule : undefined, // Đảm bảo rrule được thêm đúng
-      })),// Kiểm tra dữ liệu trước khi truyền vào đây
+      events: transformedEvents.value,
       nowIndicator: true,
       dateClick: handleDateClick,
       eventClick: handleEventClick,
     };
   });
-
 
   return {
     calendarKey,
