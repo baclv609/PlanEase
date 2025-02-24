@@ -9,7 +9,7 @@
 
       <div class="flex items-center gap-4">
         <a-button type="primary" class="bg-yellow-500 text-white">
-          <TrophyOutlined /> {{ $t('Update_plane') }}
+          <TrophyOutlined /> {{ $t("Update_plane") }}
         </a-button>
 
         <a-tooltip title="">
@@ -26,9 +26,9 @@
           </a-avatar>
           <template #overlay>
             <a-menu>
-              <a-menu-item>{{ $t('Profile') }}</a-menu-item>
+              <a-menu-item>{{ $t("Profile") }}</a-menu-item>
               <a-menu-item @click.prevent="handleLogout">
-                {{ $t('Logout') }}
+                {{ $t("Logout") }}
               </a-menu-item>
             </a-menu>
           </template>
@@ -62,19 +62,22 @@
     </a-layout-footer>
 
     <!-- Modal Settings -->
-    <SettingsView v-model:isModalOpen="isModalOpen" />
+    <!-- <SettingsView v-model:isModalOpen="isModalOpen" /> -->
+
+    <SettingCalender v-model:isModalOpen="isModalOpen" />
+
   </a-layout>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import {
-  TrophyOutlined,
-  SettingOutlined,
-  UserOutlined,
-} from "@ant-design/icons-vue";
+import { ref, onMounted } from "vue";
+import { TrophyOutlined, SettingOutlined, UserOutlined } from "@ant-design/icons-vue";
 
-import SettingsView from '@/views/settings/SettingsView.vue';
+import SettingsView from "@/views/settings/SettingsView.vue";
+// import { useAuth } from "@/composables/auth.js";
+
+import  SettingCalender from "@/components/settings/SettingsModal.vue";
+
 import axios from "axios";
 import { message } from "ant-design-vue";
 import router from "@/router";
@@ -88,19 +91,25 @@ const openSettingsModal = () => {
 };
 
 const handleLogout = () => {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem("access_token");
   console.log(token);
-  axios.post(`${dirApi}auth/logout`, {}, {
-      headers: {
-          Authorization: `Bearer ${token}`
+  axios
+    .post(
+      `${dirApi}auth/logout`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-  })
-  .then((response) => {
-    localStorage.clear();
-    message.success(response.data.message || 'Logout successfully');
-    router.push({name: 'home'})
-  }).catch((error) => {
-    message.error('Fail');
-  });
-}
+    )
+    .then((response) => {
+      localStorage.clear();
+      message.success(response.data.message || "Logout successfully");
+      router.push({ name: "home" });
+    })
+    .catch((error) => {
+      message.error("Fail");
+    });
+};
 </script>
