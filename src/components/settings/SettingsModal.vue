@@ -59,28 +59,31 @@
       <a-tab-pane key="calendar" tab="Lịch">
         <a-form layout="vertical">
           <a-form-item label="Định dạng tiêu đề lịch">
-            <a-select v-model:value="settings.titleFormat">
-              <a-select-option value="MMMM yyyy"
-                >Tháng Năm (VD: Tháng 2 2025)</a-select-option
-              >
-              <a-select-option value="YYYY/MM">Năm/Tháng (VD: 2025/02)</a-select-option>
-              <a-select-option value="MMM YYYY"
-                >Tháng viết tắt + Năm (VD: Feb 2025)</a-select-option
-              >
+            <a-select v-model:value="settings.titleFormat" @change="updateFullCalendar">
+              <a-select-option :value="{ year: 'numeric', month: 'long' }">
+                Tháng Năm (VD: Tháng 2 2025)
+              </a-select-option>
+              <a-select-option :value="{ year: 'numeric', month: 'short' }">
+                Tháng viết tắt + Năm (VD: Feb 2025)
+              </a-select-option>
+              <a-select-option :value="{ year: 'numeric', month: '2-digit' }">
+                Năm/Tháng số (VD: 2025/02)
+              </a-select-option>
             </a-select>
           </a-form-item>
 
-          <a-form-item label="Định dạng ngày tháng">
-            <a-select v-model:value="settings.dateFormat">
-              <a-select-option value="YYYY-MM-DD"
-                >YYYY-MM-DD (VD: 2025-02-24)</a-select-option
-              >
-              <a-select-option value="DD/MM/YYYY"
-                >DD/MM/YYYY (VD: 24/02/2025)</a-select-option
-              >
-              <a-select-option value="MM-DD-YYYY"
-                >MM-DD-YYYY (VD: 02-24-2025)</a-select-option
-              >
+
+          <a-form-item label="Định dạng ngày trong cột">
+            <a-select v-model:value="settings.columnHeaderFormat" @change="updateFullCalendar">
+              <a-select-option :value="{ weekday: 'short', day: 'numeric', omitCommas: true }">
+                Thứ viết tắt + Ngày (VD: T2, 24)
+              </a-select-option>
+              <a-select-option :value="{ weekday: 'long', day: 'numeric' }">
+                Thứ + Ngày (VD: Thứ Hai, 24)
+              </a-select-option>
+              <a-select-option :value="{ day: 'numeric', month: 'short' }">
+                Ngày + Tháng (VD: 24 Thg 2)
+              </a-select-option>
             </a-select>
           </a-form-item>
 
@@ -132,7 +135,6 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { useI18n } from "vue-i18n";
 import moment from "moment-timezone";
 
-
 const { locale } = useI18n();
 const props = defineProps({
   isModalOpen: Boolean,
@@ -143,6 +145,50 @@ const emit = defineEmits(["update:isModalOpen"]);
 const settingsStore = useSettingsStore();
 const settings = settingsStore.$state;
 const activeTab = ref(settingsStore.activeKey || "display");
+
+// Mảng định dạng tiêu đề lịch
+const titleFormatOptions = ref([
+  { label: "Tháng Năm (VD: Tháng 2 2025)", value: { year: "numeric", month: "long" } },
+  {
+    label: "Tháng viết tắt + Năm (VD: Feb 2025)",
+    value: { year: "numeric", month: "short" },
+  },
+  { label: "Năm/Tháng số (VD: 2025/02)", value: { year: "numeric", month: "2-digit" } },
+]);
+
+// Mảng định dạng ngày trong cột
+const columnHeaderFormatOptions = ref([
+  { label: "Thứ + Ngày (VD: Thứ Hai, 24)", value: { weekday: "long", day: "numeric" } },
+  {
+    label: "Thứ viết tắt + Ngày (VD: T2, 24)",
+    value: { weekday: "short", day: "numeric" },
+  },
+  { label: "Ngày + Tháng (VD: 24 Thg 2)", value: { day: "numeric", month: "short" } },
+]);
+
+// Mảng định dạng ngày tháng
+const dateFormatOptions = ref([
+  { label: "YYYY-MM-DD (VD: 2025-02-24)", value: "YYYY-MM-DD" },
+  { label: "DD/MM/YYYY (VD: 24/02/2025)", value: "DD/MM/YYYY" },
+  { label: "MM-DD-YYYY (VD: 02-24-2025)", value: "MM-DD-YYYY" },
+]);
+
+// Mảng định dạng giờ trong sự kiện
+const eventTimeFormatOptions = ref([
+  {
+    label: "24h (VD: 14:30)",
+    value: { hour: "2-digit", minute: "2-digit", meridiem: false },
+  },
+  {
+    label: "12h AM/PM (VD: 02:30 PM)",
+    value: { hour: "2-digit", minute: "2-digit", hour12: true },
+  },
+]);
+
+// Hàm cập nhật FullCalendar khi thay đổi cài đặt
+const updateFullCalendar = () => {
+  settingsStore.updateFullCalendar();
+};
 
 const changeLanguage = (newLang) => {
   settingsStore.language = newLang; // Cập nhật state trong Pinia

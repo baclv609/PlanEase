@@ -1,11 +1,11 @@
 import { defineStore } from "pinia";
 import { useSettings } from "@/composables/useSettings";
-import { useI18n } from 'vue-i18n';
+import { useI18n } from "vue-i18n";
 
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
     // 🖥 Cài đặt giao diện
-    displayMode: "dayGridMonth",
+    displayMode: "timeGridWeek",
     showWeekNumbers: false,
     themeMode: "light",
 
@@ -15,10 +15,10 @@ export const useSettingsStore = defineStore("settings", {
     slotDuration: "00:30:00",
     language: localStorage.getItem("appLanguage") || "en",
     // 📅 Cài đặt lịch
-    titleFormat: "MMMM yyyy", // Mặc định hiển thị "Tháng Năm"
-    columnHeaderFormat: "ddd DD/MM", // Định dạng ngày trong cột
+    titleFormat: { year: "numeric", month: "long" }, // Định dạng tiêu đề lịch
+    columnHeaderFormat: { weekday: "short", day: "numeric", omitCommas: true }, // Định dạng ngày trong cột
     dateFormat: "YYYY-MM-DD", // Mặc định hiển thị theo chuẩn YYYY-MM-DD
-    eventTimeFormat: "HH:mm", // Định dạng ngày trong sự kiện
+    eventTimeFormat: { hour: "2-digit", minute: "2-digit", meridiem: false }, // Định dạng ngày trong sự kiện
     initialDate: new Date().toISOString().split("T")[0], // Ngày bắt đầu
     firstDay: 1, // Ngày đầu tuần (0 = Chủ nhật, 1 = Thứ hai)
     multiMonthYear: false, // Hiển thị nhiều tháng
@@ -32,8 +32,7 @@ export const useSettingsStore = defineStore("settings", {
     enableRecurringEvents: true,
     defaultRecurrence: "none",
 
-    // ⚡ FullCalendar Integration
-    calendarRef: null,
+    calendarRef: null, // Lưu tham chiếu đến FullCalendar
   }),
 
   actions: {
@@ -54,7 +53,10 @@ export const useSettingsStore = defineStore("settings", {
     },
     changeLanguage(newLang) {
       this.language = newLang;
-      localStorage.setItem("userSettings", JSON.stringify({ language: newLang }));
+      localStorage.setItem(
+        "userSettings",
+        JSON.stringify({ language: newLang })
+      );
 
       const { locale } = useI18n();
       locale.value = newLang; // Cập nhật Vue I18n
@@ -64,6 +66,9 @@ export const useSettingsStore = defineStore("settings", {
       if (savedSettings) {
         this.$patch(JSON.parse(savedSettings));
       }
+    },
+    setCalendarRef(ref) {
+      this.calendarRef = ref;
     },
     updateFullCalendar() {
       if (this.calendarRef) {
