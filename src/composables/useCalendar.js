@@ -7,6 +7,9 @@ import rrulePlugin from "@fullcalendar/rrule";
 import dayjs from "dayjs";
 import { RRule } from "rrule";
 import utc from "dayjs/plugin/utc";
+import { useSettingsStore } from "@/stores/settingsStore";
+
+const settingsStore = useSettingsStore(); // Khởi tạo Pinia Store
 
 dayjs.extend(utc);
 
@@ -110,21 +113,36 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
     events,
     (newEvents) => {
       console.log("Dữ liệu sự kiện mới cập nhật:", newEvents);
-  
+
       if (!Array.isArray(newEvents)) {
         console.error("Lỗi: `events` không phải là một mảng!");
         return;
       }
-  
+
       transformedEvents.value = newEvents.map(transformEvent).filter(Boolean);
       console.log("Sự kiện sau khi transform:", transformedEvents.value);
-  
+
       calendarKey.value++;
     },
     { deep: true, immediate: true }
   );
-  
-  
+
+  watch(
+    () => ({
+      timeZone: settingsStore.timeZone,
+      firstDay: settingsStore.firstDay,
+      initialDate: settingsStore.initialDate,
+      eventTimeFormat: settingsStore.eventTimeFormat,
+      columnHeaderFormat: settingsStore.columnHeaderFormat,
+      titleFormat: settingsStore.titleFormat,
+      validRange: settingsStore.validRange,
+    }),
+    () => {
+      console.log("Cập nhật lịch từ Pinia Settings Store...");
+      calendarKey.value++; // Buộc FullCalendar render lại
+    },
+    { deep: true }
+  );
 
   const handleEventDrop = (info) => {
     const event = info.event;
@@ -169,39 +187,63 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
     isModalVisible.value = true;
   };
 
-  const calendarOptions = computed(() => {
-    console.log(
-      "Danh sách sự kiện truyền vào FullCalendar:",
-      transformedEvents.value
-    );
+  // const calendarOptions = computed(() => {
+  //   console.log(
+  //     "Danh sách sự kiện truyền vào FullCalendar:",
+  //     transformedEvents.value
+  //   );
 
-    return {
-      plugins: [
-        dayGridPlugin,
-        timeGridPlugin,
-        interactionPlugin,
-        listPlugin,
-        rrulePlugin,
-      ],
-      initialView: "timeGridWeek",
-      headerToolbar: {
-        left: "prev,next today",
-        center: "title",
-        right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-      },
-      locale: "vi",
-      timeZone: "Asia/Ho_Chi_Minh",
-      height: 720,
-      slotLabelFormat: { hour: "numeric", minute: "2-digit", hour12: true },
-      dayHeaderFormat: { weekday: "short", day: "numeric" },
-      editable: true,
-      selectable: true,
-      events: transformedEvents.value,
-      nowIndicator: true,
-      dateClick: handleDateClick,
-      eventClick: handleEventClick,
-    };
-  });
+  //   return {
+  //     plugins: [
+  //       dayGridPlugin,
+  //       timeGridPlugin,
+  //       interactionPlugin,
+  //       listPlugin,
+  //       rrulePlugin,
+  //     ],
+  //     initialView: "timeGridWeek",
+  //     headerToolbar: {
+  //       left: "prev,next today",
+  //       center: "title",
+  //       right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+  //     },
+  //     locale: "vi",
+  //     timeZone: "Asia/Ho_Chi_Minh",
+  //     height: 720,
+  //     slotLabelFormat: { hour: "numeric", minute: "2-digit", hour12: true },
+  //     dayHeaderFormat: { weekday: "short", day: "numeric" },
+  //     editable: true,
+  //     selectable: true,
+  //     events: transformedEvents.value,
+  //     nowIndicator: true,
+  //     dateClick: handleDateClick,
+  //     eventClick: handleEventClick,
+  //   };
+  // });
+
+  const calendarOptions = computed(() => ({
+    plugins: [
+      dayGridPlugin,
+      timeGridPlugin,
+      interactionPlugin,
+      listPlugin,
+      rrulePlugin,
+    ],
+    locale: settingsStore.language,
+    timeZone: settingsStore.timeZone, // 🔹 Lấy từ Pinia
+    firstDay: settingsStore.firstDay, // 🔹 Ngày đầu tuần
+    initialDate: settingsStore.initialDate, // 🔹 Ngày bắt đầu lịch
+    eventTimeFormat: { hour: "2-digit", minute: "2-digit", meridiem: false }, // 🔹 Định dạng giờ
+    columnHeaderFormat: { weekday: "short", day: "numeric", omitCommas: true }, // 🔹 Định dạng cột ngày
+    titleFormat: { year: "numeric", month: "long" }, // 🔹 Tiêu đề lịch
+    validRange: settingsStore.validRange, // 🔹 Phạm vi hiển thị lịch
+    editable: true,
+    selectable: true,
+    events: transformedEvents.value,
+    nowIndicator: true,
+    dateClick: handleDateClick,
+    eventClick: handleEventClick,
+  }));
 
   return {
     calendarKey,

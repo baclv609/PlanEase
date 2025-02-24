@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted  } from "vue";
 import FullCalendar from "@fullcalendar/vue3";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -8,12 +8,23 @@ import listPlugin from "@fullcalendar/list";
 import rrulePlugin from "@fullcalendar/rrule";
 import { RRule } from "rrule";
 import { useRouter } from "vue-router";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { useCalendar } from "@/composables/useCalendar.js";
 
 import EventModal from "./components/EventModal.vue";
 import dayjs from "dayjs";
 
+const settingsStore = useSettingsStore();
+const calendarRef = ref(null);
+
+const { calendarKey, calendarOptions } = useCalendar();
+
+onMounted(() => {
+  settingsStore.setCalendarRef(calendarRef.value);
+});
+
 const router = useRouter();
-const calendarKey = ref(0);
+
 const selectedEvent = ref(null);
 const events =ref([
   // 1️⃣ Lặp lại hàng ngày (Daily)
@@ -271,51 +282,51 @@ const handleCancel = () => {
   isModalVisible.value = false;
 };
 
-const calendarOptions = ref({
-  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin, rrulePlugin],
-  initialView: "timeGridWeek",
-  // isModalVisible: true, // Mạc định một ngày
-  headerToolbar: {
-    left: "prev,next today",
-    center: "title",
-    right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-  },
-  height: 720,
-  // calendarWeekends: false, // Mặc định một ngày
-  // calendaring: "true", // Chương trình đăng ký
-  // businessHours: true, // Thời gian lớp học
-  editable: true,
-  selectable: true,
-  events: events,
+// const calendarOptions = ref({
+//   plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin, rrulePlugin],
+//   initialView: "timeGridWeek",
+//   // isModalVisible: true, // Mạc định một ngày
+//   headerToolbar: {
+//     left: "prev,next today",
+//     center: "title",
+//     right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+//   },
+//   height: 720,
+//   // calendarWeekends: false, // Mặc định một ngày
+//   // calendaring: "true", // Chương trình đăng ký
+//   // businessHours: true, // Thời gian lớp học
+//   editable: true,
+//   selectable: true,
+//   events: events,
 
-  // Lắng nghe sự kiện khi click vào ngày
-  dateClick: (info) => {
-    console.log("Ngày được click:", info.dateStr);
-    handleDateClick(info);
-    // mở modal tạo sự kiện
-  },
+//   // Lắng nghe sự kiện khi click vào ngày
+//   dateClick: (info) => {
+//     console.log("Ngày được click:", info.dateStr);
+//     handleDateClick(info);
+//     // mở modal tạo sự kiện
+//   },
 
-  // Lắng nghe sự kiện khi click vào một sự kiện
-  eventClick: (info) => {
-    console.log("Sự kiện được click:", info.event);
-    handleEventClick(info);
-  },
+//   // Lắng nghe sự kiện khi click vào một sự kiện
+//   eventClick: (info) => {
+//     console.log("Sự kiện được click:", info.event);
+//     handleEventClick(info);
+//   },
 
-  // Lắng nghe sự kiện khi kéo thả sự kiện
-  eventDrop: (info) => {
-    console.log("Sự kiện bị di chuyển:", info.event);
-  },
+//   // Lắng nghe sự kiện khi kéo thả sự kiện
+//   eventDrop: (info) => {
+//     console.log("Sự kiện bị di chuyển:", info.event);
+//   },
 
-  // Lắng nghe sự kiện khi thay đổi kích thước sự kiện
-  eventResize: (info) => {
-    console.log("Sự kiện bị thay đổi kích thước:", info.event);
-  },
+//   // Lắng nghe sự kiện khi thay đổi kích thước sự kiện
+//   eventResize: (info) => {
+//     console.log("Sự kiện bị thay đổi kích thước:", info.event);
+//   },
 
-  // Lắng nghe sự kiện khi chọn một khoảng thời gian
-  select: (info) => {
-    console.log("Khoảng thời gian được chọn:", info.startStr, " - ", info.endStr);
-  },
-});
+//   // Lắng nghe sự kiện khi chọn một khoảng thời gian
+//   select: (info) => {
+//     console.log("Khoảng thời gian được chọn:", info.startStr, " - ", info.endStr);
+//   },
+// });
 </script>
 
 <template>
@@ -324,7 +335,7 @@ const calendarOptions = ref({
       Thêm Sự Kiện
     </a-button>
 
-    <FullCalendar :key="calendarKey" :options="calendarOptions" />
+    <FullCalendar  ref="calendarRef" :key="calendarKey" :options="calendarOptions" />
 
     <EventModal
       :visible="isModalVisible"

@@ -3,6 +3,12 @@ import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { version } from '../package.json';
 import { DEFAULT_LAYOUT } from '@/constants';
+import { useSettings } from "@/composables/useSettings";
+
+onMounted(() => {
+  const { initSettings } = useSettings(); 
+  initSettings(); // ✅ Gọi hàm khởi tạo settings
+});
 
 const route = useRoute();
 const layout = computed(() => `${route?.meta?.layout || DEFAULT_LAYOUT}-layout`);
