@@ -10,6 +10,12 @@ import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
 
+const showHolidays = ref(true); // Mặc định hiển thị ngày lễ
+
+export const toggleHolidays = () => {
+  showHolidays.value = !showHolidays.value;
+};
+
 // Hàm chuyển đổi tần suất lặp lại
 const convertFreq = (dateSpace) => {
   switch (dateSpace) {
