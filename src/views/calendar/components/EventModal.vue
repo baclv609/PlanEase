@@ -24,57 +24,99 @@ const props = defineProps({
 const emit = defineEmits(["save", "cancel"]);
 
 const formState = ref({
-  title: "",
-  description: "",
-  start_time: null,
-  end_time: null,
-  is_all_day: false,
-  is_reminder: false,
-  reminder_time: null,
-  color_code: "#00FF00",
-  is_repeat: false,
-  rrule: {
-    freq: "DAILY",
-    interval: 1,
-    count: null,
-    until: null,
-    byweekday: [],
-    bymonthday: [],
-    bymonth: [],
-    bysetpos: "",
+  // Thông tin sự kiện
+  id: null, // ID của sự kiện (nếu có)
+  title: "", // Tiêu đề sự kiện (String)
+  description: "", // Mô tả sự kiện (String)
+  location: "", // Địa điểm (String)
+  attendees: [], // Danh sách người tham gia (Array[String])
+  
+  // Thời gian sự kiện
+  start: null, // Ngày giờ bắt đầu (String - ISO 8601)
+  end: null, // Ngày giờ kết thúc (String - ISO 8601)
+  allDay: false, // Có phải sự kiện cả ngày không? (Boolean)
+  
+  // Màu sắc
+  backgroundColor: "#00FF00", // Màu nền của sự kiện (String - HEX)
+  borderColor: "#00FF00", // Màu viền sự kiện (String - HEX)
+
+  // Nhắc nhở (Reminders)
+  is_reminder: false, // Có bật nhắc nhở không? (Boolean)
+  reminder_time: null, // Thời gian nhắc nhở (String - "HH:mm")
+
+  // Lặp lại sự kiện (Recurring Rule - RRule)
+  is_repeat: false, // Có bật chế độ lặp lại không? (Boolean)
+  rrule: null, // Cấu hình lặp lại nếu có (Object hoặc null)
+
+  // Metadata mở rộng (Extended Props của FullCalendar)
+  extendedProps: {
+    createdBy: "", // Người tạo sự kiện (String - Email)
+    lastUpdated: null, // Thời gian cập nhật cuối (String - ISO 8601)
+    notes: "", // Ghi chú bổ sung (String)
   },
 });
 
+//  Watch khi người dùng bật/tắt chế độ lặp lại
+watch(
+  () => formState.value.is_repeat,
+  (newValue) => {
+    if (newValue) {
+      // Nếu bật lặp lại, tạo rrule mặc định
+      formState.value.rrule = {
+        freq: "DAILY",
+        interval: 1,
+        count: null,
+        until: null,
+        byweekday: [],
+        bymonthday: [],
+        bymonth: [],
+      };
+    } else {
+      // Nếu tắt, xóa rrule
+      formState.value.rrule = null;
+    }
+  },
+  { immediate: true }
+);
+
+// Watch khi nhận dữ liệu từ props.event (backend hoặc FullCalendar)
 watch(
   () => props.event,
   (newEvent) => {
     if (newEvent) {
-      const rrule = newEvent.rrule || {};
       formState.value = {
+        id: newEvent.id || null,
         title: newEvent.title || "",
         description: newEvent.description || "",
-        start_time: newEvent.start_time ? dayjs(newEvent.start_time) : null,
-        end_time: newEvent.end_time ? dayjs(newEvent.end_time) : null,
-        is_all_day: newEvent.is_all_day || false,
+        location: newEvent.location || "",
+        attendees: newEvent.attendees || [],
+        start: newEvent.start ? dayjs(newEvent.start).toISOString() : null,
+        end: newEvent.end ? dayjs(newEvent.end).toISOString() : null,
+        allDay: newEvent.allDay || false,
+        backgroundColor: newEvent.backgroundColor || "#00FF00",
+        borderColor: newEvent.borderColor || "#00FF00",
         is_reminder: newEvent.is_reminder || false,
-        reminder_time: newEvent.reminder ? dayjs(newEvent.reminder) : null,
-        color_code: newEvent.color_code || "#00FF00",
-        is_repeat: newEvent.is_repeat || false,
-        rrule: {
-          freq: rrule.freq || "DAILY",
-          interval: rrule.interval || 1,
-          count: rrule.count || null,
-          until: rrule.until ? dayjs(rrule.until) : null,
-          byweekday: rrule.byweekday || [],
-          bymonthday: rrule.bymonthday || [],
-          bymonth: rrule.bymonth || [],
-          bysetpos: rrule.bysetpos || "",
-        },
+        reminder_time: newEvent.reminder_time ? dayjs(newEvent.reminder_time).format("HH:mm") : null,
+        is_repeat: !!newEvent.rrule, // Kiểm tra có rrule hay không
+        rrule: newEvent.rrule
+          ? {
+              freq: newEvent.rrule.freq || "DAILY",
+              interval: newEvent.rrule.interval || 1,
+              count: newEvent.rrule.count || null,
+              until: newEvent.rrule.until ? dayjs(newEvent.rrule.until).format("YYYY-MM-DD") : null,
+              byweekday: newEvent.rrule.byweekday || [],
+              bymonthday: newEvent.rrule.bymonthday || [],
+              bymonth: newEvent.rrule.bymonth || [],
+            }
+          : null,
+        extendedProps: newEvent.extendedProps || {},
       };
     }
   },
   { deep: true, immediate: true }
 );
+
+
 
 const repeatOptions = [
   { label: "Hàng ngày", value: "DAILY" },
@@ -103,39 +145,61 @@ const positionOptions = [
 ];
 
 const handleSave = () => {
+  console.log("🔹 Dữ liệu gốc trước khi xử lý:", JSON.parse(JSON.stringify(formState.value)));
+
   const apiData = {
+    id: formState.value.id || undefined,
     title: formState.value.title || undefined,
     description: formState.value.description || undefined,
-    start_time: formState.value.start_time ? formState.value.start_time.format('YYYY-MM-DD HH:mm:ss') : undefined,
-    end_time: formState.value.end_time ? formState.value.end_time.format('YYYY-MM-DD HH:mm:ss') : undefined,
-    is_all_day: formState.value.is_all_day,
+    location: formState.value.location || undefined,
+    attendees: formState.value.attendees || undefined,
+    start: formState.value.start ? dayjs(formState.value.start).toISOString() : undefined,
+    end: formState.value.end ? dayjs(formState.value.end).toISOString() : undefined,
+    allDay: formState.value.allDay,
+    backgroundColor: formState.value.backgroundColor || "#00FF00",
+    borderColor: formState.value.borderColor || "#00FF00",
     is_reminder: formState.value.is_reminder,
-    reminder_time: formState.value.reminder_time ? formState.value.reminder_time.format('HH:mm') : undefined,
-    color_code: formState.value.color_code || undefined,
-    is_repeat: formState.value.is_repeat,
-    rrule: {
-      freq: formState.value.rrule.freq || "DAILY", // Đảm bảo có giá trị mặc định
-      interval: formState.value.rrule.interval || 1,
-      count: formState.value.rrule.count || undefined,
-      until: formState.value.rrule.until ? formState.value.rrule.until.format('YYYY-MM-DD') : undefined,
-      byweekday: formState.value.rrule.byweekday.length ? formState.value.rrule.byweekday : undefined,
-      bymonthday: formState.value.rrule.bymonthday.length ? formState.value.rrule.bymonthday : undefined,
-      bymonth: formState.value.rrule.bymonth.length ? formState.value.rrule.bymonth : undefined,
-      bysetpos: formState.value.rrule.bysetpos || undefined,
-    },
-  
+    reminder_time: formState.value.reminder_time ? formState.value.reminder_time : undefined,
+    extendedProps: formState.value.extendedProps || {},
   };
-  if(formState.value.is_repeat){
-    apiData.rrule.until = formState.value.rrule.until ? formState.value.rrule.until.format('YYYY-MM-DD') : undefined;
+
+  if (formState.value.is_repeat && formState.value.rrule) {
+    console.log("🟡 Dữ liệu rrule trước khi xử lý:", JSON.parse(JSON.stringify(formState.value.rrule)));
+
+    const rawRrule = {
+      freq: formState.value.rrule.freq ?? "DAILY",
+      interval: formState.value.rrule.interval ?? 1,
+      count: formState.value.rrule.count ?? null,
+      until: formState.value.rrule.until ? dayjs(formState.value.rrule.until).format("YYYY-MM-DD") : null,
+      byweekday: formState.value.rrule.byweekday.length ? formState.value.rrule.byweekday : null,
+      bymonthday: formState.value.rrule.bymonthday.length ? formState.value.rrule.bymonthday : null,
+      bymonth: formState.value.rrule.bymonth.length ? formState.value.rrule.bymonth : null,
+    };
+
+    // Chỉ lọc các trường undefined, nhưng giữ lại null (nếu cần thiết)
+    const filteredRrule = Object.fromEntries(
+      Object.entries(rawRrule).filter(([_, v]) => v !== undefined)
+    );
+
+    apiData.rrule = Object.keys(filteredRrule).length > 0 ? filteredRrule : undefined;
+
+    console.log("🟢 Dữ liệu rrule sau khi xử lý:", JSON.parse(JSON.stringify(apiData.rrule)));
+  } else {
+    apiData.rrule = undefined;
   }
 
+  // Giữ nguyên rrule trong apiData nếu nó vẫn có giá trị
   const filteredApiData = Object.fromEntries(
-    Object.entries(apiData).filter(([_, v]) => v !== undefined)
+    Object.entries(apiData).filter(([key, v]) => v !== undefined || key === "rrule")
   );
 
+  console.log("✅ Dữ liệu gửi lên server:", JSON.parse(JSON.stringify(filteredApiData)));
+
+  // Emit sự kiện để component cha xử lý việc gọi API
   emit("save", filteredApiData);
-  console.log("filteredApiData", filteredApiData);
 };
+
+
 
 const handleCancel = () => {
   emit("cancel");
