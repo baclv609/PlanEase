@@ -1,6 +1,6 @@
 <template>
     <div>
-      <h2>Danh sách lịch trình</h2>
+      <h2>{{ $t('Schedule List') }}</h2>
       <ul>
         <li v-for="schedule in schedules" :key="schedule.id">
           {{ schedule.title }} - {{ schedule.date }}

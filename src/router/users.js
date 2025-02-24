@@ -2,8 +2,11 @@ const users = [
     {
         path: '/users',
         name: 'users',
-        component: () => import('@/views/dashboard/Dashboard.vue'),
-        meta: { requiresAuth: true },
+        component: () => import('@/views/users/Users.vue'),
+        meta: {
+            // requiresAuth: true,
+            layout: 'dashboard',
+        }
     },
     // {
     //     path: '/users/create',

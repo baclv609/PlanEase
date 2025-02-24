@@ -1,20 +1,20 @@
 <template>
     <a-modal :open="props.isModalOpen" @ok="handleOk" @cancel="handleCancel" width="600px" :maskClosable="false">
         <div class="p-4">
-            <h2 class="text-2xl font-bold border-b pb-2">Cài đặt</h2>
+            <h2 class="text-2xl font-bold border-b pb-2">{{ $t('Setting') }}</h2>
 
             <!-- Chọn Language -->
             <div class="mt-4 flex items-center">
-                <label class="text-lg font-semibold w-40">Ngôn ngữ</label>
+                <label class="text-lg font-semibold w-40">{{ $t('language') }}</label>
                 <a-select v-model:value="language" @change="changeLanguage" style="width: 200px">
-                    <a-select-option value="en">English</a-select-option>
-                    <a-select-option value="vi">Tiếng Việt</a-select-option>
+                    <a-select-option value="en">{{ $t('english') }}</a-select-option>
+                    <a-select-option value="vi">{{ $t('vietnamese') }}</a-select-option>
                 </a-select>
             </div>
 
             <!-- Chọn Timezone -->
             <div class="mt-4 flex items-center">
-                <label class="text-lg font-semibold w-40">Múi giờ</label>
+                <label class="text-lg font-semibold w-40">{{ $t('timezone') }}</label>
                 <a-select v-model="selectedTimezone" @change="updateTimezone" style="width: 200px">
                     <a-select-option v-for="timezone in timezones" :key="timezone.id" :value="timezone.id">
                         {{ timezone.name }} ({{ timezone.utc_offset }})
@@ -24,7 +24,7 @@
 
             <!-- Chọn Date Format -->
             <div class="mt-4 flex items-center">
-                <label class="text-lg font-semibold w-40">Định dạng ngày</label>
+                <label class="text-lg font-semibold w-40">{{ $t('date_format') }}</label>
                 <a-select v-model="selectedDateFormat" @change="updateDateFormat" style="width: 200px">
                     <a-select-option v-for="format in dateFormats" :key="format.value" :value="format.value">
                         {{ format.label }}
@@ -34,7 +34,7 @@
 
             <!-- Chọn Time Format -->
             <div class="mt-4 flex items-center">
-                <label class="text-lg font-semibold w-40">Định dạng giờ</label>
+                <label class="text-lg font-semibold w-40">{{ $t('time_format') }}</label>
                 <a-select v-model="selectedTimeFormat" @change="updateTimeFormat" style="width: 200px">
                     <a-select-option v-for="format in timeFormats" :key="format.value" :value="format.value">
                         {{ format.label }}
@@ -45,9 +45,8 @@
     </a-modal>
 </template>
 
-
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 
@@ -58,12 +57,14 @@ const props = defineProps({
 });
 const emit = defineEmits(['update:isModalOpen']);
 
-const language = ref(localStorage.getItem("user-language") || navigator.language || 'en');
 const { locale } = useI18n();
+
+// Ngôn ngữ
+const language = ref(localStorage.getItem("user-language") || navigator.language || 'en');
 
 // Timezone
 const timezones = ref([]);
-const selectedTimezone = ref(localStorage.getItem("user-timezone") || Intl.DateTimeFormat().resolvedOptions().timeZone);
+const selectedTimezone = ref(null);
 
 // Date & Time Format
 const dateFormats = ref([
@@ -77,8 +78,8 @@ const timeFormats = ref([
     { value: 'HH:mm', label: '24-hour (HH:mm)' }
 ]);
 
-const selectedDateFormat = ref(localStorage.getItem("user-date-format") || getDefaultDateFormat());
-const selectedTimeFormat = ref(localStorage.getItem("user-time-format") || getDefaultTimeFormat());
+const selectedDateFormat = ref(null);
+const selectedTimeFormat = ref(null);
 
 // Đóng modal
 const handleOk = () => {
@@ -88,22 +89,50 @@ const handleCancel = () => {
     emit('update:isModalOpen', false);
 };
 
-// Thay đổi ngôn ngữ
-const changeLanguage = async () => {
-    locale.value = language.value;
-    localStorage.setItem("user-language", language.value);
+// Chuẩn hóa Timezone
+const normalizeTimezone = (tz) => {
+    return tz.includes("Saigon") ? "Asia/Ho_Chi_Minh" : tz;
+};
 
+
+// Lấy dữ liệu user settings từ API
+const fetchUserSettings = async () => {
     try {
-        await axios.put(`${dirApi}change-setting`, { language: language.value }, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+        const response = await axios.get(`${dirApi}user-settings`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                Accept: 'application/json'
+            }
         });
-        // console.log("Cập nhật ngôn ngữ:", language.value);
+
+        const settings = response.data.data;
+
+        // Cập nhật giá trị từ API vào state
+        language.value = settings.language || 'en';
+        selectedTimezone.value = normalizeTimezone(settings.timezone) || Intl.DateTimeFormat().resolvedOptions().timeZone;
+        selectedDateFormat.value = settings.date_format || dateFormats.value[0].value;
+        selectedTimeFormat.value = settings.time_format || timeFormats.value[0].value;
+
+        // Kiểm tra nếu giá trị không hợp lệ
+        if (!dateFormats.value.some(f => f.value === selectedDateFormat.value)) {
+            selectedDateFormat.value = dateFormats.value[0].value;
+        }
+        if (!timeFormats.value.some(f => f.value === selectedTimeFormat.value)) {
+            selectedTimeFormat.value = timeFormats.value[0].value;
+        }
+
+        localStorage.setItem("user-language", language.value);
+        localStorage.setItem("user-timezone", selectedTimezone.value);
+        localStorage.setItem("user-date-format", selectedDateFormat.value);
+        localStorage.setItem("user-time-format", selectedTimeFormat.value);
+
+        console.log("User settings:", settings);
     } catch (error) {
-        console.error("Lỗi cập nhật ngôn ngữ:", error);
+        console.error("Lỗi tải User Settings:", error);
     }
 };
 
-// Lấy danh sách Timezone từ API
+// Lấy danh sách Timezones
 const fetchTimezones = async () => {
     try {
         const response = await axios.get(`${dirApi}timezones`, {
@@ -112,95 +141,46 @@ const fetchTimezones = async () => {
                 Accept: 'application/json'
             }
         });
+
         timezones.value = response.data.data;
-        console.log("Timezones đã tải:", timezones.value);
+
+        // Gán timezone nếu chưa có giá trị hoặc không hợp lệ
+        if (!timezones.value.some(tz => tz.id === selectedTimezone.value)) {
+            selectedTimezone.value = timezones.value.length ? timezones.value[0].id : null;
+        }
     } catch (error) {
         console.error("Lỗi tải Timezones:", error);
     }
 };
 
-// Cập nhật timezone
+// Khi trang tải, lấy dữ liệu từ API
+onMounted(async () => {
+    await fetchUserSettings();
+    await fetchTimezones();
+});
+
+// Cập nhật dữ liệu
+const changeLanguage = async () => {
+    locale.value = language.value;
+    localStorage.setItem("user-language", language.value);
+
+    try {
+        await axios.put(`${dirApi}change-setting`, { language: language.value }, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+        });
+    } catch (error) {
+        console.error("Lỗi cập nhật ngôn ngữ:", error);
+    }
+};
+
 const updateTimezone = async () => {
     try {
         await axios.put(`${dirApi}change-setting`, { timezone_id: selectedTimezone.value }, {
             headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
         });
         localStorage.setItem("user-timezone", selectedTimezone.value);
-        console.log("Cập nhật Timezone:", selectedTimezone.value);
     } catch (error) {
         console.error("Lỗi cập nhật Timezone:", error);
     }
 };
-
-// Lấy mặc định từ người dùng
-function getDefaultDateFormat() {
-    const format = new Date().toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' });
-    if (format.match(/^\d{2}\/\d{2}\/\d{4}$/)) return 'm/d/Y'; // MM/DD/YYYY
-    if (format.match(/^\d{4}-\d{2}-\d{2}$/)) return 'Y-m-d'; // YYYY-MM-DD
-    return 'd/m/Y'; // DD/MM/YYYY mặc định
-}
-
-function getDefaultTimeFormat() {
-    const format = new Date().toLocaleTimeString();
-    return format.includes('AM') || format.includes('PM') ? 'h:mmA' : 'HH:mm';
-}
-
-// Cập nhật Date Format
-const updateDateFormat = async () => {
-    try {
-        await axios.put(`${dirApi}change-setting`, { date_format: selectedDateFormat.value }, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-        });
-        localStorage.setItem("user-date-format", selectedDateFormat.value);
-        console.log("Cập nhật Date Format:", selectedDateFormat.value);
-    } catch (error) {
-        console.error("Lỗi cập nhật Date Format:", error);
-    }
-};
-
-// Cập nhật Time Format
-const updateTimeFormat = async () => {
-    try {
-        await axios.put(`${dirApi}change-setting`, { time_format: selectedTimeFormat.value }, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-        });
-        localStorage.setItem("user-time-format", selectedTimeFormat.value);
-        console.log("Cập nhật Time Format:", selectedTimeFormat.value);
-    } catch (error) {
-        console.error("Lỗi cập nhật Time Format:", error);
-    }
-};
-
-// Khi trang tải, tự động lấy thông tin từ trình duyệt
-onMounted(async () => {
-    // Nếu chưa có setting từ localStorage, lấy từ trình duyệt
-    if (!localStorage.getItem("user-language")) {
-        localStorage.setItem("user-language", language.value);
-    }
-    if (!localStorage.getItem("user-timezone")) {
-        localStorage.setItem("user-timezone", selectedTimezone.value);
-    }
-    if (!localStorage.getItem("user-date-format")) {
-        localStorage.setItem("user-date-format", selectedDateFormat.value);
-    }
-    if (!localStorage.getItem("user-time-format")) {
-        localStorage.setItem("user-time-format", selectedTimeFormat.value);
-    }
-
-    // Log thông tin ra
-    // console.log("Ngôn ngữ hiện tại:", language.value);
-    // console.log("Múi giờ hiện tại:", selectedTimezone.value);
-    // console.log("Định dạng ngày hiện tại:", selectedDateFormat.value);
-    // console.log("Định dạng giờ hiện tại:", selectedTimeFormat.value);
-});
 </script>
-
-
-<style scoped>
-h2 {
-    font-size: 24px;
-    font-weight: bold;
-    border-bottom: 2px solid #ccc;
-    padding-bottom: 8px;
-}
-</style>

@@ -9,6 +9,33 @@
     "Setting": "Setting",
     "select_timezone": "Select timezone",
     "date_format": "Date format",
-    "time_format": "Time format"
+    "time_format": "Time format",
+    "+ Create Event": "+ Create Event",
+    "My Calendars": "My Calendars",
+    "Tập thể dục": "Do exercise",
+    "Ăn tối": "Have dinner",
+    "Đi chơi": "Hang out",
+    "Update_plane": "Update_plane",
+    "Search": "Search",
+    "modalTitle": "Add / Edit Event",
+    "Event Title": "Event Title",
+    "Enter Title": "Enter Title",
+    "Time": "Time",
+    "Color": "Color",
+    "Repeat event": "Repeat event",
+    "none": "No Repeat",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "Number of repetitions": "Number of repetitions",
+    "Note": "Note",
+    "Event description...": "Event description...",
+    "Schedule List": "Schedule List"
+
+  
   }
+  
+
+  
   

@@ -1,3 +1,42 @@
+<template>
+  <a-modal :open="isVisible" :title="$t('modalTitle')" @ok="handleOk" @cancel="handleCancel">
+
+    <a-form layout="vertical">
+      <a-form-item :label="$t('Event Title')">
+        <a-input v-model:value="eventData.title" :placeholder="$t('Enter Title')" />
+      </a-form-item>
+
+      <a-form-item :label="$t('Time')">
+        <a-date-picker v-model:value="eventData.start" show-time format="YYYY-MM-DD HH:mm"
+          :value-format="'YYYY-MM-DD HH:mm:ss'" />
+      </a-form-item>
+
+      <a-form-item :label="$t('Color')">
+        <a-input type="color" v-model:value="eventData.color" />
+      </a-form-item>
+
+      <a-form-item :label="$t('Repeat event')">
+        <a-select>
+          <a-select-option value="none">{{ $t('none') }}</a-select-option>
+          <a-select-option value="daily">{{ $t('daily') }}</a-select-option>
+          <a-select-option value="weekly">{{ $t('weekly') }}</a-select-option>
+          <a-select-option value="monthly">{{ $t('monthly') }}</a-select-option>
+          <a-select-option value="yearly">{{ $t('yearly') }}</a-select-option>
+        </a-select>
+
+      </a-form-item>
+
+      <a-form-item v-if="eventData.recurrence !== 'none'" :label="$t('Number of repetitions')">
+        <a-input-number v-model:value="eventData.repeatCount" :min="1" />
+      </a-form-item>
+
+      <a-form-item :label="$t('Note')">
+        <a-textarea v-model:value="eventData.description" :placeholder="$t('Event description...')" />
+      </a-form-item>
+    </a-form>
+  </a-modal>
+</template>
+
 <script setup>
 import { ref, watch, defineProps, defineEmits } from "vue";
 import {
@@ -84,32 +123,9 @@ watch(
   () => props.event,
   (newEvent) => {
     if (newEvent) {
-      formState.value = {
-        id: newEvent.id || null,
-        title: newEvent.title || "",
-        description: newEvent.description || "",
-        location: newEvent.location || "",
-        attendees: newEvent.attendees || [],
-        start: newEvent.start ? dayjs(newEvent.start).toISOString() : null,
-        end: newEvent.end ? dayjs(newEvent.end).toISOString() : null,
-        allDay: newEvent.allDay || false,
-        backgroundColor: newEvent.backgroundColor || "#00FF00",
-        borderColor: newEvent.borderColor || "#00FF00",
-        is_reminder: newEvent.is_reminder || false,
-        reminder_time: newEvent.reminder_time ? dayjs(newEvent.reminder_time).format("HH:mm") : null,
-        is_repeat: !!newEvent.rrule, // Kiểm tra có rrule hay không
-        rrule: newEvent.rrule
-          ? {
-              freq: newEvent.rrule.freq || "DAILY",
-              interval: newEvent.rrule.interval || 1,
-              count: newEvent.rrule.count || null,
-              until: newEvent.rrule.until ? dayjs(newEvent.rrule.until).format("YYYY-MM-DD") : null,
-              byweekday: newEvent.rrule.byweekday || [],
-              bymonthday: newEvent.rrule.bymonthday || [],
-              bymonth: newEvent.rrule.bymonth || [],
-            }
-          : null,
-        extendedProps: newEvent.extendedProps || {},
+      eventData.value = {
+        ...newEvent,
+        start: newEvent.start ? dayjs(newEvent.start) : null // Chuyển đổi start sang dayjs
       };
     }
   },

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>Danh sách lịch trình</h2>
+    <h2>{{ $t('Schedule List') }}</h2>
     <ScheduleFilter @filter="applyFilter" />
     <ScheduleList :schedules="filteredSchedules" />
   </div>

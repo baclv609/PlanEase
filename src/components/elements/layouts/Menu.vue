@@ -23,6 +23,13 @@ const { authState } = useAuth();
       <router-link :to="{ name: 'dashboard' }"> Tổng quan </router-link>
     </a-menu-item> -->
 
+    <a-menu-item key="users">
+      <template #icon>
+        <UsergroupAddOutlined />
+      </template>
+      <router-link :to="{ name: 'users' }"> Quản lý người dùng </router-link>
+    </a-menu-item>
+
     <a-menu-item key="dashboard">
       <template #icon>
         <PieChartOutlined />
@@ -35,13 +42,6 @@ const { authState } = useAuth();
         <PieChartOutlined />
       </template>
       <router-link :to="{ name: 'event-list' }"> Quản lý sự kiện </router-link>
-    </a-menu-item>
-
-    <a-menu-item key="users">
-      <template #icon>
-        <UsergroupAddOutlined />
-      </template>
-      <router-link :to="{ name: 'users' }"> Quản lý người dùng </router-link>
     </a-menu-item>
 
     <!-- quan lý setting -->

@@ -38,15 +38,15 @@
 
     <a-layout>
       <a-layout-sider width="280" class="!bg-white p-4 shadow">
-        <a-button type="primary" block class="mb-4">+ Create Event</a-button>
+        <a-button type="primary" block class="mb-4">{{ $t('+ Create Event') }}</a-button>
 
         <div class="mb-4">
-          <h3 class="font-semibold mb-2">My Calendars</h3>
-          <!-- <a-checkbox-group v-model:value="selectedCalendars" class="flex flex-col gap-2">
-            <a-checkbox value="exercise">🏋️ Tập thể dục</a-checkbox>
-            <a-checkbox value="dinner">🍽️ Ăn tối</a-checkbox>
-            <a-checkbox value="outing">🚗 Đi chơi</a-checkbox>
-          </a-checkbox-group> -->
+          <h3 class="font-semibold mb-2">{{ $t('My Calendars') }}</h3>
+          <a-checkbox-group v-model:value="selectedCalendars" class="flex flex-col gap-2">
+            <a-checkbox value="exercise">🏋️ {{ $t('Tập thể dục') }}</a-checkbox>
+            <a-checkbox value="dinner">🍽️ {{ $t('Ăn tối') }}</a-checkbox>
+            <a-checkbox value="outing">🚗 {{ $t('Đi chơi') }}</a-checkbox>
+          </a-checkbox-group>
         </div>
       </a-layout-sider>
 
