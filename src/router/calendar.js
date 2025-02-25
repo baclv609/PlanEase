@@ -16,6 +16,7 @@ const calendar = [
         meta: {
             layout: 'default',
             notAuthRequired: false,
+            requiresAuth: true
         },
         // children: [
         //     {
