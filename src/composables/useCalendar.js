@@ -139,14 +139,14 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
     { deep: true }
   );
   
-watch(
-    () => ({
-      timeFormat: settingsStore.timeFormat,
-    }),
-    () => {
-      console.log("Cập nhật lịch từ Pinia Settings Store...");
-      calendarKey.value++; // Buộc FullCalendar render lagi
-});
+// watch(
+//     () => ({
+//       timeFormat: settingsStore.timeFormat,
+//     }),
+//     () => {
+//       console.log("Cập nhật lịch từ Pinia Settings Store...");
+//       calendarKey.value++; // Buộc FullCalendar render lagi
+// });
   watch(
     () => ({
       timeZone: settingsStore.timeZone,
@@ -171,6 +171,13 @@ watch(
       calendarKey.value++; // Buộc FullCalendar render lại
     }
   );
+  watch(() => settingsStore.timeFormat, (newFormat) => {
+    console.log("newFormat", newFormat);
+    
+    settingsStore.eventTimeFormat = newFormat === "24h"
+      ? { hour: "2-digit", minute: "2-digit", hour12: false }
+      : { hour: "2-digit", minute: "2-digit", hour12: true };
+  });
   
 
   const handleEventDrop = (info) => {

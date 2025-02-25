@@ -5,7 +5,7 @@ import { useI18n } from "vue-i18n";
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
     // 🖥 Cài đặt giao diện
-    displayMode: "timeGridWeek",
+    displayMode: "dayGridMonth",
     showWeekNumbers: false,
     themeMode: "light",
 
@@ -43,6 +43,26 @@ export const useSettingsStore = defineStore("settings", {
       this.saveToLocalStorage(); // Luôn lưu lại khi cập nhật
       this.updateFullCalendar();
     },
+
+    updateTimeFormat(newValue) {
+      // Chuyển đổi từ chuỗi JSON sang object
+      const parsedValue = JSON.parse(newValue);
+    
+      // Cập nhật định dạng thời gian
+      this.eventTimeFormat = parsedValue;
+    
+      // Lưu vào localStorage
+      this.saveToLocalStorage();
+    
+      // Cập nhật FullCalendar
+      this.updateFullCalendar();
+    },
+    
+    toggleTimeFormat() {
+      this.timeFormat = this.timeFormat === "24h" ? "12h" : "24h";  
+      this.saveToLocalStorage();
+      this.updateFullCalendar();
+    },    
     saveToLocalStorage() {
       const settingsToSave = {
         timeZone: this.timeZone,

@@ -24,7 +24,7 @@
               <a-select-option value="timeGridDay">Ngày</a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item label="Hiển thị số tuần">
+          <a-form-item label="Hiển thị ngày nghỉ">
             <a-switch v-model:checked="settings.showWeekNumbers" />
           </a-form-item>
         </a-form>
@@ -45,16 +45,24 @@
             />
           </a-form-item>
 
-          <!-- Hiển thị múi giờ đã chọn -->
-          <p>
-            🌍 Múi giờ hiện tại: <strong>{{ selectedTimeZone }}</strong>
-          </p>
           <a-form-item label="Định dạng giờ">
-            <a-select v-model:value="settings.timeFormat">
+            <!-- <a-select v-model:value="settings.timeFormat">
               <a-select-option value="24h">24h</a-select-option>
               <a-select-option value="12h">12h</a-select-option>
+            </a-select> -->
+            <a-select v-model:value="settings.timeFormat" @change="updateTimeFormat">
+              <a-select-option
+                v-for="option in timeFormatOptions"
+                :key="option.label"
+                :value="JSON.stringify(option.value)"
+              >
+                {{ option.label }}
+              </a-select-option>
             </a-select>
           </a-form-item>
+          <!-- <a-button @click="settingsStore.toggleTimeFormat">
+            Chuyển đổi định dạng giờ ({{ settings.timeFormat }})
+          </a-button> -->
         </a-form>
       </a-tab-pane>
 
@@ -74,9 +82,12 @@
           </a-form-item>
 
           <a-form-item label="Định dạng ngày trong cột">
-            <a-select v-model:value="selectedDayHeaderFormat" @change="updateColumnHeaderFormat">
+            <a-select
+              v-model:value="selectedDayHeaderFormat"
+              @change="updateColumnHeaderFormat"
+            >
               <a-select-option
-                v-for="option in columnHeaderFormatOptions"
+                v-for="option in timeFormatOptions"
                 :key="option.label"
                 :value="JSON.stringify(option.value)"
               >
@@ -178,12 +189,29 @@ const titleFormatOptions = [
   },
 ];
 
+const timeFormatOptions = [
+  {
+    label: "12 giờ (AM/PM)",
+    value: { hour: "2-digit", minute: "2-digit", meridiem: "short", hour12: true },
+  },
+  {
+    label: "24 giờ",
+    value: { hour: "2-digit", minute: "2-digit", hour12: false },
+  },
+];
+
 const selectedTitleFormat = ref(JSON.stringify(settings.titleFormat)); // Lưu dạng string JSON
 const selectedDayHeaderFormat = ref(JSON.stringify(settings.dayHeaderFormat));
 
 const updateTitleFormat = (newValue) => {
   settings.titleFormat = JSON.parse(newValue); // Chuyển JSON string thành object
   // console.log("📅 Định dạng tiêu đề lịch:", settings.titleFormat);
+  updateFullCalendar();
+};
+
+const updateTimeFormat = (newValue) => {
+  console.log("object", newValue);
+  settingsStore.eventTimeFormat = newValue;
   updateFullCalendar();
 };
 
