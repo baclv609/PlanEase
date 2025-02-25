@@ -5,30 +5,32 @@ import { useI18n } from "vue-i18n";
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
     // 🖥 Cài đặt giao diện
-    displayMode: "timeGridWeek",
+    displayMode: "dayGridMonth",
     showWeekNumbers: false,
     themeMode: "light",
 
-    // ⏰ Cài đặt thời gian
+    // Cài đặt thời gian
     timeZone: "Asia/Ho_Chi_Minh",
     timeFormat: "24h",
     slotDuration: "00:30:00",
-    language: localStorage.getItem("appLanguage") || "en",
-    // 📅 Cài đặt lịch
+    language: localStorage.getItem("appLanguage") || "vi",
+
+    // Cài đặt lịch
     titleFormat: { year: "numeric", month: "long" }, // Định dạng tiêu đề lịch
-    columnHeaderFormat: { weekday: "short", day: "numeric", omitCommas: true }, // Định dạng ngày trong cột
+    dayHeaderFormat: { weekday: "long", day: "numeric" }, // Định dạng ngày trong cột
     dateFormat: "YYYY-MM-DD", // Mặc định hiển thị theo chuẩn YYYY-MM-DD
     eventTimeFormat: { hour: "2-digit", minute: "2-digit", meridiem: false }, // Định dạng ngày trong sự kiện
     initialDate: new Date().toISOString().split("T")[0], // Ngày bắt đầu
     firstDay: 1, // Ngày đầu tuần (0 = Chủ nhật, 1 = Thứ hai)
     multiMonthYear: false, // Hiển thị nhiều tháng
-    validRange: { start: "2025-01-01", end: "2025-12-31" }, // Giới hạn ngày
 
-    // 🔔 Thông báo & Nhắc nhở
+    // validRange: { start: "2025-01-01", end: "2025-12-31" }, // Giới hạn ngày
+
+    // Thông báo & Nhắc nhở
     enableNotifications: true,
     reminderTime: "10m",
 
-    // 🔄 Sự kiện lặp lại
+    // Sự kiện lặp lại
     enableRecurringEvents: true,
     defaultRecurrence: "none",
 
@@ -41,6 +43,26 @@ export const useSettingsStore = defineStore("settings", {
       this.saveToLocalStorage(); // Luôn lưu lại khi cập nhật
       this.updateFullCalendar();
     },
+
+    updateTimeFormat(newValue) {
+      // Chuyển đổi từ chuỗi JSON sang object
+      const parsedValue = JSON.parse(newValue);
+    
+      // Cập nhật định dạng thời gian
+      this.eventTimeFormat = parsedValue;
+    
+      // Lưu vào localStorage
+      this.saveToLocalStorage();
+    
+      // Cập nhật FullCalendar
+      this.updateFullCalendar();
+    },
+    
+    toggleTimeFormat() {
+      this.timeFormat = this.timeFormat === "24h" ? "12h" : "24h";  
+      this.saveToLocalStorage();
+      this.updateFullCalendar();
+    },    
     saveToLocalStorage() {
       const settingsToSave = {
         timeZone: this.timeZone,
@@ -61,6 +83,16 @@ export const useSettingsStore = defineStore("settings", {
       const { locale } = useI18n();
       locale.value = newLang; // Cập nhật Vue I18n
     },
+    // Cập nhật cài đặt lịch
+    updateColumnHeaderFormat(newValue) {
+      this.dayHeaderFormat = newValue;
+      this.updateFullCalendar();
+    },
+    // Định dạng tiêu đề lịch
+    updateTitleFormat(newValue) {
+      this.titleFormat = newValue;
+      this.updateFullCalendar();
+    },
     loadFromLocalStorage() {
       const savedSettings = localStorage.getItem("userSettings");
       if (savedSettings) {
@@ -70,10 +102,14 @@ export const useSettingsStore = defineStore("settings", {
     setCalendarRef(ref) {
       this.calendarRef = ref;
     },
+    
     updateFullCalendar() {
       if (this.calendarRef) {
         this.calendarRef.getApi().refetchEvents();
       }
+    },
+    updateDisplayMode(newMode) {
+      this.displayMode = newMode;
     },
   },
 });

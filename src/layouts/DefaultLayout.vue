@@ -83,7 +83,7 @@ import { message } from "ant-design-vue";
 import router from "@/router";
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
-
+const selectedCalendars = ref(["exercise", "dinner", "outing"]);
 const isModalOpen = ref(false);
 
 const openSettingsModal = () => {

@@ -15,13 +15,16 @@
       <a-tab-pane key="display" tab="Giao diện">
         <a-form layout="vertical">
           <a-form-item label="Chế độ hiển thị">
-            <a-select v-model:value="settings.displayMode">
+            <a-select
+              v-model:value="settings.displayMode"
+              @change="changeView(settings.displayMode)"
+            >
               <a-select-option value="dayGridMonth">Tháng</a-select-option>
               <a-select-option value="timeGridWeek">Tuần</a-select-option>
               <a-select-option value="timeGridDay">Ngày</a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item label="Hiển thị số tuần">
+          <a-form-item label="Hiển thị ngày nghỉ">
             <a-switch v-model:checked="settings.showWeekNumbers" />
           </a-form-item>
         </a-form>
@@ -42,16 +45,24 @@
             />
           </a-form-item>
 
-          <!-- Hiển thị múi giờ đã chọn -->
-          <p>
-            🌍 Múi giờ hiện tại: <strong>{{ selectedTimeZone }}</strong>
-          </p>
           <a-form-item label="Định dạng giờ">
-            <a-select v-model:value="settings.timeFormat">
+            <!-- <a-select v-model:value="settings.timeFormat">
               <a-select-option value="24h">24h</a-select-option>
               <a-select-option value="12h">12h</a-select-option>
+            </a-select> -->
+            <a-select v-model:value="settings.timeFormat" @change="updateTimeFormat">
+              <a-select-option
+                v-for="option in timeFormatOptions"
+                :key="option.label"
+                :value="JSON.stringify(option.value)"
+              >
+                {{ option.label }}
+              </a-select-option>
             </a-select>
           </a-form-item>
+          <!-- <a-button @click="settingsStore.toggleTimeFormat">
+            Chuyển đổi định dạng giờ ({{ settings.timeFormat }})
+          </a-button> -->
         </a-form>
       </a-tab-pane>
 
@@ -59,30 +70,28 @@
       <a-tab-pane key="calendar" tab="Lịch">
         <a-form layout="vertical">
           <a-form-item label="Định dạng tiêu đề lịch">
-            <a-select v-model:value="settings.titleFormat" @change="updateFullCalendar">
-              <a-select-option :value="{ year: 'numeric', month: 'long' }">
-                Tháng Năm (VD: Tháng 2 2025)
-              </a-select-option>
-              <a-select-option :value="{ year: 'numeric', month: 'short' }">
-                Tháng viết tắt + Năm (VD: Feb 2025)
-              </a-select-option>
-              <a-select-option :value="{ year: 'numeric', month: '2-digit' }">
-                Năm/Tháng số (VD: 2025/02)
+            <a-select v-model:value="selectedTitleFormat" @change="updateTitleFormat">
+              <a-select-option
+                v-for="option in titleFormatOptions"
+                :key="option.label"
+                :value="JSON.stringify(option.value)"
+              >
+                {{ option.label }}
               </a-select-option>
             </a-select>
           </a-form-item>
 
-
           <a-form-item label="Định dạng ngày trong cột">
-            <a-select v-model:value="settings.columnHeaderFormat" @change="updateFullCalendar">
-              <a-select-option :value="{ weekday: 'short', day: 'numeric', omitCommas: true }">
-                Thứ viết tắt + Ngày (VD: T2, 24)
-              </a-select-option>
-              <a-select-option :value="{ weekday: 'long', day: 'numeric' }">
-                Thứ + Ngày (VD: Thứ Hai, 24)
-              </a-select-option>
-              <a-select-option :value="{ day: 'numeric', month: 'short' }">
-                Ngày + Tháng (VD: 24 Thg 2)
+            <a-select
+              v-model:value="selectedDayHeaderFormat"
+              @change="updateColumnHeaderFormat"
+            >
+              <a-select-option
+                v-for="option in timeFormatOptions"
+                :key="option.label"
+                :value="JSON.stringify(option.value)"
+              >
+                {{ option.label }}
               </a-select-option>
             </a-select>
           </a-form-item>
@@ -96,11 +105,10 @@
           </a-form-item>
 
           <!-- Hiển thị nhiều tháng -->
-          <a-form-item label="Hiển thị nhiều tháng">
+          <!-- <a-form-item label="Hiển thị nhiều tháng">
             <a-switch v-model:checked="settings.multiMonthYear" />
           </a-form-item>
 
-          <!-- Chọn tháng hiển thị -->
           <a-form-item v-if="settings.multiMonthYear" label="Chọn tháng hiển thị">
             <a-select
               v-model:value="settings.selectedMonths"
@@ -108,7 +116,7 @@
               placeholder="Chọn tháng..."
               :options="monthOptions"
             />
-          </a-form-item>
+          </a-form-item> -->
         </a-form>
       </a-tab-pane>
 
@@ -144,50 +152,83 @@ const emit = defineEmits(["update:isModalOpen"]);
 
 const settingsStore = useSettingsStore();
 const settings = settingsStore.$state;
+
 const activeTab = ref(settingsStore.activeKey || "display");
 
-// Mảng định dạng tiêu đề lịch
-const titleFormatOptions = ref([
-  { label: "Tháng Năm (VD: Tháng 2 2025)", value: { year: "numeric", month: "long" } },
+const columnHeaderFormatOptions = [
+  {
+    label: "Thứ viết tắt + Ngày (VD: T2, 24)",
+    value: {
+      weekday: "short",
+      day: "numeric",
+      omitCommas: true,
+    },
+  },
+  {
+    label: "Thứ + Ngày (VD: Thứ Hai, 24)",
+    value: { weekday: "long", day: "numeric" },
+  },
+  {
+    label: "Ngày + Tháng (VD: 24 Thg 2)",
+    value: { day: "numeric", month: "short" },
+  },
+];
+
+const titleFormatOptions = [
+  {
+    label: "Tháng Năm (VD: Tháng 2 2025)",
+    value: { year: "numeric", month: "long" },
+  },
   {
     label: "Tháng viết tắt + Năm (VD: Feb 2025)",
     value: { year: "numeric", month: "short" },
   },
-  { label: "Năm/Tháng số (VD: 2025/02)", value: { year: "numeric", month: "2-digit" } },
-]);
-
-// Mảng định dạng ngày trong cột
-const columnHeaderFormatOptions = ref([
-  { label: "Thứ + Ngày (VD: Thứ Hai, 24)", value: { weekday: "long", day: "numeric" } },
   {
-    label: "Thứ viết tắt + Ngày (VD: T2, 24)",
-    value: { weekday: "short", day: "numeric" },
+    label: "Năm/Tháng số (VD: 2025/02)",
+    value: { year: "numeric", month: "2-digit" },
   },
-  { label: "Ngày + Tháng (VD: 24 Thg 2)", value: { day: "numeric", month: "short" } },
-]);
+];
 
-// Mảng định dạng ngày tháng
-const dateFormatOptions = ref([
-  { label: "YYYY-MM-DD (VD: 2025-02-24)", value: "YYYY-MM-DD" },
-  { label: "DD/MM/YYYY (VD: 24/02/2025)", value: "DD/MM/YYYY" },
-  { label: "MM-DD-YYYY (VD: 02-24-2025)", value: "MM-DD-YYYY" },
-]);
-
-// Mảng định dạng giờ trong sự kiện
-const eventTimeFormatOptions = ref([
+const timeFormatOptions = [
   {
-    label: "24h (VD: 14:30)",
-    value: { hour: "2-digit", minute: "2-digit", meridiem: false },
+    label: "12 giờ (AM/PM)",
+    value: { hour: "2-digit", minute: "2-digit", meridiem: "short", hour12: true },
   },
   {
-    label: "12h AM/PM (VD: 02:30 PM)",
-    value: { hour: "2-digit", minute: "2-digit", hour12: true },
+    label: "24 giờ",
+    value: { hour: "2-digit", minute: "2-digit", hour12: false },
   },
-]);
+];
+
+const selectedTitleFormat = ref(JSON.stringify(settings.titleFormat)); // Lưu dạng string JSON
+const selectedDayHeaderFormat = ref(JSON.stringify(settings.dayHeaderFormat));
+
+const updateTitleFormat = (newValue) => {
+  settings.titleFormat = JSON.parse(newValue); // Chuyển JSON string thành object
+  // console.log("📅 Định dạng tiêu đề lịch:", settings.titleFormat);
+  updateFullCalendar();
+};
+
+const updateTimeFormat = (newValue) => {
+  console.log("object", newValue);
+  settingsStore.eventTimeFormat = newValue;
+  updateFullCalendar();
+};
+
+const changeView = (newView) => {
+  settingsStore.updateDisplayMode(newView);
+  updateFullCalendar();
+};
 
 // Hàm cập nhật FullCalendar khi thay đổi cài đặt
 const updateFullCalendar = () => {
   settingsStore.updateFullCalendar();
+};
+
+const updateColumnHeaderFormat = (newValue) => {
+  const parsedValue = JSON.parse(newValue); // Chuyển lại object từ JSON string
+  settingsStore.dayHeaderFormat = parsedValue;
+  settings.dayHeaderFormat = parsedValue;
 };
 
 const changeLanguage = (newLang) => {
@@ -202,12 +243,6 @@ const monthOptions = computed(() =>
     label: `Tháng ${i + 1}`,
     value: i + 1,
   }))
-);
-
-console.log("Múi giờ hiện tại:", moment.tz.guess()); // Xác định múi giờ máy tính
-console.log(
-  "Giờ hiện tại theo GMT+7:",
-  moment().tz("Asia/Ho_Chi_Minh").format("YYYY-MM-DD HH:mm:ss Z")
 );
 
 // Lấy danh sách múi giờ kèm theo GMT offset
@@ -248,12 +283,9 @@ const handleSave = () => {
   emit("update:isModalOpen", false);
 };
 
-// Hủy bỏ cài đặt
 // Reset các giá trị cài đặt về ban đầu và đóng modal
 const handleCancel = () => {
-  // Xóa các giá trị đã thay đổi
-  settingsStore.$reset();
-
+  settingsStore.loadFromLocalStorage();
   // Đóng modal
   emit("update:isModalOpen", false);
 };
@@ -261,5 +293,6 @@ const handleCancel = () => {
 // Reset về mặc định
 const resetSettings = () => {
   settingsStore.$reset();
+  settingsStore.updateFullCalendar();
 };
 </script>

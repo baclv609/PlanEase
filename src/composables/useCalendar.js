@@ -129,6 +129,26 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
 
   watch(
     () => ({
+      titleFormat: settingsStore.titleFormat,
+      columnHeaderFormat: settingsStore.columnHeaderFormat,
+    }),
+    () => {
+      console.log("Cập nhật `titleFormat` hoặc `columnHeaderFormat` từ settingsStore...");
+      calendarKey.value++; // Buộc FullCalendar render lại
+    },
+    { deep: true }
+  );
+  
+// watch(
+//     () => ({
+//       timeFormat: settingsStore.timeFormat,
+//     }),
+//     () => {
+//       console.log("Cập nhật lịch từ Pinia Settings Store...");
+//       calendarKey.value++; // Buộc FullCalendar render lagi
+// });
+  watch(
+    () => ({
       timeZone: settingsStore.timeZone,
       firstDay: settingsStore.firstDay,
       initialDate: settingsStore.initialDate,
@@ -143,6 +163,22 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
     },
     { deep: true }
   );
+  watch(
+    () => settingsStore.displayMode,
+    (newView) => {
+      console.log("Chế độ xem mới:", newView);
+      calendarOptions.value.initialView = newView;
+      calendarKey.value++; // Buộc FullCalendar render lại
+    }
+  );
+  watch(() => settingsStore.timeFormat, (newFormat) => {
+    console.log("newFormat", newFormat);
+    
+    settingsStore.eventTimeFormat = newFormat === "24h"
+      ? { hour: "2-digit", minute: "2-digit", hour12: false }
+      : { hour: "2-digit", minute: "2-digit", hour12: true };
+  });
+  
 
   const handleEventDrop = (info) => {
     const event = info.event;
@@ -230,13 +266,15 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
       rrulePlugin,
     ],
     locale: settingsStore.language,
-    timeZone: settingsStore.timeZone, // 🔹 Lấy từ Pinia
-    firstDay: settingsStore.firstDay, // 🔹 Ngày đầu tuần
-    initialDate: settingsStore.initialDate, // 🔹 Ngày bắt đầu lịch
-    eventTimeFormat: { hour: "2-digit", minute: "2-digit", meridiem: false }, // 🔹 Định dạng giờ
-    columnHeaderFormat: { weekday: "short", day: "numeric", omitCommas: true }, // 🔹 Định dạng cột ngày
-    titleFormat: { year: "numeric", month: "long" }, // 🔹 Tiêu đề lịch
-    validRange: settingsStore.validRange, // 🔹 Phạm vi hiển thị lịch
+    timeZone: settingsStore.timeZone,
+    firstDay: settingsStore.firstDay,
+    initialDate: settingsStore.initialDate,
+    initialView: settingsStore.displayMode, // 🔹 Thêm vào đây
+    eventTimeFormat: settingsStore.eventTimeFormat,
+    // columnHeaderFormat: settingsStore.columnHeaderFormat,
+    dayHeaderFormat: settingsStore.dayHeaderFormat || { weekday: "short", day: "numeric" },
+    titleFormat: settingsStore.titleFormat,
+    validRange: settingsStore.validRange,
     editable: true,
     selectable: true,
     events: transformedEvents.value,
@@ -244,6 +282,7 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
     dateClick: handleDateClick,
     eventClick: handleEventClick,
   }));
+  
 
   return {
     calendarKey,
