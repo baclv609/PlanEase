@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import { useSettings } from "@/composables/useSettings";
 import { useI18n } from "vue-i18n";
+import moment from "moment-timezone";
+import { watchEffect } from "vue";
 
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
@@ -10,7 +12,8 @@ export const useSettingsStore = defineStore("settings", {
     themeMode: "light",
 
     // Cài đặt thời gian
-    timeZone: "Asia/Ho_Chi_Minh",
+    timeZone: "Asia/Saigon",
+    timeZoneOffset: moment.tz("Asia/Saigon").utcOffset() / 60, 
     timeFormat: "24h",
     slotDuration: "00:30:00",
     language: localStorage.getItem("appLanguage") || "vi",
@@ -38,12 +41,7 @@ export const useSettingsStore = defineStore("settings", {
   }),
 
   actions: {
-    updateSetting(key, value) {
-      this[key] = value;
-      this.saveToLocalStorage(); // Luôn lưu lại khi cập nhật
-      this.updateFullCalendar();
-    },
-
+ 
     updateTimeFormat(newValue) {
       // Chuyển đổi từ chuỗi JSON sang object
       const parsedValue = JSON.parse(newValue);
@@ -65,14 +63,20 @@ export const useSettingsStore = defineStore("settings", {
     },    
     saveToLocalStorage() {
       const settingsToSave = {
+        displayMode: this.displayMode,
+        showWeekNumbers: this.showWeekNumbers,
+        themeMode: this.themeMode,
         timeZone: this.timeZone,
+        timeZoneOffset: moment.tz(this.timeZone).utcOffset() / 60, // Lưu offset múi giờ
         timeFormat: this.timeFormat,
         language: this.language,
-        themeMode: this.themeMode,
         firstDay: this.firstDay,
+        enableNotifications: this.enableNotifications,
+        enableRecurringEvents: this.enableRecurringEvents,
+        reminderTime: this.reminderTime,
       };
       localStorage.setItem("userSettings", JSON.stringify(settingsToSave));
-    },
+    },    
     changeLanguage(newLang) {
       this.language = newLang;
       localStorage.setItem(
@@ -94,9 +98,9 @@ export const useSettingsStore = defineStore("settings", {
       this.updateFullCalendar();
     },
     loadFromLocalStorage() {
-      const savedSettings = localStorage.getItem("userSettings");
+      const savedSettings = JSON.parse(localStorage.getItem("userSettings"));
       if (savedSettings) {
-        this.$patch(JSON.parse(savedSettings));
+        Object.assign(this, savedSettings);
       }
     },
     setCalendarRef(ref) {
@@ -111,5 +115,17 @@ export const useSettingsStore = defineStore("settings", {
     updateDisplayMode(newMode) {
       this.displayMode = newMode;
     },
+
+    updateSetting(key, value) {
+      this[key] = value;
+      this.saveToLocalStorage(); // Luôn lưu lại khi cập nhật
+      this.updateFullCalendar();
+    },
+
   },
 });
+
+// watchEffect(() => {
+//   const settingsStore = useSettingsStore();
+//   settingsStore.saveToLocalStorage();
+// });

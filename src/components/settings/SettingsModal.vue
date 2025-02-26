@@ -87,7 +87,7 @@
               @change="updateColumnHeaderFormat"
             >
               <a-select-option
-                v-for="option in timeFormatOptions"
+                v-for="option in columnHeaderFormatOptions"
                 :key="option.label"
                 :value="JSON.stringify(option.value)"
               >
