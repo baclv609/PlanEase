@@ -9,13 +9,22 @@
 
     <a-card class="user-card">
       <div class="user-header" v-if="user">
-        <a-image class="user-avatar" :width="120" :height="120" :style="{ borderRadius: '50%' }"
-          :src="user.avatar || defaultAvatar" />
+        <a-image
+          class="user-avatar"
+          :width="120"
+          :height="120"
+          :style="{ borderRadius: '10%' }"
+          :src="user.avatar || defaultAvatar"
+        />
         <div class="user-info">
-          <h2>{{ user.first_name || 'N/A' }} {{ user.last_name || 'N/A' }}</h2>
-          <p>Email: <a v-if="user.email" :href="'mailto:' + user.email">{{ user.email }}</a></p>
-          <p>Phone: {{ user.phone || 'N/A' }}</p>
-          <p>Address: {{ user.address || 'N/A' }}</p>
+          <h2 class="user-name">{{ user.first_name || 'N/A' }} {{ user.last_name || 'N/A' }}</h2>
+          <div class="user-details">
+            <p class="user-meta">
+              Email: <a v-if="user.email" :href="'mailto:' + user.email">{{ user.email }}</a>
+            </p>
+            <p class="user-meta">Phone: {{ user.phone || 'N/A' }}</p>
+            <p class="user-meta">Address: {{ user.address || 'N/A' }}</p>
+          </div>
         </div>
       </div>
 
@@ -25,23 +34,24 @@
             <a-form-item label="User ID">
               <a-input v-model:value="user.id" disabled />
             </a-form-item>
+
             <div class="form-row">
-              <a-form-item label="First Name">
+              <a-form-item label="First Name" class="half-width">
                 <a-input v-model:value="user.first_name" />
               </a-form-item>
-              <a-form-item label="Last Name">
+              <a-form-item label="Last Name" class="half-width">
                 <a-input v-model:value="user.last_name" />
               </a-form-item>
             </div>
 
-            <div class="form-row-wide">
-              <a-form-item label="Email" class="email-field">
+            <div class="form-row">
+              <a-form-item label="Email" class="third-width">
                 <a-input v-model:value="user.email" />
               </a-form-item>
-              <a-form-item label="Gender">
+              <a-form-item label="Gender" class="third-width">
                 <a-input v-model:value="user.gender" />
               </a-form-item>
-              <a-form-item label="Address">
+              <a-form-item label="Address" class="third-width">
                 <a-input v-model:value="user.address" />
               </a-form-item>
             </div>
@@ -63,45 +73,77 @@ const dirApi = import.meta.env.VITE_API_BASE_URL;
 const route = useRoute();
 const router = useRouter();
 const activeTab = ref('1');
-const user = ref(null); // Để tránh lỗi `undefined` khi render
+const user = ref(null);
 const defaultAvatar = 'https://via.placeholder.com/120';
 
-// Gọi API lấy thông tin chi tiết user
 const fetchUserDetail = async () => {
   try {
-
     const response = await axios.get(`${dirApi}admin/users/${route.params.id}`, {
-
-      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
     });
-    console.log("User ID từ route:", route.params.id);
 
-
-    // Kiểm tra dữ liệu từ API
     if (response.data && response.data.user) {
       user.value = response.data.user;
     } else {
-      user.value = response.data.data; // Nếu API trả về object user trực tiếp
+      user.value = response.data.data;
     }
-
-    console.log("User sau khi set:", user.value);
-
-
   } catch (error) {
-    console.error("Lỗi khi lấy thông tin user:", error);
+    console.error('Lỗi khi lấy thông tin user:', error);
     user.value = null;
   }
-
 };
 
-// Quay lại danh sách người dùng
 const goBack = () => {
   router.push('/users');
 };
 
-// Gọi API khi trang được load
 onMounted(() => {
-  // console.log("Component UserDetail mounted");
   fetchUserDetail();
 });
 </script>
+
+<style scoped>
+.user-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.user-name {
+  margin-bottom: 8px;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.user-details {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 8px;
+  font-size: 16px;
+}
+
+.user-meta {
+  margin: 0;
+  opacity: 0.7; 
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.half-width {
+  flex: 1; 
+}
+
+.third-width {
+  flex: 1; 
+}
+</style>
