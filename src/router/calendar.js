@@ -35,6 +35,17 @@ const calendar = [
         //         component: () => import('@/views/calendar/detail.vue'),
         //     },
         // ],
+    },
+    {
+        path: '/calendar/event/:id/invite',
+        name: 'calendar-invite',
+        component: () => import('@/views/calendar/invite/InviteCalendarView.vue'),
+        props: true,
+        meta: {
+            requiresAuth: true,
+            layout: 'auth',
+            notAuthRequired: false,
+        },
     }
 
 ]
