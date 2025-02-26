@@ -14,12 +14,16 @@ const users = [
     //     component: () => import('@/views/users/UsersCreateView.vue'),
     //     meta: { requiresAuth: true },
     // },
-    // {
-    //     path: '/users/:id',
-    //     name: 'users-detail',
-    //     component: () => import('@/views/users/UsersDetailView.vue'),
-    //     meta: { requiresAuth: true },
-    // },
+    {
+        path: '/users/:id',
+        name: 'users-detail',
+        component: () => import('@/views/users/UserDetailView.vue'),
+        meta: {
+            //  requiresAuth: true,
+            layout: 'dashboard',
+
+        },
+    },
     // {
     //     path: '/users/:id/edit',
     //     name: 'users-edit',
