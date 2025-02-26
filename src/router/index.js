@@ -74,22 +74,4 @@ router.beforeEach(async (to, _, next) => {
     next();
     NProgress.done();
   });
-  
-
-// router.beforeEach((to, _, next) => {
-//     NProgress.start();
-//     const isAuthenticated = !!localStorage.getItem("userToken");
-
-//     if (to.meta.requiresAuth && !isAuthenticated) {
-//         NProgress.done();
-//         return next({ name: "login" });
-//     }
-
-//     if (to.meta.guest && isAuthenticated) {
-//         return next({ name: "dashboard" });
-//     }
-
-//     next();
-//     NProgress.done();
-// });
 export default router;
