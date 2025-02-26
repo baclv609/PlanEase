@@ -192,47 +192,57 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
   });
   
 
+  // const handleEventDrop = (info) => {
+  //   const event = info.event;
+  //   const newStart = dayjs(event.start).format("YYYY-MM-DDTHH:mm:ss[Z]");
+  //   const newEnd = dayjs(event.end).format("YYYY-MM-DDTHH:mm:ss[Z]");
+  //   event.setProp("start", newStart);
+  //   event.setProp("end", newEnd);
+
+  //   axios
+  //     .put(`/api/events/${event.id}`, {
+  //       start_time: newStart,
+  //       end_time: newEnd,
+  //     })
+  //     .then((response) => {
+  //       console.log("Event updated successfully:", response.data);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error updating event:", error);
+  //     });
+  // };
+
+  const handleDateClick = (info) => {
+    // selectedEvent.value = {
+    //   title: "",
+    //   start: info.dateStr,
+    //   end: info.dateStr,
+    //   color: "#3788d8",
+    //   recurrence: "none",
+    // };
+    // isModalVisible.value = true;
+    console.log("Click vào ngày:", info.dateStr);
+    alert(`Tạo sự kiện mới vào ngày ${info.dateStr}`);
+  };
   const handleEventDrop = (info) => {
     const event = info.event;
     const newStart = dayjs(event.start).format("YYYY-MM-DDTHH:mm:ss[Z]");
     const newEnd = dayjs(event.end).format("YYYY-MM-DDTHH:mm:ss[Z]");
     event.setProp("start", newStart);
     event.setProp("end", newEnd);
-
-    axios
-      .put(`/api/events/${event.id}`, {
-        start_time: newStart,
-        end_time: newEnd,
-      })
-      .then((response) => {
-        console.log("Event updated successfully:", response.data);
-      })
-      .catch((error) => {
-        console.error("Error updating event:", error);
-      });
-  };
-
-  const handleDateClick = (info) => {
-    selectedEvent.value = {
-      title: "",
-      start: info.dateStr,
-      end: info.dateStr,
-      color: "#3788d8",
-      recurrence: "none",
-    };
-    isModalVisible.value = true;
-  };
+  }
 
   const handleEventClick = (info) => {
-    selectedEvent.value = {
-      id: info.event.id,
-      title: info.event.title,
-      start: info.event.startStr,
-      end: info.event.endStr,
-      color: info.event.backgroundColor,
-      recurrence: info.event.extendedProps.recurrence || "none",
-    };
-    isModalVisible.value = true;
+    // selectedEvent.value = {
+    //   id: info.event.id,
+    //   title: info.event.title,
+    //   start: info.event.startStr,
+    //   end: info.event.endStr,
+    //   color: info.event.backgroundColor,
+    //   recurrence: info.event.extendedProps.recurrence || "none",
+    // };
+    // isModalVisible.value = true;
+    console.log("Click vào sự kiện:", info.event);
   };
 
   // const calendarOptions = computed(() => {
@@ -293,6 +303,58 @@ export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
     nowIndicator: true,
     dateClick: handleDateClick,
     eventClick: handleEventClick,
+    eventDrop: handleEventDrop,
+   
+    select: (info) => {
+      console.log(`Chọn từ ${info.startStr} đến ${info.endStr}`);
+    },
+
+    eventAdd: (info) => {
+      console.log("Sự kiện mới được thêm:", info.event);
+    },
+    eventChange: (info) => {
+      console.log("Sự kiện được cập nhật:", info.event);
+    },
+    eventRemove: (info) => {
+      console.log("Sự kiện đã bị xóa:", info.event);
+    },
+    
+    eventDrop: (info) => {
+      console.log(`Sự kiện "${info.event.title}" đã được kéo sang ngày ${info.event.start}`);
+    },
+    eventResize: (info) => {
+      console.log(`Sự kiện "${info.event.title}" kéo dài đến ${info.event.end}`);
+    },
+    eventReceive: (info) => {
+      console.log("Nhận sự kiện từ bên ngoài:", info.event);
+    },
+    datesSet: (info) => {
+      console.log("Khoảng thời gian hiển thị:", info.startStr, "đến", info.endStr);
+    },
+    // viewDidMount: (info) => {
+    //   console.log("View đã được tải:", info.view.type);
+    // },
+    loading: (isLoading) => {
+      console.log(isLoading ? "Đang tải sự kiện..." : "Đã tải xong sự kiện");
+    },
+    // eventContent: (arg) => {
+    //   return { html: `<b>${arg.event.title}</b>` };
+    // },
+    // eventPositioned: (info) => {
+    //   console.log("Sự kiện đã được hiển thị trên giao diện:", info.event.title);
+    // },
+    // resourceAdd: (info) => {
+    //   console.log("Tài nguyên mới được thêm:", info.resource);
+    // },
+    // resourceChange: (info) => {
+    //   console.log("Tài nguyên đã thay đổi:", info.resource);
+    // },
+    // resourceRemove: (info) => {
+    //   console.log("Tài nguyên đã bị xóa:", info.resource);
+    // }
+    
+        
+    
   }));
   
 

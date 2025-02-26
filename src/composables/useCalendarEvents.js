@@ -50,22 +50,6 @@ export function useCalendarEvents() {
           is_done: event.is_done === 1,
           is_busy: event.is_busy === 1,
         },
-        // rrule: event.is_repeat
-        //   ? {
-        //       freq:
-        //         event.rrule && event.rrule.freq ? event.rrule.freq : "daily",
-        //       interval: event.rrule?.interval || 1,
-        //       until: event.rrule?.until
-        //         ? event.rrule.until.replace(" ", "T")
-        //         : null,
-        //       count: event.rrule?.count || null,
-        //       exdate: event.exclude_time
-        //         ? event.exclude_time
-        //             .map((date) => date.replace(" ", "T"))
-        //             .join(",")
-        //         : null,
-        //     }
-        //   : null,
         rrule: event.is_repeat && event.rrule
           ? {
               freq: event.rrule.freq || "daily",
@@ -81,11 +65,15 @@ export function useCalendarEvents() {
               byminute: event.rrule.byminute || null,
               bysecond: event.rrule.bysecond || null,
               wkst: event.rrule.wkst || null,
-              exdate: Array.isArray(event.exclude_time)
-                ? event.exclude_time.map((date) => date.replace(" ", "T")).join(",")
-                : null,
+            //   exdate: Array.isArray(event.exclude_time)
+            //   ? event.exclude_time.map(date => 
+            //       new Date(date.replace(" ", "T")).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
+            //     )
+            //   : undefined,
+            // exdate:undefined
+
             }
-          : null,
+          : null,            
       };
     })
   );
