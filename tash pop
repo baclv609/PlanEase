@@ -1,0 +1,123 @@
+*[33m-[m[33m.[m   [33mb2f111b[m[33m ([m[1;35mrefs/stash[m[33m)[m WIP on main: 7da5bf7 Merge pull request #22 from baclv609/update/admin-user
+[31m|[m[32m\[m [33m\[m  
+[31m|[m [32m|[m * [33m06ac290[m untracked files on main: 7da5bf7 Merge pull request #22 from baclv609/update/admin-user
+[31m|[m * [33m195b392[m index on main: 7da5bf7 Merge pull request #22 from baclv609/update/admin-user
+[31m|[m[31m/[m  
+*   [33m7da5bf7[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m Merge pull request #22 from baclv609/update/admin-user
+[34m|[m[35m\[m  
+[34m|[m * [33meac10d9[m[33m ([m[1;31morigin/update/admin-user[m[33m, [m[1;32mupdate/admin-user[m[33m)[m Update setting/user
+* [35m|[m   [33m0524047[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix/admin-user[m[33m)[m Merge pull request #21 from baclv609/read-calender
+[36m|[m[1;31m\[m [35m\[m  
+[36m|[m * [35m|[m [33mf3602e3[m[33m ([m[1;31morigin/read-calender[m[33m)[m view-calender
+[36m|[m * [35m|[m [33mb758d9b[m get-list-calender
+[36m|[m * [35m|[m [33m3d91cf1[m update-setting-load-local
+[36m|[m[36m/[m [35m/[m  
+* [35m|[m   [33m96291e8[m Merge pull request #20 from baclv609/update/fix-router-login
+[1;32m|[m[1;33m\[m [35m\[m  
+[1;32m|[m * [35m|[m [33m211f035[m[33m ([m[1;31morigin/update/fix-router-login[m[33m)[m fix-router-login+phân quyên
+[1;32m|[m[1;32m/[m [35m/[m  
+* [35m|[m   [33m317496a[m Merge pull request #19 from baclv609/update/setting-displayMode
+[35m|[m[1;35m\[m [35m\[m  
+[35m|[m [1;35m|[m[35m/[m  
+[35m|[m[35m/[m[1;35m|[m   
+[35m|[m * [33m7b80967[m[33m ([m[1;31morigin/update/setting-displayMode[m[33m)[m update/setting-eventTimeFormat
+[35m|[m * [33m8825b62[m fix/update-dayHeaderFormat/titleFormat setting onchange
+[35m|[m[35m/[m  
+* [33m04e6913[m fix layout temblate event-modal config
+* [33m3e2884c[m Resolve merge conflicts
+*   [33m673030b[m Merge pull request #18 from baclv609/update-seting-calender
+[1;36m|[m[31m\[m  
+[1;36m|[m * [33mdc0213c[m[33m ([m[1;31morigin/update-seting-calender[m[33m)[m update-setting-v2
+[1;36m|[m * [33m158b5e9[m modal-setting-user
+[1;36m|[m[1;36m/[m  
+*   [33m06b2a87[m Merge pull request #17 from baclv609/evet-modal
+[32m|[m[33m\[m  
+[32m|[m * [33mefc2bc5[m[33m ([m[1;31morigin/evet-modal[m[33m)[m events-model-app
+[32m|[m[32m/[m  
+*   [33m8e66a56[m Merge pull request #16 from baclv609/fix/events-list-calender
+[34m|[m[35m\[m  
+[34m|[m * [33ma42a037[m[33m ([m[1;31morigin/fix/events-list-calender[m[33m)[m form add event
+* [35m|[m   [33mbee95ca[m Merge pull request #15 from baclv609/update/logout-and-landing-page
+[36m|[m[1;31m\[m [35m\[m  
+[36m|[m * [35m|[m [33md1c7de7[m[33m ([m[1;31morigin/update/logout-and-landing-page[m[33m)[m logout and translate landing page
+[36m|[m[36m/[m [35m/[m  
+* [35m|[m [33ma33f638[m[33m ([m[1;31morigin/update/setting-user[m[33m, [m[1;31morigin/update/setting-language[m[33m, [m[1;31morigin/new/admin-user[m[33m, [m[1;32mupdate/setting-user[m[33m, [m[1;32mupdate/setting-language[m[33m, [m[1;32mnew/admin-user[m[33m)[m Remove .env
+* [35m|[m [33m38c6fdc[m Remove .env
+* [35m|[m   [33m0bcb9ad[m Merge pull request #14 from baclv609/update/setting-user
+[35m|[m[1;33m\[m [35m\[m  
+[35m|[m [1;33m|[m[35m/[m  
+[35m|[m[35m/[m[1;33m|[m   
+[35m|[m * [33m32c870d[m Update settings user
+* [1;33m|[m   [33m470b212[m Merge pull request #13 from baclv609/update/auth-google
+[1;33m|[m[1;35m\[m [1;33m\[m  
+[1;33m|[m [1;35m|[m[1;33m/[m  
+[1;33m|[m[1;33m/[m[1;35m|[m   
+[1;33m|[m * [33m9626937[m[33m ([m[1;31morigin/update/auth-google[m[33m)[m login with google
+[1;33m|[m[1;33m/[m  
+*   [33mb91bfae[m Merge branch 'main' of https://github.com/baclv609/PlanEase
+[1;36m|[m[31m\[m  
+[1;36m|[m *   [33ma5c966f[m Merge pull request #12 from baclv609/new/setting-day-timeformat
+[1;36m|[m [32m|[m[33m\[m  
+[1;36m|[m [32m|[m * [33m62ab290[m[33m ([m[1;31morigin/new/setting-day-timeformat[m[33m, [m[1;32mnew/setting-day-timeformat[m[33m)[m base setting-day-timeformat
+[1;36m|[m [32m|[m * [33m4c00fcd[m update day-timeformat
+[1;36m|[m * [33m|[m   [33mec17ea9[m Merge pull request #11 from baclv609/update-list-calender
+[1;36m|[m [34m|[m[35m\[m [33m\[m  
+[1;36m|[m [34m|[m * [33m|[m [33m2664817[m[33m ([m[1;31morigin/update-list-calender[m[33m)[m commit calender chưa có event
+[1;36m|[m * [35m|[m [33m|[m   [33m8619fbd[m Merge pull request #10 from baclv609/new/setting-timezone
+[1;36m|[m [35m|[m[33m\[m [35m\[m [33m\[m  
+[1;36m|[m [35m|[m [33m|[m[35m/[m [33m/[m  
+[1;36m|[m [35m|[m[35m/[m[33m|[m [33m/[m   
+[1;36m|[m [35m|[m [33m|[m[33m/[m    
+* [35m|[m [33m/[m [33m2627d3f[m Merge branch 'main' of https://github.com/baclv609/PlanEase
+[33m|[m[35m\[m[35m|[m [33m|[m 
+[33m|[m [35m|[m[33m/[m  
+[33m|[m[33m/[m[35m|[m   
+[33m|[m *   [33mccbb4d7[m Merge pull request #9 from baclv609/list-calender
+[33m|[m [1;34m|[m[1;35m\[m  
+[33m|[m [1;34m|[m * [33m0190c48[m[33m ([m[1;31morigin/list-calender[m[33m)[m featch/list-calender
+[33m|[m [1;34m|[m[1;34m/[m  
+* [1;34m/[m [33mf553aff[m[33m ([m[1;31morigin/new/setting-timezone[m[33m, [m[1;32mnew/setting-timezone[m[33m, [m[1;32mnew/setting-day[m[33m)[m update/setting-timezone
+[1;34m|[m[1;34m/[m  
+* [33m8602960[m update setting modal
+*   [33mcf1eea2[m Merge branch 'main' of https://github.com/baclv609/PlanEase
+[1;36m|[m[31m\[m  
+[1;36m|[m *   [33mcee3df4[m Merge pull request #8 from baclv609/update/setting
+[1;36m|[m [32m|[m[33m\[m  
+[1;36m|[m [32m|[m * [33m0d5d6a0[m[33m ([m[1;31morigin/update/setting[m[33m, [m[1;32mupdate/setting[m[33m)[m Fix/Setting-user
+[1;36m|[m * [33m|[m [33m9a26456[m update file .gitignore
+[1;36m|[m [33m|[m[33m/[m  
+[1;36m|[m * [33m4b0f043[m delete .env
+* [33m|[m [33ma991a8e[m edit UI Calender
+[33m|[m[33m/[m  
+*   [33mc1d13cc[m Merge pull request #7 from baclv609/update/login-register
+[34m|[m[35m\[m  
+[34m|[m * [33mce1eb4f[m[33m ([m[1;31morigin/update/login-register[m[33m)[m update interface and handle auth
+[34m|[m[34m/[m  
+*   [33m6dd6452[m Merge pull request #6 from baclv609/feat/form-creat-calender
+[36m|[m[1;31m\[m  
+[36m|[m * [33m6d8404d[m[33m ([m[1;31morigin/feat/form-creat-calender[m[33m)[m create event chua ghep api
+[36m|[m[36m/[m  
+[36m|[m * [33mdf0f4e2[m[33m ([m[1;31morigin/updade-setting[m[33m)[m Sửa lại giao diện setting
+[36m|[m[36m/[m  
+*   [33m2dac053[m Merge pull request #5 from baclv609/check-otp
+[1;33m|[m[1;34m\[m  
+[1;33m|[m * [33m3788511[m[33m ([m[1;31morigin/check-otp[m[33m)[m update send otp
+* [1;34m|[m   [33m9410a41[m Merge pull request #4 from baclv609/setting-user
+[1;34m|[m[1;36m\[m [1;34m\[m  
+[1;34m|[m [1;36m|[m[1;34m/[m  
+[1;34m|[m[1;34m/[m[1;36m|[m   
+[1;34m|[m * [33m27dde89[m[33m ([m[1;31morigin/setting-user[m[33m)[m language setting-user
+[1;34m|[m * [33m5adabd9[m simple template #1 setting-user
+[1;34m|[m[1;34m/[m  
+*   [33mf7ac354[m Merge pull request #3 from baclv609/feat/creat-layout-calender-and-screen-setting
+[31m|[m[32m\[m  
+[31m|[m * [33me5ce792[m[33m ([m[1;31morigin/feat/creat-layout-calender-and-screen-setting[m[33m)[m create caleder
+* [32m|[m   [33m378e346[m Merge pull request #2 from baclv609/forgot-password
+[32m|[m[34m\[m [32m\[m  
+[32m|[m [34m|[m[32m/[m  
+[32m|[m[32m/[m[34m|[m   
+[32m|[m * [33m0a40cc3[m[33m ([m[1;31morigin/forgot-password[m[33m)[m feat/setup ui base forgot-password
+[32m|[m[32m/[m  
+*   [33m8af0eab[m Merge pull request #1 from baclv609/feat/api-user
+[35m|[m[36m\[m  
+[35m|[m * [33m8ccb4e3[m[33m ([m[1;31morigin/feat/api-user[m[33m)[m feat/login register screen done 80% thieu forgot-password
