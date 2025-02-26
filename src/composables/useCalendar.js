@@ -1,4 +1,4 @@
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -8,13 +8,13 @@ import dayjs from "dayjs";
 import { RRule } from "rrule";
 import utc from "dayjs/plugin/utc";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useCalendarEvents } from "@/composables/useCalendarEvents";
 
 const settingsStore = useSettingsStore(); // Khởi tạo Pinia Store
 
 dayjs.extend(utc);
 
 const showHolidays = ref(true); // Mặc định hiển thị ngày lễ
-
 export const toggleHolidays = () => {
   showHolidays.value = !showHolidays.value;
 };
@@ -51,64 +51,76 @@ const convertDayOfWeek = (day) => {
 
 export function useCalendar(events, showModal, selectedEvent, isModalVisible) {
   const calendarKey = ref(0);
+  const { formattedEvents, fetchEvents } = useCalendarEvents();
+
   const transformedEvents = ref([]);
 
+ onMounted(async () => {
+    await fetchEvents();
+    console.log("formattedEvents", formattedEvents.value);
+    // transformedEvents.value = formattedEvents.value.map(formattedEvents);
+    console.log("transformedEvents.value", transformedEvents.value);
+    transformedEvents.value = formattedEvents.value;
+    console.log("transformedEvents.value", transformedEvents.value);
+    
+  });
+
   // Chuyển đổi dữ liệu sang dạng FullCalendar
-  const transformEvent = (event) => {
-    if (!event || !event.start_time || !event.end_time) return null;
+  // const transformEvent = (event) => {
+  //   if (!event || !event.start_time || !event.end_time) return null;
 
-    let fullCalendarEvent = {
-      id: event.id?.toString() || undefined,
-      title: event.title || "Không có tiêu đề",
-      start: dayjs(event.start_time).toISOString(),
-      end: dayjs(event.end_time).toISOString(),
-      allDay: !!event.is_all_day,
-      backgroundColor: event.color_code || "#3788d8",
-      extendedProps: {
-        description: event.description || "",
-        location: event.location || "",
-        isReminder: event.is_reminder || 0,
-        reminder: event.reminder || [],
-      },
-    };
+  //   let fullCalendarEvent = {
+  //     id: event.id?.toString() || undefined,
+  //     title: event.title || "Không có tiêu đề",
+  //     start: dayjs(event.start_time).toISOString(),
+  //     end: dayjs(event.end_time).toISOString(),
+  //     allDay: !!event.is_all_day,
+  //     backgroundColor: event.color_code || "#3788d8",
+  //     extendedProps: {
+  //       description: event.description || "",
+  //       location: event.location || "",
+  //       isReminder: event.is_reminder || 0,
+  //       reminder: event.reminder || [],
+  //     },
+  //   };
 
-    if (event.is_repeat && event.rrule) {
-      try {
-        console.log("Có RRule:", event.rrule);
-        fullCalendarEvent.rrule = {
-          freq: convertFreq(event.rrule.date_space),
-          interval: event.rrule.repeat_space || 1,
-          dtstart: dayjs(event.start_time)
-            .utc()
-            .format("YYYY-MM-DDTHH:mm:ss[Z]"),
-          until: event.rrule.end_repeat
-            ? dayjs(event.rrule.end_repeat)
-                .utc()
-                .format("YYYY-MM-DDTHH:mm:ss[Z]")
-            : undefined,
-          byweekday:
-            event.rrule.day_of_week?.map(convertDayOfWeek).filter(Boolean) ||
-            undefined,
-          bymonthday: event.rrule.day_of_month?.length
-            ? event.rrule.day_of_month
-            : undefined,
-          bymonth: event.rrule.by_month?.length
-            ? event.rrule.by_month
-            : undefined,
-        };
+  //   if (event.is_repeat && event.rrule) {
+  //     try {
+  //       console.log("Có RRule:", event.rrule);
+  //       fullCalendarEvent.rrule = {
+  //         freq: convertFreq(event.rrule.date_space),
+  //         interval: event.rrule.repeat_space || 1,
+  //         dtstart: dayjs(event.start_time)
+  //           .utc()
+  //           .format("YYYY-MM-DDTHH:mm:ss[Z]"),
+  //         until: event.rrule.end_repeat
+  //           ? dayjs(event.rrule.end_repeat)
+  //               .utc()
+  //               .format("YYYY-MM-DDTHH:mm:ss[Z]")
+  //           : undefined,
+  //         byweekday:
+  //           event.rrule.day_of_week?.map(convertDayOfWeek).filter(Boolean) ||
+  //           undefined,
+  //         bymonthday: event.rrule.day_of_month?.length
+  //           ? event.rrule.day_of_month
+  //           : undefined,
+  //         bymonth: event.rrule.by_month?.length
+  //           ? event.rrule.by_month
+  //           : undefined,
+  //       };
 
-        // Xóa các giá trị undefined
-        Object.keys(fullCalendarEvent.rrule).forEach((key) => {
-          if (fullCalendarEvent.rrule[key] === undefined)
-            delete fullCalendarEvent.rrule[key];
-        });
-      } catch (error) {
-        console.error("Lỗi khi tạo RRule:", error);
-      }
-    }
+  //       // Xóa các giá trị undefined
+  //       Object.keys(fullCalendarEvent.rrule).forEach((key) => {
+  //         if (fullCalendarEvent.rrule[key] === undefined)
+  //           delete fullCalendarEvent.rrule[key];
+  //       });
+  //     } catch (error) {
+  //       console.error("Lỗi khi tạo RRule:", error);
+  //     }
+  //   }
 
-    return fullCalendarEvent;
-  };
+  //   return fullCalendarEvent;
+  // };
   watch(
     events,
     (newEvents) => {

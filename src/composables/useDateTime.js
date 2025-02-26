@@ -1,4 +1,7 @@
 export function useDateTime() {
+
+    const timeZoneOffset = savedSettings.timeZoneOffset ?? -new Date().getTimezoneOffset() / 60;
+    
  
     const convertToUTCISO = (datetime, timezoneOffset) => {
         const localDate = new Date(datetime.replace(" ", "T"));

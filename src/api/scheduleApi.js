@@ -2,13 +2,13 @@ import axiosClient from "./axiosClient";
 
 const scheduleApi = {
   getSchedules() {
-    return axiosClient.get("/schedules");
+    return axiosClient.get("/tasks");
   },
   createSchedule(data) {
-    return axiosClient.post("/schedules", data);
+    return axiosClient.post("/tasks", data);
   },
   deleteSchedule(id) {
-    return axiosClient.delete(`/schedules/${id}`);
+    return axiosClient.delete(`/tasks/${id}`);
   }
 };
 
