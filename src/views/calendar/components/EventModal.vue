@@ -1,5 +1,3 @@
-
-
 <script setup>
 import { ref, watch, defineProps, defineEmits } from "vue";
 import {
@@ -19,11 +17,11 @@ import {
 import dayjs from "dayjs";
 
 const props = defineProps({
-  visible: Boolean,
+  isAddEventModalVisible: Boolean,
   event: Object,
 });
 
-const emit = defineEmits(["save", "cancel"]);
+const emit = defineEmits(["save", "cancelAddEventModalVisible"]);
 
 const formState = ref({
   // Thông tin sự kiện
@@ -32,12 +30,12 @@ const formState = ref({
   description: "", // Mô tả sự kiện (String)
   location: "", // Địa điểm (String)
   attendees: [], // Danh sách người tham gia (Array[String])
-  
+
   // Thời gian sự kiện
   start: null, // Ngày giờ bắt đầu (String - ISO 8601)
   end: null, // Ngày giờ kết thúc (String - ISO 8601)
   allDay: false, // Có phải sự kiện cả ngày không? (Boolean)
-  
+
   // Màu sắc
   backgroundColor: "#00FF00", // Màu nền của sự kiện (String - HEX)
   borderColor: "#00FF00", // Màu viền sự kiện (String - HEX)
@@ -82,18 +80,18 @@ watch(
 );
 
 // Watch khi nhận dữ liệu từ props.event (backend hoặc FullCalendar)
-watch(
-  () => props.event,
-  (newEvent) => {
-    if (newEvent) {
-      eventData.value = {
-        ...newEvent,
-        start: newEvent.start ? dayjs(newEvent.start) : null // Chuyển đổi start sang dayjs
-      };
-    }
-  },
-  { deep: true, immediate: true }
-);
+// watch(
+//   () => props.event,
+//   (newEvent) => {
+//     if (newEvent) {
+//       eventData.value = {
+//         ...newEvent,
+//         start: newEvent.start ? dayjs(newEvent.start) : null // Chuyển đổi start sang dayjs
+//       };
+//     }
+//   },
+//   { deep: true, immediate: true }
+// );
 
 
 
@@ -186,72 +184,57 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <Modal
-    :visible="visible"
-    title="Sự Kiện"
-    @ok="handleSave"
-    @cancel="handleCancel"
-    width="600px"
-  >
+  <Modal :visible="isAddEventModalVisible" title="Sự Kiện" @ok="handleSave" @cancel="emit('cancelAddEventModalVisible')"
+
+    width="600px">
     <Form layout="vertical">
       <Form.Item label="Tiêu đề">
         <Input v-model:value="formState.title" placeholder="Nhập tiêu đề sự kiện" />
       </Form.Item>
 
       <Form.Item label="Mô tả">
-        <Input.TextArea
-          v-model:value="formState.description"
-          placeholder="Nhập mô tả sự kiện"
-        />
+        <Input.TextArea v-model:value="formState.description" placeholder="Nhập mô tả sự kiện" />
       </Form.Item>
 
-      <Row gutter="16">
+      <Row :gutter="16">
         <Col span="12">
-          <Form.Item label="Thời gian bắt đầu">
-            <DatePicker
-              v-model:value="formState.start_time"
-              show-time
-              format="YYYY-MM-DD HH:mm:ss"
-            />
-          </Form.Item>
+        <Form.Item label="Thời gian bắt đầu">
+          <DatePicker v-model:value="formState.start_time" show-time format="YYYY-MM-DD HH:mm:ss" />
+        </Form.Item>
         </Col>
         <Col span="12">
-          <Form.Item label="Thời gian kết thúc">
-            <DatePicker
-              v-model:value="formState.end_time"
-              show-time
-              format="YYYY-MM-DD HH:mm:ss"
-            />
-          </Form.Item>
+        <Form.Item label="Thời gian kết thúc">
+          <DatePicker v-model:value="formState.end_time" show-time format="YYYY-MM-DD HH:mm:ss" />
+        </Form.Item>
         </Col>
       </Row>
 
-      <Row gutter="16">
+      <Row :gutter="16">
         <Col span="12">
-          <Form.Item label="Cả ngày">
-            <Switch v-model:checked="formState.is_all_day" />
-          </Form.Item>
+        <Form.Item label="Cả ngày">
+          <Switch v-model:checked="formState.is_all_day" />
+        </Form.Item>
         </Col>
         <Col span="12">
-          <Form.Item label="Nhắc nhở">
-            <Switch v-model:checked="formState.is_reminder" />
-            <template v-if="formState.is_reminder">
-              <TimePicker v-model:value="formState.reminder_time" format="HH:mm" />
-            </template>
-          </Form.Item>
+        <Form.Item label="Nhắc nhở">
+          <Switch v-model:checked="formState.is_reminder" />
+          <template v-if="formState.is_reminder">
+            <TimePicker v-model:value="formState.reminder_time" format="HH:mm" />
+          </template>
+        </Form.Item>
         </Col>
       </Row>
 
-      <Row gutter="16">
+      <Row :gutter="16">
         <Col span="12">
-          <Form.Item label="Màu sắc">
-            <Input v-model:value="formState.color_code" type="color" />
-          </Form.Item>
+        <Form.Item label="Màu sắc">
+          <Input v-model:value="formState.color_code" type="color" />
+        </Form.Item>
         </Col>
         <Col span="12">
-          <Form.Item label="Lặp lại">
-            <Switch v-model:checked="formState.is_repeat" />
-          </Form.Item>
+        <Form.Item label="Lặp lại">
+          <Switch v-model:checked="formState.is_repeat" />
+        </Form.Item>
         </Col>
       </Row>
 
