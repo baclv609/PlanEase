@@ -25,7 +25,7 @@ const calendarRef = ref(null);
 // const selectedEvent = ref(null);
 
 const { calendarKey, calendarOptions, selectedEvent, isAddEventModalVisible,
-  isEventDetailModalVisible } = useCalendar(calendarRef);
+  isEventDetailModalVisible, handleDeleteEvent } = useCalendar(calendarRef);
 
 onMounted(() => {
   settingsStore.setCalendarRef(calendarRef.value);
@@ -161,6 +161,6 @@ const handleCancel = () => {
 
     <EventModal :visible="isAddEventModalVisible" :event="selectedEvent" @save="saveEvent" @cancelAddEventModalVisible="isAddEventModalVisible = false" />
 
-    <EventDetailModal :visible="isEventDetailModalVisible" :event="selectedEvent" @closeEventDetailModalVisible="closeDetailModal" />
+    <EventDetailModal :visible="isEventDetailModalVisible" :event="selectedEvent" @closeEventDetailModalVisible="closeDetailModal" @delete="handleDeleteEvent" />
   </div>
 </template>
