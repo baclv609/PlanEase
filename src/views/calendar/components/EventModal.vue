@@ -13,6 +13,8 @@ import {
   Card,
   Row,
   Col,
+  Collapse,
+  Tabs
 } from "ant-design-vue";
 import dayjs from "dayjs";
 
@@ -32,8 +34,8 @@ const formState = ref({
   attendees: [], // Danh sách người tham gia (Array[String])
 
   // Thời gian sự kiện
-  start: null, // Ngày giờ bắt đầu (String - ISO 8601)
-  end: null, // Ngày giờ kết thúc (String - ISO 8601)
+  start_time: null, // Ngày giờ bắt đầu (String - ISO 8601)
+  end_time: null, // Ngày giờ kết thúc (String - ISO 8601)
   allDay: false, // Có phải sự kiện cả ngày không? (Boolean)
 
   // Màu sắc
@@ -55,6 +57,80 @@ const formState = ref({
     notes: "", // Ghi chú bổ sung (String)
   },
 });
+
+// validation
+const rules = {
+  title: [
+    { required: true, message: "Vui lòng nhập tiêu đề sự kiện.", trigger: "blur" },
+  ],
+  start_time: [
+    { required: true, message: "Vui lòng chọn thời gian bắt đầu.", trigger: "change" },
+  ],
+  end_time: [
+    { required: true, message: "Vui lòng chọn thời gian kết thúc.", trigger: "change" },
+    {
+      validator: (_, value) => {
+        if (value && dayjs(value).isBefore(dayjs(formState.value.start_time))) {
+          return Promise.reject("Thời gian kết thúc không thể nhỏ hơn thời gian bắt đầu.");
+        }
+        return Promise.resolve();
+      },
+      trigger: "change",
+    },
+  ],
+  description: [
+    { max: 500, message: "Mô tả không được vượt quá 500 ký tự.", trigger: "blur" },
+  ],
+};
+
+
+watch(
+  () => formState.value.allDay,
+  (isAllDay) => {
+    if (isAllDay) {
+      // Khi chọn "Cả ngày", set giờ thành 00:00:00 - 23:59:59
+      formState.value.start_time = dayjs(formState.value.start_time || new Date())
+        .startOf("day")
+        .format("YYYY-MM-DD HH:mm:ss");
+
+      formState.value.end_time = dayjs(formState.value.start_time)
+        .endOf("day")
+        .format("YYYY-MM-DD HH:mm:ss");
+    } else {
+      // Khi bỏ chọn "Cả ngày", mặc định 08:00:00 - 17:00:00
+      formState.value.start_time = dayjs(formState.value.start_time || new Date())
+        .hour(8)
+        .minute(0)
+        .second(0)
+        .format("YYYY-MM-DD HH:mm:ss");
+
+      formState.value.end_time = dayjs(formState.value.start_time)
+        .hour(17)
+        .minute(0)
+        .second(0)
+        .format("YYYY-MM-DD HH:mm:ss");
+    }
+
+    console.log("Updated start_time:", formState.value.start_time);
+    console.log("Updated end_time:", formState.value.end_time);
+  }
+);
+
+
+// Nếu chỉnh sửa start_time hoặc end_time, thì tắt allDay
+// watch(
+//   () => [formState.value.start_time, formState.value.end_time],
+//   ([newStart, newEnd]) => {
+//     if (newStart && !dayjs(newStart).isSame(dayjs(newStart).startOf("day"))) {
+//       formState.value.allDay = false;
+//     }
+//     if (newEnd && !dayjs(newEnd).isSame(dayjs(newEnd).endOf("day"))) {
+//       formState.value.allDay = false;
+//     }
+//   }
+// );
+
+
 
 //  Watch khi người dùng bật/tắt chế độ lặp lại
 watch(
@@ -78,20 +154,38 @@ watch(
   },
   { immediate: true }
 );
-
+watch(() => formState.value.start_time, (newStart) => {
+  if (formState.value.end_time && dayjs(formState.value.end_time).isBefore(dayjs(newStart))) {
+    formState.value.end_time = dayjs(newStart).add(1, 'hour'); // Điều chỉnh thành một giờ sau
+  }
+});
 // Watch khi nhận dữ liệu từ props.event (backend hoặc FullCalendar)
-// watch(
-//   () => props.event,
-//   (newEvent) => {
-//     if (newEvent) {
-//       eventData.value = {
-//         ...newEvent,
-//         start: newEvent.start ? dayjs(newEvent.start) : null // Chuyển đổi start sang dayjs
-//       };
-//     }
-//   },
-//   { deep: true, immediate: true }
-// );
+watch(
+  () => props.event,
+  (newEvent) => {
+    if (newEvent) {
+      formState.value = {
+        ...formState.value, // Giữ nguyên giá trị mặc định
+        id: newEvent.id || null,
+        title: newEvent.title || "",
+        description: newEvent.description || "",
+        location: newEvent.location || "",
+        attendees: newEvent.attendees || [],
+        start_time: newEvent.start ? dayjs(newEvent.start) : null,
+        end_time: newEvent.end ? dayjs(newEvent.end) : null,
+        allDay: newEvent.allDay || false,
+        backgroundColor: newEvent.backgroundColor || "#00FF00",
+        borderColor: newEvent.borderColor || "#00FF00",
+        is_reminder: newEvent.is_reminder || false,
+        reminder_time: newEvent.reminder_time ? dayjs(newEvent.reminder_time) : null,
+        is_repeat: newEvent.rrule ? true : false,
+        rrule: newEvent.rrule || null,
+        extendedProps: newEvent.extendedProps || {},
+      };
+    }
+  },
+  { deep: true, immediate: true }
+);
 
 
 
@@ -141,7 +235,7 @@ const handleSave = () => {
   };
 
   if (formState.value.is_repeat && formState.value.rrule) {
-    console.log("🟡 Dữ liệu rrule trước khi xử lý:", JSON.parse(JSON.stringify(formState.value.rrule)));
+    // console.log("🟡 Dữ liệu rrule trước khi xử lý:", JSON.parse(JSON.stringify(formState.value.rrule)));
 
     const rawRrule = {
       freq: formState.value.rrule.freq ?? "DAILY",
@@ -160,7 +254,7 @@ const handleSave = () => {
 
     apiData.rrule = Object.keys(filteredRrule).length > 0 ? filteredRrule : undefined;
 
-    console.log("🟢 Dữ liệu rrule sau khi xử lý:", JSON.parse(JSON.stringify(apiData.rrule)));
+    // console.log("🟢 Dữ liệu rrule sau khi xử lý:", JSON.parse(JSON.stringify(apiData.rrule)));
   } else {
     apiData.rrule = undefined;
   }
@@ -173,7 +267,7 @@ const handleSave = () => {
   console.log("✅ Dữ liệu gửi lên server:", JSON.parse(JSON.stringify(filteredApiData)));
 
   // Emit sự kiện để component cha xử lý việc gọi API
-  emit("save", filteredApiData);
+  emit("saveAddEventModalVisible", filteredApiData);
 };
 
 
@@ -185,34 +279,33 @@ const handleCancel = () => {
 
 <template>
   <Modal :visible="isAddEventModalVisible" title="Sự Kiện" @ok="handleSave" @cancel="emit('cancelAddEventModalVisible')"
-
     width="600px">
-    <Form layout="vertical">
-      <Form.Item label="Tiêu đề">
+    <Form layout="vertical" :model="formState" :rules="rules">
+      <Form.Item label="Tiêu đề" name="title">
         <Input v-model:value="formState.title" placeholder="Nhập tiêu đề sự kiện" />
       </Form.Item>
 
-      <Form.Item label="Mô tả">
-        <Input.TextArea v-model:value="formState.description" placeholder="Nhập mô tả sự kiện" />
+      <Form.Item label="Mô tả" name="description">
+        <Input.TextArea v-model:value="formState.description" placeholder="Nhập mô tả sự kiện" :maxLength="1000" />
       </Form.Item>
 
       <Row :gutter="16">
         <Col span="12">
-        <Form.Item label="Thời gian bắt đầu">
-          <DatePicker v-model:value="formState.start_time" show-time format="YYYY-MM-DD HH:mm:ss" />
+        <Form.Item label="Thời gian bắt đầu" name="start_time">
+          <DatePicker v-model:value="formState.start_time" :show-time="!formState.allDay"
+            format="YYYY-MM-DD HH:mm:ss" />
         </Form.Item>
         </Col>
         <Col span="12">
-        <Form.Item label="Thời gian kết thúc">
-          <DatePicker v-model:value="formState.end_time" show-time format="YYYY-MM-DD HH:mm:ss" />
+        <Form.Item label="Thời gian kết thúc" name="end_time">
+          <DatePicker v-model:value="formState.end_time" :show-time="!formState.allDay" format="YYYY-MM-DD HH:mm:ss" />
         </Form.Item>
         </Col>
       </Row>
-
       <Row :gutter="16">
         <Col span="12">
         <Form.Item label="Cả ngày">
-          <Switch v-model:checked="formState.is_all_day" />
+          <Switch v-model:checked="formState.allDay" />
         </Form.Item>
         </Col>
         <Col span="12">
@@ -225,54 +318,65 @@ const handleCancel = () => {
         </Col>
       </Row>
 
-      <Row :gutter="16">
-        <Col span="12">
-        <Form.Item label="Màu sắc">
-          <Input v-model:value="formState.color_code" type="color" />
-        </Form.Item>
-        </Col>
-        <Col span="12">
-        <Form.Item label="Lặp lại">
-          <Switch v-model:checked="formState.is_repeat" />
-        </Form.Item>
-        </Col>
-      </Row>
+      <Collapse>
+        <Collapse.Panel key="1" header="Tùy chọn nâng cao">
+          <Row :gutter="16">
+            <Col span="12">
+            <Form.Item label="Màu sắc">
+              <Input v-model:value="formState.color_code" type="color" />
+            </Form.Item>
+            </Col>
+            <Col span="12">
+            <Form.Item label="Lặp lại">
+              <Switch v-model:checked="formState.is_repeat" />
+            </Form.Item>
+            </Col>
+          </Row>
 
-      <template v-if="formState.is_repeat">
-        <Card title="Cài đặt lặp lại" size="small">
-          <Form.Item label="Kiểu lặp lại">
-            <Select v-model:value="formState.rrule.freq" :options="repeatOptions" />
-          </Form.Item>
+          <template v-if="formState.is_repeat">
+            <Tabs default-active-key="1">
+              <Card title="Cài đặt lặp lại" size="small">
+                <Form.Item label="Kiểu lặp lại">
+                  <Select v-model:value="formState.rrule.freq" :options="repeatOptions" />
+                </Form.Item>
 
-          <Form.Item label="Khoảng cách lặp lại">
-            <Input v-model:value="formState.rrule.interval" type="number" min="1" />
-          </Form.Item>
+                <Form.Item label="Khoảng cách lặp lại">
+                  <Input v-model:value="formState.rrule.interval" type="number" min="1" />
+                </Form.Item>
 
-          <Form.Item label="Giới hạn số lần lặp">
-            <Input v-model:value="formState.rrule.count" type="number" min="1" />
-          </Form.Item>
+                <Form.Item label="Giới hạn số lần lặp">
+                  <Input v-model:value="formState.rrule.count" type="number" min="1" />
+                  <DatePicker v-model:value="formState.rrule.until" format="YYYY-MM-DD" />
+                </Form.Item>
 
-          <Form.Item label="Ngày trong tuần">
-            <Checkbox.Group v-model:value="formState.rrule.byweekday" :options="weekDays" />
-          </Form.Item>
+                <template v-if="formState.rrule.freq === 'WEEKLY'">
+                  <Form.Item label="Ngày trong tuần">
+                    <Checkbox.Group v-model:value="formState.rrule.byweekday" :options="weekDays" />
+                  </Form.Item>
+                </template>
+                <template v-if="formState.rrule.freq === 'MONTHLY'">
+                  <Form.Item label="Ngày trong tháng">
+                    <Checkbox.Group v-model:value="formState.rrule.bymonthday" :options="monthDays" />
+                  </Form.Item>
+                </template>
 
-          <Form.Item label="Ngày trong tháng">
-            <Checkbox.Group v-model:value="formState.rrule.bymonthday" :options="monthDays" />
-          </Form.Item>
+                <Form.Item label="Tháng trong năm">
+                  <Checkbox.Group v-model:value="formState.rrule.bymonth" :options="months" />
+                </Form.Item>
 
-          <Form.Item label="Tháng trong năm">
-            <Checkbox.Group v-model:value="formState.rrule.bymonth" :options="months" />
-          </Form.Item>
+                <Form.Item label="Vị trí trong tháng">
+                  <Select v-model:value="formState.rrule.bysetpos" :options="positionOptions" />
+                </Form.Item>
 
-          <Form.Item label="Vị trí trong tháng">
-            <Select v-model:value="formState.rrule.bysetpos" :options="positionOptions" />
-          </Form.Item>
+                <Form.Item label="Kết thúc vào">
+                  <DatePicker v-model:value="formState.rrule.until" format="YYYY-MM-DD" />
+                </Form.Item>
+              </Card>
+            </Tabs>
+          </template>
 
-          <Form.Item label="Kết thúc vào">
-            <DatePicker v-model:value="formState.rrule.until" format="YYYY-MM-DD" />
-          </Form.Item>
-        </Card>
-      </template>
+        </Collapse.Panel>
+      </Collapse>
     </Form>
   </Modal>
 </template>

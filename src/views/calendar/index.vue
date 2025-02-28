@@ -75,28 +75,29 @@ const addEvent = (eventData) => {
 };
 
 const saveEvent = (eventData) => {
-  if (eventData.recurrence === "none") {
-    eventData.start = dayjs(eventData.start).format("YYYY-MM-DDTHH:mm:ss");
-  } else {
-    eventData.rrule = {
-      freq: eventData.recurrence,
-      dtstart: dayjs(eventData.start).format("YYYY-MM-DDTHH:mm:ss"),
-      count: eventData.repeatCount,
-    };
-    delete eventData.start;
-  }
+  console.log("eventData", eventData);
+  // if (eventData.recurrence === "none") {
+  //   eventData.start = dayjs(eventData.start).format("YYYY-MM-DDTHH:mm:ss");
+  // } else {
+  //   eventData.rrule = {
+  //     freq: eventData.recurrence,
+  //     dtstart: dayjs(eventData.start).format("YYYY-MM-DDTHH:mm:ss"),
+  //     count: eventData.repeatCount,
+  //   };
+  //   delete eventData.start;
+  // }
 
-  if (eventData.id) {
-    // Chỉnh sửa sự kiện
-    const index = events.value.findIndex((e) => e.id === eventData.id);
-    if (index !== -1) events.value[index] = eventData;
-  } else {
-    // Thêm sự kiện mới
-    eventData.id = String(events.value.length + 1);
-    events.value.push(eventData);
-  }
+  // if (eventData.id) {
+  //   // Chỉnh sửa sự kiện
+  //   const index = events.value.findIndex((e) => e.id === eventData.id);
+  //   if (index !== -1) events.value[index] = eventData;
+  // } else {
+  //   // Thêm sự kiện mới
+  //   eventData.id = String(events.value.length + 1);
+  //   events.value.push(eventData);
+  // }
 
-  isModalVisible.value = false;
+  // isModalVisible.value = false;
 };
 
 // Đóng modal
@@ -159,7 +160,7 @@ const handleCancel = () => {
 
     <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions" />
 
-    <EventModal :visible="isAddEventModalVisible" :event="selectedEvent" @save="saveEvent" @cancelAddEventModalVisible="isAddEventModalVisible = false" />
+    <EventModal :visible="isAddEventModalVisible" :event="selectedEvent" @saveAddEventModalVisible="saveEvent" @cancelAddEventModalVisible="isAddEventModalVisible = false" />
 
     <EventDetailModal :visible="isEventDetailModalVisible" :event="selectedEvent" @closeEventDetailModalVisible="closeDetailModal" />
   </div>
