@@ -44,6 +44,7 @@ export function useCalendarEvents() {
         borderColor: event.color_code || "#3788d8",
         location: event.location,
         extendedProps: {
+          recurrence: event.is_repeat ?? 0,
           is_reminder: event.is_reminder === 1,
           reminder: event.reminder || [],
           attendees: event.attendees || [],

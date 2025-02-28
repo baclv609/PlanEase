@@ -116,11 +116,19 @@ export function useCalendar() {
       start: info.event.startStr,
       end: info.event.endStr,
       color: info.event.backgroundColor,
+      is_all_day: info.event.allDay,
       recurrence: info.event.extendedProps.recurrence || "none",
       description: info.event.extendedProps.description || "",
+      attendees: info.event.extendedProps.attendees,
+      is_done: info.event.extendedProps.is_done,
+      is_reminder: info.event.extendedProps.is_reminder ?? "none",
+      reminder: info.event.extendedProps.reminder ?? "none",
+      location: info.event.extendedProps.location
     };
+    
     isEventDetailModalVisible.value = true;
     // showModal.value = true;
+    console.log(info.event);
     console.log("isModalVisible:", isEventDetailModalVisible.value);
     console.log("click sự kiện chỉnh sửa:", selectedEvent.value);
   };
@@ -140,14 +148,28 @@ export function useCalendar() {
       start: info.event.startStr,
       end: info.event.endStr,
       color: info.event.backgroundColor,
+      is_all_day: info.event.allDay,
       recurrence: info.event.extendedProps.recurrence || "none",
       description: info.event.extendedProps.description || "",
+      attendees: info.event.extendedProps.attendees,
+      is_done: info.event.extendedProps.is_done,
+      is_reminder: info.event.extendedProps.is_reminder ?? "none",
+      reminder: info.event.extendedProps.reminder ?? "none",
+      location: info.event.extendedProps.location
     };
     isModalVisible.value = true;
     // showModal.value = true;
     console.log("isModalVisible:", isModalVisible.value);
     console.log("click sự kiện chỉnh sửa:", selectedEvent.value);
   };
+
+  const handleDeleteEvent = async () => {
+    // console.log('Call List sau khi xoa:', $id)
+    await fetchEvents();
+    transformedEvents.value = formattedEvents.value
+      ? [...formattedEvents.value]
+      : [];
+  }
 
   const calendarOptions = computed(() => ({
     plugins: [
@@ -241,6 +263,8 @@ export function useCalendar() {
     // showModal,
     isAddEventModalVisible,
     isEventDetailModalVisible,
+    selectedEvent,
+    handleDeleteEvent,
     // openAddEventModal,
     // openEventDetailModal,
   };
