@@ -18,21 +18,18 @@
           </a-button>
         </a-tooltip>
 
-        <a-dropdown>
-          <a-avatar :size="40" class="cursor-pointer">
+        <!-- Profile -->
+        <div>
+          <a-avatar :size="40" class="cursor-pointer" @click="openProfileDrawer">
             <template #icon>
               <UserOutlined />
             </template>
           </a-avatar>
-          <template #overlay>
-            <a-menu>
-              <a-menu-item>{{ $t("Profile") }}</a-menu-item>
-              <a-menu-item @click.prevent="handleLogout">
-                {{ $t("Logout") }}
-              </a-menu-item>
-            </a-menu>
-          </template>
-        </a-dropdown>
+
+          <!-- Drawer Profile -->
+          <ProfileDrawer ref="profileDrawerRef" />
+        </div>
+
       </div>
     </a-layout-header>
 
@@ -61,23 +58,16 @@
       © 2025 Calendar App. All Rights Reserved. | Terms of Use | Privacy Policy
     </a-layout-footer>
 
-    <!-- Modal Settings -->
-    <!-- <SettingsView v-model:isModalOpen="isModalOpen" /> -->
-
     <SettingCalender v-model:isModalOpen="isModalOpen" />
-
   </a-layout>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import { TrophyOutlined, SettingOutlined, UserOutlined } from "@ant-design/icons-vue";
 
-import SettingsView from "@/views/settings/SettingsView.vue";
-// import { useAuth } from "@/composables/auth.js";
-
-import  SettingCalender from "@/components/settings/SettingsModal.vue";
-
+import ProfileDrawer from "@/views/profile/ProfileDrawer.vue";
+import SettingCalender from "@/components/settings/SettingsModal.vue";
 import axios from "axios";
 import { message } from "ant-design-vue";
 import router from "@/router";
@@ -86,29 +76,27 @@ const dirApi = import.meta.env.VITE_API_BASE_URL;
 const selectedCalendars = ref(["exercise", "dinner", "outing"]);
 const isModalOpen = ref(false);
 
+const profileDrawerRef = ref(null);
+
 const openSettingsModal = () => {
   isModalOpen.value = true;
 };
 
+// Mở drawer khi click avatar
+const openProfileDrawer = () => {
+  profileDrawerRef.value?.open();
+};
+
 const handleLogout = () => {
   const token = localStorage.getItem("access_token");
-  console.log(token);
   axios
-    .post(
-      `${dirApi}auth/logout`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
+    .post(`${dirApi}auth/logout`, {}, { headers: { Authorization: `Bearer ${token}` } })
     .then((response) => {
       localStorage.clear();
       message.success(response.data.message || "Logout successfully");
       router.push({ name: "home" });
     })
-    .catch((error) => {
+    .catch(() => {
       message.error("Fail");
     });
 };

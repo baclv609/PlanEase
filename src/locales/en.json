@@ -31,7 +31,10 @@
     "Number of repetitions": "Number of repetitions",
     "Note": "Note",
     "Event description...": "Event description...",
-    "Schedule List": "Schedule List"
+    "Schedule List": "Schedule List",
+    "Address": "Address",
+    "Phone": "Phone",
+    "Gender": "Gender"
 
   
   }
