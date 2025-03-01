@@ -16,6 +16,7 @@ const event = ref({});
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem('access_token');
 const deleteOption = ref("");
+const eventLink = ref('');
 
 watch(() => props.isEventDetailModalVisible, (newVal) => {
   isVisible.value = newVal;
@@ -123,6 +124,30 @@ const handleDelete = () => {
   }
 }
 
+// copy link
+const copyToClipboard = () => {
+  navigator.clipboard.writeText(`${window.location.origin}/calendar/event/${event.value.id}/invite`).then(() => {
+    message.success('Đã sao chép liên kết!');
+  });
+};
+
+// show modal link invite
+const showModalLink = () => {
+  Modal.info({
+  title: 'Chia sẻ sự kiện',
+  content: h('div', { style: { fontSize: '20px' } }, [
+    h('p', { style: { fontWeight: 'bold' } }, 'Liên kết chia sẻ sự kiện:'),
+    h('input', {
+      value: `${window.location.origin}/calendar/event/${event.value.id}/invite`,
+      readonly: true,
+      style: { width: '100%', padding: '5px', fontSize: '16px', marginBottom: '10px' }
+    }),
+    h('button', { onClick: copyToClipboard, style: { padding: '5px 10px',color: 'white' ,cursor: 'pointer', backgroundColor: '#6479e3', border: 'none', borderRadius: '6px', fontSize: '14px' } }, 'Sao chép')
+  ]),
+  onOk() {},
+});
+}
+
 // Xử lý xóa sự kiện lặp lại
 // const handleDeleteConfirm = () => {
 //   switch (deleteOption.value) {
@@ -223,6 +248,7 @@ const handleClose = () => {
       <Space>
         <Button type="primary" @click="emit('edit', event.id)">Sửa</Button>
         <Button type="danger" class="bg-red-500 text-white" @click="handleDelete">Xóa</Button>
+        <Button type="primary" @click="showModalLink">Chia sẻ</Button>
         <Button @click="handleClose">Đóng</Button>
       </Space>
     </div>
