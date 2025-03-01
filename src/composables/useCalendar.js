@@ -23,6 +23,7 @@ export function useCalendar() {
   const calendarKey = ref(0);
   const showModal = ref(false);
   const selectedEvent = ref(null);
+  const selectedEventAdd = ref(null);
 
   const isAddEventModalVisible = ref(false); // Modal thêm mới sự kiện
   const isEventDetailModalVisible = ref(false); // Modal chi tiết sự kiện
@@ -39,7 +40,6 @@ export function useCalendar() {
     console.log("Danh sách sự kiện sau khi fetch:", transformedEvents.value);
   });
 
-  
   watch(
     () => ({
       titleFormat: settingsStore.titleFormat,
@@ -100,13 +100,11 @@ export function useCalendar() {
 
   // Click vào ô trống trên lịch để mở modal tạo sự kiện
   const openAddEventModal = (info) => {
-    selectedEvent.value = {
-      title: "",
+    selectedEventAdd.value = {
       start: info.dateStr,
       end: info.dateStr,
-      color: "#3788d8",
-      recurrence: "none",
     };
+    console.log("selectedEventAdd", selectedEventAdd.value);
     isAddEventModalVisible.value = true; // Chỉ mở modal Thêm sự kiện
   };
   const openEventDetailModal = (info) => {
@@ -123,9 +121,9 @@ export function useCalendar() {
       is_done: info.event.extendedProps.is_done,
       is_reminder: info.event.extendedProps.is_reminder ?? "none",
       reminder: info.event.extendedProps.reminder ?? "none",
-      location: info.event.extendedProps.location
+      location: info.event.extendedProps.location,
     };
-    
+
     isEventDetailModalVisible.value = true;
     // showModal.value = true;
     console.log(info.event);
@@ -155,7 +153,7 @@ export function useCalendar() {
       is_done: info.event.extendedProps.is_done,
       is_reminder: info.event.extendedProps.is_reminder ?? "none",
       reminder: info.event.extendedProps.reminder ?? "none",
-      location: info.event.extendedProps.location
+      location: info.event.extendedProps.location,
     };
     isModalVisible.value = true;
     // showModal.value = true;
@@ -169,7 +167,7 @@ export function useCalendar() {
     transformedEvents.value = formattedEvents.value
       ? [...formattedEvents.value]
       : [];
-  }
+  };
 
   const calendarOptions = computed(() => ({
     plugins: [
@@ -265,7 +263,7 @@ export function useCalendar() {
     isEventDetailModalVisible,
     selectedEvent,
     handleDeleteEvent,
-    // openAddEventModal,
+    selectedEventAdd,
     // openEventDetailModal,
   };
 }
