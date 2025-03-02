@@ -1,15 +1,15 @@
 <template>
+    
     <div class="p-4">
         <!-- Avatar -->
         <div class="flex justify-center relative">
             <a-avatar :size="100" :src="user.avatar" class="shadow-md" />
             <div class="absolute bottom-0 right-0 bg-gray-200 rounded-full p-2 cursor-pointer hover:bg-gray-300 transition"
-                @click="handleChangeAvatar">
-                <EditOutlined class="text-gray-600" />
+            @click="$emit('edit-profile', user)">
+            <EditOutlined class="text-gray-600" />
             </div>
         </div>
 
-        
 
         <div class="text-center mt-4">
             <div class="flex justify-center gap-2">
@@ -22,10 +22,7 @@
                     <span class="w-32 text-right font-semibold text-gray-600">{{ $t("Email") }}:</span>
                     <span class="text-gray-500">{{ user.email }}</span>
                 </div>
-                <div class="flex justify-center items-center gap-x-4">
-                    <span class="w-30 text-right font-semibold text-gray-600">{{ $t("Gender") }}:</span>
-                    <span class="text-gray-500">{{ user.gender }}</span>
-                </div>
+                
                 <div class="flex justify-center items-center gap-x-4">
                     <span class="w-32 text-right font-semibold text-gray-600">{{ $t("Address") }}:</span>
                     <span class="text-gray-500">{{ user.address }}</span>
@@ -60,25 +57,29 @@ import { LogoutOutlined, EditOutlined, KeyOutlined } from "@ant-design/icons-vue
 import axios from "axios";
 import { message } from "ant-design-vue";
 import router from "@/router";
+import { defineEmits } from "vue";
+
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const user = ref({
     name: "Loading...",
     email: "",
     avatar: "",
+    address: "",
+    phone: "",
 });
 
 // Lấy thông tin user từ API
 const fetchUserData = async () => {
     try {
         const token = localStorage.getItem("access_token");
-        console.log("❗Token:", token); // Debug token xem có giá trị không
+        // console.log("❗Token:", token); 
 
         const response = await axios.get(`${dirApi}user`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log("✅User Data:", response.data); // Debug response từ server
+        // console.log("✅User Data:", response.data); 
 
         if (response.data.code === 200) {
             user.value = response.data.data;
@@ -107,6 +108,8 @@ const handleLogout = async () => {
         message.error("Đăng xuất thất bại!");
     }
 };
+
+const emit = defineEmits(["edit-profile"]); // Khai báo emit để gửi sự kiện
 
 onMounted(fetchUserData);
 </script>
