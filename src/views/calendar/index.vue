@@ -27,6 +27,7 @@ const {
   isAddEventModalVisible,
   isEventDetailModalVisible,
   handleDeleteEvent,
+  handleEventModalSuccess,
 } = useCalendar(calendarRef);
 
 onMounted(() => {
@@ -105,6 +106,7 @@ const handleCancel = () => {
       :event="selectedEventAdd"
       @save="saveEvent"
       @cancelAddEventModalVisible="isAddEventModalVisible = false"
+      @AddEventModalSuccess="handleEventModalSuccess"
     />
 
     <EventDetailModal

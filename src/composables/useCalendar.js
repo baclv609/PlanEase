@@ -169,6 +169,14 @@ export function useCalendar() {
       : [];
   };
 
+  const handleEventModalSuccess = async () => {
+    // console.log('Call List sau khi xoa:', $id)
+    await fetchEvents();
+    transformedEvents.value = formattedEvents.value
+      ? [...formattedEvents.value]
+      : [];
+  };
+
   const calendarOptions = computed(() => ({
     plugins: [
       dayGridPlugin,
@@ -197,9 +205,15 @@ export function useCalendar() {
     dateClick: openAddEventModal,
     eventClick: openEventDetailModal,
 
-    // select: (info) => {
-    //   console.log(`Chọn từ ${info.startStr} đến ${info.endStr}`);
-    // },
+    select: (info) => {
+      console.log(`Chọn từ ${info.startStr} đến ${info.endStr}`);
+      selectedEventAdd.value = {
+        start: info.startStr,
+        end: info.endStr,
+      };
+      console.log("selectedEventAdd", selectedEventAdd.value);
+      isAddEventModalVisible.value = true; // Chỉ mở modal Thêm sự kiện
+    },
 
     eventAdd: (info) => {
       console.log("Sự kiện mới được thêm:", info.event);
@@ -264,6 +278,7 @@ export function useCalendar() {
     selectedEvent,
     handleDeleteEvent,
     selectedEventAdd,
+    handleEventModalSuccess,
     // openEventDetailModal,
   };
 }

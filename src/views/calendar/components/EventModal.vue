@@ -24,6 +24,7 @@ import axios from "axios";
 const props = defineProps({
   isAddEventModalVisible: Boolean,
   event: Object,
+  AddEventModalSuccess: Object,
 });
 
 const eventData = computed(() => props.event || {});
@@ -45,9 +46,9 @@ const formState = ref({
   type: "event",
 
   // Màu sắc
-  backgroundColor: "#00FF00",
-  borderColor: "#00FF00",
-
+  backgroundColor: "#344599",
+  borderColor: "#344599",
+  color_code: "#344599",
   // Nhắc nhở (Reminders)
   is_reminder: false, // Có bật nhắc nhở không? (Boolean)
   reminder_time: [], // Thời gian nhắc nhở (String - "HH:mm")
@@ -70,16 +71,56 @@ const formState = ref({
     : "Asia/Saigon",
 });
 
-watch(
-  eventData,
-  (newVal) => {
-    if (newVal) {
-      formState.value.start = newVal.start ? dayjs(newVal.start) : null;
-      formState.value.end = newVal.end ? dayjs(newVal.end).add(1, "hour") : null;
-    }
-  },
-  { immediate: true }
+  watch(
+    eventData,
+    (newVal) => {
+      if (newVal) {
+        formState.value.start = newVal.start ? dayjs(newVal.start) : null;
+        formState.value.end = newVal.end ? dayjs(newVal.end).add(1, "hour") : null;
+      }
+    },
+    { immediate: true }
 ); // immediate: true để chạy lần đầu tiên khi mounted
+
+const resetForm = () => {
+  formState.value = {
+    id: null,
+    title: "",
+    description: "",
+    location: "",
+    attendees: [], // Danh sách người tham gia (Array[String])
+
+    start: null,
+    end: null,
+    allDay: false,
+    type: "event",
+
+    // Màu sắc
+    backgroundColor: "#344599",
+    borderColor: "#344599",
+    color_code: "#344599",
+    // Nhắc nhở (Reminders)
+    is_reminder: false, // Có bật nhắc nhở không? (Boolean)
+    reminder_time: [], // Thời gian nhắc nhở (String - "HH:mm")
+    reminder: [], // Danh sách nhắc nhở (Array[Object])
+
+    // Lặp lại sự kiện (Recurring Rule - RRule)
+    is_repeat: false,
+    rrule: null,
+
+    // Metadata mở rộng (Extended Props của FullCalendar)
+    extendedProps: {
+      createdBy: "", // Người tạo sự kiện (String - Email)
+      lastUpdated: null, // Thời gian cập nhật cuối (String - ISO 8601)
+      notes: "", // Ghi chú bổ sung (String)
+    },
+    event_type: "", // Công việc, Cuộc họp, Sự kiện khác
+    exclude_time: [],
+    timezone_code: localStorage.getItem("userSettings")
+      ? JSON.parse(localStorage.getItem("userSettings")).timeZone
+      : "Asia/Saigon",
+    }
+  }
 
 const rules = {
   title: [{ required: true, message: "Vui lòng nhập tiêu đề sự kiện", trigger: "blur" }],
@@ -184,9 +225,9 @@ watch(
   () => formState.value.is_all_day,
   (newValue) => {
     if (newValue) {
-      // Nếu bật cả ngày, gán giá trị mặc định cho start_time và end_time
-      formState.value.start = dayjs().startOf("day"); // 00:00:00
-      formState.value.end = dayjs().endOf("day"); // 23:59:59
+      // Giữ nguyên ngày nhưng set giờ về 00:00:00 và 23:59:59
+      formState.value.start = dayjs(formState.value.start).hour(0).minute(0).second(0);
+      formState.value.end = dayjs(formState.value.end).hour(23).minute(59).second(59);
     }
   }
 );
@@ -230,8 +271,12 @@ const handleSave = async () => {
   try {
     const dataApi = {
       title: formState.value.title,
-      start_time: formState.value.start ? formState.value.start.format('YYYY-MM-DD HH:mm:ss') : null,
-      end_time: formState.value.end ? formState.value.end.format('YYYY-MM-DD HH:mm:ss') : null,
+      start_time: formState.value.start
+        ? formState.value.start.format("YYYY-MM-DD HH:mm:ss")
+        : null,
+      end_time: formState.value.end
+        ? formState.value.end.format("YYYY-MM-DD HH:mm:ss")
+        : null,
       description: formState.value.description ? formState.value.description : null,
       location: formState.value.location ? formState.value.location : null,
       attendees: formState.value.attendees ? formState.value.attendees : null,
@@ -246,21 +291,28 @@ const handleSave = async () => {
       timezone_code: formState.value.timezone_code ? formState.value.timezone_code : null,
       type: formState.value.type ? formState.value.type : null,
 
-      freq: formState.value.rrule.freq ?? "daily", // Đúng chính tả
-        interval: formState.value.rrule.interval ?? 1,
-        count: formState.value.rrule.count ?? null,
-        until: formState.value.rrule.until ? dayjs(formState.value.rrule.until).format('YYYY-MM-DD HH:mm:ss') : dayjs('9999-12-31 23:59:59').format('YYYY-MM-DD HH:mm:ss'),
-        byweekday: formState.value.rrule.byweekday.length ? formState.value.rrule.byweekday : null,
-        bymonthday: formState.value.rrule.bymonthday.length ? formState.value.rrule.bymonthday : null,
-        bymonth: formState.value.rrule.bymonth.length ? formState.value.rrule.bymonth : null,
-        
+      freq: formState.value.rrule?.freq ? formState.value.rrule?.freq : null,
+      interval: formState.value.rrule?.interval ?? 1,
+      count: formState.value.rrule?.count ?? null,
+      until: formState.value.rrule?.until
+        ? dayjs(formState.value.rrule?.until).format("YYYY-MM-DD HH:mm:ss")
+        : dayjs("9999-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+      byweekday: formState.value.rrule?.byweekday.length
+        ? formState.value.rrule.byweekday
+        : null,
+      bymonthday: formState.value.rrule?.bymonthday.length
+        ? formState.value.rrule.bymonthday
+        : null,
+      bymonth: formState.value.rrule?.bymonth.length
+        ? formState.value.rrule.bymonth
+        : null,
     };
 
     // if (formState.value.is_repeat && formState.value.rrule) {
     //   console.log("Dữ liệu rrule trước khi xử lý:", JSON.parse(JSON.stringify(formState.value.rrule)));
 
     //   const rawRrule = {
-    //     freq: formState.value.rrule.freq ?? "daily", // Đúng chính tả
+    //     freq: formState.value.rrule.freq ? formState.value.rrule.freq :  "daily", 
     //     interval: formState.value.rrule.interval ?? 1,
     //     count: formState.value.rrule.count ?? null,
     //     until: formState.value.rrule.until || null,
@@ -286,6 +338,12 @@ const handleSave = async () => {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
     });
+    if (res.data.code === 200) {
+      message.success(res.data.message || "Thêm sự kiện thành công");
+      emit("AddEventModalSuccess", dataApi);
+      resetForm();
+      emit("cancelAddEventModalVisible");
+    }
 
     console.log("res", res);
   } catch (error) {
@@ -301,22 +359,27 @@ const addReminder = () => {
   console.log("Sau khi thêm:", formState.value.reminder);
 };
 const formatReminders = (reminders) => {
+  if (!Array.isArray(reminders)) {
+    return [];
+  }
+
   return reminders.map(({ type, time, unit }) => ({
     type,
-    time: unit === "hours" ? time * 60 : time, // Chuyển đổi giờ thành phút
+    set_time: unit === "hours" ? time * 60 : time, // Chuyển đổi giờ thành phút
   }));
 };
 const removeReminder = (index) => {
   formState.value.reminder.splice(index, 1);
 };
 const handleCancel = () => {
-  emit("cancel");
+  resetForm();
+  emit("cancelAddEventModalVisible");
 };
 </script>
 
 <template>
-  <Modal :visible="isAddEventModalVisible" title="Sự Kiện" @ok="handleSave" @cancel="emit('cancelAddEventModalVisible')"
-    width="50%">
+  <Modal :visible="isAddEventModalVisible" title="Sự Kiện" @ok="handleSave" @cancel="handleCancel"
+    width="80%">
     <Form layout="vertical" :rules="rules" :model="formState" ref="formRef">
       <Row :gutter="16">
         <Col span="12">
@@ -330,15 +393,17 @@ const handleCancel = () => {
           <Form.Item label="Địa điểm" name="location">
             <Input v-model:value="formState.location" placeholder="Nhập địa điểm" />
           </Form.Item>
-          <Form.Item label="Loại sự kiện" name="type">
-            <Select v-model:value="formState.type" placeholder="Loại sự kiện">
-              <Select.Option value="event">Sự kiện</Select.Option>
-              <Select.Option value="task">Việc cần làm</Select.Option>
-            </Select>
-          </Form.Item>
-          <Form.Item label="Màu sắc" name="color_code">
-            <Input type="color" v-model:value="formState.color_code" />
-          </Form.Item>
+          <div class="flex items-center gap-x-4">
+            <Form.Item label="Loại sự kiện" name="type" class="w-1/2">
+              <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="w-full">
+                <Select.Option value="event">Sự kiện</Select.Option>
+                <Select.Option value="task">Việc cần làm</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item label="Màu sắc" name="color_code" class="w-1/2">
+              <Input type="color" v-model:value="formState.color_code" class="w-full h-10 p-1 rounded" />
+            </Form.Item>
+          </div>
         </Card>
         </Col>
         <Col span="12">
@@ -387,13 +452,44 @@ const handleCancel = () => {
                 </Tag>
               </div>
             </Form.Item> -->
+            <Col span="24">
+              <Form.Item label="Nhắc nhở" class="" name="is_reminder">
+                <Checkbox v-model:checked="formState.is_reminder">Bật nhắc nhở</Checkbox>
+              </Form.Item>
+              <div v-if="formState.is_reminder">
+                <div v-for="(reminder, index) in formState.reminder" :key="index">
+                  <Row :gutter="8">
+                    <Col span="8">
+                    <Select v-model:value="reminder.type">
+                      <Select.Option value="email">Email</Select.Option>
+                      <Select.Option value="web">Web</Select.Option>
+                    </Select>
+                    </Col>
+                    <Col span="8">
+                    <InputNumber v-model:value="reminder.time" min="1" />
+                    </Col>
+                    <Col span="6">
+                    <Select v-model:value="reminder.unit">
+                      <Select.Option value="minutes">Phút</Select.Option>
+                      <Select.Option value="hours">Giờ</Select.Option>
+                    </Select>
+                    </Col>
+                    <Col span="2">
+                    <Button type="danger" @click="removeReminder(index)">Xóa</Button>
+                    </Col>
+                  </Row>
+                </div>
+
+                <Button type="dashed" @click="addReminder">Thêm nhắc nhở</Button>
+              </div>
+        </Col>
         </Card>
         </Col>
       </Row>
 
-      <Row>
+      <!-- <Row>
         <Col span="24">
-        <Card title="Nhắc nhở & Người tham gia" size="small">
+        <Card title="Nhắc nhở" size="small">
           <Form.Item label="Nhắc nhở" name="is_reminder">
             <Checkbox v-model:checked="formState.is_reminder">Bật nhắc nhở</Checkbox>
           </Form.Item>
@@ -432,7 +528,7 @@ const handleCancel = () => {
           </Form.Item>
         </Card>
         </Col>
-      </Row>
+      </Row> -->
 
       <template v-if="formState.is_repeat">
         <Card title="Cài đặt lặp lại" size="small">
