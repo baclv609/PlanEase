@@ -38,7 +38,12 @@ router.beforeEach(async (to, _, next) => {
     const userData = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {};
     const userRole = userData.role || ""; // Nếu không có role thì gán ""
   
-    console.log("userRole:", userRole);
+    // Nếu đã đăng nhập và vào trang "/", chuyển hướng về "calendar"
+    if (isAuthenticated && to.path === "/") {
+      next({ name: "calendar" });
+      NProgress.done();
+      return;
+    }
   
     // Nếu đã đăng nhập và cố vào login/register -> Chuyển hướng về calendar
     if (isAuthenticated && (to.name === "login" || to.name === "register")) {

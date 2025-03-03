@@ -19,6 +19,14 @@ const pinia = createPinia();
 const app = createApp(App);
 registerGlobalComponent(app);
 
+
+document.title = import.meta.env.VITE_APP_TITLE || "Notibro";
+
+const favicon = document.getElementById("favicon");
+if (favicon) {
+  favicon.href = import.meta.env.VITE_APP_FAVICON || "/vite.svg";
+}
+
 // app.use(SchedulePlugin);
 app.use(i18n);
 app.use(pinia);
