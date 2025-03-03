@@ -272,7 +272,7 @@ export function useCalendar() {
   return {
     calendarKey,
     calendarOptions,
-    // showModal,
+    transformedEvents,
     isAddEventModalVisible,
     isEventDetailModalVisible,
     selectedEvent,
