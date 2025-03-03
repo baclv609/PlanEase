@@ -1,30 +1,27 @@
 <template>
-  <a-drawer v-model:open="visible" :title="$t('Profile')" placement="right">
-    <ProfileView @edit-profile="openEditProfile" />
-  </a-drawer>
+ <a-drawer title="Profile" :width="'70%'" :open="open" @close="onClose">
+  <ProfileView />
+</a-drawer>
+
 
   <!-- Drawer chỉnh sửa thông tin -->
-  <ProfileEditView ref="editProfileDrawer" />
 </template>
 
 <script setup>
 import { ref, defineExpose } from "vue";
-import ProfileView from "./ProfileView.vue"; 
-import ProfileEditView from "./ProfileEditView.vue";
+import ProfileView from "./ProfileView.vue";
 
-const visible = ref(false);
-const editProfileDrawer = ref(null);
+const open = ref(false);
 
-// Mở drawer profile
-const open = () => {
-  visible.value = true;
+const openDrawer = () => {
+  open.value = true;
 };
 
-// Khi click vào icon edit, mở drawer chỉnh sửa thông tin
-const openEditProfile = (user) => {
-  editProfileDrawer.value.openDrawer(user);
+const onClose = () => {
+  open.value = false;
 };
 
-// Expose để `DefaultLayout.vue` có thể gọi `open()`
-defineExpose({ open });
+
+
+defineExpose({ openDrawer });
 </script>

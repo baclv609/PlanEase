@@ -29,7 +29,6 @@
           <!-- Drawer Profile -->
           <ProfileDrawer ref="profileDrawerRef" />
         </div>
-
       </div>
     </a-layout-header>
 
@@ -78,28 +77,17 @@ const dirApi = import.meta.env.VITE_API_BASE_URL;
 const selectedCalendars = ref(["exercise", "dinner", "outing"]);
 const isModalOpen = ref(false);
 
-const profileDrawerRef = ref(null);
 
 const openSettingsModal = () => {
   isModalOpen.value = true;
 };
 
 // Mở drawer khi click avatar
+const profileDrawerRef = ref(null);
+
 const openProfileDrawer = () => {
-  profileDrawerRef.value?.open();
+  profileDrawerRef.value?.openDrawer();
 };
 
-const handleLogout = () => {
-  const token = localStorage.getItem("access_token");
-  axios
-    .post(`${dirApi}auth/logout`, {}, { headers: { Authorization: `Bearer ${token}` } })
-    .then((response) => {
-      localStorage.clear();
-      message.success(response.data.message || "Logout successfully");
-      router.push({ name: "home" });
-    })
-    .catch(() => {
-      message.error("Fail");
-    });
-};
+
 </script>
