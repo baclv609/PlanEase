@@ -1,6 +1,8 @@
 <template>
   <a-card :bodyStyle="{ padding: '16px' }">
     <!-- Lịch -->
+    <a-button type="primary" class="my-2" block>+ Create New Event</a-button>
+
     <div class="calendar-section">
       <a-calendar v-model:value="selectedDate" :fullscreen="false" @select="handleDateSelect">
         <template #headerRender="{ value, onChange }">
@@ -22,20 +24,19 @@
     </div>
 
     <!-- Get Things Done -->
-    <div class="mt-5">
+    <!-- <div class="mt-5">
       <h4>Get Things Done</h4>
       <a-list :data-source="tasks" bordered>
         <template #renderItem="{ item }">
           <a-list-item> <a-badge :color="item.color" /> {{ item.name }} </a-list-item>
         </template>
       </a-list>
-      <a-button type="primary" class="mt-4" block>+ Create New Event</a-button>
-    </div>
+    </div> -->
 
-    <!-- Upcoming Events -->
+    <!-- Sự kiện sắp tới -->
     <div class="mt-5">
-      <h4>Upcoming Events</h4>
-      <p>Don't Miss Scheduled Events</p>
+      <h2>Sự kiện sắp tới</h2>
+      <p>Đừng bỏ lỡ các sự kiện đã lên lịch</p>
       <a-list :data-source="events" bordered>
         <template #renderItem="{ item }">
           <a-list-item>
