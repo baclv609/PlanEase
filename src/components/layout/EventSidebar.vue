@@ -23,16 +23,6 @@
       </a-calendar>
     </div>
 
-    <!-- Get Things Done -->
-    <!-- <div class="mt-5">
-      <h4>Get Things Done</h4>
-      <a-list :data-source="tasks" bordered>
-        <template #renderItem="{ item }">
-          <a-list-item> <a-badge :color="item.color" /> {{ item.name }} </a-list-item>
-        </template>
-      </a-list>
-    </div> -->
-
     <!-- Sự kiện sắp tới -->
     <div class="mt-5">
       <h2>Sự kiện sắp tới</h2>
@@ -105,6 +95,19 @@ const nextMonth = (onChange, value) => {
 </script>
 
 <style scoped>
+.small-calendar {
+  max-width: 250px !important;
+  font-size: 14px;
+}
+
+.small-calendar .ant-picker-calendar-mini {
+  padding: 8px;
+}
+
+.custom-header {
+  font-size: 14px;
+}
+
 .event-details {
   flex-grow: 1;
   margin-left: 10px;
