@@ -116,19 +116,28 @@ const settings = settingsStore.$state;
 const activeTab = ref(settingsStore.activeKey || "display");
 
 const columnHeaderFormatOptions = [
-  { label: "Thứ viết tắt + Ngày (VD: T2, 24)", value: { weekday: "short", day: "numeric", omitCommas: true } },
+  {
+    label: "Thứ viết tắt + Ngày (VD: T2, 24)",
+    value: { weekday: "short", day: "numeric", omitCommas: true },
+  },
   { label: "Thứ + Ngày (VD: Thứ Hai, 24)", value: { weekday: "long", day: "numeric" } },
   { label: "Ngày + Tháng (VD: 24 Thg 2)", value: { day: "numeric", month: "short" } },
 ];
 
 const titleFormatOptions = [
   { label: "Tháng Năm (VD: Tháng 2 2025)", value: { year: "numeric", month: "long" } },
-  { label: "Tháng viết tắt + Năm (VD: Feb 2025)", value: { year: "numeric", month: "short" } },
+  {
+    label: "Tháng viết tắt + Năm (VD: Feb 2025)",
+    value: { year: "numeric", month: "short" },
+  },
   { label: "Năm/Tháng số (VD: 2025/02)", value: { year: "numeric", month: "2-digit" } },
 ];
 
 const timeFormatOptions = [
-  { label: "12 giờ (AM/PM)", value: { hour: "2-digit", minute: "2-digit", meridiem: "short", hour12: true } },
+  {
+    label: "12 giờ (AM/PM)",
+    value: { hour: "2-digit", minute: "2-digit", meridiem: "short", hour12: true },
+  },
   { label: "24 giờ", value: { hour: "2-digit", minute: "2-digit", hour12: false } },
 ];
 
