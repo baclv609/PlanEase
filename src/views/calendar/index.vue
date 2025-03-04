@@ -109,65 +109,45 @@ onMounted(() => {
   <div>
     <!-- Custom Header -->
     <div class="custom-header">
-      <!-- Hiển thị tháng và năm -->
-      <span class="header-title">{{ currentDate }}</span>
+      <div class="flex  items-center">
+        <span class="header-title mr-3 capitalize">{{ currentDate }}</span>
 
-      <!-- Nút Today, Prev, Next -->
-      <div class="header-controls">
-        <Button @click="goToToday" type="default">
-          <template #icon><CalendarOutlined /></template>
-          Today
-        </Button>
-        <Button @click="goToPrev" type="default">
-          <LeftOutlined />
-        </Button>
-        <Button @click="goToNext" type="default">
-          <RightOutlined />
-        </Button>
+        <div class="header-controls">
+          
+          <Button @click="goToPrev" type="text">
+            <left-outlined />
+          </Button>
+          <Button @click="goToNext" type="text">
+            <RightOutlined />
+          </Button>
+          <Button @click="goToToday" type="default">
+            <template #icon>
+              <CalendarOutlined />
+            </template>
+            Today
+          </Button>
+        </div>
       </div>
 
-      <!-- Icon Settings & Info -->
-      <div class="header-icons">
-        <Tooltip title="Information">
-          <InfoCircleOutlined />
-        </Tooltip>
-        <Tooltip title="Settings">
-          <SettingOutlined />
-        </Tooltip>
-      </div>
-
-      <!-- Nút chọn chế độ xem -->
       <div class="view-toggle">
-        <Segmented
-          v-model:value="currentView"
-          :options="[
-            { label: 'Day', value: 'timeGridDay' },
-            { label: 'Week', value: 'timeGridWeek' },
-            { label: 'Month', value: 'dayGridMonth' },
-          ]"
-          @change="changeView"
-        />
+        <Segmented v-model:value="currentView" :options="[
+          { label: 'Ngày', value: 'timeGridDay' },
+          { label: 'Tháng', value: 'timeGridWeek' },
+          { label: 'Năm', value: 'dayGridMonth' },
+        ]" @change="changeView" />
       </div>
     </div>
 
     <!-- FullCalendar -->
-    <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions" @datesSet="onDatesSet"/>
+    <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions" @datesSet="onDatesSet" />
 
     <!-- Modal thêm sự kiện -->
-    <EventModal
-      :visible="isAddEventModalVisible"
-      :event="selectedEventAdd"
-      @save="handleEventModalSuccess"
-      @cancel="isAddEventModalVisible = false"
-    />
+    <EventModal :visible="isAddEventModalVisible" :event="selectedEventAdd" @save="handleEventModalSuccess"
+      @cancel="isAddEventModalVisible = false" />
 
     <!-- Modal chi tiết sự kiện -->
-    <EventDetailModal
-      :visible="isEventDetailModalVisible"
-      :event="selectedEvent"
-      @close="isEventDetailModalVisible = false"
-      @delete="handleDeleteEvent"
-    />
+    <EventDetailModal :visible="isEventDetailModalVisible" :event="selectedEvent"
+      @close="isEventDetailModalVisible = false" @delete="handleDeleteEvent" />
   </div>
 </template>
 
@@ -179,8 +159,8 @@ onMounted(() => {
   margin-bottom: 10px;
   padding: 10px;
   background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* border-radius: 8px; */
+   /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
 }
 
 .header-title {

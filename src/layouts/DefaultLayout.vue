@@ -33,17 +33,9 @@
     </a-layout-header>
 
     <a-layout>
-      <a-layout-sider width="340" class="!bg-white my-5 ml-5 shadow">
+      <a-layout-sider width="330" class="!bg-white my-5 ml-5 shadow">
         <!-- <a-button type="primary" block class="mb-4">{{ $t('+ Create Event') }}</a-button> -->
 
-        <!-- <div class="mb-4">
-          <h3 class="font-semibold mb-2">{{ $t('My Calendars') }}</h3>
-          <a-checkbox-group v-model:value="selectedCalendars" class="flex flex-col gap-2">
-            <a-checkbox value="exercise">🏋️ {{ $t('Tập thể dục') }}</a-checkbox>
-            <a-checkbox value="dinner">🍽️ {{ $t('Ăn tối') }}</a-checkbox>
-            <a-checkbox value="outing">🚗 {{ $t('Đi chơi') }}</a-checkbox>
-          </a-checkbox-group>
-        </div> -->
         <EventSidebar />
       </a-layout-sider>
 
