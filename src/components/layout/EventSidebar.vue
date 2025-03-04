@@ -72,6 +72,27 @@
       </transition>
     </div>
 
+
+    <!-- Modal thêm mới lịch -->
+    <a-modal v-model:open="isModalOpenAddTag" title="Thêm Mới Lịch" @ok="handleOk">
+      <a-form layout="vertical">
+        <!-- Nhập tên lịch -->
+        <a-form-item label="Tên lịch" required>
+          <a-input v-model:value="newTagCalendar.name" placeholder="Nhập tên lịch" />
+        </a-form-item>
+
+        <!-- Chọn màu sắc -->
+        <a-form-item label="Màu sắc (Hex Code)" required>
+          <!-- <a-input v-model:value="newTagCalendar.color" placeholder="#1890ff" /> -->
+          <input type="color" v-model="newTagCalendar.color" class="w-10 h-10 border rounded cursor-pointer" />
+
+        </a-form-item>
+        <!-- Nhập mô tả -->
+        <a-form-item label="Mô tả">
+          <a-textarea v-model:value="newTagCalendar.description" placeholder="Nhập mô tả lịch" :rows="3" />
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </a-card>
 </template>
 
@@ -80,8 +101,10 @@ import { LeftOutlined, RightOutlined ,CaretDownOutlined, CaretRightOutlined, Plu
 import dayjs from "dayjs";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { message } from "ant-design-vue";
 
-
+const isModalOpenAddTag = ref(false);
+const newTagCalendar = ref({ name: "", color: "#1890ff", description: "" });
 const router = useRouter();
 
 const selectedDate = ref(dayjs());
@@ -106,7 +129,7 @@ const otherCalendars = ref([
 ]);
 
 const addCalendar = () => {
-  console.log("Thêm lịch mới...");
+  isModalOpenAddTag.value = true;
 };
 
 const tasks = ref([
@@ -131,7 +154,21 @@ const handleDateSelect = (date) => {
 
     router.push(`/calendar/day/${year}/${month}/${day}`);
 };
-
+const handleOk = () => {
+  if (!newTagCalendar.value.name) {
+    message.error("Vui lòng nhập tên lịch!");
+    return;
+  }
+  if (!/^#([0-9A-Fa-f]{6})$/.test(newTagCalendar.value.color)) {
+    message.error("Mã màu không hợp lệ! Vui lòng nhập dạng #RRGGBB.");
+    return;
+  }
+  message.success(`Đã thêm lịch: ${newTagCalendar.value.name}`);
+  
+  // Reset form sau khi thêm
+  isModalOpenAddTag.value = false;
+  newTagCalendar.value = { name: "", color: "#1890ff", description: "" };
+};
 
 // Chuyển sang tháng trước
 const prevMonth = (onChange, value) => {
