@@ -204,8 +204,7 @@ const selectedTitleFormat = ref(JSON.stringify(settings.titleFormat)); // Lưu d
 const selectedDayHeaderFormat = ref(JSON.stringify(settings.dayHeaderFormat));
 
 const updateTitleFormat = (newValue) => {
-  settings.titleFormat = JSON.parse(newValue); // Chuyển JSON string thành object
-  // console.log("📅 Định dạng tiêu đề lịch:", settings.titleFormat);
+  settings.titleFormat = JSON.parse(newValue); 
   updateFullCalendar();
 };
 
@@ -215,9 +214,14 @@ const updateTimeFormat = (newValue) => {
   updateFullCalendar();
 };
 
-const changeView = (newView) => {
-  settingsStore.updateDisplayMode(newView);
-  updateFullCalendar();
+const changeView = (view) => {
+  if (settingsStore.calendarRef) {
+    settingsStore.calendarRef.getApi().changeView(view);
+    // updateCurrentDate();
+    settingsStore.updateDisplayMode(view);
+  } else {
+    console.error("calendarRef is not available in changeView");
+  }
 };
 
 // Hàm cập nhật FullCalendar khi thay đổi cài đặt
