@@ -7,7 +7,7 @@ import { watchEffect } from "vue";
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
     // 🖥 Cài đặt giao diện
-    displayMode: "dayGridMonth",
+    displayMode: localStorage.getItem("displayMode") || "dayGridMonth", // Lưu chế độ xem vào localStorage
     showWeekNumbers: false,
     themeMode: "light",
 
@@ -108,12 +108,15 @@ export const useSettingsStore = defineStore("settings", {
     },
     
     updateFullCalendar() {
-      if (this.calendarRef) {
+      if (this.calendarRef && this.calendarRef.getApi) {
         this.calendarRef.getApi().refetchEvents();
+      } else {
+        console.warn("calendarRef is not available when calling updateFullCalendar");
       }
     },
     updateDisplayMode(newMode) {
       this.displayMode = newMode;
+      localStorage.setItem("displayMode", newMode); 
     },
 
     updateSetting(key, value) {

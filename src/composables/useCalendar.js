@@ -195,6 +195,7 @@ export function useCalendar() {
       listPlugin,
       rrulePlugin,
     ],
+    headerToolbar: false,
     locale: settingsStore.language,
     timeZone: settingsStore.timeZone,
     firstDay: settingsStore.firstDay,
