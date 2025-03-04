@@ -9,8 +9,10 @@ import { RRule } from "rrule";
 import utc from "dayjs/plugin/utc";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useCalendarEvents } from "@/composables/useCalendarEvents";
+import { useCalendarStore } from "@/stores/calendarStore";
 
 const settingsStore = useSettingsStore(); // Khởi tạo Pinia Store
+const calendarStore = useCalendarStore();
 
 dayjs.extend(utc);
 
@@ -34,9 +36,17 @@ export function useCalendar() {
 
   onMounted(async () => {
     await fetchEvents();
+    
     transformedEvents.value = formattedEvents.value
-      ? [...formattedEvents.value]
-      : [];
+    ? [...formattedEvents.value]
+    : [];
+
+    // lưu store
+    if (formattedEvents.value) {
+      formattedEvents.value.forEach(event => {
+        calendarStore.addEventStore(event);
+      });
+    }
     console.log("Danh sách sự kiện sau khi fetch:", transformedEvents.value);
   });
 

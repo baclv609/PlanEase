@@ -210,7 +210,7 @@ const updateTitleFormat = (newValue) => {
 };
 
 const updateTimeFormat = (newValue) => {
-  console.log("object", newValue);
+  // console.log("object", newValue);
   settingsStore.eventTimeFormat = newValue;
   updateFullCalendar();
 };
