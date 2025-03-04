@@ -42,18 +42,72 @@
         </template>
       </a-list>
     </div>
+
+    <!-- tags -->
+    <div>
+      <div class="flex justify-between items-center cursor-pointer" @click="toggleMyCalendars">
+        <h3 class="font-semibold">Lịch của tôi
+
+          
+        </h3> 
+        <div>
+          <PlusOutlined class="cursor-pointer text-blue-500 text-base" @click.stop="addCalendar" />
+          <CaretDownOutlined v-if="showMyCalendars" />
+          <CaretRightOutlined v-else />
+        </div>
+      </div>
+      <transition name="fade">
+        <div v-if="showMyCalendars" class="mt-2">
+          <a-checkbox-group v-model:value="selectedCalendars" class="flex flex-col gap-2">
+            <div v-for="calendar in myCalendars" :key="calendar.id" 
+              class="flex items-center p-1 rounded-md"
+              :style="{ borderLeft: `4px solid ${calendar.color}` }"
+            >
+              <a-checkbox :value="calendar.id" class="ml-2">
+                <span class="text-sm">{{ calendar.name }}</span>
+              </a-checkbox>
+            </div>
+          </a-checkbox-group>
+        </div>
+      </transition>
+    </div>
+
   </a-card>
 </template>
 
 <script setup>
-import { LeftOutlined, RightOutlined } from "@ant-design/icons-vue";
+import { LeftOutlined, RightOutlined ,CaretDownOutlined, CaretRightOutlined, PlusOutlined} from "@ant-design/icons-vue";
 import dayjs from "dayjs";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
+
 const router = useRouter();
 
 const selectedDate = ref(dayjs());
+
+const showMyCalendars = ref(true);
+const showOtherCalendars = ref(true);
+
+const toggleMyCalendars = () => (showMyCalendars.value = !showMyCalendars.value);
+const toggleOtherCalendars = () => (showOtherCalendars.value = !showOtherCalendars.value);
+
+// Danh sách lịch
+const selectedCalendars = ref(["1", "3"]);
+const myCalendars = ref([
+  { id: "1", name: "Văn Bắc Lê", color: "#3498db" },
+  { id: "2", name: "Gia đình", color: "#9b59b6" },
+  { id: "3", name: "Lịch mới", color: "#9b59b6" },
+  { id: "4", name: "Sinh nhật", color: "#e67e22" },
+]);
+
+const otherCalendars = ref([
+  { id: "7", name: "Ngày lễ ở Việt Nam", color: "#27ae60" },
+]);
+
+const addCalendar = () => {
+  console.log("Thêm lịch mới...");
+};
 
 const tasks = ref([
   { name: "New Event Planning", color: "green" },
@@ -125,7 +179,14 @@ const nextMonth = (onChange, value) => {
   text-transform: capitalize;
 }
 
-a-button {
-  font-size: 18px;
+.sidebar-container {
+  width: 280px;
+}
+.fade-enter-active, .fade-leave-active {
+  transition: all 0.3s ease-in-out;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
 }
 </style>
