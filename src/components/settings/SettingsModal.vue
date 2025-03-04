@@ -89,7 +89,7 @@
       </a-tab-pane>
     </a-tabs>
 
-    <!-- Footer với nút Reset -->
+  <!-- Reset -->
     <template #footer>
       <a-button type="primary" danger @click="resetSettings">Reset</a-button>
     </template>
