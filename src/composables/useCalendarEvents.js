@@ -9,7 +9,6 @@ export function useCalendarEvents() {
   const fetchEvents = async () => {
     try {
       const response = await getSchedules();
-      console.log("Dữ liệu nhận được từ API:", response.data);
       if (!Array.isArray(response.data.data)) {
         console.error(
           "Lỗi: response.data không phải là một mảng!",
@@ -22,7 +21,6 @@ export function useCalendarEvents() {
         ? response.data.data
         : [];
 
-      console.log("rawEvents.value", rawEvents.value);
     } catch (error) {
       console.error("Lỗi khi tải lịch trình:", error);
     }
@@ -36,6 +34,7 @@ export function useCalendarEvents() {
       return {
         id: event.id,
         title: event.title,
+        uuid: event.uuid,
         description: event.description,
         start: event.start_time ? event.start_time.replace(" ", "T") : null,
         end: event.end_time ? event.end_time.replace(" ", "T") : null,

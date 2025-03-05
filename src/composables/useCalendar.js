@@ -110,17 +110,19 @@ export function useCalendar() {
 
   // Click vào ô trống trên lịch để mở modal tạo sự kiện
   const openAddEventModal = (info) => {
-    selectedEventAdd.value = {
-      start: info.dateStr,
-      end: info.dateStr,
-    };
-    console.log("selectedEventAdd", selectedEventAdd.value);
+    if(info.view.type == 'dayGridMonth') {
+      selectedEventAdd.value = {
+        start: info.dateStr,
+        end: dayjs(info.dateStr).add(1, 'hour'),
+      };
+    }
     isAddEventModalVisible.value = true; // Chỉ mở modal Thêm sự kiện
   };
   const openEventDetailModal = (info) => {
     selectedEvent.value = {
       id: info.event.id,
       title: info.event.title,
+      uuid: info.event.extendedProps.uuid,
       start: info.event.startStr,
       end: info.event.endStr,
       color: info.event.backgroundColor,
@@ -136,9 +138,6 @@ export function useCalendar() {
 
     isEventDetailModalVisible.value = true;
     // showModal.value = true;
-    console.log(info.event);
-    console.log("isModalVisible:", isEventDetailModalVisible.value);
-    console.log("click sự kiện chỉnh sửa:", selectedEvent.value);
   };
 
   // const handleEventDrop = (info) => {
@@ -218,10 +217,18 @@ export function useCalendar() {
 
     select: (info) => {
       console.log(`Chọn từ ${info.startStr} đến ${info.endStr}`);
-      selectedEventAdd.value = {
-        start: info.startStr,
-        end: info.endStr,
-      };
+
+      if(info.view.type == 'dayGridMonth') {
+        selectedEventAdd.value = {
+          start: info.startStr,
+          end: dayjs(info.endStr).subtract(1, 'day').add(1, 'hour'),
+        };
+      } else {
+        selectedEventAdd.value = {
+          start: info.startStr,
+          end: info.endStr,
+        };
+      }
       console.log("selectedEventAdd", selectedEventAdd.value);
       isAddEventModalVisible.value = true; // Chỉ mở modal Thêm sự kiện
     },

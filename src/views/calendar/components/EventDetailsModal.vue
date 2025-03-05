@@ -25,7 +25,6 @@ watch(() => props.isEventDetailModalVisible, (newVal) => {
 watch(
   () => props.event, (newVal) => {
     event.value = newVal;
-    console.log("Event nhận được:", event.value);
   },
   { immediate: true, deep: true }
 );
@@ -34,7 +33,6 @@ const formatDate = (date) => (date ? dayjs(date).format("YYYY-MM-DD HH:mm") : "K
 
 // Hàm xử lý xóa sự kiện
 const deleteEvent = async ({code, date, id}) => {
-  console.log("Xóa sự kiện:", { code, date, id });
 
   try {
     const response = await axios.delete(`${dirApi}tasks/${id}`, {
@@ -63,11 +61,11 @@ const deleteEvent = async ({code, date, id}) => {
 
 // Xử lý xóa sự kiện
 const handleDelete = () => {
-  console.log(event.value);
   if (event.value.recurrence && event.value.recurrence != 'none') {
     
     Modal.confirm({
       title: "Xóa sự kiện lặp lại",
+      width: 650,
       content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
         h("div", { class: "mb-3" }, [
           h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
@@ -75,7 +73,7 @@ const handleDelete = () => {
               type: "radio",
               name: "deleteOption",
               value: "DEL_1",
-              class: "form-radio text-blue-600 cursor-pointer",
+              class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
               onInput: (e) => {
                 deleteOption.value = e.target.value;
               },
@@ -89,7 +87,7 @@ const handleDelete = () => {
               type: "radio",
               name: "deleteOption",
               value: "DEL_1B",
-              class: "form-radio text-blue-600 cursor-pointer",
+              class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
               onInput: (e) => {
                 deleteOption.value = e.target.value;
               },
@@ -103,7 +101,7 @@ const handleDelete = () => {
               type: "radio",
               name: "deleteOption",
               value: "DEL_A",
-              class: "form-radio text-blue-600 cursor-pointer",
+              class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
               onInput: (e) => {
                 deleteOption.value = e.target.value;
               },
@@ -126,7 +124,7 @@ const handleDelete = () => {
 
 // copy link
 const copyToClipboard = () => {
-  navigator.clipboard.writeText(`${window.location.origin}/calendar/event/${event.value.id}/invite`).then(() => {
+  navigator.clipboard.writeText(`${window.location.origin}/calendar/event/${event.value.uuid}/invite`).then(() => {
     message.success('Đã sao chép liên kết!');
   });
 };
@@ -138,7 +136,7 @@ const showModalLink = () => {
   content: h('div', { style: { fontSize: '20px' } }, [
     h('p', { style: { fontWeight: 'bold' } }, 'Liên kết chia sẻ sự kiện:'),
     h('input', {
-      value: `${window.location.origin}/calendar/event/${event.value.id}/invite`,
+      value: `${window.location.origin}/calendar/event/${event.value.uuid}/invite`,
       readonly: true,
       style: { width: '100%', padding: '5px', fontSize: '16px', marginBottom: '10px' }
     }),
@@ -147,28 +145,6 @@ const showModalLink = () => {
   onOk() {},
 });
 }
-
-// Xử lý xóa sự kiện lặp lại
-// const handleDeleteConfirm = () => {
-//   switch (deleteOption.value) {
-//     case "DEL_1":
-//       deleteEvent({ code: "DEL_1", date: event.value.start, id: event.value.id });
-//       message.success("Sự kiện đã được xóa");
-//       break;
-//     case "DEL_A":
-//       deleteEvent({ code: "DEL_A", date: event.value.start, id: event.value.id });
-//       message.success("Tất cả các sự kiện đã được xóa");
-//       break;
-//     case "DEL_1B":
-//       deleteEvent({ code: "DEL_1B", date: event.value.start, id: event.value.id });
-//       message.success("Sự kiện này và các sự kiện tiếp sau đã được xóa");
-//       break;
-//     default:
-//       break;
-//   }
-//   isDeleteConfirmVisible.value = false;
-//   handleClose();
-// };
 
 // Đóng modal xác nhận xóa sự kiện lặp lại
 const handleCancelDelete = () => {
