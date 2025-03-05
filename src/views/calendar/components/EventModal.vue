@@ -32,7 +32,7 @@ const props = defineProps({
 
 const eventData = computed(() => props.event || {});
 const formRef = ref(null);
-const emit = defineEmits(["save", "cancelAddEventModalVisible", 'AddEventModalSuccess']);
+const emit = defineEmits(["save", 'cancel',"cancelAddEventModalVisible", 'AddEventModalSuccess']);
 const selectedDate = ref(null);
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem('access_token');
@@ -320,9 +320,9 @@ const handleSave = async () => {
 
     if (res.data.code === 200) {
       message.success(res.data.message || "Thêm sự kiện thành công");
-      emit("AddEventModalSuccess", dataApi);
+      emit("save", dataApi);
       resetForm();
-      emit("cancelAddEventModalVisible");
+      emit("cancel");
     }
 
   } catch (error) {
@@ -416,7 +416,7 @@ const removeReminder = (index) => {
 };
 const handleCancel = () => {
   resetForm();
-  emit("cancelAddEventModalVisible");
+  emit("cancel");
 };
 
 // Lấy thông tin khách mời

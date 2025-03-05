@@ -10,7 +10,7 @@ const props = defineProps({
   event: Object,
 });
 
-const emit = defineEmits(["closeEventDetailModalVisible", "edit", "delete"]);
+const emit = defineEmits(["closeEventDetailModalVisible", "close", "edit", "delete"]);
 const isVisible = ref(props.isEventDetailModalVisible);
 const event = ref({});
 const dirApi = import.meta.env.VITE_API_BASE_URL;
@@ -153,7 +153,7 @@ const handleCancelDelete = () => {
 
 const handleClose = () => {
   isVisible.value = false;
-  emit("closeEventDetailModalVisible", false);
+  emit("close", false);
 };
 </script>
 
