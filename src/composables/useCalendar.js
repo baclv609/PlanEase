@@ -11,6 +11,9 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { useCalendarEvents } from "@/composables/useCalendarEvents";
 import { useCalendarStore } from "@/stores/calendarStore";
 
+const dirApi = import.meta.env.VITE_API_BASE_URL;
+
+
 const settingsStore = useSettingsStore(); // Khởi tạo Pinia Store
 const calendarStore = useCalendarStore();
 
@@ -36,10 +39,10 @@ export function useCalendar() {
 
   onMounted(async () => {
     await fetchEvents();
-    
+
     transformedEvents.value = formattedEvents.value
-    ? [...formattedEvents.value]
-    : [];
+      ? [...formattedEvents.value]
+      : [];
 
     // lưu store
     if (formattedEvents.value) {
@@ -110,7 +113,7 @@ export function useCalendar() {
 
   // Click vào ô trống trên lịch để mở modal tạo sự kiện
   const openAddEventModal = (info) => {
-    if(info.view.type == 'dayGridMonth') {
+    if (info.view.type == 'dayGridMonth') {
       selectedEventAdd.value = {
         start: info.dateStr,
         end: dayjs(info.dateStr).add(1, 'hour'),
@@ -218,7 +221,7 @@ export function useCalendar() {
     select: (info) => {
       console.log(`Chọn từ ${info.startStr} đến ${info.endStr}`);
 
-      if(info.view.type == 'dayGridMonth') {
+      if (info.view.type == 'dayGridMonth') {
         selectedEventAdd.value = {
           start: info.startStr,
           end: dayjs(info.endStr).subtract(1, 'day').add(1, 'hour'),
@@ -236,18 +239,91 @@ export function useCalendar() {
     eventAdd: (info) => {
       console.log("Sự kiện mới được thêm:", info.event);
     },
-    eventChange: (info) => {
-      console.log("Sự kiện được cập nhật:", info.event);
-    },
+
     eventRemove: (info) => {
       console.log("Sự kiện đã bị xóa:", info.event);
     },
 
-    eventDrop: (info) => {
-      console.log(
-        `Sự kiện "${info.event.title}" đã được kéo sang ngày ${info.event.start}`
-      );
+
+    // Kéo thả
+    eventDrop: async (info) => {
+      try {
+        // Lấy thông tin sự kiện sau khi kéo
+        const taskId = info.event.id;
+        const newStart = info.event.start.toISOString();
+        const newEnd = info.event.end ? info.event.end.toISOString() : null;
+
+        // Hiển thị xác nhận với người dùng
+        const confirmMove = window.confirm(
+          `Bạn có chắc muốn chuyển sự kiện "${info.event.title}" sang ngày ${newStart} không?`
+        );
+
+        if (!confirmMove) {
+          info.revert(); // Nếu chọn "Hủy", hoàn tác
+          return;
+        }
+
+        // Gửi yêu cầu cập nhật task lên API
+        const response = await fetch(`${dirApi}tasks/${taskId}/onDrag`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ start: newStart, end: newEnd }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Cập nhật thất bại");
+        }
+
+        alert(`Sự kiện "${info.event.title}" đã được cập nhật thành công.`);
+      } catch (error) {
+        console.error("Lỗi khi cập nhật sự kiện:", error);
+        alert("Đã xảy ra lỗi khi cập nhật sự kiện!");
+        info.revert(); // Hoàn tác nếu có lỗi
+      }
     },
+
+    eventChange: (info) => {
+      console.log("Sự kiện được cập nhật:", info.event);
+    },
+
+
+    // Update task
+    eventChange: async (info) => {
+      try {
+        const taskId = info.event.id;
+        const newStart = info.event.start.toISOString().replace("T", " ").substring(0, 19);
+        const newEnd = info.event.end ? info.event.end.toISOString().replace("T", " ").substring(0, 19) : null;
+    
+        const updatedData = {
+          start_time: newStart,
+          end_time: newEnd,
+          code: "EDIT_N", // Cập nhật bình thường
+        };
+    
+        const response = await fetch(`${dirApi}tasks/${taskId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedData),
+        });
+    
+        if (!response.ok) {
+          throw new Error("Cập nhật thất bại");
+        }
+    
+        console.log(`Sự kiện "${info.event.title}" đã được cập nhật.`);
+      } catch (error) {
+        console.error("Lỗi khi cập nhật sự kiện:", error);
+        alert("Đã xảy ra lỗi khi cập nhật!");
+        info.revert(); // Hoàn tác nếu lỗi
+      }
+    },
+    
+
+
     eventResize: (info) => {
       console.log(
         `Sự kiện "${info.event.title}" kéo dài đến ${info.event.end}`
