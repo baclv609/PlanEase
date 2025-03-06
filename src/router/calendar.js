@@ -42,6 +42,10 @@ const calendar = [
       notAuthRequired: false,
     },
   },
+  {
+    path: "/test-change-calendar",
+    component: () => import("@/views/testClender/FullCalendarComponent.vue"),
+  }
 ];
 
 export default calendar;

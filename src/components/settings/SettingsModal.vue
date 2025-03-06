@@ -41,7 +41,7 @@
               placeholder="Chọn múi giờ..."
               :options="timeZoneOptions"
               :filter-option="filterTimeZones"
-              @change="logTimeZone"
+              @change="changeTimeZone"
             />
           </a-form-item>
 
@@ -202,6 +202,11 @@ const timeFormatOptions = [
 
 const selectedTitleFormat = ref(JSON.stringify(settings.titleFormat)); // Lưu dạng string JSON
 const selectedDayHeaderFormat = ref(JSON.stringify(settings.dayHeaderFormat));
+
+const changeTimeZone = (newTimeZone) => {
+  console.log("changeTimeZone", newTimeZone);
+  settingsStore.setTimeZone(newTimeZone);
+};
 
 const updateTitleFormat = (newValue) => {
   settings.titleFormat = JSON.parse(newValue); 

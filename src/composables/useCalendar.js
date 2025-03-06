@@ -26,11 +26,11 @@ export function useCalendar() {
   const showModal = ref(false);
   const selectedEvent = ref(null);
   const selectedEventAdd = ref(null);
-
+  const calendarRef = ref(null);
   const isAddEventModalVisible = ref(false); // Modal thêm mới sự kiện
   const isEventDetailModalVisible = ref(false); // Modal chi tiết sự kiện
 
-  const { formattedEvents, fetchEvents } = useCalendarEvents();
+  const { formattedEvents, fetchEvents } = useCalendarEvents(calendarRef);
 
   const transformedEvents = ref([]);
 
@@ -74,7 +74,6 @@ export function useCalendar() {
   // });
   watch(
     () => ({
-      timeZone: settingsStore.timeZone,
       firstDay: settingsStore.firstDay,
       initialDate: settingsStore.initialDate,
       eventTimeFormat: settingsStore.eventTimeFormat,
@@ -199,7 +198,7 @@ export function useCalendar() {
     timeZone: settingsStore.timeZone,
     firstDay: settingsStore.firstDay,
     initialDate: settingsStore.initialDate,
-    initialView: settingsStore.displayMode, // 🔹 Thêm vào đây
+    initialView: settingsStore.displayMode, 
     eventTimeFormat: settingsStore.eventTimeFormat,
     // columnHeaderFormat: settingsStore.columnHeaderFormat,
     dayHeaderFormat: settingsStore.dayHeaderFormat || {

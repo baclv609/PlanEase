@@ -3,6 +3,7 @@ import { useSettings } from "@/composables/useSettings";
 import { useI18n } from "vue-i18n";
 import moment from "moment-timezone";
 import { watchEffect } from "vue";
+import { useCalendarEvents } from "@/composables/useCalendarEvents";
 
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
@@ -55,7 +56,12 @@ export const useSettingsStore = defineStore("settings", {
       // Cập nhật FullCalendar
       this.updateFullCalendar();
     },
-    
+    setTimeZone(newTimeZone) {
+      this.timeZone = newTimeZone;
+      this.saveToLocalStorage();
+      const { fetchEvents } = useCalendarEvents(this.calendarRef); 
+      fetchEvents();
+    },
     toggleTimeFormat() {
       this.timeFormat = this.timeFormat === "24h" ? "12h" : "24h";  
       this.saveToLocalStorage();
