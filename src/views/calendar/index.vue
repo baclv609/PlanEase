@@ -28,6 +28,32 @@ import { useCalendar } from "@/composables/useCalendar.js";
 import EventModal from "./components/EventModal.vue";
 import EventDetailModal from "./components/EventDetailsModal.vue";
 
+onMounted(() => {
+  console.log("window.Echo:", window.Echo);
+  console.log("window.Pusher:", window.Pusher);
+
+  const user = JSON.parse(localStorage.getItem("user")); // Kiểm tra dữ liệu user
+  if (!user || !user.id) {
+    console.error("❌ Không tìm thấy user.id");
+    return;
+  }
+
+  console.log(`🔄 Đang lắng nghe kênh: App.Models.User.${user.id}`);
+
+  window.Echo.private(`App.Models.User.${user.id}`)
+    .listen(".task.reminder", (data) => {
+      console.log("📢 Nhận thông báo mới:", data);
+      alert("Bạn có một nhắc nhở mới!");
+    })
+    .error((err) => {
+      console.error("❌ Lỗi khi đăng ký kênh private:", err);
+    });
+
+  setTimeout(() => {
+    console.log("📡 Trạng thái kết nối Pusher:", window.Echo.connector.pusher.connection.state);
+  }, 5000);
+});
+
 const settingsStore = useSettingsStore();
 const calendarRef = ref(null);
 

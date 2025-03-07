@@ -42,6 +42,16 @@ const calendar = [
       notAuthRequired: false,
     },
   },
+  {
+    path: "/calendar/search",
+    component: () => import("@/views/calendar/SearchView.vue"),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      layout: "default",
+      notAuthRequired: false,
+    },
+  },
 ];
 
 export default calendar;
