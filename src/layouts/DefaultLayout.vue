@@ -1,11 +1,11 @@
 <template>
   <a-layout class="min-h-screen bg-gray-100">
-    <a-layout-header class="!bg-white shadow flex justify-between px-6 py-3">
+    <a-layout-header class="!bg-white shadow flex justify-between items-center px-6">
       <div class="flex items-center gap-4">
         <h1 class="text-lg font-semibold">Calendar App</h1>
       </div>
 
-      <a-input-search :placeholder="$t('Search')" class="w-1/3" />
+      <Search />
 
       <div class="flex items-center gap-4">
         <a-button type="primary" class="bg-yellow-500 text-white">
@@ -64,6 +64,7 @@ import EventSidebar from "@/components/layout/EventSidebar.vue";
 import axios from "axios";
 import { message } from "ant-design-vue";
 import router from "@/router";
+import Search from "@/components/Search.vue";
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const selectedCalendars = ref(["exercise", "dinner", "outing"]);

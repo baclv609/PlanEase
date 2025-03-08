@@ -13,6 +13,7 @@ import axios from "axios";
 import { createPinia } from 'pinia';
 
 import { useSettings } from './composables/useSettings';
+import Echo from "@/plugins/echo";
 
 const pinia = createPinia();
 
