@@ -22,7 +22,7 @@ import {
 
 // Import store & composables
 import { useSettingsStore } from "@/stores/settingsStore";
-import { useCalendar } from "@/composables/useCalendar.js";
+import { useCalendar } from "@/composables/useCalendarSetup.js";
 
 // Import modals
 import EventModal from "./components/EventModal.vue";
