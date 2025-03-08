@@ -6,7 +6,8 @@ import {
     UserOutlined,
     CaretUpOutlined,
     CaretDownOutlined,
-    SearchOutlined
+    SearchOutlined,
+    CloseOutlined,
 } from "@ant-design/icons-vue";
 import { useRoute, useRouter } from "vue-router";
 import dayjs from 'dayjs';
@@ -20,8 +21,8 @@ const dateFormatList = ['YYYY-MM-DD']
 
 const searchType = ref("");
 const eventName = ref("");
-const start = ref("");
-const end = ref("");
+const start = ref(null);
+const end = ref(null);
 const location = ref("");
 
 const searchOptions = [
@@ -44,13 +45,6 @@ watch(end, (newEnd) => {
         start.value = end.value;
     }
 });
-
-const handleSearch = () => {
-    router.push({
-        path: '/calendar/search',
-        query: { title: searchQuery.value }
-    });
-};
 
 const resetFilters = () => {
     eventName.value = "";
@@ -81,22 +75,30 @@ const applyFilters = () => {
 </script>
 
 <template>
-    <div class="relative w-full max-w-2xl mx-auto">
-        <a-form layout="vertical" @finish="handleSearch">
+    <div class="relative w-full max-w-xl mx-auto">
+        <a-form layout="vertical" @finish="applyFilters">
             <!-- Thanh tìm kiếm chính -->
-            <div class="flex items-center border border-2 border-gray-300 bg-white rounded-full shadow-xl px-4">
-                <a-input v-model:value="searchQuery" placeholder="Tìm kiếm"
+            <div class="flex items-center border border-2 border-gray-500 bg-white rounded-full shadow-[0_3px_10px_rgba(0,0,0,0.2)] px-4">
+                <a-input v-model:value="eventName" placeholder="Tìm kiếm"
                     class="border-none flex-1 !shadow-none !ring-0 !outline-none focus:!ring-0 focus:!outline-none focus:!shadow-none"
-                    @pressEnter="handleSearch">
+                    @pressEnter="applyFilters">
                     <template #prefix>
                         <SearchOutlined class="text-gray-500 text-lg mx-2" />
                     </template>
+
                     <template #suffix>
-                        <a-button @click="toggleFilters"
-                            class="text-gray-500 hover:bg-gray-100 p-1 border-none px-3 rounded-full">
-                            <CaretDownOutlined v-if="!showFilters" />
-                            <CaretUpOutlined v-else />
-                        </a-button>
+                        <div class="flex items-center gap-2">
+                            <a-button v-if="eventName" type="text"
+                                class="text-gray-500 hover:bg-gray-100 p-1 border-none px-3 rounded-full"
+                                @click="eventName = ''">
+                                <CloseOutlined />
+                            </a-button>
+                            <a-button @click="toggleFilters"
+                                class="text-gray-500 hover:bg-gray-100 p-1 border-none px-3 rounded-full">
+                                <CaretDownOutlined v-if="!showFilters" />
+                                <CaretUpOutlined v-else />
+                            </a-button>
+                        </div>
                     </template>
                     <!-- Bộ lọc nâng cao -->
                 </a-input>

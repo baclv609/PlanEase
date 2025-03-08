@@ -159,7 +159,7 @@ const handleClose = () => {
 
 <template>
   <Modal
-    v-model:visible="isVisible"
+    v-model:open="isVisible"
     title="Chi Tiết Sự Kiện"
     @cancel="handleClose"
     width="900px"
