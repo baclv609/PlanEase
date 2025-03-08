@@ -2,6 +2,7 @@
 import { onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
+import EventDetailsModal from './components/EventDetailsModal.vue';
 
 const token = localStorage.getItem('access_token');
 const dirApi = import.meta.env.VITE_API_BASE_URL;
@@ -12,12 +13,29 @@ const queryParams = route.query;
 const calendarDays = ref([]);
 
 // Ngày đang được chọn
-const selectedDay = ref(null);
+const event = ref({});
+const isEventDetailModalVisible = ref(false);
 
-  // Hàm chọn ngày
+// Hàm chọn ngày
 const selectDay = (day) => {
-  console.log(day);
-  selectedDay.value = day;
+  event.value = {
+    id: day.id,
+    title: day.title,
+    uuid: day.uuid,
+    start: day.start_time,
+    end: day.end_time,
+    color: day.color_code,
+    is_all_day: day.is_all_day,
+    recurrence: day.is_repeat || "none",
+    description: day.description || "",
+    attendees: day.attendees,
+    is_done: day.is_done,
+    is_reminder: day.is_reminder ?? "none",
+    reminder: day.reminder ?? "none",
+    location: day.location,
+  };
+
+  isEventDetailModalVisible.value = true;
 };
 
 // 🔍 Fetch dữ liệu khi component mounted
@@ -35,8 +53,8 @@ const fetchSearchResults = async () => {
       }
     });
 
-    calendarDays.value = response.data.data;
-    console.log("✅ Search Results:", calendarDays.value);
+    calendarDays.value = response.data.data.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+    console.log(calendarDays.value);
   } catch (error) {
     console.error("🔥 Error fetching search results:", error);
   }
@@ -47,41 +65,37 @@ onMounted(fetchSearchResults);
 
 // Lắng nghe thay đổi query để cập nhật kết quả tìm kiếm
 watch(() => route.query, fetchSearchResults, { deep: true });
-
 </script>
 
 <template>
   <div class="calendar-container bg-white">
-    <div v-if="calendarDays.length > 0">
-        <div v-for="(day, index) in calendarDays" :key="index"
-          @click="selectDay(day)"
-          class="calendar-row border-b border-gray-200 py-3 px-4 flex items-center cursor-pointer hover:bg-gray-100"
-          :class="{ 'bg-blue-100': selectedDay?.start_time === day.start_time }"
-        >
-          <div class="day-number w-12 font-bold text-xl">{{ new Date(day.start_time).getDate() }}</div>
-          <div class="date-info w-40 text-xs text-gray-700">
-            <div>THÁNG {{ new Date(day.start_time).getMonth() + 1 }},</div>
-            <div>{{ new Date(day.start_time).getFullYear() }}</div>
-          </div>
-          <div class="status-indicator w-8 flex justify-center">
-            <div class="w-4 h-4 rounded-full" :style="{ backgroundColor: day.color_code }"></div>
-          </div>
-          <div class="event-type w-24 text-sm">{{ day.title }}</div>
-          <div class="event-description text-sm">{{ day.description }}</div>
+    <div v-if="calendarDays.length > 0" class="calendar-container overflow-y-auto max-h-[1000px]">
+      <div v-for="(day, index) in calendarDays" :key="index" @click="selectDay(day)"
+        class="calendar-row border-b border-gray-200 py-3 px-4 flex items-center cursor-pointer hover:bg-gray-100"
+        :class="{ 'bg-blue-100': event?.start_time === day.start_time }">
+        <div class="day-number w-12 font-bold text-xl">{{ new Date(day.start_time).getDate() }}</div>
+        <div class="date-info w-[100px] text-xs text-gray-700">
+          <div>THÁNG {{ new Date(day.start_time).getMonth() + 1 }},</div>
+          <div>{{ new Date(day.start_time).getFullYear() }}, {{ new Date(day.start_time).toLocaleDateString('vi-VN', { weekday: 'short' }).toUpperCase() }}</div>
         </div>
-    
-        <!-- Thông tin chi tiết -->
-        <div v-if="selectedDay" class="selected-day-info mt-4 p-4 border rounded bg-gray-50">
-          <h3 class="text-lg font-bold">Chi tiết ngày {{ new Date(selectedDay.start_time).toLocaleDateString() }}</h3>
-          <p><strong>Tiêu đề:</strong> {{ selectedDay.title }}</p>
-          <p><strong>Mô tả:</strong> {{ selectedDay.description }}</p>
-          <p><strong>Màu:</strong> 
-            <span class="inline-block w-4 h-4 rounded-full" :style="{ backgroundColor: selectedDay.color_code }"></span>
-          </p>
+        <div class="status-indicator w-20">
+          <div class="text-sm text-gray-700">{{ day.is_all_day ? 'Cả ngày' : 'Cụ thể' }}</div>
         </div>
+        <div class="status-indicator w-8">
+          <div class="w-4 h-4 rounded-full" :style="{ backgroundColor: day.color_code }"></div>
+        </div>
+        <div class="event-type w-[250px] text-sm">{{ day.title }}</div>
       </div>
+
+      <!-- Thông tin chi tiết -->
+      <EventDetailsModal :isEventDetailModalVisible="isEventDetailModalVisible" :event="event"
+        @close="isEventDetailModalVisible = false" />
     </div>
-    <!-- Danh sách ngày -->
+
+    <div v-else class="text-center py-6 text-gray-500">
+      Không tìm thấy lịch nào.
+    </div>
+  </div>
 </template>
 
 <style scoped></style>

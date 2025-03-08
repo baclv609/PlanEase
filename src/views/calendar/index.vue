@@ -168,11 +168,11 @@ onMounted(() => {
     <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions" @datesSet="onDatesSet" />
 
     <!-- Modal thêm sự kiện -->
-    <EventModal :visible="isAddEventModalVisible" :event="selectedEventAdd" @save="handleEventModalSuccess"
+    <EventModal :open="isAddEventModalVisible" :event="selectedEventAdd" @save="handleEventModalSuccess"
       @cancel="isAddEventModalVisible = false" />
 
     <!-- Modal chi tiết sự kiện -->
-    <EventDetailModal :visible="isEventDetailModalVisible" :event="selectedEvent"
+    <EventDetailModal :open="isEventDetailModalVisible" :event="selectedEvent"
       @close="isEventDetailModalVisible = false" @delete="handleDeleteEvent" />
   </div>
 </template>
