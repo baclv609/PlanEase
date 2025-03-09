@@ -22,7 +22,7 @@ import {
 
 // Import store & composables
 import { useSettingsStore } from "@/stores/settingsStore";
-import { useCalendar } from "@/composables/useCalendar.js";
+import { useCalendar } from "@/composables/useCalendarSetup.js";
 
 // Import modals
 import EventModal from "./components/EventModal.vue";
@@ -158,8 +158,8 @@ onMounted(() => {
       <div class="view-toggle">
         <Segmented v-model:value="currentView" :options="[
           { label: 'Ngày', value: 'timeGridDay' },
-          { label: 'Tháng', value: 'timeGridWeek' },
-          { label: 'Năm', value: 'dayGridMonth' },
+          { label: 'Tuần', value: 'timeGridWeek' },
+          { label: 'Tháng', value: 'dayGridMonth' },
         ]" @change="changeView" />
       </div>
     </div>
