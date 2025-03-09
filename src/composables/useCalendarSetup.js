@@ -124,7 +124,7 @@ export function useCalendarEvents() {
 }
 
 // Use Calendar Composable
-export function useCalendar() {
+export function useCalendar(calendarRef) {
   const showHolidays = ref(true);
   const calendarKey = ref(0);
   const selectedEvent = ref(null);
@@ -168,7 +168,22 @@ export function useCalendar() {
     },
     { deep: true }
   );
-
+watch(
+    () => ({
+      timeZone: settingsStore.timeZone,
+      firstDay: settingsStore.firstDay,
+      initialDate: settingsStore.initialDate,
+      eventTimeFormat: settingsStore.eventTimeFormat,
+      columnHeaderFormat: settingsStore.columnHeaderFormat,
+      titleFormat: settingsStore.titleFormat,
+      validRange: settingsStore.validRange,
+    }),
+    () => {
+      console.log("Cập nhật lịch từ Pinia Settings Store...");
+      calendarKey.value++; // Buộc FullCalendar render lại
+    },
+    { deep: true }
+  );
   watch(
     () => settingsStore.displayMode,
     (newView) => {
@@ -197,6 +212,7 @@ export function useCalendar() {
     isAddEventModalVisible.value = true;
   };
 
+
   const openEventDetailModal = (info) => {
     selectedEvent.value = {
       id: info.event.id,
@@ -216,7 +232,24 @@ export function useCalendar() {
     };
     isEventDetailModalVisible.value = true;
   };
-
+  const handleEventModalSuccess = async () => {
+    await fetchEvents();
+    updateTransformedEvents();
+  };
+  const handleDeleteEvent = async (eventId) => {
+    // console.log("eventId", eventId);
+    // // Xóa sự kiện từ transformedEvents
+    // transformedEvents.value = transformedEvents.value.filter(event => event.id !== eventId);
+    
+    // // Cập nhật lại lịch
+    // if (calendarRef.value) {
+    //   console.log('delete');
+    //   const calendarApi = calendarRef.value.getApi();
+    //   calendarApi.removeEvent(eventId); // Loại bỏ sự kiện khỏi lịch
+    // }
+    await fetchEvents();
+    updateTransformedEvents();
+  };
   const calendarOptions = computed(() => ({
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin, rrulePlugin, luxonPlugin],
     headerToolbar: false,
@@ -248,20 +281,106 @@ export function useCalendar() {
     loading: (isLoading) => {
       console.log(isLoading ? 'Đang tải sự kiện...' : 'Đã tải xong sự kiện');
     },
+    // Kéo thả
+    eventDrop: async (info) => {
+      try {
+        // Lấy thông tin sự kiện sau khi kéo
+        const taskId = info.event.id;
+        const newStart = info.event.start.toISOString();
+        const newEnd = info.event.end ? info.event.end.toISOString() : null;
+
+        // Hiển thị xác nhận với người dùng
+        const confirmMove = window.confirm(
+          `Bạn có chắc muốn chuyển sự kiện "${info.event.title}" sang ngày ${newStart} không?`
+        );
+
+        if (!confirmMove) {
+          info.revert(); // Nếu chọn "Hủy", hoàn tác
+          return;
+        }
+
+        // Gửi yêu cầu cập nhật task lên API
+        const response = await fetch(`${dirApi}tasks/${taskId}/onDrag`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ start: newStart, end: newEnd }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Cập nhật thất bại");
+        }
+
+        alert(`Sự kiện "${info.event.title}" đã được cập nhật thành công.`);
+      } catch (error) {
+        console.error("Lỗi khi cập nhật sự kiện:", error);
+        alert("Đã xảy ra lỗi khi cập nhật sự kiện!");
+        info.revert(); // Hoàn tác nếu có lỗi
+      }
+    },
+
+     // Update task
+    eventChange: async (info) => {
+      try {
+        const taskId = info.event.id;
+        const newStart = info.event.start.toISOString().replace("T", " ").substring(0, 19);
+        const newEnd = info.event.end ? info.event.end.toISOString().replace("T", " ").substring(0, 19) : null;
+    
+        const updatedData = {
+          start_time: newStart,
+          end_time: newEnd,
+          code: "EDIT_N", // Cập nhật bình thường
+        };
+    
+        const response = await fetch(`${dirApi}tasks/${taskId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedData),
+        });
+    
+        if (!response.ok) {
+          throw new Error("Cập nhật thất bại");
+        }
+    
+        console.log(`Sự kiện "${info.event.title}" đã được cập nhật.`);
+      } catch (error) {
+        console.error("Lỗi khi cập nhật sự kiện:", error);
+        alert("Đã xảy ra lỗi khi cập nhật!");
+        info.revert(); // Hoàn tác nếu lỗi
+      }
+    },
     eventDidMount: (info) => {
       // Khởi tạo tooltip cho sự kiện
+      const { title, start, end, location, description } = info.event;
+    
+      // Định dạng thời gian
+      const startTime = start
+      ? dayjs(start).isSame(dayjs(), 'day')
+        ? "Hôm nay " + dayjs(start).format("HH:mm")
+        : dayjs(start).format("DD/MM/YYYY HH:mm")
+      : "Không có thời gian bắt đầu";
+    
+    const endTime = end
+      ? dayjs(end).isSame(dayjs(), 'day')
+        ? "Hôm nay " + dayjs(end).format("HH:mm")
+        : dayjs(end).format("DD/MM/YYYY HH:mm")
+      : "Không có thời gian kết thúc";
+    
       tippy(info.el, {
         content: `
-        <strong>Tiêu đề</strong><br>
-        Thời gian: Thời gian<br>
-        Địa điểm: Không có thông tin <br>
-        Mô tả: Không có mô tả
-      `,
+          <strong>${title || "Không có tiêu đề"}</strong><br>
+          ${startTime} - ${endTime}<br>
+          Địa điểm: ${location || "Không có thông tin"}<br>
+          Mô tả: ${description || "Không có mô tả"}
+        `,
         allowHTML: true,
         interactive: true,
         theme: 'light',
       });
-    },
+    }
   }));
   return {
     calendarKey,
@@ -269,7 +388,9 @@ export function useCalendar() {
     transformedEvents,
     isAddEventModalVisible,
     isEventDetailModalVisible,
+    handleEventModalSuccess,
     selectedEvent,
+    handleDeleteEvent,
     selectedEventAdd,
   };
 }
