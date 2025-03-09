@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { useCalendarEvents } from "@/composables/useCalendarEvents";
 import dayjs from "dayjs";
+import { DateTime } from "luxon"; 
 
 export const useCalendarStore = defineStore("calendar", () => {
   const { formattedEvents, fetchEvents } = useCalendarEvents();
@@ -12,10 +13,12 @@ export const useCalendarStore = defineStore("calendar", () => {
 
   const isAddEventModalVisible = ref(false);
   const isEventDetailModalVisible = ref(false);
+  const selectedTimezone = ref("UTC"); // Múi giờ mặc định
 
   const loadEvents = async () => {
     await fetchEvents();
     storeEvents.value = formattedEvents.value ? [...formattedEvents.value] : [];
+    updateEventTimes(); 
   };
 
   const addEventStore = (event) => {
@@ -24,6 +27,7 @@ export const useCalendarStore = defineStore("calendar", () => {
     } else {
       storeEvents.value.push(event);
     }
+    updateEventTimes();
   };
 
   const updateEvent = (updatedEvent) => {
@@ -48,7 +52,22 @@ export const useCalendarStore = defineStore("calendar", () => {
     });
   };
   
+  const updateEventTimes = () => {
+    storeEvents.value = storeEvents.value.map((event) => {
+      const start = event.start ? DateTime.fromISO(event.start, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() : null;
+      const end = event.end ? DateTime.fromISO(event.end, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() : null;
 
+      return {
+        ...event,
+        start,
+        end,
+      };
+    });
+  };
+  const updateTimezone = (newTimezone) => {
+    selectedTimezone.value = newTimezone;
+    updateEventTimes(); // Cập nhật thời gian khi thay đổi múi giờ
+  };
   return {
     storeEvents,
     selectedEvent,
@@ -60,5 +79,7 @@ export const useCalendarStore = defineStore("calendar", () => {
     updateEvent,
     deleteEvent,
     getEventsByDate,
+    updateEventTimes,
+    updateTimezone
   };
 });

@@ -4,6 +4,11 @@ import { Modal, Descriptions, Tag, Button, Space, message, Radio } from "ant-des
 import dayjs from "dayjs";
 import axios from "axios";
 import unknowUser from '@/assets/images/unknow_user.jpg';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const props = defineProps({
   isEventDetailModalVisible: Boolean,
@@ -18,18 +23,38 @@ const token = localStorage.getItem('access_token');
 const deleteOption = ref("");
 const eventLink = ref('');
 
+import { useSettingsStore } from "@/stores/settingsStore";
+
+const settingsStore = useSettingsStore();
+
 watch(() => props.isEventDetailModalVisible, (newVal) => {
   isVisible.value = newVal;
 });
 
 watch(
   () => props.event, (newVal) => {
+    console.log("props.event", props.event);
     event.value = newVal;
   },
   { immediate: true, deep: true }
 );
+// watch(
+//   () => settingsStore.timeZone,
+//   (newTimezone) => {
+//     if (event.value.start || event.value.end) {
+//       event.value.start = dayjs.tz(event.value.start, newTimezone).toISOString();
+//       event.value.end = dayjs.tz(event.value.end, newTimezone).toISOString();
+//     }
+//   },
+//   { immediate: true }
+// );
+const formatDate = (date) => {
+  if (!date) return "Không xác định";
 
-const formatDate = (date) => (date ? dayjs(date).format("YYYY-MM-DD HH:mm") : "Không xác định");
+  const eventTimezone = event.value.start ? dayjs.tz(event.value.start).format("Z") : "UTC";
+  const formattedDate = dayjs(date).tz(eventTimezone);
+  return formattedDate.format("YYYY-MM-DD HH:mm");
+};
 
 // Hàm xử lý xóa sự kiện
 const deleteEvent = async ({code, date, id}) => {

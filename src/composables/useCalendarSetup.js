@@ -141,8 +141,25 @@ export function useCalendar(calendarRef) {
     transformedEvents.value = [...formattedEvents.value];
     transformedEvents.value.forEach((event) => calendarStore.addEventStore(event));
     console.log('transformedEvents', transformedEvents.value);
+    
   };
 
+  const updateTimeFomart = () => {
+    transformedEvents.value = transformedEvents.value.map((event) => {
+      const start = event.start 
+        ? DateTime.fromISO(event.start, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
+        : null;
+      const end = event.end 
+        ? DateTime.fromISO(event.end, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
+        : null;
+  
+      return {
+        ...event,
+        start,
+        end,
+      };
+    });
+  };
   onMounted(async () => {
     await fetchEvents();
     updateTransformedEvents();
@@ -150,11 +167,14 @@ export function useCalendar(calendarRef) {
 
   watch(selectedTimezone, (newTimezone) => {
     console.log(`Timezone đã thay đổi: ${newTimezone}`);
+    calendarStore.updateTimezone(newTimezone);
+    updateTimeFomart()
     updateTransformedEvents();
     if (calendarRef.value) {
         const calendarApi = calendarRef.value.getApi();
         calendarApi.setOption('timeZone', newTimezone);
         calendarApi.refetchEvents(); // Cập nhật lại lịch
+        // console.log();
       }
   });
 
@@ -214,6 +234,9 @@ watch(
 
 
   const openEventDetailModal = (info) => {
+    const start = DateTime.fromISO(info.event.startStr, { zone: 'utc' }).setZone(selectedTimezone.value).toISO();
+    const end = DateTime.fromISO(info.event.endStr, { zone: 'utc' }).setZone(selectedTimezone.value).toISO();
+  
     selectedEvent.value = {
       id: info.event.id,
       title: info.event.title,
@@ -230,6 +253,7 @@ watch(
       reminder: info.event.extendedProps.reminder ?? 'none',
       location: info.event.extendedProps.location,
     };
+    console.log("log time-details", selectedEvent.value);
     isEventDetailModalVisible.value = true;
   };
   const handleEventModalSuccess = async () => {
