@@ -75,17 +75,26 @@ export function useCalendarEvents() {
         description: event.description,
         start,
         end,
+        timezone: event.timezone_code,
         allDay: event.is_all_day === 1,
         backgroundColor: event.color_code || '#3788d8',
         borderColor: event.color_code || '#3788d8',
         location: event.location,
         extendedProps: {
+          end_time: event.end_time,
           recurrence: event.is_repeat ?? 0,
           is_reminder: event.is_reminder === 1,
           reminder: event.reminder || [],
           attendees: event.attendees || [],
           is_done: event.is_done === 1,
           is_busy: event.is_busy === 1,
+          freq: event.rrule.freq || 'daily',
+          interval: event.rrule.interval || 1,
+          until: event.rrule.until ? event.rrule.until.replace(' ', 'T') : null,
+          count: event.rrule.count || null,
+          byweekday: event.rrule.byweekday || null,
+          bymonth: event.rrule.bymonth || null,
+          bymonthday: event.rrule.bymonthday || null,
         },
         exdate: Array.isArray(event.exclude_time)
           ? event.exclude_time.map((date) =>
@@ -220,6 +229,8 @@ watch(
       uuid: info.event.extendedProps.uuid,
       start: info.event.startStr,
       end: info.event.endStr,
+      end_time: info.event.extendedProps.end_time,
+      timezone: info.event.extendedProps.timezone,
       color: info.event.backgroundColor,
       is_all_day: info.event.allDay,
       recurrence: info.event.extendedProps.recurrence || 'none',
@@ -229,6 +240,7 @@ watch(
       is_reminder: info.event.extendedProps.is_reminder ?? 'none',
       reminder: info.event.extendedProps.reminder ?? 'none',
       location: info.event.extendedProps.location,
+      info: info.event._def,
     };
     isEventDetailModalVisible.value = true;
   };
@@ -352,35 +364,35 @@ watch(
         info.revert(); // Hoàn tác nếu lỗi
       }
     },
-    eventDidMount: (info) => {
-      // Khởi tạo tooltip cho sự kiện
-      const { title, start, end, location, description } = info.event;
+    // eventDidMount: (info) => {
+    //   // Khởi tạo tooltip cho sự kiện
+    //   const { title, start, end, location, description } = info.event;
     
-      // Định dạng thời gian
-      const startTime = start
-      ? dayjs(start).isSame(dayjs(), 'day')
-        ? "Hôm nay " + dayjs(start).format("HH:mm")
-        : dayjs(start).format("DD/MM/YYYY HH:mm")
-      : "Không có thời gian bắt đầu";
+    //   // Định dạng thời gian
+    //   const startTime = start
+    //   ? dayjs(start).isSame(dayjs(), 'day')
+    //     ? "Hôm nay " + dayjs(start).format("HH:mm")
+    //     : dayjs(start).format("DD/MM/YYYY HH:mm")
+    //   : "Không có thời gian bắt đầu";
     
-    const endTime = end
-      ? dayjs(end).isSame(dayjs(), 'day')
-        ? "Hôm nay " + dayjs(end).format("HH:mm")
-        : dayjs(end).format("DD/MM/YYYY HH:mm")
-      : "Không có thời gian kết thúc";
+    // const endTime = end
+    //   ? dayjs(end).isSame(dayjs(), 'day')
+    //     ? "Hôm nay " + dayjs(end).format("HH:mm")
+    //     : dayjs(end).format("DD/MM/YYYY HH:mm")
+    //   : "Không có thời gian kết thúc";
     
-      tippy(info.el, {
-        content: `
-          <strong>${title || "Không có tiêu đề"}</strong><br>
-          ${startTime} - ${endTime}<br>
-          Địa điểm: ${location || "Không có thông tin"}<br>
-          Mô tả: ${description || "Không có mô tả"}
-        `,
-        allowHTML: true,
-        interactive: true,
-        theme: 'light',
-      });
-    }
+    //   tippy(info.el, {
+    //     content: `
+    //       <strong>${title || "Không có tiêu đề"}</strong><br>
+    //       ${startTime} - ${endTime}<br>
+    //       Địa điểm: ${location || "Không có thông tin"}<br>
+    //       Mô tả: ${description || "Không có mô tả"}
+    //     `,
+    //     allowHTML: true,
+    //     interactive: true,
+    //     theme: 'light',
+    //   });
+    // }
   }));
   return {
     calendarKey,
