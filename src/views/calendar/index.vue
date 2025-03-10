@@ -109,7 +109,7 @@ const openEditDrawer = (event) => {
 
   // đóng modal details
   isEventDetailModalVisible.value = false;
-  console.log("isEditDrawerVisible", isEditDrawerVisible.value);
+  // console.log("isEditDrawerVisible", isEditDrawerVisible.value);
 };
 
 // Điều hướng lịch

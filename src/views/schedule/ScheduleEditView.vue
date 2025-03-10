@@ -1,6 +1,7 @@
 <template>
-    <a-drawer :visible="visible" title="Chi tiết sự kiện" placement="right" :width="drawerWidth"  @close="handleClose" @update:visible="(val) => emit('update:visible', val)">
-        <a-form layout="vertical">
+    <a-drawer :visible="visible" title="Chi tiết sự kiện" placement="right" :width="drawerWidth" @close="handleClose"
+        @update:visible="(val) => emit('update:visible', val)">
+        <a-form layout="vertical" @submit.prevent="handleSubmit">
             <!-- Title -->
             <div class="flex items-center mb-4">
                 <div class="w-6 h-6 mr-2">
@@ -116,33 +117,11 @@
             </div>
 
             <!-- Rich Text Editor -->
+            <!-- Rich Text Editor -->
             <div class="mb-4 border rounded">
-                <div class="flex items-center p-2 border-b">
-                    <a-button type="text">
-                        <BoldOutlined />
-                    </a-button>
-                    <a-button type="text">
-                        <ItalicOutlined />
-                    </a-button>
-                    <a-button type="text">
-                        <UnderlineOutlined />
-                    </a-button>
-                    <a-button type="text">
-                        <StrikethroughOutlined />
-                    </a-button>
-                    <a-divider type="vertical" />
-                    <a-button type="text">
-                        <OrderedListOutlined />
-                    </a-button>
-                    <a-button type="text">
-                        <UnorderedListOutlined />
-                    </a-button>
-                    <a-button type="text">
-                        <LinkOutlined />
-                    </a-button>
-                </div>
-                <a-textarea v-model="formState.richText" :rows="6" :bordered="false" />
+                <QuillEditor v-model:content="formState.richText" contentType="html" :options="editorOptions" />
             </div>
+
 
             <!-- Attachment -->
             <div class="flex mb-6">
@@ -168,7 +147,7 @@
 
             <!-- Buttons -->
             <div class="flex gap-2">
-                <a-button type="primary">Lưu</a-button>
+                <a-button type="primary" @click="handleSubmit">Lưu</a-button>
                 <a-button>Hủy</a-button>
             </div>
         </a-form>
@@ -176,7 +155,7 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref , defineProps, defineEmits } from 'vue';
+import { onBeforeUnmount, onMounted, ref, defineProps, defineEmits, watchEffect, watch, nextTick } from 'vue';
 import {
     CalendarOutlined,
     UserOutlined,
@@ -193,10 +172,28 @@ import {
     UnorderedListOutlined,
     PaperClipOutlined
 } from '@ant-design/icons-vue';
+import { QuillEditor } from '@vueup/vue-quill';
+import 'quill/dist/quill.snow.css';
 
+const editorOptions = {
+    modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline', 'strike'], // In đậm, nghiêng, gạch chân, gạch ngang
+            [{ list: 'ordered' }, { list: 'bullet' }], // Danh sách đánh số, gạch đầu dòng
+            ['link', 'image'], // Chèn link, ảnh
+            [{ align: [] }], // Căn chỉnh văn bản
+        ],
+    },
+    placeholder: 'Nhập nội dung...',
+};
 const drawerWidth = ref('100%');
-const props = defineProps(['visible']);
+const props = defineProps({
+    visible: Boolean,
+    event: Object,
+});
 const emit = defineEmits(['update:visible']);
+
+
 const updateDrawerWidth = () => {
     drawerWidth.value = window.innerWidth > 768 ? '50%' : '100%';
 };
@@ -209,6 +206,29 @@ onMounted(() => {
     updateDrawerWidth();
     window.addEventListener('resize', updateDrawerWidth);
 });
+
+
+watch(() => props.event, async (newEvent) => {
+    if (newEvent) {
+        console.log("🎯 props.event:", newEvent);
+
+        // Đợi Vue cập nhật DOM trước khi set dữ liệu
+        await nextTick();
+
+        // Cập nhật từng thuộc tính, tránh gán toàn bộ object
+        formState.value.title = newEvent.title || "";
+        formState.value.startDate = newEvent.start ? newEvent.start.split("T")[0] : null;
+        formState.value.startTime = newEvent.start ? newEvent.start.split("T")[1].slice(0, 5) : null;
+        formState.value.endDate = newEvent.end_time ? newEvent.end_time.split("T")[0] : null;
+        formState.value.endTime = newEvent.end_time ? newEvent.end_time.split("T")[1].slice(0, 5) : null;
+        formState.value.allDay = newEvent.is_all_day || false;
+        formState.value.repeat = newEvent.recurrence > 0;
+        formState.value.participants = newEvent.attendees || "";
+        formState.value.location = newEvent.location || "";
+        formState.value.url = newEvent.url || "";
+        formState.value.richText = newEvent.description || "";
+    }
+}, { deep: true, immediate: true });
 
 onBeforeUnmount(() => {
     window.removeEventListener('resize', updateDrawerWidth);
@@ -238,6 +258,12 @@ const formState = ref({
     zohoMailTask: false,
     zohoMailNote: false,
 });
+
+
+const handleSubmit = () => {
+    console.log("📌 Form Submitted:", formState.value);
+};
+
 </script>
 
 <style scoped>
