@@ -28,8 +28,6 @@ const selectedTimezone = computed(() => settingsStore.timeZone);
 
 const calendarRef = ref(null);
 
-// Kéo thả
-const { eventDrop } = useCalendarDrop();
 
 // Use Calendar Events Composable
 export function useCalendarEvents() {
@@ -75,6 +73,8 @@ export function useCalendarEvents() {
         title: event.title,
         uuid: event.uuid,
         description: event.description,
+        user_id: event.user_id,
+        type: event.type,
         start,
         end,
         timezone: event.timezone_code,
@@ -124,6 +124,7 @@ export function useCalendarEvents() {
                 wkst: event.rrule.wkst || null,
               }
             : null,
+            duration: event.is_repeat ? calculateDuration(event.start_time, event.end_time) : null,
       };
     })
   );
@@ -229,6 +230,8 @@ watch(
       id: info.event.id,
       title: info.event.title,
       uuid: info.event.extendedProps.uuid,
+      user_id: info.event.extendedProps.user_id,
+      type: info.event.extendedProps.type,
       start: info.event.startStr,
       end: info.event.endStr,
       end_time: info.event.extendedProps.end_time,
