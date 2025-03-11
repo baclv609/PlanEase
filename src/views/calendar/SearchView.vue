@@ -3,7 +3,8 @@ import { onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
 import EventDetailsModal from './components/EventDetailsModal.vue';
-
+import { DateTime } from 'luxon';
+import luxonPlugin from '@fullcalendar/luxon3';
 const token = localStorage.getItem('access_token');
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 
@@ -15,6 +16,7 @@ const calendarDays = ref([]);
 // Ngày đang được chọn
 const event = ref({});
 const isEventDetailModalVisible = ref(false);
+const userSettings = JSON.parse(localStorage.getItem("userSettings")) || {};
 
 // Hàm chọn ngày
 const selectDay = (day) => {
@@ -22,17 +24,26 @@ const selectDay = (day) => {
     id: day.id,
     title: day.title,
     uuid: day.uuid,
-    start: day.start_time,
-    end: day.end_time,
+    user_id: day.user_id,
+    start: DateTime.fromFormat(day.start_time, "yyyy-MM-dd HH:mm:ss", { zone: "UTC" }).setZone(userSettings?.timeZone).toJSDate(),
+    end: day.endStr,
+    end_time: day.end_time,
+    timezone: day.timezone_code,
     color: day.color_code,
     is_all_day: day.is_all_day,
-    recurrence: day.is_repeat || "none",
-    description: day.description || "",
+    recurrence: day.is_repeat || 'none',
+    description: day.description || '',
     attendees: day.attendees,
     is_done: day.is_done,
-    is_reminder: day.is_reminder ?? "none",
-    reminder: day.reminder ?? "none",
+    is_reminder: day.is_reminder ?? 'none',
+    reminder: day.reminder ?? 'none',
     location: day.location,
+    info:  {
+      extendedProps :{
+        freq: day.freq || null,
+        type: day.type,
+      }
+    },
   };
 
   isEventDetailModalVisible.value = true;
