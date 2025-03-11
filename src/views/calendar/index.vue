@@ -30,9 +30,6 @@ import EventModal from "./components/EventModal.vue";
 import EventDetailModal from "./components/EventDetailsModal.vue";
 
 onMounted(() => {
-  console.log("window.Echo:", window.Echo);
-  console.log("window.Pusher:", window.Pusher);
-
   const user = JSON.parse(localStorage.getItem("user")); // Kiểm tra dữ liệu user
   if (!user || !user.id) {
     console.error("❌ Không tìm thấy user.id");
@@ -43,16 +40,24 @@ onMounted(() => {
 
   window.Echo.private(`App.Models.User.${user.id}`)
     .listen(".task.reminder", (data) => {
-      console.log("📢 Nhận thông báo mới:", data);
       alert("Bạn có một nhắc nhở mới!");
+    })
+    .listen(".task.listUpdated", (event) => {
+      console.log('Sự kiện được cập nhật', event);
+      if (event.action === "create") {
+        console.log('Sư kiện được thêm');
+        // handleEventModalSuccess();
+      } else if (event.action === "update") {
+        console.log('Sư kiện được sửa');
+        // handleEventModalSuccess();
+      } else if (event.action === "delete") {
+        console.log('Sư kiện bị xóa');
+        // handleEventModalSuccess();
+      }
     })
     .error((err) => {
       console.error("❌ Lỗi khi đăng ký kênh private:", err);
     });
-
-  setTimeout(() => {
-    console.log("📡 Trạng thái kết nối Pusher:", window.Echo.connector.pusher.connection.state);
-  }, 5000);
 });
 
 const settingsStore = useSettingsStore();

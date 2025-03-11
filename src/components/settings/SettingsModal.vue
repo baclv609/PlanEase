@@ -5,11 +5,9 @@
     width="650px"
     @ok="handleSave"
     @cancel="emit('update:isModalOpen', false)"
+    :footer=null
   >
     <a-tabs :activeKey="activeTab" @change="(key) => (activeTab = key)">
-      <template #rightExtra>
-        <a-button type="primary" danger @click="resetSettings">Reset</a-button>
-      </template>
 
       <!-- Cài đặt giao diện -->
       <a-tab-pane key="display" tab="Giao diện">
@@ -134,6 +132,10 @@
         </a-form>
       </a-tab-pane>
     </a-tabs>
+
+    <div class="flex justify-end mt-4">
+      <a-button type="primary" danger @click="resetSettings">Reset</a-button>
+    </div>
   </a-modal>
 </template>
 

@@ -28,6 +28,18 @@ const selectedTimezone = computed(() => settingsStore.timeZone);
 
 const calendarRef = ref(null);
 
+function calculateDuration(start_time, end_time) {
+  const start = new Date(start_time);
+  const end = new Date(end_time);
+  const diffMs = end - start; // Chênh lệch thời gian (milliseconds)
+
+  const hours = Math.floor(diffMs / (1000 * 60 * 60)); // Chuyển đổi sang giờ
+  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60)); // Lấy phút còn lại
+  const seconds = Math.floor((diffMs % (1000 * 60)) / 1000); // Lấy giây còn lại
+
+  // Định dạng theo HH:mm:ss
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
 
 // Use Calendar Events Composable
 export function useCalendarEvents() {
@@ -73,6 +85,8 @@ export function useCalendarEvents() {
         title: event.title,
         uuid: event.uuid,
         description: event.description,
+        user_id: event.user_id,
+        type: event.type,
         start,
         end,
         timezone: event.timezone_code,
@@ -122,6 +136,7 @@ export function useCalendarEvents() {
                 wkst: event.rrule.wkst || null,
               }
             : null,
+            duration: event.is_repeat ? calculateDuration(event.start_time, event.end_time) : null,
       };
     })
   );
@@ -227,6 +242,8 @@ watch(
       id: info.event.id,
       title: info.event.title,
       uuid: info.event.extendedProps.uuid,
+      user_id: info.event.extendedProps.user_id,
+      type: info.event.extendedProps.type,
       start: info.event.startStr,
       end: info.event.endStr,
       end_time: info.event.extendedProps.end_time,
