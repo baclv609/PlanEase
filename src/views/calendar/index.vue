@@ -22,7 +22,8 @@ import {
 
 // Import store & composables
 import { useSettingsStore } from "@/stores/settingsStore";
-import { useCalendar } from "@/composables/useCalendar.js";
+import { useCalendar } from "@/composables/useCalendarSetup.js";
+import ScheduleEditView from "../schedule/ScheduleEditView.vue";
 
 // Import modals
 import EventModal from "./components/EventModal.vue";
@@ -58,6 +59,8 @@ const settingsStore = useSettingsStore();
 const calendarRef = ref(null);
 
 const currentView = ref(settingsStore.displayMode);
+const isEditDrawerVisible = ref(false);
+const selectedEventToEdit = ref(null); 
 
 //  Đồng bộ `currentView` với `settingsStore`
 watch(() => settingsStore.displayMode, (newView) => {
@@ -98,6 +101,15 @@ const updateCurrentDate = () => {
   if (calendarRef.value) {
     currentDate.value = new Date(calendarRef.value.getApi().getDate()).toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' });
   }
+};
+const openEditDrawer = (event) => {
+  selectedEventToEdit.value = event;
+  console.log("selectedEventToEdit.value:", selectedEventToEdit.value);
+  isEditDrawerVisible.value = true;
+
+  // đóng modal details
+  isEventDetailModalVisible.value = false;
+  console.log("isEditDrawerVisible", isEditDrawerVisible.value);
 };
 
 // Điều hướng lịch
@@ -158,8 +170,8 @@ onMounted(() => {
       <div class="view-toggle">
         <Segmented v-model:value="currentView" :options="[
           { label: 'Ngày', value: 'timeGridDay' },
-          { label: 'Tháng', value: 'timeGridWeek' },
-          { label: 'Năm', value: 'dayGridMonth' },
+          { label: 'Tuần', value: 'timeGridWeek' },
+          { label: 'Tháng', value: 'dayGridMonth' },
         ]" @change="changeView" />
       </div>
     </div>
@@ -168,12 +180,15 @@ onMounted(() => {
     <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions" @datesSet="onDatesSet" />
 
     <!-- Modal thêm sự kiện -->
-    <EventModal :visible="isAddEventModalVisible" :event="selectedEventAdd" @save="handleEventModalSuccess"
+    <EventModal :open="isAddEventModalVisible" :event="selectedEventAdd" @save="handleEventModalSuccess"
       @cancel="isAddEventModalVisible = false" />
 
     <!-- Modal chi tiết sự kiện -->
-    <EventDetailModal :visible="isEventDetailModalVisible" :event="selectedEvent"
+    <EventDetailModal :open="isEventDetailModalVisible" :event="selectedEvent"  @editTask="openEditDrawer"
       @close="isEventDetailModalVisible = false" @delete="handleDeleteEvent" />
+
+      <ScheduleEditView :visible="isEditDrawerVisible" :event="selectedEventToEdit"   @update:visible="isEditDrawerVisible = $event"  />
+
   </div>
 </template>
 

@@ -512,7 +512,7 @@ const resetEventSpecificFields = () => {
 </script>
 
 <template>
-  <Modal :visible="isAddEventModalVisible" title="Sự Kiện" @ok="handleSubmitAdd" @cancel="handleCancel"
+  <Modal :open="isAddEventModalVisible" title="Sự Kiện" @ok="handleSubmitAdd" @cancel="handleCancel"
     width="70%">
     <Form layout="vertical" :rules="rules" :model="formState" ref="formRef">
       <Row :gutter="16">
