@@ -28,6 +28,8 @@ const selectedTimezone = computed(() => settingsStore.timeZone);
 
 const calendarRef = ref(null);
 
+// Kéo thả
+const { eventDrop } = useCalendarDrop();
 
 // Use Calendar Events Composable
 export function useCalendarEvents() {
