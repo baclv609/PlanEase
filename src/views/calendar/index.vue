@@ -23,10 +23,12 @@ import {
 // Import store & composables
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useCalendar } from "@/composables/useCalendarSetup.js";
+import { useCalendarDrop } from "@/composables/useCalendarDrop.js";
 
 // Import modals
 import EventModal from "./components/EventModal.vue";
 import EventDetailModal from "./components/EventDetailsModal.vue";
+
 
 onMounted(() => {
   console.log("window.Echo:", window.Echo);
@@ -67,6 +69,8 @@ watch(() => settingsStore.displayMode, (newView) => {
   currentView.value = newView;
 });
 
+
+
 // Sử dụng composable để quản lý lịch
 const {
   calendarKey,
@@ -78,6 +82,11 @@ const {
   handleDeleteEvent,
   handleEventModalSuccess,
 } = useCalendar(calendarRef);
+
+// Kéo thả
+const isRepeatEventModalVisible = ref(false);
+
+const { eventDrop } = useCalendarDrop(isRepeatEventModalVisible);
 
 onMounted(() => {
   if (calendarRef.value) {
@@ -139,7 +148,7 @@ onMounted(() => {
         <span class="header-title mr-3 capitalize">{{ currentDate }}</span>
 
         <div class="header-controls">
-          
+
           <Button @click="goToPrev" type="text">
             <left-outlined />
           </Button>
@@ -165,7 +174,8 @@ onMounted(() => {
     </div>
 
     <!-- FullCalendar -->
-    <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions" @datesSet="onDatesSet" />
+    <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions" @datesSet="onDatesSet"
+      @eventDrop="eventDrop" />
 
     <!-- Modal thêm sự kiện -->
     <EventModal :open="isAddEventModalVisible" :event="selectedEventAdd" @save="handleEventModalSuccess"
@@ -174,6 +184,9 @@ onMounted(() => {
     <!-- Modal chi tiết sự kiện -->
     <EventDetailModal :open="isEventDetailModalVisible" :event="selectedEvent"
       @close="isEventDetailModalVisible = false" @delete="handleDeleteEvent" />
+
+    <!-- Modal cho sự kiện lặp lại -->
+    <EventDrop :open="isRepeatEventModalVisible" @close="isRepeatEventModalVisible = false" />
   </div>
 </template>
 
@@ -186,7 +199,7 @@ onMounted(() => {
   padding: 10px;
   background: #fff;
   /* border-radius: 8px; */
-   /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
 }
 
 .header-title {

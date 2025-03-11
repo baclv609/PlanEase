@@ -16,6 +16,8 @@ import luxonPlugin from '@fullcalendar/luxon3';
 
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useCalendarStore } from '@/stores/calendarStore';
+import { useCalendarDrop } from "@/composables/useCalendarDrop.js";
+
 
 
 import tippy from 'tippy.js';
@@ -24,6 +26,8 @@ import 'tippy.js/dist/tippy.css'; // Import CSS cho tooltip
 dayjs.extend(utc);
 
 const settingsStore = useSettingsStore();
+const { eventDrop } = useCalendarDrop();
+
 const selectedTimezone = computed(() => settingsStore.timeZone);
 
 const calendarRef = ref(null);
@@ -49,23 +53,23 @@ export function useCalendarEvents() {
 
   const formattedEvents = computed(() =>
     rawEvents.value.map((event) => {
-     
 
-        const start = event.start_time
-        ? DateTime.fromISO(event.start_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
+
+      const start = event.start_time
+        ? DateTime.fromISO(event.start_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO()
         : null;
       const end = event.end_time
-        ? DateTime.fromISO(event.end_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
+        ? DateTime.fromISO(event.end_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO()
         : null;
-        console.log("selectedTimezone", selectedTimezone.value);
+      console.log("selectedTimezone", selectedTimezone.value);
       const rrule =
         event.is_repeat && event.rrule
           ? {
-              dtstart: event.start_time
-                ? new Date(event.start_time).toISOString().replace('.000Z', '')
-                : null,
-              ...event.rrule,
-            }
+            dtstart: event.start_time
+              ? new Date(event.start_time).toISOString().replace('.000Z', '')
+              : null,
+            ...event.rrule,
+          }
           : null;
 
       return {
@@ -89,29 +93,29 @@ export function useCalendarEvents() {
         },
         exdate: Array.isArray(event.exclude_time)
           ? event.exclude_time.map((date) =>
-              new Date(date).toISOString().replace('.000Z', '').slice(0, 16)
-            )
+            new Date(date).toISOString().replace('.000Z', '').slice(0, 16)
+          )
           : undefined,
         rrule:
           event.is_repeat && event.rrule
             ? {
-                dtstart: event.start_time
+              dtstart: event.start_time
                 ? new Date(event.start_time).toISOString().replace('.000Z', '')
                 : null,
-                freq: event.rrule.freq || 'daily',
-                interval: event.rrule.interval || 1,
-                until: event.rrule.until ? event.rrule.until.replace(' ', 'T') : null,
-                count: event.rrule.count || null,
-                byweekday: event.rrule.byweekday || null,
-                bymonth: event.rrule.bymonth || null,
-                bymonthday: event.rrule.bymonthday || null,
-                byyearday: event.rrule.byyearday || null,
-                byweekno: event.rrule.byweekno || null,
-                byhour: event.rrule.byhour || null,
-                byminute: event.rrule.byminute || null,
-                bysecond: event.rrule.bysecond || null,
-                wkst: event.rrule.wkst || null,
-              }
+              freq: event.rrule.freq || 'daily',
+              interval: event.rrule.interval || 1,
+              until: event.rrule.until ? event.rrule.until.replace(' ', 'T') : null,
+              count: event.rrule.count || null,
+              byweekday: event.rrule.byweekday || null,
+              bymonth: event.rrule.bymonth || null,
+              bymonthday: event.rrule.bymonthday || null,
+              byyearday: event.rrule.byyearday || null,
+              byweekno: event.rrule.byweekno || null,
+              byhour: event.rrule.byhour || null,
+              byminute: event.rrule.byminute || null,
+              bysecond: event.rrule.bysecond || null,
+              wkst: event.rrule.wkst || null,
+            }
             : null,
       };
     })
@@ -152,10 +156,10 @@ export function useCalendar(calendarRef) {
     console.log(`Timezone đã thay đổi: ${newTimezone}`);
     updateTransformedEvents();
     if (calendarRef.value) {
-        const calendarApi = calendarRef.value.getApi();
-        calendarApi.setOption('timeZone', newTimezone);
-        calendarApi.refetchEvents(); // Cập nhật lại lịch
-      }
+      const calendarApi = calendarRef.value.getApi();
+      calendarApi.setOption('timeZone', newTimezone);
+      calendarApi.refetchEvents(); // Cập nhật lại lịch
+    }
   });
 
   watch(
@@ -168,7 +172,7 @@ export function useCalendar(calendarRef) {
     },
     { deep: true }
   );
-watch(
+  watch(
     () => ({
       timeZone: settingsStore.timeZone,
       firstDay: settingsStore.firstDay,
@@ -240,7 +244,7 @@ watch(
     // console.log("eventId", eventId);
     // // Xóa sự kiện từ transformedEvents
     // transformedEvents.value = transformedEvents.value.filter(event => event.id !== eventId);
-    
+
     // // Cập nhật lại lịch
     // if (calendarRef.value) {
     //   console.log('delete');
@@ -265,6 +269,7 @@ watch(
     editable: true,
     selectable: true,
     events: transformedEvents.value.length ? transformedEvents.value : [],
+    eventDrop,
     nowIndicator: true,
     dateClick: openAddEventModal,
     eventClick: openEventDetailModal,
@@ -281,106 +286,43 @@ watch(
     loading: (isLoading) => {
       console.log(isLoading ? 'Đang tải sự kiện...' : 'Đã tải xong sự kiện');
     },
+
     // Kéo thả
     eventDrop: async (info) => {
-      try {
-        // Lấy thông tin sự kiện sau khi kéo
-        const taskId = info.event.id;
-        const newStart = info.event.start.toISOString();
-        const newEnd = info.event.end ? info.event.end.toISOString() : null;
-
-        // Hiển thị xác nhận với người dùng
-        const confirmMove = window.confirm(
-          `Bạn có chắc muốn chuyển sự kiện "${info.event.title}" sang ngày ${newStart} không?`
-        );
-
-        if (!confirmMove) {
-          info.revert(); // Nếu chọn "Hủy", hoàn tác
-          return;
-        }
-
-        // Gửi yêu cầu cập nhật task lên API
-        const response = await fetch(`${dirApi}tasks/${taskId}/onDrag`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ start: newStart, end: newEnd }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Cập nhật thất bại");
-        }
-
-        alert(`Sự kiện "${info.event.title}" đã được cập nhật thành công.`);
-      } catch (error) {
-        console.error("Lỗi khi cập nhật sự kiện:", error);
-        alert("Đã xảy ra lỗi khi cập nhật sự kiện!");
-        info.revert(); // Hoàn tác nếu có lỗi
-      }
+      await eventDrop(info); 
+      console.log("Sự kiện đã được kéo thả:", info.event.title);
     },
 
-     // Update task
-    eventChange: async (info) => {
-      try {
-        const taskId = info.event.id;
-        const newStart = info.event.start.toISOString().replace("T", " ").substring(0, 19);
-        const newEnd = info.event.end ? info.event.end.toISOString().replace("T", " ").substring(0, 19) : null;
-    
-        const updatedData = {
-          start_time: newStart,
-          end_time: newEnd,
-          code: "EDIT_N", // Cập nhật bình thường
-        };
-    
-        const response = await fetch(`${dirApi}tasks/${taskId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedData),
-        });
-    
-        if (!response.ok) {
-          throw new Error("Cập nhật thất bại");
-        }
-    
-        console.log(`Sự kiện "${info.event.title}" đã được cập nhật.`);
-      } catch (error) {
-        console.error("Lỗi khi cập nhật sự kiện:", error);
-        alert("Đã xảy ra lỗi khi cập nhật!");
-        info.revert(); // Hoàn tác nếu lỗi
-      }
-    },
-    eventDidMount: (info) => {
-      // Khởi tạo tooltip cho sự kiện
-      const { title, start, end, location, description } = info.event;
-    
-      // Định dạng thời gian
-      const startTime = start
-      ? dayjs(start).isSame(dayjs(), 'day')
-        ? "Hôm nay " + dayjs(start).format("HH:mm")
-        : dayjs(start).format("DD/MM/YYYY HH:mm")
-      : "Không có thời gian bắt đầu";
-    
-    const endTime = end
-      ? dayjs(end).isSame(dayjs(), 'day')
-        ? "Hôm nay " + dayjs(end).format("HH:mm")
-        : dayjs(end).format("DD/MM/YYYY HH:mm")
-      : "Không có thời gian kết thúc";
-    
-      tippy(info.el, {
-        content: `
-          <strong>${title || "Không có tiêu đề"}</strong><br>
-          ${startTime} - ${endTime}<br>
-          Địa điểm: ${location || "Không có thông tin"}<br>
-          Mô tả: ${description || "Không có mô tả"}
-        `,
-        allowHTML: true,
-        interactive: true,
-        theme: 'light',
-      });
-    }
+
+    // eventDidMount: (info) => {
+    //   // Khởi tạo tooltip cho sự kiện
+    //   const { title, start, end, location, description } = info.event;
+
+    //   // Định dạng thời gian
+    //   const startTime = start
+    //     ? dayjs(start).isSame(dayjs(), 'day')
+    //       ? "Hôm nay " + dayjs(start).format("HH:mm")
+    //       : dayjs(start).format("DD/MM/YYYY HH:mm")
+    //     : "Không có thời gian bắt đầu";
+
+    //   const endTime = end
+    //     ? dayjs(end).isSame(dayjs(), 'day')
+    //       ? "Hôm nay " + dayjs(end).format("HH:mm")
+    //       : dayjs(end).format("DD/MM/YYYY HH:mm")
+    //     : "Không có thời gian kết thúc";
+
+    //   tippy(info.el, {
+    //     content: `
+    //       <strong>${title || "Không có tiêu đề"}</strong><br>
+    //       ${startTime} - ${endTime}<br>
+    //       Địa điểm: ${location || "Không có thông tin"}<br>
+    //       Mô tả: ${description || "Không có mô tả"}
+    //     `,
+    //     allowHTML: true,
+    //     interactive: true,
+    //     theme: 'light',
+    //   });
+    // }
   }));
   return {
     calendarKey,

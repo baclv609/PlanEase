@@ -26,6 +26,7 @@
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
+    "element-plus": "^2.9.6",
     "fullcalendar": "^6.1.15",
     "laravel-echo": "^2.0.2",
     "luxon": "^3.5.0",
