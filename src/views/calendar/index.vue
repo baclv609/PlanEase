@@ -23,6 +23,7 @@ import {
 // Import store & composables
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useCalendar } from "@/composables/useCalendarSetup.js";
+import { useCalendarDrop } from '@/composables/useCalendarDrop';
 import ScheduleEditView from "../schedule/ScheduleEditView.vue";
 
 // Import modals
