@@ -16,7 +16,7 @@
                 </div>
                 <a-input placeholder="Add title"
                     class="border-0 border-b border-gray-200 px-0 text-lg focus:shadow-none" :bordered="false"
-                    v-model="formState.title" />
+                    :value="formState.title" />
             </div>
 
             <!-- Date and Time -->
@@ -24,9 +24,10 @@
                 <div class="w-6 h-6 mr-2">
                     <CalendarOutlined class="text-gray-500" />
                 </div>
-                <a-range-picker :value="[formState.start, formState.end]" show-time class="w-full md:w-1/2 lg:w-2/5"
-                    format="YYYY-MM-DD HH:mm:ss" :disabled="formState.allDay">
-                </a-range-picker>
+                <DatePicker :value="formState.start" show-time class="w-full min-w-[200px]" format="YYYY-MM-DD HH:mm"
+                    :disabled="formState.allDay" />
+                <DatePicker :value="formState.end" show-time class="w-full min-w-[200px]" format="YYYY-MM-DD HH:mm"
+                    :disabled="formState.allDay" />
                 <div class="ml-4">
                     <a-select v-model:value="formState.timezone_code" show-search placeholder="Múi giờ"
                         :filter-option="filterOption" class="w-full"> <!-- Điều chỉnh chiều dài -->
@@ -39,8 +40,8 @@
 
             <!-- All day & Repeat -->
             <div class="flex items-center mb-4 ml-8">
-                <a-checkbox v-model:checked="formState.allDay">Cả ngày</a-checkbox>
-                <a-checkbox v-model:checked="formState.is_repeat" class="ml-6">Lặp lại</a-checkbox>
+                <a-checkbox :checked="formState.allDay">Cả ngày</a-checkbox>
+                <a-checkbox :checked="formState.is_repeat" class="ml-6">Lặp lại</a-checkbox>
             </div>
 
 
@@ -49,7 +50,7 @@
                 <div class="w-6 h-6 mr-2">
                     <EnvironmentOutlined class="text-gray-500" />
                 </div>
-                <a-input placeholder="Địa điểm" class="bg-gray-50" v-model="formState.location" />
+                <a-input placeholder="Địa điểm" class="bg-gray-50" :value="formState.location" />
             </div>
 
             <!-- Event Type -->
@@ -59,13 +60,13 @@
                 </div>
                 <div class="w-full md:w-1/3">
                     <!-- <label class="block text-sm font-medium mb-2">Lịch trình</label> -->
-                    <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="w-full rounded-lg">
+                    <Select :value="formState.type" placeholder="Loại sự kiện" class="w-full rounded-lg">
                         <Select.Option value="event">Sự kiện</Select.Option>
                         <Select.Option value="task">Việc cần làm</Select.Option>
                     </Select>
                 </div>
                 <div class="w-full md:w-1/3">
-                    <a-select v-model="formState.color_code" placeholder="Chọn màu" class="w-full rounded-lg">
+                    <a-select :value="formState.color_code" placeholder="Chọn màu" class="w-full rounded-lg">
                         <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
                             <div class="flex items-center">
                                 <div class="w-4 h-4 mr-2" :style="{ backgroundColor: color.value }"></div>
@@ -285,7 +286,7 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref, defineProps, defineEmits, watchEffect, watch, nextTick } from 'vue';
+import { onBeforeUnmount, onMounted, ref, defineProps, defineEmits, watchEffect, watch, nextTick, computed } from 'vue';
 import {
     CalendarOutlined,
     UserOutlined,
@@ -305,9 +306,17 @@ import {
 import { Button, Checkbox, Col, InputNumber, message, Row, Card, Tag, Select, DatePicker, Input } from 'ant-design-vue';
 import { QuillEditor } from '@vueup/vue-quill';
 import 'quill/dist/quill.snow.css';
-import moment from "moment-timezone";
+// import moment from "moment-timezone";
+import moment from 'moment';
 import debounce from 'lodash/debounce';
 import axios from 'axios';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import { DateTime } from "luxon";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const editorOptions = {
     modules: {
@@ -333,8 +342,6 @@ const token = localStorage.getItem('access_token');
 const timezones = moment.tz.names();
 const tags = ref([]);
 
-
-
 const updateDrawerWidth = () => {
     drawerWidth.value = window.innerWidth > 768 ? '50%' : '100%';
 };
@@ -347,29 +354,65 @@ onMounted(() => {
     updateDrawerWidth();
     window.addEventListener('resize', updateDrawerWidth);
 });
+const formatDateTime = (isoString) => {
+    return DateTime.fromISO(isoString).toFormat("yyyy-MM-dd HH:mm");
+};
+const updateFormStateFromProps = (event) => {
+    if (event) {
+        console.log("event.info", event.info.extendedProps);
+        formState.value.id = event.id || null;
+        formState.value.title = event.title || "";
+        formState.value.start = event.start ? dayjs(event.start) : null;
+        formState.value.end = event.end ? dayjs(event.end) : null;
+        formState.value.allDay = event.is_all_day || false;
+        formState.value.type = event.type || "event";
+        formState.value.location = event.location || "";
+        formState.value.url = event.url || "";
+        formState.value.attendees = Array.isArray(event.attendees) ? [...event.attendees] : [];
+        formState.value.color_code = event.color || "#ff4d4f"; // Mặc định màu
+        formState.value.is_reminder = event.is_reminder || false;
+        formState.value.reminder = Array.isArray(event.reminder) ? [...event.reminder] : [];
+        formState.value.is_repeat = event.recurrence === 1;
 
 
-watch(() => props.event, async (newEvent) => {
-    if (newEvent) {
-        console.log("🎯 props.event:", newEvent);
+        // Cờ trạng thái
+        formState.value.is_done = event.extendedProps?.is_done || false;
+        formState.value.is_busy = event.extendedProps?.is_busy || false;
+        formState.value.is_reminder = event.extendedProps?.is_reminder || event.extendedProps?.recurrence === 1;
+        formState.value.recurrence = event.extendedProps?.recurrence || null;
 
-        // Đợi Vue cập nhật DOM trước khi set dữ liệu
-        await nextTick();
+        // Người tham gia
+        formState.value.attendees = Array.isArray(event.info?.extendedProps?.attendees)
+            ? [...event.info.extendedProps.attendees]
+            : [];
+        // Nhắc nhở
+        formState.value.reminder = Array.isArray(event.info?.extendedProps?.reminder)
+            ? [...event.info.extendedProps.reminder]
+            : [];
+        formState.value.timezone_code = event.info?.extendedProps?.timezone || "UTC";
 
-        // Cập nhật từng thuộc tính, tránh gán toàn bộ object
-        formState.value.title = newEvent.title || "";
-        formState.value.startDate = newEvent.start ? newEvent.start.split("T")[0] : null;
-        formState.value.startTime = newEvent.start ? newEvent.start.split("T")[1].slice(0, 5) : null;
-        formState.value.endDate = newEvent.end_time ? newEvent.end_time.split("T")[0] : null;
-        formState.value.endTime = newEvent.end_time ? newEvent.end_time.split("T")[1].slice(0, 5) : null;
-        formState.value.allDay = newEvent.is_all_day || false;
-        formState.value.repeat = newEvent.recurrence > 0;
-        formState.value.participants = newEvent.attendees || "";
-        formState.value.location = newEvent.location || "";
-        formState.value.url = newEvent.url || "";
-        formState.value.richText = newEvent.description || "";
+        // Cấu hình RRULE (Recurring Rule)
+        formState.value.rrule = {
+            freq: event.info?.extendedProps?.freq || null,
+            interval: event.info?.extendedProps?.interval ?? 1,
+            count: event.info?.extendedProps?.count ?? null,
+            until: event.info?.extendedProps?.until
+                ? dayjs(event.info.extendedProps.until).format("YYYY-MM-DD HH:mm:ss")
+                : dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+            byweekday: event.info?.extendedProps?.byweekday || null,
+            bymonthday: event.info?.extendedProps?.bymonthday || null,
+            bymonth: event.info?.extendedProps?.bymonth || null,
+        };
+
     }
-}, { deep: true, immediate: true });
+};
+
+
+
+// Theo dõi sự thay đổi của props.event
+watch(() => props.event, (newEvent) => {
+    updateFormStateFromProps(newEvent);
+}, { immediate: true });
 
 onBeforeUnmount(() => {
     window.removeEventListener('resize', updateDrawerWidth);
@@ -378,8 +421,8 @@ onBeforeUnmount(() => {
 const formState = ref({
     id: null,
     title: '',
-    start: null,
-    end: null,
+    start: dayjs(),
+    end: dayjs().add(1, 'hour'),
     allDay: false,
     repeat: false,
     attendees: [],
@@ -422,7 +465,6 @@ const formState = ref({
     zohoMailTask: false,
     zohoMailNote: false,
 });
-//  Watch khi người dùng bật/tắt chế độ lặp lại
 // Watch cho is_repeat
 watch(
     () => formState.value.is_repeat,
@@ -444,7 +486,7 @@ watch(
                 bymonthday: [],
                 bymonth: [],
                 bysetpos: [],
-                endType: "", // 'count' hoặc 'until'
+                endType: "",
             };
         } else {
             // Nếu tắt, xóa rrule
@@ -455,7 +497,7 @@ watch(
 );
 
 watch(
-    () => formState.value.is_all_day,
+    () => formState.value.allDay,
     (newValue) => {
         if (newValue) {
             // Giữ nguyên ngày nhưng set giờ về 00:00:00 và 23:59:59
@@ -521,6 +563,14 @@ const formatReminders = (reminders) => {
     return formattedReminders.filter((reminder, index, self) =>
         index === self.findIndex((r) => r.type === reminder.type && r.set_time === reminder.set_time)
     );
+};
+const handleDateChange = (dates) => {
+    if (dates && dates.length === 2) {
+        start.value = dates[0]; // Cập nhật biến start
+        end.value = dates[1];   // Cập nhật biến end
+        console.log("Thời gian bắt đầu:", start.value.format("YYYY-MM-DD HH:mm:ss"));
+        console.log("Thời gian kết thúc:", end.value.format("YYYY-MM-DD HH:mm:ss"));
+    }
 };
 const removeReminder = (index) => {
     formState.value.reminder.splice(index, 1);
@@ -630,8 +680,13 @@ const handleExcludeDate = (date) => {
     }
 };
 const handleSubmit = () => {
-    const [start, end] = formState.value.start && formState.value.end;
-    console.log("📌 Form Submitted:", { ...formState.value, start, end });
+    const start = formState.value.start;
+    const end = formState.value.end;
+    // console.log("📌 Form Submitted:", { ...formState.value, start, end });
+
+    console.log("Dữ liệu sự kiện:", formState.value);
+    console.log("Thời gian bắt đầu:", start);
+    console.log("Thời gian kết thúc:", end);
 };
 
 </script>
@@ -644,9 +699,11 @@ const handleSubmit = () => {
 :deep(.ant-select-selector) {
     background-color: rgb(249, 250, 251) !important;
 }
+
 /* Tăng khoảng cách giữa các phần tử */
 .grid {
-    gap: 1.5rem; /* Tăng khoảng cách giữa các cột */
+    gap: 1.5rem;
+    /* Tăng khoảng cách giữa các cột */
 }
 
 .switch-checkbox {
@@ -654,12 +711,15 @@ const handleSubmit = () => {
 }
 
 /* Tùy chỉnh cho các thành phần chọn và nhập */
-.a-select, .ant-input {
-    border-radius: 8px; /* Tạo góc bo tròn */
+.a-select,
+.ant-input {
+    border-radius: 8px;
+    /* Tạo góc bo tròn */
 }
 
 /* Tùy chỉnh cho Tag */
 .ant-tag {
-    margin-top: 0.5rem; /* Tăng khoảng cách trên cho tag */
+    margin-top: 0.5rem;
+    /* Tăng khoảng cách trên cho tag */
 }
 </style>
