@@ -16,7 +16,7 @@ import luxonPlugin from '@fullcalendar/luxon3';
 
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useCalendarStore } from '@/stores/calendarStore';
-
+import { useCalendarDrop } from '@/composables/useCalendarDrop';
 
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css'; // Import CSS cho tooltip
@@ -28,6 +28,22 @@ const selectedTimezone = computed(() => settingsStore.timeZone);
 
 const calendarRef = ref(null);
 
+// Kéo thả
+const { eventDrop } = useCalendarDrop();
+
+
+function calculateDuration(start_time, end_time) {
+  const start = new Date(start_time);
+  const end = new Date(end_time);
+  const diffMs = end - start; // Chênh lệch thời gian (milliseconds)
+
+  const hours = Math.floor(diffMs / (1000 * 60 * 60)); // Chuyển đổi sang giờ
+  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60)); // Lấy phút còn lại
+  const seconds = Math.floor((diffMs % (1000 * 60)) / 1000); // Lấy giây còn lại
+
+  // Định dạng theo HH:mm:ss
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
 
 // Use Calendar Events Composable
 export function useCalendarEvents() {
@@ -73,6 +89,8 @@ export function useCalendarEvents() {
         title: event.title,
         uuid: event.uuid,
         description: event.description,
+        user_id: event.user_id,
+        type: event.type,
         start,
         end,
         timezone: event.timezone_code,
@@ -122,6 +140,7 @@ export function useCalendarEvents() {
                 wkst: event.rrule.wkst || null,
               }
             : null,
+            duration: event.is_repeat ? calculateDuration(event.start_time, event.end_time) : null,
       };
     })
   );
@@ -227,6 +246,8 @@ watch(
       id: info.event.id,
       title: info.event.title,
       uuid: info.event.extendedProps.uuid,
+      user_id: info.event.extendedProps.user_id,
+      type: info.event.extendedProps.type,
       start: info.event.startStr,
       end: info.event.endStr,
       end_time: info.event.extendedProps.end_time,
@@ -277,6 +298,7 @@ watch(
     editable: true,
     selectable: true,
     events: transformedEvents.value.length ? transformedEvents.value : [],
+    eventDrop,
     nowIndicator: true,
     dateClick: openAddEventModal,
     eventClick: openEventDetailModal,
@@ -290,80 +312,14 @@ watch(
       };
       isAddEventModalVisible.value = true;
     },
+
     loading: (isLoading) => {
       console.log(isLoading ? 'Đang tải sự kiện...' : 'Đã tải xong sự kiện');
     },
-    // Kéo thả
-    eventDrop: async (info) => {
-      try {
-        // Lấy thông tin sự kiện sau khi kéo
-        const taskId = info.event.id;
-        const newStart = info.event.start.toISOString();
-        const newEnd = info.event.end ? info.event.end.toISOString() : null;
-
-        // Hiển thị xác nhận với người dùng
-        const confirmMove = window.confirm(
-          `Bạn có chắc muốn chuyển sự kiện "${info.event.title}" sang ngày ${newStart} không?`
-        );
-
-        if (!confirmMove) {
-          info.revert(); // Nếu chọn "Hủy", hoàn tác
-          return;
-        }
-
-        // Gửi yêu cầu cập nhật task lên API
-        const response = await fetch(`${dirApi}tasks/${taskId}/onDrag`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ start: newStart, end: newEnd }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Cập nhật thất bại");
-        }
-
-        alert(`Sự kiện "${info.event.title}" đã được cập nhật thành công.`);
-      } catch (error) {
-        console.error("Lỗi khi cập nhật sự kiện:", error);
-        alert("Đã xảy ra lỗi khi cập nhật sự kiện!");
-        info.revert(); // Hoàn tác nếu có lỗi
-      }
-    },
-
-     // Update task
-    eventChange: async (info) => {
-      try {
-        const taskId = info.event.id;
-        const newStart = info.event.start.toISOString().replace("T", " ").substring(0, 19);
-        const newEnd = info.event.end ? info.event.end.toISOString().replace("T", " ").substring(0, 19) : null;
     
-        const updatedData = {
-          start_time: newStart,
-          end_time: newEnd,
-          code: "EDIT_N", // Cập nhật bình thường
-        };
+
+     
     
-        const response = await fetch(`${dirApi}tasks/${taskId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedData),
-        });
-    
-        if (!response.ok) {
-          throw new Error("Cập nhật thất bại");
-        }
-    
-        console.log(`Sự kiện "${info.event.title}" đã được cập nhật.`);
-      } catch (error) {
-        console.error("Lỗi khi cập nhật sự kiện:", error);
-        alert("Đã xảy ra lỗi khi cập nhật!");
-        info.revert(); // Hoàn tác nếu lỗi
-      }
-    },
     // eventDidMount: (info) => {
     //   // Khởi tạo tooltip cho sự kiện
     //   const { title, start, end, location, description } = info.event;

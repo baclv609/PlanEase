@@ -11,9 +11,11 @@ import {
 } from "@ant-design/icons-vue";
 import { useRoute, useRouter } from "vue-router";
 import dayjs from 'dayjs';
+import axios from 'axios';
 
 const router = useRouter();
 const route = useRoute();
+
 
 const searchQuery = ref("");
 const showFilters = ref(false); // Ẩn bộ lọc ban đầu
@@ -24,12 +26,28 @@ const eventName = ref("");
 const start = ref(null);
 const end = ref(null);
 const location = ref("");
+const token = localStorage.getItem('access_token');
+const dirApi = import.meta.env.VITE_API_BASE_URL;
 
-const searchOptions = [
-    { value: "active", label: "Lịch đang hoạt động" },
-    { value: "past", label: "Lịch đã qua" },
-];
+const searchOptions = ref([]);
 
+const fetchTags = async () => {
+    try {
+        const response = await axios.get(`${dirApi}tags`, {
+            headers: {
+            'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if(response.data.code == 200){
+            searchOptions.value = response.data.data.map(tag => ({ label: tag.name, value: tag.id }));
+        }
+    } catch (error) {
+        console.error('Error fetching tags:', error);
+    }
+};
+
+fetchTags();
 const toggleFilters = () => {
     showFilters.value = !showFilters.value;
 };
