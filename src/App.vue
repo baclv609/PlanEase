@@ -5,6 +5,8 @@ import { version } from "../package.json";
 import { DEFAULT_LAYOUT } from "@/constants";
 import { useSettings } from "@/composables/useSettings";
 import { useSettingsStore } from "@/stores/settingsStore";
+import EventSidebar from "@/components/layout/EventSidebar.vue";
+
 
 const settingsStore = useSettingsStore();
 
@@ -41,4 +43,12 @@ const theme = {
       </component>
     </Suspense>
   </AConfigProvider>
+
+  <div class="flex">
+    <EventSidebar />
+    <Calendar /> <!-- Component lịch chính -->
+  </div>
 </template>
+
+
+

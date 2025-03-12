@@ -21,7 +21,7 @@
     "@syncfusion/ej2-vue-schedule": "^28.1.39",
     "@types/node": "^22.10.7",
     "ant-design-vue": "^4.2.6",
-    "axios": "^1.7.9",
+    "axios": "^1.8.2",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
@@ -33,7 +33,7 @@
     "qalendar": "^3.9.0",
     "rrule": "^2.8.1",
     "vue": "^3.5.13",
-    "vue-i18n": "^11.0.0-rc.1",
+    "vue-i18n": "^11.1.2",
     "vue-request": "^2.0.4",
     "vue-router": "^4.5.0"
   },

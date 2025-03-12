@@ -20,6 +20,8 @@ const app = createApp(App);
 registerGlobalComponent(app);
 
 
+
+
 document.title = import.meta.env.VITE_APP_TITLE || "Notibro";
 
 const favicon = document.getElementById("favicon");
