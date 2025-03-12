@@ -31,6 +31,20 @@ const calendarRef = ref(null);
 // Kéo thả
 const { eventDrop } = useCalendarDrop();
 
+
+function calculateDuration(start_time, end_time) {
+  const start = new Date(start_time);
+  const end = new Date(end_time);
+  const diffMs = end - start; // Chênh lệch thời gian (milliseconds)
+
+  const hours = Math.floor(diffMs / (1000 * 60 * 60)); // Chuyển đổi sang giờ
+  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60)); // Lấy phút còn lại
+  const seconds = Math.floor((diffMs % (1000 * 60)) / 1000); // Lấy giây còn lại
+
+  // Định dạng theo HH:mm:ss
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
 // Use Calendar Events Composable
 export function useCalendarEvents() {
   const rawEvents = ref([]);
