@@ -24,10 +24,10 @@
                 <div class="w-6 h-6 mr-2">
                     <CalendarOutlined class="text-gray-500" />
                 </div>
-                <DatePicker :value="formState.start" show-time class="w-full min-w-[200px]" format="YYYY-MM-DD HH:mm"
-                    :disabled="formState.allDay" />
-                <DatePicker :value="formState.end" show-time class="w-full min-w-[200px]" format="YYYY-MM-DD HH:mm"
-                    :disabled="formState.allDay" />
+                <DatePicker v-model:value="formState.start" show-time class="w-full min-w-[200px]"
+                    format="YYYY-MM-DD HH:mm" :disabled="formState.allDay" />
+                <DatePicker v-model:value="formState.end" show-time class="w-full min-w-[200px]"
+                    format="YYYY-MM-DD HH:mm" :disabled="formState.allDay" />
                 <div class="ml-4">
                     <a-select v-model:value="formState.timezone_code" show-search placeholder="Múi giờ"
                         :filter-option="filterOption" class="w-full"> <!-- Điều chỉnh chiều dài -->
@@ -40,8 +40,8 @@
 
             <!-- All day & Repeat -->
             <div class="flex items-center mb-4 ml-8">
-                <a-checkbox :checked="formState.allDay">Cả ngày</a-checkbox>
-                <a-checkbox :checked="formState.is_repeat" class="ml-6">Lặp lại</a-checkbox>
+                <a-checkbox v-model:checked="formState.allDay">Cả ngày</a-checkbox>
+                <a-checkbox v-model:checked="formState.is_repeat" class="ml-6">Lặp lại</a-checkbox>
             </div>
 
 
@@ -50,7 +50,7 @@
                 <div class="w-6 h-6 mr-2">
                     <EnvironmentOutlined class="text-gray-500" />
                 </div>
-                <a-input placeholder="Địa điểm" class="bg-gray-50" :value="formState.location" />
+                <a-input placeholder="Địa điểm" class="bg-gray-50" v-model:value="formState.location" />
             </div>
 
             <!-- Event Type -->
@@ -60,7 +60,7 @@
                 </div>
                 <div class="w-full md:w-1/3">
                     <!-- <label class="block text-sm font-medium mb-2">Lịch trình</label> -->
-                    <Select :value="formState.type" placeholder="Loại sự kiện" class="w-full rounded-lg">
+                    <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="w-full rounded-lg">
                         <Select.Option value="event">Sự kiện</Select.Option>
                         <Select.Option value="task">Việc cần làm</Select.Option>
                     </Select>
@@ -116,12 +116,7 @@
                             <a-spin size="small" />
                         </template>
                     </a-select>
-                    <!-- <a-input placeholder="Mời người tham gia cá nhân hoặc các nhóm của bạn" class="bg-gray-50 mb-1"
-                        v-model="formState.participants" /> -->
-                    <!-- <div class="flex items-center text-sm text-blue-600">
-                        <span>Quản lý xem rảnh rỗi...</span>
-                        <a-checkbox v-model="formState.allowSendMessage" class="ml-6">Cho Phép Gửi Chuyển</a-checkbox>
-                    </div> -->
+
                     <div>
                         <a-switch v-model="formState.shareLink" /> Chia sẻ sự kiện
                         <span v-if="formState.shareLink">Link: {{ generatedLink }}</span>
@@ -357,60 +352,114 @@ onMounted(() => {
 const formatDateTime = (isoString) => {
     return DateTime.fromISO(isoString).toFormat("yyyy-MM-dd HH:mm");
 };
+// const updateFormStateFromProps = (event) => {
+//     if (event) {
+//         console.log("event.info", event.info.extendedProps);
+//         formState.value.id = event.id || null;
+//         formState.value.title = event.title || "";
+//         formState.value.start = event.start ? dayjs(event.start) : null;
+//         formState.value.end = event.end ? dayjs(event.end) : null;
+//         formState.value.allDay = event.is_all_day || false;
+//         formState.value.type = event.type || "event";
+//         formState.value.location = event.location || "";
+//         formState.value.url = event.url || "";
+//         formState.value.attendees = Array.isArray(event.attendees) ? [...event.attendees] : [];
+//         formState.value.color_code = event.color || "#ff4d4f"; 
+//         formState.value.is_reminder = event.is_reminder || false;
+//         formState.value.reminder = Array.isArray(event.reminder) ? [...event.reminder] : [];
+//         formState.value.is_repeat = event.recurrence === 1;
+
+
+//         // Cờ trạng thái
+//         formState.value.is_done = event.extendedProps?.is_done || false;
+//         formState.value.is_busy = event.extendedProps?.is_busy || false;
+//         formState.value.is_reminder = event.extendedProps?.is_reminder || event.extendedProps?.recurrence === 1;
+//         formState.value.recurrence = event.extendedProps?.recurrence || null;
+
+//         // Người tham gia
+//         formState.value.attendees = Array.isArray(event.info?.extendedProps?.attendees)
+//         ? [...event.info.extendedProps.attendees]
+//         : [];
+//         // Nhắc nhở
+//         formState.value.reminder = Array.isArray(event.info?.extendedProps?.reminder)
+//             ? [...event.info.extendedProps.reminder]
+//             : [];
+//         formState.value.timezone_code = event.info?.extendedProps?.timezone || "UTC";
+
+//         if (event.info?.extendedProps) {
+//                 if (!formState.value.rrule) {
+//                     formState.value.rrule = {}; 
+//                 }
+//                 // Cập nhật các thuộc tính RRULE từ extendedProps của event
+//                 Object.assign(formState.value.rrule, {
+//                     freq: event.info.extendedProps.freq || null, 
+//                     interval: event.info.extendedProps.interval ?? 1, 
+//                     count: event.info.extendedProps.count ?? null, 
+//                     until: event.info.extendedProps.until
+//                         ? dayjs(event.info.extendedProps.until).format("YYYY-MM-DD HH:mm:ss")
+//                         : dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"), 
+//                     byweekday: event.info.extendedProps.byweekday || [], 
+//                     bymonthday: event.info.extendedProps.bymonthday || [],
+//                     bymonth: event.info.extendedProps.bymonth || [],
+//                     bysetpos: event.info.extendedProps.bysetpos || [],
+//                 });
+//             }
+
+//     }
+// };
 const updateFormStateFromProps = (event) => {
     if (event) {
-        console.log("event.info", event.info.extendedProps);
-        formState.value.id = event.id || null;
-        formState.value.title = event.title || "";
-        formState.value.start = event.start ? dayjs(event.start) : null;
-        formState.value.end = event.end ? dayjs(event.end) : null;
-        formState.value.allDay = event.is_all_day || false;
-        formState.value.type = event.type || "event";
-        formState.value.location = event.location || "";
-        formState.value.url = event.url || "";
-        formState.value.attendees = Array.isArray(event.attendees) ? [...event.attendees] : [];
-        formState.value.color_code = event.color || "#ff4d4f"; // Mặc định màu
-        formState.value.is_reminder = event.is_reminder || false;
-        formState.value.reminder = Array.isArray(event.reminder) ? [...event.reminder] : [];
-        formState.value.is_repeat = event.recurrence === 1;
+        console.log("Dữ liệu sự kiện:", event);
 
-
-        // Cờ trạng thái
-        formState.value.is_done = event.extendedProps?.is_done || false;
-        formState.value.is_busy = event.extendedProps?.is_busy || false;
-        formState.value.is_reminder = event.extendedProps?.is_reminder || event.extendedProps?.recurrence === 1;
-        formState.value.recurrence = event.extendedProps?.recurrence || null;
-
-        // Người tham gia
-        formState.value.attendees = Array.isArray(event.info?.extendedProps?.attendees)
-            ? [...event.info.extendedProps.attendees]
-            : [];
-        // Nhắc nhở
-        formState.value.reminder = Array.isArray(event.info?.extendedProps?.reminder)
-            ? [...event.info.extendedProps.reminder]
-            : [];
-        formState.value.timezone_code = event.info?.extendedProps?.timezone || "UTC";
-
-        // Cấu hình RRULE (Recurring Rule)
-        formState.value.rrule = {
-            freq: event.info?.extendedProps?.freq || null,
+        formState.value = {
+            ...formState.value, // Giữ nguyên dữ liệu cũ
+            id: event.id || null,
+            title: event.title || "",
+            start: event.start ? dayjs(event.start) : dayjs(),
+            end: event.end ? dayjs(event.end) : dayjs().add(1, 'hour'),
+            allDay: event.is_all_day || false,
+            type: event.type || "event",
+            location: event.location || "",
+            url: event.url || "",
+            attendees: Array.isArray(event.attendees) ? [...event.attendees] : [],
+            color_code: event.color || "#ff4d4f",
+            is_reminder: event.is_reminder || false,
+            reminder: Array.isArray(event.reminder) ? [...event.reminder] : [],
+            is_repeat: event.recurrence === 1,
+            exclude_time: event.info?.extendedProps?.exclude_time || [],
+            timezone_code: event.info?.extendedProps?.timezone || "UTC",
+            
+            // Nếu sự kiện lặp lại (is_repeat = true), cập nhật rrule
+        rrule: event.recurrence === 1 ? {
+            freq: event.info?.extendedProps?.freq || "daily",
             interval: event.info?.extendedProps?.interval ?? 1,
             count: event.info?.extendedProps?.count ?? null,
             until: event.info?.extendedProps?.until
-                ? dayjs(event.info.extendedProps.until).format("YYYY-MM-DD HH:mm:ss")
+                ? dayjs(event.info?.extendedProps?.until).format("YYYY-MM-DD HH:mm:ss")
                 : dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
-            byweekday: event.info?.extendedProps?.byweekday || null,
-            bymonthday: event.info?.extendedProps?.bymonthday || null,
-            bymonth: event.info?.extendedProps?.bymonth || null,
+            byweekday: event.info?.extendedProps?.byweekday ?? [],
+            bymonthday: event.info?.extendedProps?.bymonthday ?? [],
+            bymonth: event.info?.extendedProps?.bymonth ?? [],
+            bysetpos: event.info?.extendedProps?.bysetpos ?? [],
+        } : {
+            freq: null,
+            interval: 1,
+            count: null,
+            until: dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+            byweekday: [],
+            bymonthday: [],
+            bymonth: [],
+            bysetpos: [],
+        },
         };
-
     }
 };
 
 
 
 // Theo dõi sự thay đổi của props.event
-watch(() => props.event, (newEvent) => {
+watch(() => props.event, async (newEvent) => {
+    await nextTick();
     updateFormStateFromProps(newEvent);
 }, { immediate: true });
 
@@ -418,66 +467,101 @@ onBeforeUnmount(() => {
     window.removeEventListener('resize', updateDrawerWidth);
 });
 
+// const formState = ref({
+//     id: null,
+//     title: '',
+//     start: dayjs(),
+//     end: dayjs().add(1, 'hour'),
+//     allDay: false,
+//     repeat: false,
+//     attendees: [],
+//     sendMail: null,
+//     tag_id: null,
+//     type: "event",
+
+//     color_code: "#ff4d4f",
+
+//     is_reminder: false,
+//     reminder_time: [],
+//     reminder: [],
+//     is_repeat: false,
+//     rrule: null,
+
+//     extendedProps: {
+//         createdBy: "", // Người tạo sự kiện (String - Email)
+//         lastUpdated: null, // Thời gian cập nhật cuối (String - ISO 8601)
+//         notes: "", // Ghi chú bổ sung (String)
+//     },
+//     event_type: "",
+//     exclude_time: [],
+//     timezone_code: localStorage.getItem("userSettings")
+//         ? JSON.parse(localStorage.getItem("userSettings")).timeZone
+//         : "Asia/Saigon",
+
+//     participants: '',
+//     shareLink: false,
+//     location: '',
+//     eventType: 'meeting',
+//     calendar: 'luongvandon02',
+//     isPrivate: false,
+//     addToCalendar: true,
+//     url: '',
+//     notificationType: 'email',
+//     notificationTime: 'before',
+//     notificationDuration: '15',
+//     allowSendMessage: false,
+//     richText: '',
+//     zohoMailTask: false,
+//     zohoMailNote: false,
+// });
+
 const formState = ref({
     id: null,
-    title: '',
-    start: dayjs(),
-    end: dayjs().add(1, 'hour'),
+    title: "",
+    start: null,
+    end: null,
     allDay: false,
-    repeat: false,
-    attendees: [],
-    sendMail: null,
-    tag_id: null,
     type: "event",
-
+    location: "",
+    url: "",
+    attendees: [],
     color_code: "#ff4d4f",
-
     is_reminder: false,
-    reminder_time: [],
     reminder: [],
     is_repeat: false,
-    rrule: null,
-
-    extendedProps: {
-        createdBy: "", // Người tạo sự kiện (String - Email)
-        lastUpdated: null, // Thời gian cập nhật cuối (String - ISO 8601)
-        notes: "", // Ghi chú bổ sung (String)
-    },
-    event_type: "",
+    is_done: false,
+    is_busy: false,
+    recurrence: null,
+    timezone_code: "UTC",
     exclude_time: [],
-    timezone_code: localStorage.getItem("userSettings")
-        ? JSON.parse(localStorage.getItem("userSettings")).timeZone
-        : "Asia/Saigon",
-
-    participants: '',
-    shareLink: false,
-    location: '',
-    eventType: 'meeting',
-    calendar: 'luongvandon02',
-    isPrivate: false,
-    addToCalendar: true,
-    url: '',
-    notificationType: 'email',
-    notificationTime: 'before',
-    notificationDuration: '15',
-    allowSendMessage: false,
-    richText: '',
-    zohoMailTask: false,
-    zohoMailNote: false,
-});
-// Watch cho is_repeat
-watch(
-    () => formState.value.is_repeat,
-    (newValue) => {
-        console.log("is_repeat đã thay đổi:", newValue);
+    rrule: {
+        freq: null,
+        interval: 1,
+        count: null,
+        until: dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+        byweekday: [],
+        bymonthday: [],
+        bymonth: [],
+        bysetpos: [],
     }
-);
+});
+
+
+// watch(
+//     () => formState.value.is_repeat,
+//     (newValue) => {
+//         console.log("is_repeat đã thay đổi:", newValue);
+//     }
+// );
 watch(
     () => formState.value.is_repeat,
-    (newValue) => {
+    async (newValue) => {
+        console.log("Cập nhật is_repeat:", newValue);
+        await nextTick(); // Chờ Vue cập nhật xong trước khi gán dữ liệu mới
+
         if (newValue) {
-            // Nếu bật lặp lại, tạo rrule mặc định
-            formState.value.rrule = {
+            // Nếu bật lặp lại, đảm bảo rrule có dữ liệu mặc định
+            formState.value.rrule = formState.value.rrule || {
                 freq: "daily",
                 interval: 1,
                 count: null,
@@ -489,7 +573,7 @@ watch(
                 endType: "",
             };
         } else {
-            // Nếu tắt, xóa rrule
+            // Nếu tắt, xóa dữ liệu lặp lại
             formState.value.rrule = null;
         }
     },
@@ -604,7 +688,6 @@ watch(
     },
     { deep: true }
 );
-
 
 const getAllTagByUser = async () => {
     try {
