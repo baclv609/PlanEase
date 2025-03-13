@@ -1,22 +1,26 @@
 <template>
   <a-card :bodyStyle="{ padding: '16px' }">
     <!-- Lịch -->
-    <a-button type="primary" class="my-2" block>+ Create New Event</a-button>
+    <a-button type="primary" class="my-2" block @click="openAddCalendarModal"
+      >+ Tạo Sự Kiện Mới</a-button
+    >
 
     <div class="calendar-section">
-      <a-calendar v-model:value="selectedDate" :fullscreen="false" @select="handleDateSelect">
+      <a-calendar
+        v-model:value="selectedDate"
+        :fullscreen="false"
+        @select="handleDateSelect"
+      >
         <template #headerRender="{ value, onChange }">
           <div class="custom-header">
             <a-button type="text" @click="prevMonth(onChange, value)">
-              <left-outlined />
+              <LeftOutlined />
             </a-button>
-
             <span class="header-title">
               {{ selectedDate.format("MMMM YYYY") }}
             </span>
-
             <a-button type="text" @click="nextMonth(onChange, value)">
-              <right-outlined />
+              <RightOutlined />
             </a-button>
           </div>
         </template>
@@ -27,96 +31,120 @@
     <div class="mt-5">
       <h2>Sự kiện sắp tới</h2>
       <p>Đừng bỏ lỡ các sự kiện đã lên lịch</p>
-      <a-list :data-source="events" bordered>
+      <a-list :data-source="filteredEvents" bordered>
         <template #renderItem="{ item }">
           <a-list-item>
             <div class="w-full flex items-center justify-between">
-              <a-badge color="blue" />
+              <a-badge :color="item.color" />
               <div class="event-details">
                 <strong>{{ item.date }}</strong>
                 <p>{{ item.name }}</p>
               </div>
-              <a-tag color="blue">{{ item.time }}</a-tag>
+              <a-tag :color="item.color">{{ item.time }}</a-tag>
             </div>
           </a-list-item>
         </template>
       </a-list>
     </div>
 
-    <!-- tags -->
-    <div>
-      <div class="flex justify-between items-center cursor-pointer" @click="toggleMyCalendars">
-        <h3 class="font-semibold">Lịch của tôi
-
-          
-        </h3> 
-        <div>
-          <PlusOutlined class="cursor-pointer text-blue-500 text-base" @click.stop="addCalendar" />
-          <CaretDownOutlined v-if="showMyCalendars" />
-          <CaretRightOutlined v-else />
-        </div>
+    <!-- Lịch của tôi -->
+    <div class="mt-5">
+      <div class="flex justify-between items-center">
+        <h3 class="font-semibold">Lịch của tôi</h3>
+        <PlusOutlined
+          class="cursor-pointer text-blue-500 text-base"
+          @click="openAddCalendarModal"
+        />
       </div>
-      <transition name="fade">
-        <div v-if="showMyCalendars" class="mt-2">
-          <a-checkbox-group v-model:value="selectedCalendars" class="flex flex-col gap-2">
-            <div v-for="calendar in myCalendars" :key="calendar.id" 
-              class="flex items-center p-1 rounded-md"
-              :style="{ borderLeft: `4px solid ${calendar.color}` }"
-            >
-              <a-checkbox :value="calendar.id" class="ml-2">
-                <span class="text-sm">{{ calendar.name }}</span>
-              </a-checkbox>
-            </div>
-          </a-checkbox-group>
+      <a-checkbox-group
+        v-model:value="selectedCalendars"
+        class="flex flex-col gap-2"
+        @change="updateFilteredEvents"
+      >
+        <div
+          v-for="calendar in myCalendars"
+          :key="calendar.id"
+          class="flex items-center justify-between p-1 rounded-md"
+          :style="{ borderLeft: `4px solid ${calendar.color}` }"
+        >
+          <div class="flex items-center">
+            <a-checkbox :value="calendar.id" class="ml-2">
+              <span class="text-sm">{{ calendar.name }}</span>
+            </a-checkbox>
+          </div>
+          <a-dropdown>
+            <EllipsisOutlined class="cursor-pointer text-gray-500 text-base" />
+            <template #overlay>
+              <a-menu>
+                <a-menu-item @click="displayOnly(calendar.id)"
+                  >Hiển thị duy nhất</a-menu-item
+                >
+                <a-sub-menu title="Thay đổi màu sắc">
+                  <a-menu-item
+                    v-for="color in availableColors"
+                    :key="color"
+                    @click="changeCalendarColor(calendar.id, color)"
+                  >
+                    <span
+                      :style="{
+                        backgroundColor: color,
+                        display: 'inline-block',
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                      }"
+                    ></span>
+                  </a-menu-item>
+                </a-sub-menu>
+              </a-menu>
+            </template>
+          </a-dropdown>
         </div>
-      </transition>
+      </a-checkbox-group>
     </div>
-
-
-    <!-- Modal thêm mới lịch -->
-    <a-modal v-model:open="isModalOpenAddTag" title="Thêm Mới Lịch" @ok="handleOk">
-      <a-form layout="vertical">
-        <!-- Nhập tên lịch -->
-        <a-form-item label="Tên lịch" required>
-          <a-input v-model:value="newTagCalendar.name" placeholder="Nhập tên lịch" />
-        </a-form-item>
-
-        <!-- Chọn màu sắc -->
-        <a-form-item label="Màu sắc (Hex Code)" required>
-          <!-- <a-input v-model:value="newTagCalendar.color" placeholder="#1890ff" /> -->
-          <input type="color" v-model="newTagCalendar.color" class="w-10 h-10 border rounded cursor-pointer" />
-
-        </a-form-item>
-        <!-- Nhập mô tả -->
-        <a-form-item label="Mô tả">
-          <a-textarea v-model:value="newTagCalendar.description" placeholder="Nhập mô tả lịch" :rows="3" />
-        </a-form-item>
-      </a-form>
-    </a-modal>
   </a-card>
+
+  <!-- Modal thêm mới lịch -->
+  <a-modal v-model:open="isModalOpenAddTag" title="Thêm Mới Lịch" @ok="handleOk">
+    <a-form layout="vertical">
+      <a-form-item label="Tên lịch" required>
+        <a-input v-model:value="newTagCalendar.name" placeholder="Nhập tên lịch" />
+      </a-form-item>
+      <a-form-item label="Màu sắc (Hex Code)" required>
+        <input
+          type="color"
+          v-model="newTagCalendar.color"
+          class="w-10 h-10 border rounded cursor-pointer"
+        />
+      </a-form-item>
+      <a-form-item label="Mô tả">
+        <a-textarea
+          v-model:value="newTagCalendar.description"
+          placeholder="Nhập mô tả lịch"
+          :rows="3"
+        />
+      </a-form-item>
+    </a-form>
+  </a-modal>
 </template>
 
 <script setup>
-import { LeftOutlined, RightOutlined ,CaretDownOutlined, CaretRightOutlined, PlusOutlined} from "@ant-design/icons-vue";
+import {
+  LeftOutlined,
+  RightOutlined,
+  PlusOutlined,
+  EllipsisOutlined,
+} from "@ant-design/icons-vue";
 import dayjs from "dayjs";
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed } from "vue";
 import { message } from "ant-design-vue";
+import { useRouter } from "vue-router";
 
 const isModalOpenAddTag = ref(false);
 const newTagCalendar = ref({ name: "", color: "#1890ff", description: "" });
-const router = useRouter();
-
 const selectedDate = ref(dayjs());
-
-const showMyCalendars = ref(true);
-const showOtherCalendars = ref(true);
-
-const toggleMyCalendars = () => (showMyCalendars.value = !showMyCalendars.value);
-const toggleOtherCalendars = () => (showOtherCalendars.value = !showOtherCalendars.value);
-
-// Danh sách lịch
 const selectedCalendars = ref(["1", "3"]);
+const router = useRouter();
 const myCalendars = ref([
   { id: "1", name: "Văn Bắc Lê", color: "#3498db" },
   { id: "2", name: "Gia đình", color: "#9b59b6" },
@@ -124,108 +152,86 @@ const myCalendars = ref([
   { id: "4", name: "Sinh nhật", color: "#e67e22" },
 ]);
 
-const otherCalendars = ref([
-  { id: "7", name: "Ngày lễ ở Việt Nam", color: "#27ae60" },
-]);
-
-const addCalendar = () => {
-  isModalOpenAddTag.value = true;
-};
-
-const tasks = ref([
-  { name: "New Event Planning", color: "green" },
-  { name: "Meeting", color: "blue" },
-  { name: "Generating Reports", color: "red" },
-  { name: "Create New theme", color: "purple" },
+const availableColors = ref([
+  "#3498db",
+  "#9b59b6",
+  "#e67e22",
+  "#2ecc71",
+  "#f1c40f",
+  "#e74c3c",
 ]);
 
 const events = ref([
-  { date: "04 Jan 2022", name: "World Braille Day", time: "5 am - 9 am" },
-  { date: "30 Jan 2022", name: "World Man Day", time: "5 am - 9 am" },
-  { date: "04 Jan 2022", name: "World Plants Day", time: "5 am - 10 am" },
+  {
+    id: "1",
+    date: "04 Jan 2022",
+    name: "World Braille Day",
+    time: "5 am - 9 am",
+    calendarId: "1",
+    color: "#3498db",
+  },
+  {
+    id: "2",
+    date: "30 Jan 2022",
+    name: "World Man Day",
+    time: "5 am - 9 am",
+    calendarId: "2",
+    color: "#9b59b6",
+  },
+  {
+    id: "3",
+    date: "04 Jan 2022",
+    name: "World Plants Day",
+    time: "5 am - 10 am",
+    calendarId: "3",
+    color: "#e67e22",
+  },
 ]);
 
+const filteredEvents = ref([]);
 const handleDateSelect = (date) => {
-    const year = date.format("YYYY");
-    const month = date.format("MM");
-    const day = date.format("DD");
+  const year = date.format("YYYY");
+  const month = date.format("MM");
+  const day = date.format("DD");
 
-    console.log("Chuyển hướng tới:", `/calendar/day/${year}/${month}/${day}`);
+  console.log("Chuyển hướng tới:", `/calendar/day/${year}/${month}/${day}`);
 
-    router.push(`/calendar/day/${year}/${month}/${day}`);
+  router.push(`/calendar/day/${year}/${month}/${day}`);
 };
+const updateFilteredEvents = () => {
+  filteredEvents.value = events.value.filter((event) =>
+    selectedCalendars.value.includes(event.calendarId)
+  );
+};
+
+const openAddCalendarModal = () => {
+  isModalOpenAddTag.value = true;
+};
+
+const displayOnly = (calendarId) => {
+  selectedCalendars.value = [calendarId];
+};
+
 const handleOk = () => {
   if (!newTagCalendar.value.name) {
     message.error("Vui lòng nhập tên lịch!");
     return;
   }
-  if (!/^#([0-9A-Fa-f]{6})$/.test(newTagCalendar.value.color)) {
-    message.error("Mã màu không hợp lệ! Vui lòng nhập dạng #RRGGBB.");
-    return;
-  }
+  myCalendars.value.push({
+    id: String(myCalendars.value.length + 1),
+    name: newTagCalendar.value.name,
+    color: newTagCalendar.value.color,
+  });
+  updateFilteredEvents();
   message.success(`Đã thêm lịch: ${newTagCalendar.value.name}`);
-  
-console.log("newTagCalendar", newTagCalendar.value)
-
-  // Reset form sau khi thêm
   isModalOpenAddTag.value = false;
   newTagCalendar.value = { name: "", color: "#1890ff", description: "" };
 };
 
-// Chuyển sang tháng trước
-const prevMonth = (onChange, value) => {
-  const newDate = value.subtract(1, "month");
-  onChange(newDate);
-  selectedDate.value = newDate;
-};
-
-// Chuyển sang tháng sau
-const nextMonth = (onChange, value) => {
-  const newDate = value.add(1, "month");
-  onChange(newDate);
-  selectedDate.value = newDate;
+const changeCalendarColor = (calendarId, color) => {
+  myCalendars.value = myCalendars.value.map((cal) =>
+    cal.id === calendarId ? { ...cal, color: color } : cal
+  );
+  updateFilteredEvents();
 };
 </script>
-
-<style scoped>
-.small-calendar {
-  max-width: 250px !important;
-  font-size: 14px;
-}
-
-.small-calendar .ant-picker-calendar-mini {
-  padding: 8px;
-}
-
-.custom-header {
-  font-size: 14px;
-}
-
-.event-details {
-  flex-grow: 1;
-  margin-left: 10px;
-}
-.custom-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px;
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.header-title {
-  text-transform: capitalize;
-}
-
-.sidebar-container {
-  width: 280px;
-}
-.fade-enter-active, .fade-leave-active {
-  transition: all 0.3s ease-in-out;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-  transform: translateY(-5px);
-}
-</style>

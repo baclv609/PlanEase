@@ -5,13 +5,11 @@ import { version } from "../package.json";
 import { DEFAULT_LAYOUT } from "@/constants";
 import { useSettings } from "@/composables/useSettings";
 import { useSettingsStore } from "@/stores/settingsStore";
-import EventSidebar from "@/components/layout/EventSidebar.vue";
-
 
 const settingsStore = useSettingsStore();
 
 onMounted(() => {
-  const { initSettings } = useSettings(); 
+  const { initSettings } = useSettings();
   initSettings(); // Gọi hàm khởi tạo settings
 
   settingsStore.loadFromLocalStorage();
@@ -43,12 +41,4 @@ const theme = {
       </component>
     </Suspense>
   </AConfigProvider>
-
-  <div class="flex">
-    <EventSidebar />
-    <Calendar /> <!-- Component lịch chính -->
-  </div>
 </template>
-
-
-
