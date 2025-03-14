@@ -93,7 +93,7 @@ export function useCalendarDrop() {
     
                     console.log("Payload gửi lên:", JSON.stringify(payload, null, 2));
     
-                    handleUpdate(payload);
+                    handleUpdate(payload, info);
                 },
                 onCancel() {
                     info.revert();
@@ -106,7 +106,7 @@ export function useCalendarDrop() {
                 end_time: endEvent,
                 id: info.event.id,
                 timezone_code: userTimezone
-            });
+            }, info);
         }
     };
     
@@ -116,7 +116,7 @@ export function useCalendarDrop() {
     };
 }
 
-const handleUpdate = async (payload) => {
+const handleUpdate = async (payload, info) => {
     try {
         const response = await axios.put(`${dirApi}tasks/${payload.id}/onDrag`, payload, {
             headers: {
@@ -125,11 +125,30 @@ const handleUpdate = async (payload) => {
             }
         });
 
-        console.log("✅ Success:", response.data);
-
-        message.success("Cập nhật thành công");
+        if (response.status === 200) {
+            message.success(response.data.message);
+        } else {
+            message.error("Có lỗi xảy ra, vui lòng thử lại.");
+            info?.revert(); 
+        }
     } catch (error) {
         console.error('❌ Lỗi:', error.response ? error.response.data : error);
-        message.error("Đã xảy ra lỗi khi cập nhật tác vụ. Vui lòng thử lại.");
+
+        if (error.response) {
+            if (error.response.status === 401) {
+                message.error("Bạn không có quyền thực hiện thao tác này!");
+                info?.revert(); 
+            } else if (error.response.status === 500) {
+                message.error(error.response.data.message);
+                info?.revert(); 
+            } else {
+                message.error("Đã xảy ra lỗi khi cập nhật tác vụ. Vui lòng thử lại.");
+                info?.revert(); 
+            }
+        } else {
+            message.error("Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng.");
+            info?.revert(); 
+        }
     }
 };
+
