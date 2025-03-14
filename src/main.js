@@ -13,7 +13,8 @@ import axios from "axios";
 import { createPinia } from 'pinia';
 
 import { useSettings } from './composables/useSettings';
-import Echo from "@/plugins/echo";
+// import Echo from "@/plugins/echo";
+import { useEchoStore } from "@/stores/echoStore";
 
 const pinia = createPinia();
 
@@ -36,6 +37,11 @@ app.use(router);
 app.config.globalProperties.$message = message;
 app.config.globalProperties.$axios = axios;
 
+const echoStore = useEchoStore();
+if (localStorage.getItem("access_token")) {
+    echoStore.initEcho();
+    echoStore.startListening();
+}
 // Gọi useSettings() sau khi Pinia đã được đăng ký
 useSettings();
 

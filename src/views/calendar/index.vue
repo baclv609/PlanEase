@@ -30,36 +30,7 @@ import ScheduleEditView from "../schedule/ScheduleEditView.vue";
 import EventModal from "./components/EventModal.vue";
 import EventDetailModal from "./components/EventDetailsModal.vue";
 
-onMounted(() => {
-  const user = JSON.parse(localStorage.getItem("user")); // Kiểm tra dữ liệu user
-  if (!user || !user.id) {
-    console.error("❌ Không tìm thấy user.id");
-    return;
-  }
-
-  console.log(`🔄 Đang lắng nghe kênh: App.Models.User.${user.id}`);
-
-  window.Echo.private(`App.Models.User.${user.id}`)
-    .listen(".task.reminder", (data) => {
-      alert("Bạn có một nhắc nhở mới!");
-    })
-    .listen(".task.listUpdated", (event) => {
-      console.log('Sự kiện được cập nhật', event);
-      if (event.action === "create") {
-        console.log('Sư kiện được thêm');
-        // handleEventModalSuccess();
-      } else if (event.action === "update") {
-        console.log('Sư kiện được sửa');
-        // handleEventModalSuccess();
-      } else if (event.action === "delete") {
-        console.log('Sư kiện bị xóa');
-        // handleEventModalSuccess();
-      }
-    })
-    .error((err) => {
-      console.error("❌ Lỗi khi đăng ký kênh private:", err);
-    });
-});
+import { useEchoStore } from "@/stores/echoStore";
 
 const settingsStore = useSettingsStore();
 const calendarRef = ref(null);
@@ -67,6 +38,8 @@ const calendarRef = ref(null);
 const currentView = ref(settingsStore.displayMode);
 const isEditDrawerVisible = ref(false);
 const selectedEventToEdit = ref(null); 
+const echoStore = useEchoStore();
+const user = JSON.parse(localStorage.getItem("user"));
 
 //  Đồng bộ `currentView` với `settingsStore`
 watch(() => settingsStore.displayMode, (newView) => {
@@ -96,6 +69,16 @@ onMounted(() => {
   } else {
     console.error("calendarRef is not available in onMounted");
   }
+});
+
+onMounted(() => {    
+    echoStore.echo.private(`App.Models.User.${user.id}`)
+      .listen(".task.listUpdated", (event) => {      
+        console.log("Lịch trình được thay đổi");
+        handleEventModalSuccess();
+      });
+
+    console.log("📡 Lắng nghe realtime trong CalendarView.vue");
 });
 
 const onDatesSet = (info) => {
