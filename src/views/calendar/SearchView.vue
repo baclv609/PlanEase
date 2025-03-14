@@ -52,8 +52,6 @@ const selectDay = (day) => {
 // 🔍 Fetch dữ liệu khi component mounted
 const fetchSearchResults = async () => {
   try {
-    console.log("📌 Query Params:", route.query);
-
     // Kiểm tra nếu không có params thì không fetch
     if (!route.query) return;
 
@@ -65,7 +63,6 @@ const fetchSearchResults = async () => {
     });
 
     calendarDays.value = response.data.data.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
-    console.log(calendarDays.value);
   } catch (error) {
     console.error("🔥 Error fetching search results:", error);
   }
@@ -84,7 +81,7 @@ watch(() => route.query, fetchSearchResults, { deep: true });
       <div v-for="(day, index) in calendarDays" :key="index" @click="selectDay(day)"
         class="calendar-row border-b border-gray-200 py-3 px-4 flex items-center cursor-pointer hover:bg-gray-100"
         :class="{ 'bg-blue-100': event?.start_time === day.start_time }">
-        <div class="day-number w-12 font-bold text-xl">{{ new Date(day.start_time).getDate() }}</div>
+        <div class="day-number w-12 font-bold text-xl">{{ new Date(day.start_time).getDate() + 1}}</div>
         <div class="date-info w-[100px] text-xs text-gray-700">
           <div>THÁNG {{ new Date(day.start_time).getMonth() + 1 }},</div>
           <div>{{ new Date(day.start_time).getFullYear() }}, {{ new Date(day.start_time).toLocaleDateString('vi-VN', { weekday: 'short' }).toUpperCase() }}</div>

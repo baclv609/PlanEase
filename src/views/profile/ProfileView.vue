@@ -72,6 +72,7 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { message } from "ant-design-vue";
+import { useEchoStore } from "@/stores/echoStore";
 
 const router = useRouter();
 const dirApi = import.meta.env.VITE_API_BASE_URL;
@@ -154,6 +155,11 @@ const handleLogout = () => {
     .post(`${dirApi}auth/logout`, {}, { headers: { Authorization: `Bearer ${token}` } })
     .then((response) => {
       localStorage.clear();
+
+      const echoStore = useEchoStore();
+      echoStore.stopListening();
+      echoStore.destroyEcho();
+
       message.success(response.data.message || "Logout successfully");
       router.push({ name: "home" });
     })
