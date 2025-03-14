@@ -16,7 +16,7 @@
                 </div>
                 <a-input placeholder="Add title"
                     class="border-0 border-b border-gray-200 px-0 text-lg focus:shadow-none" :bordered="false"
-                    v-model="formState.title" />
+                    :value="formState.title" />
             </div>
 
             <!-- Date and Time -->
@@ -24,9 +24,10 @@
                 <div class="w-6 h-6 mr-2">
                     <CalendarOutlined class="text-gray-500" />
                 </div>
-                <a-range-picker :value="[formState.start, formState.end]" show-time class="w-full md:w-1/2 lg:w-2/5"
-                    format="YYYY-MM-DD HH:mm:ss" :disabled="formState.allDay">
-                </a-range-picker>
+                <DatePicker v-model:value="formState.start" show-time class="w-full min-w-[200px]"
+                    format="YYYY-MM-DD HH:mm" :disabled="formState.allDay" />
+                <DatePicker v-model:value="formState.end" show-time class="w-full min-w-[200px]"
+                    format="YYYY-MM-DD HH:mm" :disabled="formState.allDay" />
                 <div class="ml-4">
                     <a-select v-model:value="formState.timezone_code" show-search placeholder="Múi giờ"
                         :filter-option="filterOption" class="w-full"> <!-- Điều chỉnh chiều dài -->
@@ -49,7 +50,7 @@
                 <div class="w-6 h-6 mr-2">
                     <EnvironmentOutlined class="text-gray-500" />
                 </div>
-                <a-input placeholder="Địa điểm" class="bg-gray-50" v-model="formState.location" />
+                <a-input placeholder="Địa điểm" class="bg-gray-50" v-model:value="formState.location" />
             </div>
 
             <!-- Event Type -->
@@ -65,7 +66,7 @@
                     </Select>
                 </div>
                 <div class="w-full md:w-1/3">
-                    <a-select v-model="formState.color_code" placeholder="Chọn màu" class="w-full rounded-lg">
+                    <a-select :value="formState.color_code" placeholder="Chọn màu" class="w-full rounded-lg">
                         <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
                             <div class="flex items-center">
                                 <div class="w-4 h-4 mr-2" :style="{ backgroundColor: color.value }"></div>
@@ -81,9 +82,10 @@
                 <div class="w-6 h-6 mr-2">
                     <CalendarOutlined class="text-gray-500" />
                 </div>
-                <a-select v-model="formState.tag_id" class="w-full bg-gray-50" placeholder="Chọn loại">
-                    <a-select-option v-for="tag in tags" :key="tag.id" :value="tag.id"> {{ tag.name }}</a-select-option>
+                <a-select v-model:value="formState.tags" class="w-full bg-gray-50" placeholder="Chọn loại"
+                    :options="tags.map(tag => ({ value: tag.id, label: tag.name }))">
                 </a-select>
+
             </div>
 
             <!-- Privacy & Add to calendar -->
@@ -115,20 +117,31 @@
                             <a-spin size="small" />
                         </template>
                     </a-select>
-                    <!-- <a-input placeholder="Mời người tham gia cá nhân hoặc các nhóm của bạn" class="bg-gray-50 mb-1"
-                        v-model="formState.participants" /> -->
-                    <!-- <div class="flex items-center text-sm text-blue-600">
-                        <span>Quản lý xem rảnh rỗi...</span>
-                        <a-checkbox v-model="formState.allowSendMessage" class="ml-6">Cho Phép Gửi Chuyển</a-checkbox>
-                    </div> -->
-                    <div>
-                        <a-switch v-model="formState.shareLink" /> Chia sẻ sự kiện
-                        <span v-if="formState.shareLink">Link: {{ generatedLink }}</span>
-                        <div class="flex mb-4">
+
+                    <div class="mt-2">
+
+                        <div class="flex mb-4" v-if="formState.attendees && formState.attendees.length > 0">
                             <a-checkbox v-model="formState.accessView">Cho phép xem sự kiện</a-checkbox>
                             <a-checkbox v-model="formState.accessEdit" class="ml-4">Cho phép chỉnh sửa sự
                                 kiện</a-checkbox>
                         </div>
+
+                        <!-- <a-switch class="mr-2 mb-2" v-model="formState.uuid" /> Chia sẻ sự kiện -->
+                        <!-- <span v-if="formState?.uuid">Link: {{
+                            `${origin}/calendar/event/${formState?.uuid}/invite`
+                        }}</span> -->
+
+                        <!-- <div v-if="formState?.uuid"
+                            class="flex items-center p-2 border rounded-lg bg-gray-100 space-x-2">
+                            <router-link :to="`/calendar/event/${formState?.uuid}/invite`"
+                                class="text-blue-600 hover:underline truncate w-48">
+                                {{ `${origin}/calendar/event/${formState?.uuid}/invite` }}
+                            </router-link>
+
+                            <button @click="copyToClipboard" class="p-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+                                <CopyOutlined />
+                            </button>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -185,9 +198,13 @@
             </div>
 
             <!-- Rich Text Editor -->
-            <div class="mb-4 border rounded">
-                <!-- <QuillEditor v-model:content="formState.richText" contentType="html" :options="editorOptions" /> -->
+            <div class="flex mb-4">
+                <div class="w-6 h-6 mr-2">
+                    <TagOutlined class="text-gray-500" />
+                </div>
+                <a-textarea v-model:value="formState.description" placeholder="Nội dung" :rows="4" />
             </div>
+
 
 
             <!-- Attachment -->
@@ -198,19 +215,6 @@
                 <a class="text-blue-600 text-sm">Thêm Tập Tin Đính Kèm</a>
             </div>
 
-            <!-- Zoho Mail Integration -->
-            <!-- <div class="border rounded p-4 mb-6">
-                <div class="flex items-center mb-2">
-                    <LinkOutlined class="mr-2" />
-                    <span class="font-medium">Liên kết với</span>
-                </div>
-                <div class="ml-6">
-                    <a-checkbox v-model="formState.zohoMailTask">Tác Vụ Zoho Mail</a-checkbox>
-                </div>
-                <div class="ml-6">
-                    <a-checkbox v-model="formState.zohoMailNote">Ghi Chú Zoho Mail</a-checkbox>
-                </div>
-            </div> -->
             <div class="my-2"></div>
             <template v-if="formState.is_repeat">
                 <Card title="Cài đặt lặp lại" size="small">
@@ -285,7 +289,7 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref, defineProps, defineEmits, watchEffect, watch, nextTick } from 'vue';
+import { onBeforeUnmount, onMounted, ref, defineProps, defineEmits, watchEffect, watch, nextTick, computed } from 'vue';
 import {
     CalendarOutlined,
     UserOutlined,
@@ -300,14 +304,23 @@ import {
     StrikethroughOutlined,
     OrderedListOutlined,
     UnorderedListOutlined,
-    PaperClipOutlined
+    PaperClipOutlined,
+    CopyOutlined
 } from '@ant-design/icons-vue';
 import { Button, Checkbox, Col, InputNumber, message, Row, Card, Tag, Select, DatePicker, Input } from 'ant-design-vue';
 import { QuillEditor } from '@vueup/vue-quill';
 import 'quill/dist/quill.snow.css';
-import moment from "moment-timezone";
+// import moment from "moment-timezone";
+import moment from 'moment';
 import debounce from 'lodash/debounce';
 import axios from 'axios';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import { DateTime } from "luxon";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const editorOptions = {
     modules: {
@@ -332,8 +345,7 @@ const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem('access_token');
 const timezones = moment.tz.names();
 const tags = ref([]);
-
-
+const origin = ref(typeof window !== 'undefined' ? window.location.origin : '');
 
 const updateDrawerWidth = () => {
     drawerWidth.value = window.innerWidth > 768 ? '50%' : '100%';
@@ -343,99 +355,229 @@ const handleClose = () => {
     emit('update:visible', false);
 };
 
-onMounted(() => {
+onMounted( async () => {
     updateDrawerWidth();
     window.addEventListener('resize', updateDrawerWidth);
+
+    await getAllTagByUser();
 });
+const formatDateTime = (isoString) => {
+    return DateTime.fromISO(isoString).toFormat("yyyy-MM-dd HH:mm");
+};
+// const updateFormStateFromProps = (event) => {
+//     if (event) {
+//         console.log("event.info", event.info.extendedProps);
+//         formState.value.id = event.id || null;
+//         formState.value.title = event.title || "";
+//         formState.value.start = event.start ? dayjs(event.start) : null;
+//         formState.value.end = event.end ? dayjs(event.end) : null;
+//         formState.value.allDay = event.is_all_day || false;
+//         formState.value.type = event.type || "event";
+//         formState.value.location = event.location || "";
+//         formState.value.url = event.url || "";
+//         formState.value.attendees = Array.isArray(event.attendees) ? [...event.attendees] : [];
+//         formState.value.color_code = event.color || "#ff4d4f"; 
+//         formState.value.is_reminder = event.is_reminder || false;
+//         formState.value.reminder = Array.isArray(event.reminder) ? [...event.reminder] : [];
+//         formState.value.is_repeat = event.recurrence === 1;
 
 
-watch(() => props.event, async (newEvent) => {
-    if (newEvent) {
-        console.log("🎯 props.event:", newEvent);
+//         // Cờ trạng thái
+//         formState.value.is_done = event.extendedProps?.is_done || false;
+//         formState.value.is_busy = event.extendedProps?.is_busy || false;
+//         formState.value.is_reminder = event.extendedProps?.is_reminder || event.extendedProps?.recurrence === 1;
+//         formState.value.recurrence = event.extendedProps?.recurrence || null;
 
-        // Đợi Vue cập nhật DOM trước khi set dữ liệu
-        await nextTick();
+//         // Người tham gia
+//         formState.value.attendees = Array.isArray(event.info?.extendedProps?.attendees)
+//         ? [...event.info.extendedProps.attendees]
+//         : [];
+//         // Nhắc nhở
+//         formState.value.reminder = Array.isArray(event.info?.extendedProps?.reminder)
+//             ? [...event.info.extendedProps.reminder]
+//             : [];
+//         formState.value.timezone_code = event.info?.extendedProps?.timezone || "UTC";
 
-        // Cập nhật từng thuộc tính, tránh gán toàn bộ object
-        formState.value.title = newEvent.title || "";
-        formState.value.startDate = newEvent.start ? newEvent.start.split("T")[0] : null;
-        formState.value.startTime = newEvent.start ? newEvent.start.split("T")[1].slice(0, 5) : null;
-        formState.value.endDate = newEvent.end_time ? newEvent.end_time.split("T")[0] : null;
-        formState.value.endTime = newEvent.end_time ? newEvent.end_time.split("T")[1].slice(0, 5) : null;
-        formState.value.allDay = newEvent.is_all_day || false;
-        formState.value.repeat = newEvent.recurrence > 0;
-        formState.value.participants = newEvent.attendees || "";
-        formState.value.location = newEvent.location || "";
-        formState.value.url = newEvent.url || "";
-        formState.value.richText = newEvent.description || "";
+//         if (event.info?.extendedProps) {
+//                 if (!formState.value.rrule) {
+//                     formState.value.rrule = {}; 
+//                 }
+//                 // Cập nhật các thuộc tính RRULE từ extendedProps của event
+//                 Object.assign(formState.value.rrule, {
+//                     freq: event.info.extendedProps.freq || null, 
+//                     interval: event.info.extendedProps.interval ?? 1, 
+//                     count: event.info.extendedProps.count ?? null, 
+//                     until: event.info.extendedProps.until
+//                         ? dayjs(event.info.extendedProps.until).format("YYYY-MM-DD HH:mm:ss")
+//                         : dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"), 
+//                     byweekday: event.info.extendedProps.byweekday || [], 
+//                     bymonthday: event.info.extendedProps.bymonthday || [],
+//                     bymonth: event.info.extendedProps.bymonth || [],
+//                     bysetpos: event.info.extendedProps.bysetpos || [],
+//                 });
+//             }
+
+//     }
+// };
+const updateFormStateFromProps = (event) => {
+    if (event) {
+        console.log("Dữ liệu sự kiện:", event);
+
+        formState.value = {
+            ...formState.value, // Giữ nguyên dữ liệu cũ
+            id: event.id || null,
+            title: event.title || "",
+            start: event.start ? dayjs(event.start) : dayjs(),
+            end: event.end ? dayjs(event.end) : dayjs().add(1, 'hour'),
+            allDay: event.is_all_day || false,
+            type: event.type || "event",
+            location: event.location || "",
+            url: event.url || "",
+            attendees: Array.isArray(event.attendees) ? [...event.attendees] : [],
+            color_code: event.color || "#ff4d4f",
+            is_reminder: event.is_reminder || false,
+            reminder: Array.isArray(event.reminder) ? [...event.reminder] : [],
+            is_repeat: event.recurrence === 1,
+            exclude_time: event.info?.extendedProps?.exclude_time || [],
+            timezone_code: event.info?.extendedProps?.timezone || "UTC",
+            description: event.info?.extendedProps?.description || "",
+            uuid: event.uuid ? event.uuid : null,
+
+            // Nếu sự kiện lặp lại (is_repeat = true), cập nhật rrule
+            rrule: event.recurrence === 1 ? {
+                freq: event.info?.extendedProps?.freq || "daily",
+                interval: event.info?.extendedProps?.interval ?? 1,
+                count: event.info?.extendedProps?.count ?? null,
+                until: event.info?.extendedProps?.until
+                    ? dayjs(event.info?.extendedProps?.until).format("YYYY-MM-DD HH:mm:ss")
+                    : dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+                byweekday: event.info?.extendedProps?.byweekday ?? [],
+                bymonthday: event.info?.extendedProps?.bymonthday ?? [],
+                bymonth: event.info?.extendedProps?.bymonth ?? [],
+                bysetpos: event.info?.extendedProps?.bysetpos ?? [],
+            } : {
+                freq: null,
+                interval: 1,
+                count: null,
+                until: dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+                byweekday: [],
+                bymonthday: [],
+                bymonth: [],
+                bysetpos: [],
+            }
+        };
     }
-}, { deep: true, immediate: true });
+};
+
+
+
+// Theo dõi sự thay đổi của props.event
+watch(() => props.event, async (newEvent) => {
+    await nextTick();
+    // console.log("uuid", newEvent.uuid);
+    updateFormStateFromProps(newEvent);
+}, { immediate: true });
 
 onBeforeUnmount(() => {
     window.removeEventListener('resize', updateDrawerWidth);
 });
 
+// const formState = ref({
+//     id: null,
+//     title: '',
+//     start: dayjs(),
+//     end: dayjs().add(1, 'hour'),
+//     allDay: false,
+//     repeat: false,
+//     attendees: [],
+//     sendMail: null,
+//     tag_id: null,
+//     type: "event",
+
+//     color_code: "#ff4d4f",
+
+//     is_reminder: false,
+//     reminder_time: [],
+//     reminder: [],
+//     is_repeat: false,
+//     rrule: null,
+
+//     extendedProps: {
+//         createdBy: "", // Người tạo sự kiện (String - Email)
+//         lastUpdated: null, // Thời gian cập nhật cuối (String - ISO 8601)
+//         notes: "", // Ghi chú bổ sung (String)
+//     },
+//     event_type: "",
+//     exclude_time: [],
+//     timezone_code: localStorage.getItem("userSettings")
+//         ? JSON.parse(localStorage.getItem("userSettings")).timeZone
+//         : "Asia/Saigon",
+
+//     participants: '',
+//     shareLink: false,
+//     location: '',
+//     eventType: 'meeting',
+//     calendar: 'luongvandon02',
+//     isPrivate: false,
+//     addToCalendar: true,
+//     url: '',
+//     notificationType: 'email',
+//     notificationTime: 'before',
+//     notificationDuration: '15',
+//     allowSendMessage: false,
+//     richText: '',
+//     zohoMailTask: false,
+//     zohoMailNote: false,
+// });
+
 const formState = ref({
     id: null,
-    title: '',
+    title: "",
     start: null,
     end: null,
     allDay: false,
-    repeat: false,
-    attendees: [],
-    sendMail: null,
-    tag_id: null,
     type: "event",
-
+    location: "",
+    url: "",
+    attendees: [],
     color_code: "#ff4d4f",
-
     is_reminder: false,
-    reminder_time: [],
     reminder: [],
     is_repeat: false,
-    rrule: null,
+    is_done: false,
+    is_busy: false,
 
-    extendedProps: {
-        createdBy: "", // Người tạo sự kiện (String - Email)
-        lastUpdated: null, // Thời gian cập nhật cuối (String - ISO 8601)
-        notes: "", // Ghi chú bổ sung (String)
-    },
-    event_type: "",
+
+    tags: null,
+
+    recurrence: null,
+    timezone_code: "UTC",
+    description: "",
     exclude_time: [],
-    timezone_code: localStorage.getItem("userSettings")
-        ? JSON.parse(localStorage.getItem("userSettings")).timeZone
-        : "Asia/Saigon",
-
-    participants: '',
+    uuid: "",
+    rrule: {
+        freq: null,
+        interval: 1,
+        count: null,
+        until: dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+        byweekday: [],
+        bymonthday: [],
+        bymonth: [],
+        bysetpos: [],
+    },
     shareLink: false,
-    location: '',
-    eventType: 'meeting',
-    calendar: 'luongvandon02',
-    isPrivate: false,
-    addToCalendar: true,
-    url: '',
-    notificationType: 'email',
-    notificationTime: 'before',
-    notificationDuration: '15',
-    allowSendMessage: false,
-    richText: '',
-    zohoMailTask: false,
-    zohoMailNote: false,
 });
-//  Watch khi người dùng bật/tắt chế độ lặp lại
-// Watch cho is_repeat
+
+
 watch(
     () => formState.value.is_repeat,
-    (newValue) => {
-        console.log("is_repeat đã thay đổi:", newValue);
-    }
-);
-watch(
-    () => formState.value.is_repeat,
-    (newValue) => {
+    async (newValue) => {
+        // console.log("Cập nhật is_repeat:", newValue);
+        await nextTick(); // Chờ Vue cập nhật xong trước khi gán dữ liệu mới
+
         if (newValue) {
-            // Nếu bật lặp lại, tạo rrule mặc định
-            formState.value.rrule = {
+            // Nếu bật lặp lại, đảm bảo rrule có dữ liệu mặc định
+            formState.value.rrule = formState.value.rrule || {
                 freq: "daily",
                 interval: 1,
                 count: null,
@@ -444,18 +586,27 @@ watch(
                 bymonthday: [],
                 bymonth: [],
                 bysetpos: [],
-                endType: "", // 'count' hoặc 'until'
+                endType: "",
             };
         } else {
-            // Nếu tắt, xóa rrule
-            formState.value.rrule = null;
+            formState.value.rrule = {
+                freq: null,
+                interval: 1,
+                count: null,
+                until: null,
+                byweekday: [],
+                bymonthday: [],
+                bymonth: [],
+                bysetpos: [],
+                endType: "",
+            };
         }
     },
     { immediate: true }
 );
 
 watch(
-    () => formState.value.is_all_day,
+    () => formState.value.allDay,
     (newValue) => {
         if (newValue) {
             // Giữ nguyên ngày nhưng set giờ về 00:00:00 và 23:59:59
@@ -484,6 +635,12 @@ const weekDays = [
 
 const monthDays = Array.from({ length: 31 }, (_, i) => i + 1);
 const months = Array.from({ length: 12 }, (_, i) => i + 1);
+
+const copyToClipboard = () => {
+    navigator.clipboard.writeText(`${origin}/calendar/event/${formState.value.uuid}/invite`).then(() => {
+        message.success('Đã sao chép liên kết!');
+    });
+};
 
 watch(
     () => formState.value?.rrule?.endType,
@@ -522,6 +679,14 @@ const formatReminders = (reminders) => {
         index === self.findIndex((r) => r.type === reminder.type && r.set_time === reminder.set_time)
     );
 };
+const handleDateChange = (dates) => {
+    if (dates && dates.length === 2) {
+        start.value = dates[0]; // Cập nhật biến start
+        end.value = dates[1];   // Cập nhật biến end
+        console.log("Thời gian bắt đầu:", start.value.format("YYYY-MM-DD HH:mm:ss"));
+        console.log("Thời gian kết thúc:", end.value.format("YYYY-MM-DD HH:mm:ss"));
+    }
+};
 const removeReminder = (index) => {
     formState.value.reminder.splice(index, 1);
 };
@@ -555,7 +720,6 @@ watch(
     { deep: true }
 );
 
-
 const getAllTagByUser = async () => {
     try {
         const res = await axios.get(`${dirApi}tags`, {
@@ -564,8 +728,17 @@ const getAllTagByUser = async () => {
             }
         });
 
-        if (res.data.code == 200) {
+        console.log('res.data.code', res.data.code);
+        if (res.data.code === 200) {
             tags.value = res.data.data;
+            if (!formState.value.tag_id && tags.value.length > 0) {
+                formState.value.tag_id = tags.value[0].id;
+                formState.value.tag_name = tags.value[0].name;
+                console.log('tag_id', formState.value.tag_id);
+                console.log('tag_name', formState.value.tag_name);
+
+            }
+            console.log('tags', tags.value);
         }
     } catch (error) {
         console.log('Loi lay tags', error);
@@ -630,8 +803,13 @@ const handleExcludeDate = (date) => {
     }
 };
 const handleSubmit = () => {
-    const [start, end] = formState.value.start && formState.value.end;
-    console.log("📌 Form Submitted:", { ...formState.value, start, end });
+    const start = formState.value.start;
+    const end = formState.value.end;
+    // console.log("📌 Form Submitted:", { ...formState.value, start, end });
+
+    console.log("Dữ liệu sự kiện:", formState.value);
+    console.log("Thời gian bắt đầu:", start);
+    console.log("Thời gian kết thúc:", end);
 };
 
 </script>
@@ -644,9 +822,11 @@ const handleSubmit = () => {
 :deep(.ant-select-selector) {
     background-color: rgb(249, 250, 251) !important;
 }
+
 /* Tăng khoảng cách giữa các phần tử */
 .grid {
-    gap: 1.5rem; /* Tăng khoảng cách giữa các cột */
+    gap: 1.5rem;
+    /* Tăng khoảng cách giữa các cột */
 }
 
 .switch-checkbox {
@@ -654,12 +834,15 @@ const handleSubmit = () => {
 }
 
 /* Tùy chỉnh cho các thành phần chọn và nhập */
-.a-select, .ant-input {
-    border-radius: 8px; /* Tạo góc bo tròn */
+.a-select,
+.ant-input {
+    border-radius: 8px;
+    /* Tạo góc bo tròn */
 }
 
 /* Tùy chỉnh cho Tag */
 .ant-tag {
-    margin-top: 0.5rem; /* Tăng khoảng cách trên cho tag */
+    margin-top: 0.5rem;
+    /* Tăng khoảng cách trên cho tag */
 }
 </style>
