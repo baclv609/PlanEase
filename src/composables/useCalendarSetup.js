@@ -140,6 +140,7 @@ export function useCalendarEvents() {
                 wkst: event.rrule.wkst || null,
               }
             : null,
+            allDayMaintainDuration: true, 
             duration: event.is_repeat ? calculateDuration(event.start_time, event.end_time) : null,
       };
     })
@@ -309,6 +310,7 @@ watch(
           info.view.type === 'dayGridMonth'
             ? dayjs(info.endStr).subtract(1, 'day').add(1, 'hour')
             : info.endStr,
+        allDay: info.allDay,
       };
       isAddEventModalVisible.value = true;
     },
