@@ -3,6 +3,7 @@ import { reactive, ref } from "vue";
 import axios from "axios";
 import { message } from "ant-design-vue";
 import router from "@/router";
+import { useEchoStore } from "@/stores/echoStore";
 
 const formState = reactive({
     email: "",
@@ -33,6 +34,11 @@ const onFinish = async (values) => {
             // console.log("user", res.data.data.user);
             localStorage.setItem("user", JSON.stringify(res.data.data.user));
             localStorage.setItem("access_token", res.data.data.access_token);
+
+            const echoStore = useEchoStore();
+            echoStore.initEcho();
+            echoStore.startListening();
+
             router.push("/calendar");
         }
     } catch (error) {
