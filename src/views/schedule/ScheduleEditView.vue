@@ -1,6 +1,7 @@
 <template>
-    <a-drawer :visible="visible" title="Chi tiết sự kiện" placement="right" :width="drawerWidth" @close="handleClose"
-        @update:visible="(val) => emit('update:visible', val)" :destroyOnClose="true" :maskClosable="false">
+    <a-drawer :visible="visible" :rules="rules" title="Chi tiết sự kiện" placement="right" :width="drawerWidth"
+        @close="handleClose" @update:visible="(val) => emit('update:visible', val)" :destroyOnClose="true"
+        :maskClosable="false">
         <template #extra>
             <!-- Buttons -->
             <div class="flex gap-2">
@@ -10,24 +11,31 @@
         </template>
         <a-form layout="vertical" @submit.prevent="handleSubmit">
             <!-- Title -->
-            <div class="flex items-center mb-4">
-                <div class="w-6 h-6 mr-2">
-                    <a-badge color="green" />
+            <a-form-item label="Tiêu đề" name="title">
+                <div class="flex items-center mb-4">
+                    <div class="w-6 h-6 mr-2">
+                        <a-badge color="green" />
+                    </div>
+                    <a-input placeholder="Add title"
+                        class="border-0 border-b border-gray-200 px-0 text-lg focus:shadow-none" :bordered="false"
+                        v-model:value="formState.title" />
                 </div>
-                <a-input placeholder="Add title"
-                    class="border-0 border-b border-gray-200 px-0 text-lg focus:shadow-none" :bordered="false"
-                    :value="formState.title" />
-            </div>
+            </a-form-item>
 
             <!-- Date and Time -->
             <div class="flex items-center mb-4">
                 <div class="w-6 h-6 mr-2">
                     <CalendarOutlined class="text-gray-500" />
                 </div>
-                <DatePicker v-model:value="formState.start" show-time class="w-full min-w-[200px]"
-                    format="YYYY-MM-DD HH:mm" :disabled="formState.allDay" />
-                <DatePicker v-model:value="formState.end" show-time class="w-full min-w-[200px]"
-                    format="YYYY-MM-DD HH:mm" :disabled="formState.allDay" />
+
+                <a-form-item label="Thời gian bắt đầu" name="start">
+                    <DatePicker v-model:value="formState.start" show-time class="w-full min-w-[200px]"
+                        format="YYYY-MM-DD HH:mm" :disabled="formState.allDay" />
+                </a-form-item>
+                <a-form-item label="Thời gian kết thúc" name="end">
+                    <DatePicker v-model:value="formState.end" show-time class="w-full min-w-[200px]"
+                        format="YYYY-MM-DD HH:mm" :disabled="formState.allDay" />
+                </a-form-item>
                 <div class="ml-4">
                     <a-select v-model:value="formState.timezone_code" show-search placeholder="Múi giờ"
                         :filter-option="filterOption" class="w-full"> <!-- Điều chỉnh chiều dài -->
@@ -83,8 +91,8 @@
                     <CalendarOutlined class="text-gray-500" />
                 </div>
                 <a-select v-model:value="formState.tags" class="w-full bg-gray-50" placeholder="Chọn loại"
-                    :options="tags.map(tag => ({ value: tag.id, label: tag.name }))">
-                </a-select>
+                    :options="tags" :maxTagCount="5" </a-select>
+
 
             </div>
 
@@ -203,6 +211,9 @@
                     <TagOutlined class="text-gray-500" />
                 </div>
                 <a-textarea v-model:value="formState.description" placeholder="Nội dung" :rows="4" />
+                <!-- <a-form-item label="Nội dung" name="description w-full">
+                    <a-textarea v-model:value="formState.description" class="bg-gray-50 w-full" placeholder="Nội dung" :rows="4" />
+                </a-form-item> -->
             </div>
 
 
@@ -289,7 +300,7 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref, defineProps, defineEmits, watchEffect, watch, nextTick, computed } from 'vue';
+import { onBeforeUnmount, onMounted, ref, defineProps, defineEmits, watchEffect, watch, nextTick, computed, h } from 'vue';
 import {
     CalendarOutlined,
     UserOutlined,
@@ -307,7 +318,7 @@ import {
     PaperClipOutlined,
     CopyOutlined
 } from '@ant-design/icons-vue';
-import { Button, Checkbox, Col, InputNumber, message, Row, Card, Tag, Select, DatePicker, Input } from 'ant-design-vue';
+import { Button, Checkbox, Col, InputNumber, message, Row, Card, Tag, Select, DatePicker, Input, Modal } from 'ant-design-vue';
 import { QuillEditor } from '@vueup/vue-quill';
 import 'quill/dist/quill.snow.css';
 // import moment from "moment-timezone";
@@ -347,6 +358,8 @@ const timezones = moment.tz.names();
 const tags = ref([]);
 const origin = ref(typeof window !== 'undefined' ? window.location.origin : '');
 
+const editOption = ref("EDIT_1");
+
 const updateDrawerWidth = () => {
     drawerWidth.value = window.innerWidth > 768 ? '50%' : '100%';
 };
@@ -355,7 +368,7 @@ const handleClose = () => {
     emit('update:visible', false);
 };
 
-onMounted( async () => {
+onMounted(async () => {
     updateDrawerWidth();
     window.addEventListener('resize', updateDrawerWidth);
 
@@ -364,61 +377,7 @@ onMounted( async () => {
 const formatDateTime = (isoString) => {
     return DateTime.fromISO(isoString).toFormat("yyyy-MM-dd HH:mm");
 };
-// const updateFormStateFromProps = (event) => {
-//     if (event) {
-//         console.log("event.info", event.info.extendedProps);
-//         formState.value.id = event.id || null;
-//         formState.value.title = event.title || "";
-//         formState.value.start = event.start ? dayjs(event.start) : null;
-//         formState.value.end = event.end ? dayjs(event.end) : null;
-//         formState.value.allDay = event.is_all_day || false;
-//         formState.value.type = event.type || "event";
-//         formState.value.location = event.location || "";
-//         formState.value.url = event.url || "";
-//         formState.value.attendees = Array.isArray(event.attendees) ? [...event.attendees] : [];
-//         formState.value.color_code = event.color || "#ff4d4f"; 
-//         formState.value.is_reminder = event.is_reminder || false;
-//         formState.value.reminder = Array.isArray(event.reminder) ? [...event.reminder] : [];
-//         formState.value.is_repeat = event.recurrence === 1;
 
-
-//         // Cờ trạng thái
-//         formState.value.is_done = event.extendedProps?.is_done || false;
-//         formState.value.is_busy = event.extendedProps?.is_busy || false;
-//         formState.value.is_reminder = event.extendedProps?.is_reminder || event.extendedProps?.recurrence === 1;
-//         formState.value.recurrence = event.extendedProps?.recurrence || null;
-
-//         // Người tham gia
-//         formState.value.attendees = Array.isArray(event.info?.extendedProps?.attendees)
-//         ? [...event.info.extendedProps.attendees]
-//         : [];
-//         // Nhắc nhở
-//         formState.value.reminder = Array.isArray(event.info?.extendedProps?.reminder)
-//             ? [...event.info.extendedProps.reminder]
-//             : [];
-//         formState.value.timezone_code = event.info?.extendedProps?.timezone || "UTC";
-
-//         if (event.info?.extendedProps) {
-//                 if (!formState.value.rrule) {
-//                     formState.value.rrule = {}; 
-//                 }
-//                 // Cập nhật các thuộc tính RRULE từ extendedProps của event
-//                 Object.assign(formState.value.rrule, {
-//                     freq: event.info.extendedProps.freq || null, 
-//                     interval: event.info.extendedProps.interval ?? 1, 
-//                     count: event.info.extendedProps.count ?? null, 
-//                     until: event.info.extendedProps.until
-//                         ? dayjs(event.info.extendedProps.until).format("YYYY-MM-DD HH:mm:ss")
-//                         : dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"), 
-//                     byweekday: event.info.extendedProps.byweekday || [], 
-//                     bymonthday: event.info.extendedProps.bymonthday || [],
-//                     bymonth: event.info.extendedProps.bymonth || [],
-//                     bysetpos: event.info.extendedProps.bysetpos || [],
-//                 });
-//             }
-
-//     }
-// };
 const updateFormStateFromProps = (event) => {
     if (event) {
         console.log("Dữ liệu sự kiện:", event);
@@ -433,7 +392,18 @@ const updateFormStateFromProps = (event) => {
             type: event.type || "event",
             location: event.location || "",
             url: event.url || "",
-            attendees: Array.isArray(event.attendees) ? [...event.attendees] : [],
+            attendees: Array.isArray(event.attendees)
+                ? event.attendees.map(att => ({
+                    label: att.email,
+                    value: att.id
+                }))
+                : [],
+            tags: Array.isArray(event.tags)
+                ? event.tags.map(tag => ({
+                    label: tag.name,
+                    value: tag.id
+                }))
+                : null,
             color_code: event.color || "#ff4d4f",
             is_reminder: event.is_reminder || false,
             reminder: Array.isArray(event.reminder) ? [...event.reminder] : [],
@@ -482,53 +452,6 @@ onBeforeUnmount(() => {
     window.removeEventListener('resize', updateDrawerWidth);
 });
 
-// const formState = ref({
-//     id: null,
-//     title: '',
-//     start: dayjs(),
-//     end: dayjs().add(1, 'hour'),
-//     allDay: false,
-//     repeat: false,
-//     attendees: [],
-//     sendMail: null,
-//     tag_id: null,
-//     type: "event",
-
-//     color_code: "#ff4d4f",
-
-//     is_reminder: false,
-//     reminder_time: [],
-//     reminder: [],
-//     is_repeat: false,
-//     rrule: null,
-
-//     extendedProps: {
-//         createdBy: "", // Người tạo sự kiện (String - Email)
-//         lastUpdated: null, // Thời gian cập nhật cuối (String - ISO 8601)
-//         notes: "", // Ghi chú bổ sung (String)
-//     },
-//     event_type: "",
-//     exclude_time: [],
-//     timezone_code: localStorage.getItem("userSettings")
-//         ? JSON.parse(localStorage.getItem("userSettings")).timeZone
-//         : "Asia/Saigon",
-
-//     participants: '',
-//     shareLink: false,
-//     location: '',
-//     eventType: 'meeting',
-//     calendar: 'luongvandon02',
-//     isPrivate: false,
-//     addToCalendar: true,
-//     url: '',
-//     notificationType: 'email',
-//     notificationTime: 'before',
-//     notificationDuration: '15',
-//     allowSendMessage: false,
-//     richText: '',
-//     zohoMailTask: false,
-//     zohoMailNote: false,
-// });
 
 const formState = ref({
     id: null,
@@ -567,6 +490,95 @@ const formState = ref({
     },
     shareLink: false,
 });
+
+const rules = {
+    title: [
+        { required: true, message: "Tiêu đề không được để trống", trigger: "blur" },
+        { min: 3, message: "Tiêu đề phải có ít nhất 3 ký tự", trigger: "blur" },
+    ],
+    time: [
+        { required: true, message: "Vui lòng chọn thời gian", trigger: "change" },
+        {
+            validator: (_, value) => {
+                if (!value || value.length !== 2) return Promise.reject("Thời gian không hợp lệ");
+                if (dayjs(value[0]).isAfter(value[1])) return Promise.reject("Thời gian bắt đầu không thể sau thời gian kết thúc");
+                return Promise.resolve();
+            },
+            trigger: "change",
+        },
+    ],
+    timezone_code: [
+        { required: true, message: "Vui lòng chọn múi giờ", trigger: "change" },
+        {
+            validator: (_, value) => {
+                return moment.tz.names().includes(value)
+                    ? Promise.resolve()
+                    : Promise.reject("Múi giờ không hợp lệ");
+            },
+            trigger: "change",
+        },
+    ],
+    attendees: [
+        {
+            validator: (_, value) => {
+                if (value.length > 10) return Promise.reject("Không thể thêm quá 10 khách mời");
+                return Promise.resolve();
+            },
+            trigger: "change",
+        },
+    ],
+    reminder: [
+        {
+            validator: (_, value) => {
+                if (value.length > 3) return Promise.reject("Chỉ có thể thêm tối đa 3 nhắc nhở");
+                return Promise.resolve();
+            },
+            trigger: "change",
+        },
+    ],
+    rrule: {
+        freq: [
+            { required: true, message: "Vui lòng chọn kiểu lặp lại.", trigger: "change" },
+        ],
+        interval: [
+            { required: true, message: "Khoảng cách lặp lại không được để trống.", trigger: "change" },
+            { type: 'number', min: 1, message: "Khoảng cách lặp lại phải lớn hơn 0.", trigger: "change" },
+        ],
+        until: [
+            {
+                validator: (_, value) => {
+                    if (formState.value.is_repeat && !value) {
+                        return Promise.reject("Ngày kết thúc không được để trống khi lặp lại.");
+                    }
+                    return Promise.resolve();
+                },
+                trigger: "change",
+            },
+        ],
+        byweekday: [
+            {
+                validator: (_, value) => {
+                    if (formState.value.rrule.freq === 'weekly' && (!value || value.length === 0)) {
+                        return Promise.reject("Vui lòng chọn ít nhất một ngày trong tuần.");
+                    }
+                    return Promise.resolve();
+                },
+                trigger: "change",
+            },
+        ],
+        bymonthday: [
+            {
+                validator: (_, value) => {
+                    if (formState.value.rrule.freq === 'monthly' && (!value || value.length === 0)) {
+                        return Promise.reject("Vui lòng chọn ít nhất một ngày trong tháng.");
+                    }
+                    return Promise.resolve();
+                },
+                trigger: "change",
+            },
+        ],
+    },
+};
 
 
 watch(
@@ -730,20 +742,29 @@ const getAllTagByUser = async () => {
 
         console.log('res.data.code', res.data.code);
         if (res.data.code === 200) {
-            tags.value = res.data.data;
-            if (!formState.value.tag_id && tags.value.length > 0) {
-                formState.value.tag_id = tags.value[0].id;
-                formState.value.tag_name = tags.value[0].name;
-                console.log('tag_id', formState.value.tag_id);
-                console.log('tag_name', formState.value.tag_name);
+            tags.value = res.data.data.map(tag => ({
+                label: tag.name,
+                value: tag.id
+            }));
 
+            // Nếu chưa có tag nào được chọn, gán mặc định tag đầu tiên
+            if (!formState.value.tags && tags.value.length > 0) {
+                formState.value.tags = tags.value[0].value;
             }
-            console.log('tags', tags.value);
         }
     } catch (error) {
         console.log('Loi lay tags', error);
     }
 }
+
+const transformAttendeesData = (data) => {
+    return data.map(option => ({
+        user_id: option.value,
+        status: 'pending',
+        role: 'viewer'
+    }));
+};
+
 // Lấy thông tin khách mời
 const state = ref({
     data: [],
@@ -772,9 +793,22 @@ const fetchUser = debounce(async (value) => {
 
         if (fetchId !== lastFetchId) return;
 
-        state.value.data = response.data.data.map(user => ({
+        // state.value.data = response.data.data.map(user => ({
+        //     label: `${user.email}`,
+        //     value: user.id
+        // }));
+
+        const fetchedUsers = response.data.data.map(user => ({
             label: `${user.email}`,
             value: user.id
+        }));
+
+        // So sánh với attendees đã chọn trước đó
+        const selectedAttendees = formState.value.attendees.map(att => att.value);
+
+        state.value.data = fetchedUsers.map(user => ({
+            ...user,
+            selected: selectedAttendees.includes(user.value) // Đánh dấu user đã chọn
         }));
     } catch (error) {
         console.error('Error fetching users:', error);
@@ -802,14 +836,126 @@ const handleExcludeDate = (date) => {
         }
     }
 };
-const handleSubmit = () => {
-    const start = formState.value.start;
-    const end = formState.value.end;
-    // console.log("📌 Form Submitted:", { ...formState.value, start, end });
 
-    console.log("Dữ liệu sự kiện:", formState.value);
-    console.log("Thời gian bắt đầu:", start);
-    console.log("Thời gian kết thúc:", end);
+
+// Xử lý cập nhật sự kiện
+const handleSubmit = () => {
+    if (formState.value.is_repeat && formState.value.is_repeat !== 'none') {
+        Modal.confirm({
+            title: "Cập nhật sự kiện lặp lại",
+            width: 500,
+            content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
+                h("div", { class: "mb-3" }, [
+                    h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                        h("input", {
+                            type: "radio",
+                            name: "editOption",
+                            value: "EDIT_1",
+                            class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                            checked: editOption.value === "EDIT_1",
+                            onInput: (e) => {
+                                editOption.value = e.target.value;
+                            },
+                        }),
+                        h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
+                    ]),
+                ]),
+                h("div", { class: "mb-3" }, [
+                    h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                        h("input", {
+                            type: "radio",
+                            name: "editOption",
+                            value: "EDIT_1B",
+                            class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                            checked: editOption.value === "EDIT_1B",
+                            onInput: (e) => {
+                                editOption.value = e.target.value;
+                            },
+                        }),
+                        h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
+                    ]),
+                ]),
+                h("div", { class: "mb-3" }, [
+                    h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                        h("input", {
+                            type: "radio",
+                            name: "editOption",
+                            value: "EDIT_A",
+                            class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                            checked: editOption.value === "EDIT_A",
+                            onInput: (e) => {
+                                editOption.value = e.target.value;
+                            },
+                        }),
+                        h("span", { class: "text-lg" }, "Cập nhật tất cả sự kiện"),
+                    ]),
+                ]),
+            ]),
+            okText: "Cập nhật",
+            cancelText: "Hủy",
+            onOk() {
+                updateEvent({ code: editOption.value, date: formState.value.start, id: formState.value.id });
+            },
+        });
+    } else {
+        // Nếu không có lặp lại, cập nhật ngay lập tức
+        updateEvent({ code: "EDIT_N", date: formState.value.start, id: formState.value.id });
+    }
+};
+
+// Hàm cập nhật sự kiện
+const updateEvent = async ({ code, date, id }) => {
+    try {
+        const dataApi = {
+            id: id,
+            code: code,
+            start_time: dayjs(date).format("YYYY-MM-DD HH:mm:ss"), // Định dạng lại ngày nếu cần
+            // Thêm các trường khác nếu cần thiết từ formState
+            title: formState.value.title,
+            end_time: formState.value.end
+                ? formState.value.end.format("YYYY-MM-DD HH:mm:ss")
+                : null,
+            description: formState.value.description || null,
+            location: formState.value.location || null,
+            attendees: formState.value.attendees ? transformAttendeesData(formState.value.attendees) : null,
+            sendMail: formState.value.sendMail,
+            is_reminder: formState.value.is_reminder || 0,
+            reminder: formatReminders(formState.value.reminder) || null,
+            color_code: formState.value.color_code || null,
+            is_all_day: formState.value.allDay || 0,
+            is_repeat: formState.value.is_repeat || 0,
+            rrule: formState.value.rrule || null,
+            exclude_time: formState.value.exclude_time || null,
+            timezone_code: formState.value.timezone_code || null,
+            type: formState.value.type || null,
+            freq: formState.value.rrule?.freq || null,
+            interval: formState.value.rrule?.interval ?? 1,
+            count: formState.value.rrule?.count ?? null,
+            until: formState.value.rrule?.until
+                ? dayjs(formState.value.rrule?.until).format("YYYY-MM-DD HH:mm:ss")
+                : dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+            byweekday: formState.value.rrule?.byweekday.length ? formState.value.rrule.byweekday : null,
+            bymonthday: formState.value.rrule?.bymonthday.length ? formState.value.rrule.bymonthday : null,
+            bymonth: formState.value.rrule?.bymonth.length ? formState.value.rrule.bymonth : null,
+        };
+
+        const res = await axios.put(`${import.meta.env.VITE_API_BASE_URL}tasks/${id}`, dataApi, {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            },
+        });
+
+        if (res.data.code === 200) {
+            message.success(res.data.message || "Cập nhật sự kiện thành công");
+            // Có thể thêm logic để cập nhật giao diện hoặc dữ liệu khác
+        } else {
+            message.error(res.data.message || "Cập nhật sự kiện không thành công.");
+        }
+    } catch (error) {
+        console.error("Lỗi khi cập nhật sự kiện:", error);
+        message.error("Đã xảy ra lỗi. Vui lòng thử lại.");
+    }
 };
 
 </script>
