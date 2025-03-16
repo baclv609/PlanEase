@@ -413,6 +413,7 @@ const updateFormStateFromProps = (event) => {
             description: event.info?.extendedProps?.description || "",
             uuid: event.uuid ? event.uuid : null,
             is_busy: event.is_busy || false,
+            parent_id: event.parent_id ? event.parent_id : null,
 
             // Nếu sự kiện lặp lại (is_repeat = true), cập nhật rrule
             rrule: event.recurrence === 1 ? {
@@ -470,7 +471,7 @@ const formState = ref({
     is_repeat: false,
     is_done: false,
     is_busy: false,
-
+    parent_id: null,
 
     tags: null,
 
@@ -930,6 +931,7 @@ const updateEvent = async ({ code, date, id }) => {
             is_busy: formState.value.is_busy || 0,
             is_all_day: formState.value.allDay || 0,
             is_repeat: formState.value.is_repeat || 0,
+            parent_id: formState.value.parent_id || null,
             rrule: formState.value.rrule || null,
             exclude_time: formState.value.exclude_time || null,
             timezone_code: formState.value.timezone_code || null,
