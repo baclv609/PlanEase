@@ -73,7 +73,7 @@ export function useCalendarEvents() {
       const end = event.end_time
         ? DateTime.fromISO(event.end_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
         : null;
-        console.log("selectedTimezone", selectedTimezone.value);
+        // console.log("selectedTimezone", selectedTimezone.value);
       const rrule =
         event.is_repeat && event.rrule
           ? {
@@ -94,6 +94,7 @@ export function useCalendarEvents() {
         start,
         end,
         timezone: event.timezone_code,
+        tags: event.tag_id,
         allDay: event.is_all_day === 1,
         backgroundColor: event.color_code || '#3788d8',
         borderColor: event.color_code || '#3788d8',
