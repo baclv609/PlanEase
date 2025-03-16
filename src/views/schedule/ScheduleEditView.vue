@@ -74,7 +74,7 @@
                     </Select>
                 </div>
                 <div class="w-full md:w-1/3">
-                    <a-select :value="formState.color_code" placeholder="Chọn màu" class="w-full rounded-lg">
+                    <a-select v-model:value="formState.color_code" placeholder="Chọn màu" class="w-full rounded-lg">
                         <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
                             <div class="flex items-center">
                                 <div class="w-4 h-4 mr-2" :style="{ backgroundColor: color.value }"></div>
@@ -412,6 +412,7 @@ const updateFormStateFromProps = (event) => {
             timezone_code: event.info?.extendedProps?.timezone || "UTC",
             description: event.info?.extendedProps?.description || "",
             uuid: event.uuid ? event.uuid : null,
+            is_busy: event.is_busy || false,
 
             // Nếu sự kiện lặp lại (is_repeat = true), cập nhật rrule
             rrule: event.recurrence === 1 ? {
@@ -909,9 +910,13 @@ const updateEvent = async ({ code, date, id }) => {
         const dataApi = {
             id: id,
             code: code,
-            start_time: dayjs(date).format("YYYY-MM-DD HH:mm:ss"), // Định dạng lại ngày nếu cần
-            // Thêm các trường khác nếu cần thiết từ formState
+            start_time: formState.value.start
+                ? formState.value.start.format("YYYY-MM-DD HH:mm:ss")
+                : null,
             title: formState.value.title,
+            updated_date: formState.value.start
+                ? formState.value.start.format("YYYY-MM-DD HH:mm:ss")
+                : null,
             end_time: formState.value.end
                 ? formState.value.end.format("YYYY-MM-DD HH:mm:ss")
                 : null,
@@ -922,6 +927,7 @@ const updateEvent = async ({ code, date, id }) => {
             is_reminder: formState.value.is_reminder || 0,
             reminder: formatReminders(formState.value.reminder) || null,
             color_code: formState.value.color_code || null,
+            is_busy: formState.value.is_busy || 0,
             is_all_day: formState.value.allDay || 0,
             is_repeat: formState.value.is_repeat || 0,
             rrule: formState.value.rrule || null,
@@ -938,7 +944,10 @@ const updateEvent = async ({ code, date, id }) => {
             bymonthday: formState.value.rrule?.bymonthday.length ? formState.value.rrule.bymonthday : null,
             bymonth: formState.value.rrule?.bymonth.length ? formState.value.rrule.bymonth : null,
         };
+        console.log("formState.value.rrule", formState.value.rrule);
+        console.log("formState", formState.value);
 
+        console.log("🔎 Cập nhật sự kiện:", dataApi);
         const res = await axios.put(`${import.meta.env.VITE_API_BASE_URL}tasks/${id}`, dataApi, {
             headers: {
                 "Content-Type": "application/json",
