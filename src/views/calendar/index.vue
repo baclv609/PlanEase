@@ -176,7 +176,7 @@ onMounted(() => {
     <EventDetailModal :open="isEventDetailModalVisible" :event="selectedEvent"  @editTask="openEditDrawer"
       @close="isEventDetailModalVisible = false" @delete="handleDeleteEvent" />
 
-      <ScheduleEditView :visible="isEditDrawerVisible" :event="selectedEventToEdit"   @update:visible="isEditDrawerVisible = $event"  />
+      <ScheduleEditView :visible="isEditDrawerVisible" :event="selectedEventToEdit"   @update:visible="isEditDrawerVisible = $event" @cancel="isEditDrawerVisible = false"/>
 
   </div>
 </template>

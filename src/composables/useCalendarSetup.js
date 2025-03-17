@@ -73,7 +73,7 @@ export function useCalendarEvents() {
       const end = event.end_time
         ? DateTime.fromISO(event.end_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
         : null;
-        console.log("selectedTimezone", selectedTimezone.value);
+        // console.log("selectedTimezone", selectedTimezone.value);
       const rrule =
         event.is_repeat && event.rrule
           ? {
@@ -94,6 +94,7 @@ export function useCalendarEvents() {
         start,
         end,
         timezone: event.timezone_code,
+        tags: event.tag_id,
         allDay: event.is_all_day === 1,
         backgroundColor: event.color_code || '#3788d8',
         borderColor: event.color_code || '#3788d8',
@@ -140,6 +141,7 @@ export function useCalendarEvents() {
                 wkst: event.rrule.wkst || null,
               }
             : null,
+            allDayMaintainDuration: true, 
             duration: event.is_repeat ? calculateDuration(event.start_time, event.end_time) : null,
       };
     })
@@ -234,11 +236,21 @@ watch(
     if (info.view.type === 'dayGridMonth') {
       selectedEventAdd.value = {
         start: info.dateStr,
-        end: dayjs(info.dateStr).add(1, 'hour'),
+        end: dayjs(info.dateStr).add(1, 'day').format('YYYY-MM-DD'), // Kết thúc vào ngày tiếp theo
+        allDay: true, // Xác định đây là sự kiện cả ngày
+      };
+    } else {
+      // Nếu ở chế độ khác (week, day), mặc định sự kiện kéo dài 1 giờ
+      selectedEventAdd.value = {
+        start: info.dateStr,
+        end: dayjs(info.dateStr).add(1, 'hour').format(),
+        allDay: false,
       };
     }
+  
     isAddEventModalVisible.value = true;
   };
+  
 
 
   const openEventDetailModal = (info) => {
@@ -305,13 +317,15 @@ watch(
     select: (info) => {
       selectedEventAdd.value = {
         start: info.startStr,
-        end:
-          info.view.type === 'dayGridMonth'
-            ? dayjs(info.endStr).subtract(1, 'day').add(1, 'hour')
-            : info.endStr,
+        end: info.view.type === 'dayGridMonth'
+          ? dayjs(info.endStr).subtract(1, 'day').format('YYYY-MM-DD') // Sửa lỗi end bị lệch
+          : info.endStr, // Nếu là lịch tuần/ngày, giữ nguyên
+        allDay: info.allDay, // Xác định sự kiện cả ngày
       };
+    
       isAddEventModalVisible.value = true;
     },
+    
 
     loading: (isLoading) => {
       console.log(isLoading ? 'Đang tải sự kiện...' : 'Đã tải xong sự kiện');

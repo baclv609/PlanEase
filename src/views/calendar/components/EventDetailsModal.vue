@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, computed, ref, watch, h } from "vue";
+import { defineProps, defineEmits, computed, ref, watch, h, onMounted, onUnmounted } from "vue";
 import { Modal,
          Descriptions,
          Tag, 
@@ -19,6 +19,7 @@ import { AlignLeftOutlined,
          CheckOutlined, 
          ClockCircleOutlined, 
          CloseOutlined, 
+         CommentOutlined, 
          CopyOutlined, 
          DeleteOutlined,
          EditOutlined, 
@@ -30,6 +31,7 @@ import { AlignLeftOutlined,
          UsergroupAddOutlined 
         } from "@ant-design/icons-vue";
 
+import { useEchoStore } from "@/stores/echoStore";
 
 const props = defineProps({
   isEventDetailModalVisible: Boolean,
@@ -43,61 +45,79 @@ const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem('access_token');
 const deleteOption = ref("");
 const eventLink = ref('');
-const userId = ref(JSON.parse(localStorage.getItem('user')).id);
+const user = ref(JSON.parse(localStorage.getItem('user')));
 const activeTab = ref("infoEvent");
 
-const messages = ref([
-  {
-    userId: '1',
-    text: 'Hello everyone! How are you doing today?',
-    timestamp: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    userId: '2',
-    text: 'Hi Alice! I\'m doing great, thanks for asking.',
-    timestamp: new Date(Date.now() - 3500000).toISOString()
-  },
-  {
-    userId: '6',
-    text: 'Hello! Just joined the chat. What are we talking about?',
-    timestamp: new Date(Date.now() - 3400000).toISOString()
-  },
-  {
-    userId: '1',
-    text: 'We\'re just getting started. Feel free to introduce yourself!',
-    timestamp: new Date(Date.now() - 3300000).toISOString()
-  },
-  {
-    userId: '2',
-    text: 'Hi Alice! I\'m doing great, thanks for asking.',
-    timestamp: new Date(Date.now() - 3500000).toISOString()
-  },
-  {
-    userId: '6',
-    text: 'Hello! Just joined the chat. What are we talking about?',
-    timestamp: new Date(Date.now() - 3400000).toISOString()
-  },
-  {
-    userId: '1',
-    text: 'We\'re just getting started. Feel free to introduce yourself!',
-    timestamp: new Date(Date.now() - 3300000).toISOString()
-  }
-]);
+const replyingTo = ref(null);
+const echoStore = useEchoStore();
+
+const messages = ref([]);
+
+const transformMessages = (messages) => {
+  return messages.map(msg => ({
+    messageId: msg.id,
+    userId: msg.user_id,
+    name: `${msg.user.first_name} ${msg.user.last_name}`,
+    text: msg.message,
+    avatar: msg.user.avatar,
+    replyTo: msg.reply_to ? {
+      user_id: msg.reply_message.user.id,
+      text: msg.reply_message.message,
+      name: `${msg.reply_message.user.first_name} ${msg.reply_message.user.last_name}`,
+    } : null,
+    timestamp: msg.created_at,
+  }));
+};
+
 const formatTime = (timestamp) => {
   const date = new Date(timestamp);
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 const newMessage = ref('');
 const messagesContainer = ref(null);
+const groupInfo = ref({});
 
 watch(() => props.isEventDetailModalVisible, (newVal) => {
   isVisible.value = newVal;
 });
 
 watch(
-  () => props.event, (newVal) => {
+  () => props.event, async (newVal) => {
     event.value = newVal;
-    console.log(newVal);
+
+    if(props.event != null && newVal.attendees.length > 0){
+      const currentUserAttendee = newVal.attendees.find(attendee => attendee.user_id == user.value.id);
+
+      if((currentUserAttendee && currentUserAttendee.status == "yes") || user.value.id == newVal.user_id){
+        const data = await getMessagesByGroup(newVal.id);
+
+        groupInfo.value = data;
+        console.log('Group:' , groupInfo.value);
+        messages.value = transformMessages(groupInfo.value.messages);
+
+        console.log('tin nhan chuyen:' , messages.value);
+        echoStore.echo.private(`task-group.${groupInfo.value.group.id}`)
+        .listen(`Chat\\NewTaskGroupChatMessages`, (message) => {   
+          console.log('co tin nahn',message);   
+          const formattedMessage = {
+              messageId: message.id,
+              userId: message.user_id,
+              name: `${message.user.first_name} ${message.user.last_name}`,
+              text: message.message,
+              replyTo: message.reply_message
+                  ? {
+                      userId: message.reply_message.user.id,
+                      text: message.reply_message.message,
+                      name: `${message.reply_message.user.first_name} ${message.reply_message.user.last_name}`,
+                  }
+                  : null, // Nếu không có reply thì null
+              timestamp: new Date(message.created_at).toISOString(),
+          };
+
+          messages.value.push(formattedMessage);
+        });
+      }
+    }
   },
   { immediate: true, deep: true }
 );
@@ -251,6 +271,10 @@ const handleCancelDelete = () => {
 const handleClose = () => {
   isVisible.value = false;
   activeTab.value = 'infoEvent';
+  if (groupInfo.value.group && groupInfo.value.group.id){
+    console.log("Dừng lắng nghe realtime trong Chat ModalDetails", groupInfo.value.group.id);
+    echoStore.echo.leave(`task-group.${groupInfo.value.group.id}`);
+  }
   emit("close", false);
 };
 
@@ -282,6 +306,7 @@ const accept = async (uuid) => {
 
       if(response.data.code == 200) {
         message.info(response.data.message);
+        emit("delete");
       }
 
     } catch(error) {
@@ -303,10 +328,59 @@ const refuse = async (uuid) => {
 
     if(response.data.code == 200) {
       message.info(response.data.message)
+      emit("delete");
     }
 
   } catch(error) {
     console.log(error);
+  }
+}
+
+// chat
+const sendMessage = async () => {
+  if (!newMessage.value.trim()) return;
+
+  try {
+    const res = await axios.post(`${dirApi}group/message/send`, {
+      group_id: groupInfo.value.group.id,
+      message: newMessage.value,
+      file: null,
+      reply_to: replyingTo.value ? replyingTo.value.messageId : null,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+    });
+
+    if(res.data.code == 200){
+      newMessage.value = "";
+      replyingTo.value = null;
+    }
+  } catch (error) {
+    console.error('Error sending message:', error);
+  }
+};
+
+const setReply = (message) => {
+  replyingTo.value = message;
+};
+
+const cancelReply = () => {
+  replyingTo.value = null;
+};
+
+const getMessagesByGroup = async (taskId) => {
+  const response = await axios.get(`${dirApi}task/${taskId}/messages`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  try {
+    return response.data;
+  } catch (error) {
+    console.log("Loi xay ra khi lay tin nhan: ", error);
   }
 }
 </script>
@@ -316,17 +390,19 @@ const refuse = async (uuid) => {
 
     <div class="flex items-center justify-end mr-2 space-x-3">
       <button
+        v-if="event.user_id == user.id || (event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.role == 'editor'))"
         class="text-gray-800 px-[10px] py-2 border-none rounded-full cursor-pointer bg-transparent hover:bg-gray-100 transition"
         @click="handleEditTask">
         <EditOutlined class="text-xl" />
       </button>
       <button
+        v-if="event.user_id == user.id || (event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.role == 'editor'))"
         class="text-gray-800 px-[10px] py-2 border-none rounded-full cursor-pointer bg-transparent hover:bg-gray-100 transition"
         @click="handleDelete">
         <DeleteOutlined class="text-xl" />
       </button>
       <button
-        v-if="event.user_id == userId || (event.attendees && event.attendees.some(attendee => attendee.user_id == userId && attendee.role == 'edit'))"
+        v-if="event.user_id == user.id || (event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.role == 'editor'))"
         class="text-gray-800 px-[10px] py-2 border-none rounded-full cursor-pointer bg-transparent hover:bg-gray-100 transition"
         @click="showModalLink">
         <ShareAltOutlined class="text-xl" />
@@ -495,16 +571,16 @@ const refuse = async (uuid) => {
         </div>
 
         <div
-          v-if="event.attendees && event.attendees.some(attendee => attendee.user_id == userId && attendee.status == 'yes')"
+          v-if="event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.status == 'yes')"
           class="flex justify-center">
           <p class="text-green-500 mb-0">Bạn đã tham gia sự kiện này</p>
         </div>
         <div
-          v-else-if="event.attendees && event.attendees.some(attendee => attendee.user_id == userId && attendee.status == 'pending')"
+          v-else-if="event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.status == 'pending')"
           class="flex justify-center">
           <p class="text-yellow-500 mb-0">Bạn có muốn tham gia vào sự kiện này không</p>
         </div>
-        <div v-if="event.attendees && event.attendees.length > 0 && userId != event.user_id"
+        <div v-if="event.attendees && event.attendees.length > 0 && user.id != event.user_id"
           class="flex justify-center p-4">
           <div class="flex items-center space-x-2">
             <button @click="accept(event.uuid)"
@@ -529,42 +605,71 @@ const refuse = async (uuid) => {
             
             <!-- Messages area -->
             <div class="flex-1 overflow-y-auto p-4 space-y-4" ref="messagesContainer">
-              <div v-if="messages.length === 0" class="flex items-center justify-center h-full">
+              <!-- Hiển thị nếu chưa có tin nhắn -->
+              <div v-if="messages.length == 0" class="flex items-center justify-center h-full">
                 <div class="text-center text-gray-500">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                   </svg>
-                  <p>No messages yet. Start the conversation!</p>
+                  <p>Chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!</p>
                 </div>
               </div>
-              <div v-for="(message, index) in messages" :key="index" :class="[
-                'flex',
-                message.userId == 6 ? 'justify-end' : 'justify-start'
-              ]">
-                <div :class="[
-                  'max-w-xs md:max-w-md rounded-lg px-4 py-2 break-words',
-                  message.userId === 6
-                    ? 'bg-blue-500 text-white rounded-br-none'
-                    : 'bg-gray-200 text-gray-800 rounded-bl-none'
-                ]">
-                  <div v-if="message.userId !== 6" class="font-medium text-xs mb-1"
-                    :style="{color: '#CCCCC'}">
-                    {{ "Unknow" }}
+
+              <!-- Danh sách tin nhắn -->
+              <div v-for="(message, index) in messages" :key="index" class="flex items-end space-x-2"
+                :class="{ 'justify-end': message.userId === user.id }">
+                
+                <!-- Avatar bên trái nếu là tin nhắn của người khác -->
+                <img v-if="message.userId !== user.id" class="w-8 h-8 rounded-full" :src="message.avatar || unknowUser" alt="User Avatar" />
+
+                <!-- Nội dung tin nhắn -->
+                <div class="relative max-w-xs md:max-w-md p-3 rounded-xl shadow"
+                  :class="{
+                    'bg-blue-500 text-white rounded-br-none': message.userId === user.id,
+                    'bg-white text-gray-800 rounded-bl-none': message.userId !== user.id
+                  }">
+                  
+                <span class="block font-semibold text-gray-500"
+                  :class="{
+                      'text-white text-end text-xs': message.userId == user.id,
+                      'text-gray-800 text-xs': message.userId != user.id
+                    }"
+                >{{ message.name }}</span>
+
+                  <!-- Hiển thị tin nhắn được trích dẫn -->
+                  <div v-if="message.replyTo" class="mb-2 p-2 border-l-4 border-blue-400 bg-blue-100 rounded-lg text-gray-700 text-xs">
+                    <span class="block font-semibold text-gray-500">{{ message.replyTo.name }}</span>
+                    <span>{{ message.replyTo.text }}</span>
                   </div>
-                  <p>{{ message.text }}</p>
-                  <div :class="[
-                    'text-xs mt-1 text-right',
-                    message.userId == 6 ? 'text-blue-100' : 'text-gray-500'
-                  ]">
+
+                  <!-- Nội dung chính của tin nhắn -->
+                  <p class="text-sm">{{ message.text }}</p>
+
+                  <!-- Thời gian gửi -->
+                  <div class="text-xs text-right text-gray-300 mt-1">
                     {{ formatTime(message.timestamp) }}
                   </div>
+                </div>
+
+                <!-- Avatar bên phải nếu là tin nhắn của user -->
+                <img v-if="message.userId === user.id" class="w-8 h-8 rounded-full" :src="message.avatar || unknowUser" alt="User Avatar" />
+
+                <!-- Nút trả lời -->
+                <div @click="setReply(message)" class="flex items-center align-middle justify-center">
+                  <button v-if="message.userId !== user.id" class="text-xs border-none py-2 rounded-full hover:bg-gray-200 cursor-pointer text-blue-600 ml-2">
+                    <CommentOutlined />
+                  </button>
                 </div>
               </div>
             </div>
 
             <!-- Input area -->
             <div class="bg-white border-t py-2 border-gray-200">
+              <div v-if="replyingTo" class="p-2 bg-gray-100 border-l-4 border-blue-500 rounded flex items-center justify-between">
+                <p class="text-sm text-gray-600">Replying to: <b>{{ replyingTo.text }}</b></p>
+                <button class="text-red-500 text-xs" @click="cancelReply"><CloseOutlined /></button>
+              </div>
               <form @submit.prevent="sendMessage" class="flex space-x-2 w-full">
                 <div class="flex-1 w-11/12">
                   <input v-model="newMessage"

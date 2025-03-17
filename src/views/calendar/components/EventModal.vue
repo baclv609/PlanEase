@@ -85,6 +85,7 @@ const formState = ref({
       if (newVal) {
         formState.value.start = newVal.start ? dayjs(newVal.start) : null;
         formState.value.end = newVal.end ? dayjs(newVal.end) : null;
+        formState.value.is_all_day = newVal.allDay;
       }
     },
     { immediate: true }
