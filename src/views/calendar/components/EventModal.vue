@@ -229,9 +229,9 @@ watch(
   () => formState.value.is_all_day,
   (newValue) => {
     if (newValue) {
-      // Giữ nguyên ngày nhưng set giờ về 00:00:00 và 23:59:59
+      // Giữ nguyên ngày nhưng set giờ về 00:00:00 và end
       formState.value.start = dayjs(formState.value.start).hour(0).minute(0).second(0);
-      formState.value.end = dayjs(formState.value.end).hour(23).minute(59).second(59);
+      formState.value.end = dayjs(formState.value.end).add(1, 'day').hour(0).minute(0).second(0);
     }
   }
 );

@@ -85,7 +85,7 @@ watch(
   () => props.event, async (newVal) => {
     event.value = newVal;
 
-    if(props.event != null && newVal.attendees.length > 0){
+    if(props.event != null && newVal && newVal.attendees?.length > 0){
       const currentUserAttendee = newVal.attendees.find(attendee => attendee.user_id == user.value.id);
 
       if((currentUserAttendee && currentUserAttendee.status == "yes") || user.value.id == newVal.user_id){

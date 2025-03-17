@@ -115,19 +115,20 @@ export function useCalendarEvents() {
           bymonthday: event.rrule.bymonthday || null,
         },
         exdate: Array.isArray(event.exclude_time)
-          ? event.exclude_time.map((date) =>
-              new Date(date).toISOString().replace('.000Z', '').slice(0, 16)
-            )
+            ? !event.is_all_day ? event.exclude_time.map((date) =>
+              new Date(date).toISOString().replace('.000Z', '').slice(0, 16) //nếu ko phải cả ngày tính cả giờ
+            ) : event.exclude_time.map((date) =>
+              new Date(date).toISOString().split('T')[0]) //chỉ lấy ngày nếu all day
           : undefined,
         rrule:
           event.is_repeat && event.rrule
             ? {
                 dtstart: event.start_time
-                ? new Date(event.start_time).toISOString().replace('.000Z', '')
+                ? event.is_all_day ? start.split('T')[0] : new Date(event.start_time).toISOString().replace('.000Z', '')
                 : null,
                 freq: event.rrule.freq || 'daily',
                 interval: event.rrule.interval || 1,
-                until: event.rrule.until ? event.rrule.until.replace(' ', 'T') : null,
+                until: event.rrule.until ? event.is_all_day ? event.rrule.until.split('T')[0] : event.rrule.until.replace(' ', 'T') : null, // chỉ lấy ngày nếu all day
                 count: event.rrule.count || null,
                 byweekday: event.rrule.byweekday || null,
                 bymonth: event.rrule.bymonth || null,
@@ -288,6 +289,7 @@ watch(
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin, rrulePlugin, luxonPlugin],
     headerToolbar: false,
     locale: settingsStore.language,
+    dayMaxEvents: 4,
     timeZone: selectedTimezone.value,
     firstDay: settingsStore.firstDay,
     initialDate: settingsStore.initialDate,
