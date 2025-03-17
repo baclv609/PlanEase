@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, computed, ref, watch, h, onMounted, onUnmounted } from "vue";
+import { defineProps, defineEmits, computed, ref, watch, h, onMounted, onUnmounted, nextTick } from "vue";
 import { Modal,
          Descriptions,
          Tag, 
@@ -32,6 +32,15 @@ import { AlignLeftOutlined,
         } from "@ant-design/icons-vue";
 
 import { useEchoStore } from "@/stores/echoStore";
+import relativeTime from "dayjs/plugin/relativeTime";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(relativeTime);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const userTimezone = JSON.parse(localStorage.getItem('userSettings')).timeZone;
 
 const props = defineProps({
   isEventDetailModalVisible: Boolean,
@@ -69,9 +78,16 @@ const transformMessages = (messages) => {
   }));
 };
 
+// format thời gian tin nhắn
 const formatTime = (timestamp) => {
-  const date = new Date(timestamp);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const time = dayjs.utc(timestamp).tz(userTimezone);
+  const now = dayjs().tz(userTimezone);
+
+  if (time.isSame(now, "day")) {
+    return time.format("HH:mm");
+  } else {
+    return time.format("DD/MM/YYYY");
+  }
 };
 const newMessage = ref('');
 const messagesContainer = ref(null);
@@ -98,12 +114,13 @@ watch(
         console.log('tin nhan chuyen:' , messages.value);
         echoStore.echo.private(`task-group.${groupInfo.value.group.id}`)
         .listen(`Chat\\NewTaskGroupChatMessages`, (message) => {   
-          console.log('co tin nahn',message);   
+          
           const formattedMessage = {
               messageId: message.id,
               userId: message.user_id,
               name: `${message.user.first_name} ${message.user.last_name}`,
               text: message.message,
+              avatar: message.user.avatar,
               replyTo: message.reply_message
                   ? {
                       userId: message.reply_message.user.id,
@@ -111,7 +128,7 @@ watch(
                       name: `${message.reply_message.user.first_name} ${message.reply_message.user.last_name}`,
                   }
                   : null, // Nếu không có reply thì null
-              timestamp: new Date(message.created_at).toISOString(),
+              timestamp: message.created_at,
           };
 
           messages.value.push(formattedMessage);
@@ -370,6 +387,24 @@ const cancelReply = () => {
   replyingTo.value = null;
 };
 
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+    }
+  });
+};
+
+// Theo dõi thay đổi của messages và cuộn xuống cuối
+watch(messages, () => {
+  scrollToBottom();
+}, { deep: true });
+
+watch(activeTab, (value) => {
+  if(value == 'discuss') {
+    scrollToBottom();
+  }
+});
 const getMessagesByGroup = async (taskId) => {
   const response = await axios.get(`${dirApi}task/${taskId}/messages`, {
     headers: {
@@ -386,7 +421,7 @@ const getMessagesByGroup = async (taskId) => {
 </script>
 
 <template>
-  <Modal v-model:open="isVisible" width="650px" :footer="null" :closable="false">
+  <Modal v-model:open="isVisible" width="750px" :footer="null" :closable="false">
 
     <div class="flex items-center justify-end mr-2 space-x-3">
       <button
@@ -599,7 +634,7 @@ const getMessagesByGroup = async (taskId) => {
       </a-tab-pane>
 
       <a-tab-pane v-if="event.type == 'event' && event.attendees.length > 0" key="discuss" tab="Thảo luận">
-        <div class="flex h-screen bg-gray-100">
+        <div class="flex h-screen bg-gray-100 h-[550px]">
           <!-- Main chat area -->
           <div class="flex-1 flex flex-col">
             
@@ -618,16 +653,16 @@ const getMessagesByGroup = async (taskId) => {
 
               <!-- Danh sách tin nhắn -->
               <div v-for="(message, index) in messages" :key="index" class="flex items-end space-x-2"
-                :class="{ 'justify-end': message.userId === user.id }">
+                :class="{ 'justify-end': message.userId == user.id }">
                 
                 <!-- Avatar bên trái nếu là tin nhắn của người khác -->
-                <img v-if="message.userId !== user.id" class="w-8 h-8 rounded-full" :src="message.avatar || unknowUser" alt="User Avatar" />
+                <img v-if="message.userId != user.id" class="w-8 h-8 rounded-full" :src="message.avatar || unknowUser" alt="User Avatar" />
 
                 <!-- Nội dung tin nhắn -->
                 <div class="relative max-w-xs md:max-w-md p-3 rounded-xl shadow"
                   :class="{
-                    'bg-blue-500 text-white rounded-br-none': message.userId === user.id,
-                    'bg-white text-gray-800 rounded-bl-none': message.userId !== user.id
+                    'bg-blue-500 text-white rounded-br-none': message.userId == user.id,
+                    'bg-white text-gray-800 rounded-bl-none': message.userId != user.id
                   }">
                   
                 <span class="block font-semibold text-gray-500"
@@ -653,11 +688,11 @@ const getMessagesByGroup = async (taskId) => {
                 </div>
 
                 <!-- Avatar bên phải nếu là tin nhắn của user -->
-                <img v-if="message.userId === user.id" class="w-8 h-8 rounded-full" :src="message.avatar || unknowUser" alt="User Avatar" />
+                <img v-if="message.userId == user.id" class="w-8 h-8 rounded-full" :src="message.avatar || unknowUser" alt="User Avatar" />
 
                 <!-- Nút trả lời -->
                 <div @click="setReply(message)" class="flex items-center align-middle justify-center">
-                  <button v-if="message.userId !== user.id" class="text-xs border-none py-2 rounded-full hover:bg-gray-200 cursor-pointer text-blue-600 ml-2">
+                  <button v-if="message.userId != user.id" class="text-sm border-none mb-[50%] px-2 py-1 rounded-full transition bg-sky-100 hover:bg-sky-200 cursor-pointer text-blue-600 ml-2">
                     <CommentOutlined />
                   </button>
                 </div>
