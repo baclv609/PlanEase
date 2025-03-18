@@ -358,6 +358,9 @@ const timezones = moment.tz.names();
 const tags = ref([]);
 const origin = ref(typeof window !== 'undefined' ? window.location.origin : '');
 
+const originalIsRepeat = ref(false); // Lưu trạng thái ban đầu của is_repeat
+
+
 const editOption = ref("EDIT_1");
 
 const updateDrawerWidth = () => {
@@ -381,6 +384,8 @@ const formatDateTime = (isoString) => {
 const updateFormStateFromProps = (event) => {
     if (event) {
         console.log("Dữ liệu sự kiện:", event);
+
+        originalIsRepeat.value = event.recurrence === 1;
 
         formState.value = {
             ...formState.value, // Giữ nguyên dữ liệu cũ
@@ -742,7 +747,6 @@ const getAllTagByUser = async () => {
             }
         });
 
-        console.log('res.data.code', res.data.code);
         if (res.data.code === 200) {
             tags.value = res.data.data.map(tag => ({
                 label: tag.name,
@@ -842,7 +846,7 @@ const handleExcludeDate = (date) => {
 
 // Xử lý cập nhật sự kiện
 const handleSubmit = () => {
-    if (formState.value.is_repeat && formState.value.is_repeat !== 'none') {
+    if (originalIsRepeat.value === true) {
         Modal.confirm({
             title: "Cập nhật sự kiện lặp lại",
             width: 500,
