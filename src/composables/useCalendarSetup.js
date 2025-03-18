@@ -238,17 +238,17 @@ watch(
       selectedEventAdd.value = {
         start: info.dateStr,
         end: dayjs(info.dateStr).add(1, 'day').format('YYYY-MM-DD'), // Kết thúc vào ngày tiếp theo
-        allDay: true, // Xác định đây là sự kiện cả ngày
+        allDay: info.allDay, // Xác định đây là sự kiện cả ngày
       };
     } else {
-      // Nếu ở chế độ khác (week, day), mặc định sự kiện kéo dài 1 giờ
+      // Nếu ở chế độ khác (week, day), mặc định sự kiện kéo dài 30p
       selectedEventAdd.value = {
         start: info.dateStr,
-        end: dayjs(info.dateStr).add(1, 'hour').format(),
-        allDay: false,
+        end: info.allDay ? dayjs(info.dateStr).add(1, 'day').format('YYYY-MM-DD') : dayjs(info.dateStr).add(30, 'minutes').format(),
+        allDay: info.allDay,
       };
     }
-  
+    
     isAddEventModalVisible.value = true;
   };
   

@@ -3,10 +3,10 @@ const notFound = [
         path: '/not-found',
         name: 'not-found',
         component: () => import('@/views/errors/NotFound.vue'),
-        // meta: {
-        //     layout: 'auth',
-        //     notAuthRequired: false,
-        // },
+        meta: {
+            layout: 'auth',
+            notAuthRequired: false,
+        },
     },
     {
         path: '/:pathMatch(.*)*',

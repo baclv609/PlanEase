@@ -39,11 +39,11 @@
         <div v-if="filterNotificationData && filterNotificationData.length > 0" v-for="notification in filterNotificationData" :key="notification.id" @click="read(notification)" class="flex cursor-pointer items-start gap-3 p-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
             <span class="text-gray-900 text-xl">{{ icons[notification.data.code] || icons.default }}</span>
           <div>
-            <span v-if="notification.read_at == null" class="relative flex size-3 ml-[96%] -mt-1">
+            <span v-if="notification.read_at == null" class="relative flex size-2 ml-[310px] -mt-1">
               <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-              <span class="relative inline-flex size-3 rounded-full bg-red-500"></span>
+              <span class="relative inline-flex size-2 rounded-full bg-red-500"></span>
             </span>
-            <a v-if="notification.data.link" :href="notification.data.link" class="text-gray-900 block" :class="notification.read_at == null ? ' font-medium' : 'font-normal' ">{{ notification.data.message }}</a>
+            <a v-if="notification.data.link" @click="read(notification)" :href="notification.data.link" class="text-gray-900 block" :class="notification.read_at == null ? ' font-medium' : 'font-normal' ">{{ notification.data.message }}</a>
             <p v-else class="text-gray-900 block mb-0" :class="notification.read_at == null ? 'font-medium' : 'font-normal' ">{{ notification.data.message }}</p>
             <span class="text-xs text-gray-500">{{ dayjs.utc(notification.created_at).tz(userTimezone.timeZone).fromNow() }}</span>
           </div>

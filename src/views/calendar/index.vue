@@ -29,6 +29,7 @@ import ScheduleEditView from "../schedule/ScheduleEditView.vue";
 // Import modals
 import EventModal from "./components/EventModal.vue";
 import EventDetailModal from "./components/EventDetailsModal.vue";
+import ChatBot from "@/components/ChatBot.vue";
 
 import { useEchoStore } from "@/stores/echoStore";
 
@@ -177,6 +178,8 @@ onMounted(() => {
       @close="isEventDetailModalVisible = false" @delete="handleDeleteEvent" />
 
       <ScheduleEditView :visible="isEditDrawerVisible" :event="selectedEventToEdit"   @update:visible="isEditDrawerVisible = $event" @cancel="isEditDrawerVisible = false"/>
+
+    <ChatBot />
 
   </div>
 </template>
