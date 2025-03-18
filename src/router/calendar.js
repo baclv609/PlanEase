@@ -52,6 +52,11 @@ const calendar = [
       notAuthRequired: false,
     },
   },
+  {
+    path: "/calendar/test-changes-calendar",
+    component: () => import("@/views/testClender/EventForm.vue"),
+   
+  }
 ];
 
 export default calendar;

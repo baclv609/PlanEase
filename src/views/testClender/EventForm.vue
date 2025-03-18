@@ -1,164 +1,76 @@
+<script setup>
+import { ref } from "vue";
+import FullCalendar from "@fullcalendar/vue3";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction"; // Plugin kéo thả
+
+// Danh sách sự kiện
+const events = ref([
+  {
+    id: "1",
+    title: "Họp nhóm (có giờ)",
+    start: "2025-03-17T14:30:00",
+    end: "2025-03-17T15:30:00",
+  },
+  {
+    id: "2",
+    title: "Ngày nghỉ lễ (cả ngày)",
+    start: "2025-03-18",
+    allDay: true,
+  },
+]);
+
+// Cấu hình FullCalendar
+const calendarOptions = ref({
+  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+  initialView: "dayGridMonth",
+  editable: true, // Cho phép kéo thả
+  eventDrop: handleEventDrop, // Xử lý sự kiện kéo thả
+});
+
+// Xử lý khi kéo thả sự kiện
+const handleEventDrop = (info) => {
+  const event = info.event;
+  const oldStart = info.oldEvent.start; // Ngày giờ cũ
+  const newStart = event.start; // Ngày giờ mới
+
+  console.log("📅 Sự kiện được kéo:", event.title);
+  console.log("🔹 Ngày giờ cũ:", oldStart.toISOString());
+  console.log("🔹 Ngày giờ mới:", newStart.toISOString());
+
+  // 🔹 Nếu sự kiện là cả ngày, giữ nguyên trạng thái allDay
+  if (event.allDay) {
+    console.log("🔹 Đây là sự kiện cả ngày, không có giờ cụ thể.");
+  }
+
+  // 🔹 Nếu sự kiện cũ có giờ nhưng sự kiện mới bị mất giờ (00:00:00), giữ lại giờ cũ
+  if (oldStart.getHours() !== 0 || oldStart.getMinutes() !== 0) {
+    newStart.setHours(oldStart.getHours(), oldStart.getMinutes(), oldStart.getSeconds());
+  }
+
+  console.log("✅ Ngày giờ sau khi xử lý:", newStart.toISOString());
+
+  // Giả sử gửi API để cập nhật sự kiện
+  updateEventInDatabase(event.id, newStart.toISOString());
+};
+
+// Giả lập hàm gửi API cập nhật sự kiện
+const updateEventInDatabase = (eventId, newDateTime) => {
+  console.log(`🔄 Cập nhật sự kiện ${eventId} trên server với thời gian mới: ${newDateTime}`);
+};
+</script>
+
 <template>
-    <div>
-      <h2>{{ isEditMode ? 'Chỉnh sửa sự kiện' : 'Tạo mới sự kiện' }}</h2>
-      <form @submit.prevent="handleSubmit">
-        <div>
-          <label for="eventName">Tên sự kiện:</label>
-          <input type="text" v-model="eventName" id="eventName" />
-        </div>
-        <div>
-          <label for="startDate">Ngày bắt đầu:</label>
-          <input type="date" v-model="startDate" id="startDate" />
-        </div>
-        <div>
-          <label for="recurrenceType">Tần suất lặp lại:</label>
-          <select v-model="recurrenceType" id="recurrenceType">
-            <option value="none">Không lặp lại</option>
-            <option value="daily">Hàng ngày</option>
-            <option value="weekly">Hàng tuần</option>
-            <option value="monthly">Hàng tháng</option>
-          </select>
-        </div>
-  
-        <!-- Lặp lại theo tuần -->
-        <div v-if="recurrenceType === 'weekly'">
-          <label>Chọn ngày trong tuần:</label>
-          <input type="checkbox" v-model="weekDays.monday" /> Thứ Hai
-          <input type="checkbox" v-model="weekDays.tuesday" /> Thứ Ba
-          <input type="checkbox" v-model="weekDays.wednesday" /> Thứ Tư
-          <input type="checkbox" v-model="weekDays.thursday" /> Thứ Năm
-          <input type="checkbox" v-model="weekDays.friday" /> Thứ Sáu
-          <input type="checkbox" v-model="weekDays.saturday" /> Thứ Bảy
-          <input type="checkbox" v-model="weekDays.sunday" /> Chủ Nhật
-        </div>
-  
-        <!-- Lặp lại theo tháng -->
-        <div v-if="recurrenceType === 'monthly'">
-          <label>Chọn ngày trong tháng:</label>
-          <input type="checkbox" v-model="monthDays.day1" /> Ngày 1
-          <input type="checkbox" v-model="monthDays.day15" /> Ngày 15
-          <input type="checkbox" v-model="monthDays.day30" /> Ngày 30
-        </div>
-  
-        <button type="submit">{{ isEditMode ? 'Cập nhật sự kiện' : 'Tạo sự kiện' }}</button>
-      </form>
-      <button v-if="isEditMode" @click="deleteEvent">Xóa sự kiện</button>
-    </div>
-  </template>
-  
-  <script setup>
-  import { ref, onMounted } from 'vue';
-  
-  // Tạo các biến state sử dụng ref
-  const eventId = ref(null); // ID sự kiện cần chỉnh sửa
-  const eventName = ref('');
-  const startDate = ref('');
-  const recurrenceType = ref('none');
-  const weekDays = ref({
-    monday: false,
-    tuesday: false,
-    wednesday: false,
-    thursday: false,
-    friday: false,
-    saturday: false,
-    sunday: false,
-  });
-  const monthDays = ref({
-    day1: false,
-    day15: false,
-    day30: false,
-  });
-  const isEditMode = ref(false);
-  
-  // Hàm xử lý khi người dùng gửi form
-  const handleSubmit = async () => {
-    const eventData = {
-      eventId: eventId.value,
-      eventName: eventName.value,
-      startDate: startDate.value,
-      recurrenceType: recurrenceType.value,
-      weekDays: weekDays.value,
-      monthDays: monthDays.value,
-    };
-  
-    try {
-      const url = isEditMode.value
-        ? `http://localhost:3000/api/events/update/${eventId.value}`
-        : 'http://localhost:3000/api/events/create';
-      const method = isEditMode.value ? 'PUT' : 'POST';
-  
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(eventData),
-      });
-  
-      const data = await response.json();
-      alert(isEditMode.value ? 'Sự kiện đã được cập nhật' : 'Sự kiện đã được tạo mới');
-    } catch (error) {
-      console.error('Có lỗi xảy ra:', error);
-    }
-  };
-  
-  // Hàm lấy dữ liệu sự kiện khi ở chế độ chỉnh sửa
-  onMounted(() => {
-    const eventIdFromParams = window.location.pathname.split('/').pop(); // Giả sử URL chứa ID sự kiện
-    if (eventIdFromParams) {
-      eventId.value = eventIdFromParams;
-      isEditMode.value = true;
-      fetchEventDetails(eventId.value);
-    }
-  });
-  
-  // Lấy thông tin chi tiết sự kiện để sửa
-  const fetchEventDetails = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:3000/api/events/${id}`);
-      const data = await response.json();
-      eventName.value = data.name;
-      startDate.value = data.start_date;
-      recurrenceType.value = data.recurrence_type;
-      weekDays.value = JSON.parse(data.week_days);
-      monthDays.value = JSON.parse(data.month_days);
-    } catch (error) {
-      console.error('Lỗi khi lấy thông tin sự kiện:', error);
-    }
-  };
-  
-  // Xóa sự kiện
-  const deleteEvent = async () => {
-    try {
-      const response = await fetch(`http://localhost:3000/api/events/delete/${eventId.value}`, {
-        method: 'DELETE',
-      });
-      const data = await response.json();
-      alert('Sự kiện đã được xóa');
-      window.location.href = '/'; // Điều hướng về trang chính
-    } catch (error) {
-      console.error('Có lỗi khi xóa sự kiện:', error);
-    }
-  };
-  </script>
-  
-  <style scoped>
-  /* CSS cho giao diện */
-  form {
-    max-width: 400px;
-    margin: 20px auto;
-  }
-  input, select {
-    width: 100%;
-    padding: 8px;
-    margin: 10px 0;
-  }
-  button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-  }
-  </style>
-  
+  <div>
+    <h2>Lịch Sự Kiện</h2>
+    <FullCalendar :options="calendarOptions" :events="events" />
+  </div>
+</template>
+
+<style scoped>
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+</style>
