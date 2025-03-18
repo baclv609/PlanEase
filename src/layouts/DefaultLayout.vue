@@ -1,6 +1,6 @@
 <template>
   <a-layout class="min-h-screen bg-gray-100">
-    <a-layout-header class="!bg-white shadow flex justify-between items-center px-6">
+    <a-layout-header class="sticky top-0 z-50 !bg-white shadow flex justify-between items-center px-6">
       <div class="flex items-center gap-4">
         <h1 class="text-lg font-semibold">Calendar App</h1>
       </div>
