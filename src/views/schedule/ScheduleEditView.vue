@@ -91,7 +91,7 @@
                     <CalendarOutlined class="text-gray-500" />
                 </div>
                 <a-select v-model:value="formState.tags" class="w-full bg-gray-50" placeholder="Chọn loại"
-                    :options="tags" :maxTagCount="5" </a-select>
+                    :options="tags" :maxTagCount="5"> </a-select>
 
 
             </div>
