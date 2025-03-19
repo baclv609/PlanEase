@@ -65,24 +65,23 @@ export function useCalendarEvents() {
 
   const formattedEvents = computed(() =>
     rawEvents.value.map((event) => {
-     
 
-        const start = event.start_time
-        ? DateTime.fromISO(event.start_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
-        : null;
+      const start = event.start_time
+      ? DateTime.fromISO(event.start_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
+      : null;
       const end = event.end_time
         ? DateTime.fromISO(event.end_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
         : null;
-        // console.log("selectedTimezone", selectedTimezone.value);
-      const rrule =
-        event.is_repeat && event.rrule
-          ? {
-              dtstart: event.start_time
-                ? new Date(event.start_time).toISOString().replace('.000Z', '')
-                : null,
-              ...event.rrule,
-            }
-          : null;
+
+      // const rrule =
+      //   event.is_repeat && event.rrule
+      //     ? {
+      //         dtstart: event.start_time
+      //           ? new Date(event.start_time).toISOString().replace('.000Z', '')
+      //           : null,
+      //         ...event.rrule,
+      //       }
+      //     : null;
 
       return {
         id: event.id,
@@ -117,15 +116,19 @@ export function useCalendarEvents() {
         },
         exdate: Array.isArray(event.exclude_time)
             ? !event.is_all_day ? event.exclude_time.map((date) =>
-              new Date(date).toISOString().replace('.000Z', '').slice(0, 16) //nếu ko phải cả ngày tính cả giờ
+              DateTime.fromISO(date, { zone: 'utc' }) // Xác định UTC
+                  .setZone(selectedTimezone.value).toISO() // Chuyển về múi giờ setting
             ) : event.exclude_time.map((date) =>
-              new Date(date).toISOString().split('T')[0]) //chỉ lấy ngày nếu all day
+              DateTime.fromISO(date, { zone: 'utc' })
+                  .setZone(selectedTimezone.value)
+                  .toFormat('yyyy-MM-dd') //allday chỉ lấy ngày
+            ) 
           : undefined,
         rrule:
           event.is_repeat && event.rrule
             ? {
                 dtstart: event.start_time
-                ? event.is_all_day ? start.split('T')[0] : new Date(event.start_time).toISOString().replace('.000Z', '')
+                ? event.is_all_day ? start.split('T')[0] : start
                 : null,
                 freq: event.rrule.freq || 'daily',
                 interval: event.rrule.interval || 1,
