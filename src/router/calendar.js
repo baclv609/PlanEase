@@ -18,12 +18,33 @@ const calendar = [
       notAuthRequired: false,
       requiresAuth: true,
     },
-
   },
   {
     path: "/calendar/day/:year/:month/:day",
+    name: "calendar-day",
+    component: () => import("@/views/calendar/index.vue"),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      layout: "default",
+      notAuthRequired: false,
+    },
+  },
+  {
+    path: "/calendar/range/:range",
+    name: "calendar-range",
+    component: () => import("@/views/calendar/index.vue"),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      layout: "default",
+      notAuthRequired: false,
+    },
+  },
+  {
+    path: "/calendar/event/:id",
     name: "calendar-event",
-    component: () => import("@/views/calendar/CalendarView.vue"),
+    component: () => import("@/views/calendar/index.vue"),
     props: true,
     meta: {
       requiresAuth: true,
@@ -55,7 +76,6 @@ const calendar = [
   {
     path: "/calendar/test-changes-calendar",
     component: () => import("@/views/testClender/EventForm.vue"),
-   
   }
 ];
 

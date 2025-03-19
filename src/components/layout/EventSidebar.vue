@@ -3,21 +3,12 @@
     <a-button type="primary" class="my-2" block @click="openAddCalendarModal">+ Tạo Sự Kiện Mới</a-button>
 
     <div class="calendar-section">
-      <a-calendar v-model:value="selectedDate" :fullscreen="false" @select="handleDateSelect">
-        <template #headerRender="{ value, onChange }">
-          <div class="custom-header">
-            <a-button type="text" @click="prevMonth(onChange, value)">
-              <LeftOutlined />
-            </a-button>
-            <span class="header-title">
-              {{ selectedDate.format("MMMM YYYY") }}
-            </span>
-            <a-button type="text" @click="nextMonth(onChange, value)">
-              <RightOutlined />
-            </a-button>
-          </div>
-        </template>
-      </a-calendar>
+      <MiniCalendar 
+        :events="filteredEvents"
+        @dateSelect="handleDateSelect"
+        @rangeSelect="handleRangeSelect"
+        @viewChange="handleViewChange"
+      />
     </div>
 
     <div class="mt-5">
@@ -186,6 +177,8 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 import { useEchoStore } from "@/stores/echoStore";
 import debounce from 'lodash/debounce';
+import MiniCalendar from '@/components/calendar/MiniCalendar.vue';
+import { useSettingsStore } from "@/stores/settingsStore";
 
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
@@ -254,14 +247,46 @@ const fetchUser = debounce(async (value) => {
 // Khởi tạo echo store
 const echoStore = useEchoStore();
 
-const handleDateSelect = (date) => {
+const settingsStore = useSettingsStore();
+
+const handleDateSelect = ({ date, events }) => {
+  if (!date) return;
+  
   const year = date.format("YYYY");
   const month = date.format("MM");
   const day = date.format("DD");
 
-  console.log("Chuyển hướng tới:", `/calendar/day/${year}/${month}/${day}`);
+  // Update settings store with the selected date
+  settingsStore.initialDate = date.format('YYYY-MM-DD');
+  
+  // Navigate to the day view
+  router.push({
+    name: 'calendar-day',
+    params: { year, month, day }
+  });
+};
 
-  router.push(`/calendar/day/${year}/${month}/${day}`);
+const handleRangeSelect = ({ start, end, events }) => {
+  if (!start || !end) return;
+  
+  // Update settings store with the start date
+  settingsStore.initialDate = start.format('YYYY-MM-DD');
+  
+  // Navigate to the range view
+  router.push({
+    name: 'calendar-range',
+    params: {
+      range: `${start.format('YYYY-MM-DD')}/${end.format('YYYY-MM-DD')}`
+    }
+  });
+};
+
+const handleViewChange = ({ mode, date, start, end, events }) => {
+  if (date) {
+    settingsStore.initialDate = date.format('YYYY-MM-DD');
+  } else if (start) {
+    settingsStore.initialDate = start.format('YYYY-MM-DD');
+  }
 };
 
 const updateFilteredEvents = () => {
