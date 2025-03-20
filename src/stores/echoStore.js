@@ -35,8 +35,26 @@ export const useEchoStore = defineStore("echo", () => {
         if (!user) return;
 
         echo.value.private(`App.Models.User.${user.id}`)
-            .listen(".task.reminder", (event) => {
-                alert("🔔🔔 Nhắc nhở sự kiện sắp đến");
+            .listen(".task.reminder", async (event) => {
+                if (!("Notification" in window)) {
+                    console.log("Trình duyệt này không hỗ trợ thông báo");
+                    return;
+                }
+
+                if (Notification.permission === "granted") {
+                    new Notification("🔔🔔 Nhắc nhở sự kiện", {
+                        body: "Có một sự kiện sắp đến!",
+                        icon: ""
+                    });
+                } else if (Notification.permission !== "denied") {
+                    const permission = await Notification.requestPermission();
+                    if (permission === "granted") {
+                        new Notification("🔔🔔 Nhắc nhở sự kiện", {
+                            body: "Có một sự kiện sắp đến!",
+                            icon: ""
+                        });
+                    }
+                }
             });
 
         isListening.value = true;

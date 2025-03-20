@@ -34,7 +34,8 @@ import {
   UserOutlined,
   TeamOutlined,
   ScheduleOutlined,
-  CloseCircleOutlined
+  CloseCircleOutlined,
+  SyncOutlined
 } from '@ant-design/icons-vue';
 import moment from "moment-timezone";
 import dayjs from "dayjs";
@@ -54,6 +55,7 @@ const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem('access_token');
 const timezones = moment.tz.names();
 const tags = ref([]);
+const isLoading = ref(false);
 
 const colors = [
   { label: 'Đỏ', value: '#ff4d4f' }, 
@@ -191,7 +193,6 @@ const resetForm = () => {
 
 const rules = {
   title: [
-    { required: true, message: "Vui lòng nhập tiêu đề sự kiện", trigger: "blur" },
     { max: 255, message: "Tiêu đề không được quá 255 ký tự", trigger: "blur" }
   ],
   start: [
@@ -289,21 +290,10 @@ watch(
       // Khi bật cả ngày
       if (formState.value.start) {
         formState.value.start = dayjs(formState.value.start).startOf('day');
-      }
-      if (formState.value.end) {
-        const startDate = dayjs(formState.value.start).startOf('day');
-        const endDate = dayjs(formState.value.end).startOf('day');
-        
-        if (endDate.isSame(startDate)) {
-          // Nếu cùng ngày, cộng thêm 1 ngày và set giờ về 00:00:00
-          formState.value.end = dayjs(startDate).add(1, 'day').startOf('day');
-        } else {
-          // Nếu khác ngày, chỉ set giờ về 00:00:00
-          formState.value.end = dayjs(formState.value.end).add(1, 'day').startOf('day');
-        }
-      }
+        formState.value.end = dayjs(formState.value.end).add(1, 'day').startOf('day');
     }
   }
+}
 );
 
 const freqOptions = [
@@ -339,9 +329,10 @@ watch(
 
 // Xử lý thêm
 const handleSave = async () => {
+  isLoading.value = true;
   try {
     const dataApi = {
-      title: formState.value.title,
+      title: formState.value.title || 'Không có tiêu đề',
       start_time: formState.value.start
         ? formState.value.start.format("YYYY-MM-DD HH:mm:ss")
         : null,
@@ -398,6 +389,8 @@ const handleSave = async () => {
 
   } catch (error) {
     console.log("Loi", error);
+  } finally {
+    isLoading.value =false;
   }
 };
 
@@ -562,7 +555,7 @@ const filterOption = (input, option) => {
 // lấy offset timezone
 const getGmtOffset = (tz) => {
   const offset = moment.tz(tz).utcOffset(); // Lấy offset tính bằng phút
-  return `GMT${offset >= 0 ? "+" : ""}${offset / 60}`; // Định dạng GMT
+  return `UTC${offset >= 0 ? "+" : ""}${offset / 60}`; // Định dạng GMT
 };
 
 // cập nhật giờ thông báo
@@ -599,7 +592,7 @@ const resetEventSpecificFields = () => {
     class="event-drawer"
   >
     <template #extra>
-      <Button type="primary" @click="handleSubmitAdd" class="rounded-md">Lưu</Button>
+      <Button type="primary" @click="handleSubmitAdd" class="rounded-md" :loading="isLoading">Lưu</Button>
     </template>
     <Form layout="vertical" :rules="rules" :model="formState" ref="formRef">
       <div class="h-full flex flex-col">
@@ -646,7 +639,7 @@ const resetEventSpecificFields = () => {
                     <a-select v-model:value="formState.color_code" placeholder="Chọn màu">
                         <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
                             <div class="flex items-center">
-                                <div class="w-4 h-4 mr-2" :style="{ backgroundColor: color.value }"></div>
+                                <div class="w-4 h-4 mr-2 rounded-full" :style="{ backgroundColor: color.value }"></div>
                                 <span>{{ color.label }}</span>
                             </div>
                         </a-select-option>
@@ -698,7 +691,7 @@ const resetEventSpecificFields = () => {
                       v-model:value="formState.start" 
                       :show-time="!formState.is_all_day"
                       class="w-full rounded-md" 
-                      format="YYYY-MM-DD HH:mm:ss"
+                      format="YYYY-MM-DD HH:mm"
                       :disabled-time="formState.is_all_day ? () => ({ disabledHours: () => Array.from({ length: 24 }, (_, i) => i) }) : undefined"
                       :allow-clear="false"
                     >
@@ -712,7 +705,7 @@ const resetEventSpecificFields = () => {
                       v-model:value="formState.end" 
                       :show-time="!formState.is_all_day"
                       class="w-full rounded-md" 
-                      format="YYYY-MM-DD HH:mm:ss"
+                      format="YYYY-MM-DD HH:mm"
                       :disabled-time="formState.is_all_day ? () => ({ disabledHours: () => Array.from({ length: 24 }, (_, i) => i) }) : undefined"
                       :allow-clear="false"
                     >
@@ -839,7 +832,7 @@ const resetEventSpecificFields = () => {
                       @blur="formState.rrule.interval = formState.rrule.interval || 1" 
                     >
                       <template #prefix>
-                        <ClockCircleOutlined class="text-gray-400" />
+                        <SyncOutlined class="text-gray-400" />
                       </template>
                     </Input>
                   </Form.Item>

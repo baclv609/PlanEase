@@ -25,7 +25,7 @@ dayjs.extend(utc);
 
 const settingsStore = useSettingsStore();
 const selectedTimezone = computed(() => settingsStore.timeZone);
-
+const user_id = JSON.parse(localStorage.getItem('user')).id;
 const calendarRef = ref(null);
 
 // Kéo thả
@@ -58,6 +58,7 @@ export function useCalendarEvents() {
         return;
       }
       rawEvents.value = response.data.data || [];
+      console.log(rawEvents.value);
     } catch (error) {
       console.error('Lỗi khi tải lịch trình:', error);
     }
@@ -73,15 +74,14 @@ export function useCalendarEvents() {
         ? DateTime.fromISO(event.end_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
         : null;
 
-      // const rrule =
-      //   event.is_repeat && event.rrule
-      //     ? {
-      //         dtstart: event.start_time
-      //           ? new Date(event.start_time).toISOString().replace('.000Z', '')
-      //           : null,
-      //         ...event.rrule,
-      //       }
-      //     : null;
+      const permissionUser = () => {
+        if (event.user_id == user_id || (event.attendees && event.attendees.some(attendee => 
+          attendee.user_id == user_id && attendee.role == 'editor'
+        ))) {
+          return true;
+        }
+        return false;
+      }
 
       return {
         id: event.id,
@@ -93,11 +93,13 @@ export function useCalendarEvents() {
         start,
         end,
         timezone: event.timezone_code,
-        tags: event.tag_id,
+        tag_id: event.tag_id,
+        tag_name: event.tag_name,
         allDay: event.is_all_day === 1,
         backgroundColor: event.color_code || '#3788d8',
         borderColor: event.color_code || '#3788d8',
         location: event.location,
+        editable: permissionUser(),
         extendedProps: {
           end_time: event.end_time,
           recurrence: event.is_repeat ?? 0,
@@ -255,8 +257,6 @@ watch(
     isAddEventModalVisible.value = true;
   };
   
-
-
   const openEventDetailModal = (info) => {
     selectedEvent.value = {
       id: info.event.id,
@@ -266,7 +266,8 @@ watch(
       type: info.event.extendedProps.type,
       start: info.event.startStr,
       end: info.event.endStr,
-      end_time: info.event.extendedProps.end_time,
+      tag_id: info.event.extendedProps.tag_id,
+      tag_name: info.event.extendedProps.tag_name,
       timezone: info.event.extendedProps.timezone,
       color: info.event.backgroundColor,
       is_all_day: info.event.allDay,

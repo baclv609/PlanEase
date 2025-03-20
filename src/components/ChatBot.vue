@@ -2,41 +2,41 @@
     <div class="relative">
         <!-- Popup Trigger Button -->
         <button @click="toggleChat"
-            class="fixed bottom-6 border-none cursor-pointer right-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-3 shadow-lg transition-all duration-200 flex items-center justify-center z-10"
-            :class="{ 'rotate-45': isChatOpen }">
-            <MessageOutlined v-if="!isChatOpen" class="w-full h-full text-lg" />
-            <PlusOutlined v-else class="w-full h-full text-lg"/>
+            class="flex bg-indigo-600 border-none justify-center p-3 rounded-full shadow-lg text-white bottom-6 cursor-pointer duration-200 fixed hover:bg-indigo-700 items-center right-6 transition-all z-10"
+            :class="{'rotate-45': isChatOpen }">
+            <MessageOutlined v-if="!isChatOpen" class="h-full text-lg w-full" />
+            <PlusOutlined v-else class="h-full text-lg w-full"/>
         </button>
 
         <!-- Chat Component -->
-        <Transition enter-active-class="transition duration-300 ease-out"
-            enter-from-class="transform translate-y-10 opacity-0" enter-to-class="transform translate-y-0 opacity-100"
-            leave-active-class="transition duration-200 ease-in" leave-from-class="transform translate-y-0 opacity-100"
-            leave-to-class="transform translate-y-10 opacity-0" class="chat_ai">
+        <Transition enter-active-class="duration-300 ease-out transition"
+            enter-from-class="opacity-0 transform translate-y-10" enter-to-class="opacity-100 transform translate-y-0"
+            leave-active-class="duration-200 ease-in transition" leave-from-class="opacity-100 transform translate-y-0"
+            leave-to-class="opacity-0 transform translate-y-10" class="chat_ai">
             <div v-if="isChatOpen"
-                class="fixed bottom-24 right-6 w-80 sm:w-96 bg-white rounded-lg shadow-xl overflow-hidden flex flex-col z-10 border border-gray-200"
+                class="flex flex-col bg-white border border-gray-200 rounded-lg shadow-xl w-80 bottom-24 fixed overflow-hidden right-6 sm:w-96 z-10"
                 style="height: 400px;">
                 <!-- Chat Header -->
-                <div class="bg-indigo-600 text-white p-4 flex justify-between items-center">
+                <div class="flex bg-indigo-600 justify-between p-4 text-white items-center">
                     <div class="flex items-center">
-                        <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mr-3">
+                        <div class="flex bg-white/20 h-10 justify-center rounded-full w-10 items-center mr-3">
                             <RobotOutlined class="h-full text-xl"/>
                         </div>
                         <div>
-                            <h3 class="font-medium">Chat Support</h3>
-                            <div class="text-xs text-indigo-100 flex items-center">
-                                <span class="w-2 h-2 rounded-full bg-green-400 mr-1"></span>
+                            <h3 class="font-medium">Notibro AI</h3>
+                            <div class="flex text-indigo-100 text-xs items-center">
+                                <span class="bg-green-400 h-2 rounded-full w-2 mr-1"></span>
                                 Online
                             </div>
                         </div>
                     </div>
-                    <button @click="toggleChat" class="text-white border-none rounded-full bg-transparent cursor-pointer transition">
-                        <CloseOutlined class="w-full h-full text-lg"/>
+                    <button @click="toggleChat" class="bg-transparent border-none rounded-full text-white cursor-pointer transition">
+                        <CloseOutlined class="h-full text-lg w-full"/>
                     </button>
                 </div>
 
                 <!-- Chat Messages -->
-                <div ref="messagesContainer" class="flex-1 overflow-y-auto p-4 bg-gray-50">
+                <div ref="messagesContainer" class="flex-1 bg-gray-50 p-4 overflow-y-auto">
                     <div v-for="(message, index) in messages" :key="index" class="mb-4">
                         <div :class="[
                             'max-w-[80%] rounded-lg p-3 break-words',
@@ -53,18 +53,29 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Typing Indicator -->
+                    <div v-if="isTyping" class="flex items-center space-x-2">
+                        <div class="bg-gray-200 p-3 rounded-lg">
+                            <div class="flex space-x-1">
+                                <div class="bg-gray-500 h-2 rounded-full w-2 animate-bounce" style="animation-delay: 0ms"></div>
+                                <div class="bg-gray-500 h-2 rounded-full w-2 animate-bounce" style="animation-delay: 150ms"></div>
+                                <div class="bg-gray-500 h-2 rounded-full w-2 animate-bounce" style="animation-delay: 300ms"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Chat Input -->
-                <div class="p-3 border-t border-gray-200 bg-white">
+                <div class="bg-white border-gray-200 border-t p-3">
                     <div class="flex items-center">
                         <input v-model="newMessage" @keyup.enter="sendMessage" type="text"
-                            placeholder="Type a message..."
-                            class="flex-1 border border-gray-300 rounded-full py-2 px-4 focus:ring-2 focus:ring-indigo-500" />
+                            placeholder="Nhập tin nhắn..."
+                            class="flex-1 border border-gray-300 rounded-full focus:ring-2 focus:ring-indigo-500 px-4 py-2" />
                         <button @click="sendMessage"
-                            class="ml-2 bg-indigo-600 text-white rounded-full cursor-pointer px-[10px] py-2 hover:bg-indigo-700 focus:outline-none"
+                            class="bg-indigo-600 rounded-full text-white cursor-pointer focus:outline-none hover:bg-indigo-700 ml-2 px-[10px] py-2"
                             :disabled="!newMessage.trim()">
-                            <SendOutlined class="w-full h-full" />
+                            <SendOutlined class="h-full w-full" />
                         </button>
                     </div>
                 </div>
@@ -75,12 +86,16 @@
 
 <script setup>
 import { CloseOutlined, MessageOutlined, PlusOutlined, RobotOutlined, SendOutlined, UserOutlined } from '@ant-design/icons-vue'
+import axios from 'axios';
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 
 
 // State
 const isChatOpen = ref(false)
 const newMessage = ref('')
+const isTyping = ref(false)
+const dirApi = import.meta.env.VITE_API_BASE_URL;
+const token = localStorage.getItem('access_token');
 const messages = ref([
     {
         text: 'Hello! How can I help you today?',
@@ -99,40 +114,52 @@ function formatTime(date) {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-function sendMessage() {
-    if (!newMessage.value.trim()) return
+const sendMessage = async () => {
+    if (!newMessage.value.trim()) return;
 
-    // Add user message
     messages.value.push({
         text: newMessage.value,
         isUser: true,
         time: formatTime(new Date())
-    })
+    });
 
-    // Clear input
-    const userMessage = newMessage.value
-    newMessage.value = ''
+    const userMessage = newMessage.value;
+    newMessage.value = '';
+    isTyping.value = true;
 
-    // Simulate response after a short delay
-    setTimeout(() => {
-        messages.value.push({
-            text: getAutoResponse(userMessage),
-            isUser: false,
-            time: formatTime(new Date())
-        })
-    }, 1000)
-}
+    try {
+        const response = await axios.post(
+            `${dirApi}ai/extract-fields`,
+            { message: userMessage },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
 
-function getAutoResponse(message) {
-    const responses = [
-        "Thanks for your message! Our team will get back to you soon.",
-        "I understand. Could you provide more details?",
-        "That's interesting! Let me check that for you.",
-        "I'm here to help. Is there anything else you'd like to know?",
-        "Great question! The answer depends on several factors."
-    ]
+        isTyping.value = false;
+        if(response.data.code == 200){
+            console.log(response);
 
-    return responses[Math.floor(Math.random() * responses.length)]
+            messages.value.push({
+                text: response.data.message,
+                isUser: false,
+                time: formatTime(new Date())
+            });
+        }
+    } catch (error) {
+        isTyping.value = false;
+        if(response.data.code == 500){
+            console.log(response);
+
+            messages.value.push({
+                text: 'Sorry, I can not create event as you told me. Please try again later.',
+                isUser: false,
+                time: formatTime(new Date())
+            });
+        }
+    }
 }
 
 // Auto-scroll to bottom when new messages arrive
