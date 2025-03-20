@@ -35,5 +35,61 @@
   "Schedule List": "Danh sách lịch trình",
   "Address": "Địa chỉ",
   "Phone": "Số điện thoại",
-  "Gender": "Giới tính"
+  "Gender": "Giới tính",
+  "auth": {
+    "forgot_password": {
+      "title": "Quên mật khẩu",
+      "description": "Nhập email của bạn để nhận mã OTP đặt lại mật khẩu.",
+      "email": "Email",
+      "enter_email": "Nhập email của bạn",
+      "send": "Gửi",
+      "back_to_login": "Quay lại đăng nhập",
+      "error": {
+        "email_required": "Vui lòng nhập email",
+        "email_invalid": "Email không hợp lệ",
+        "general_error": "Đã xảy ra lỗi, vui lòng thử lại"
+      },
+      "success": {
+        "reset_link_sent": "Liên kết đặt lại mật khẩu đã được gửi đến email của bạn"
+      }
+    }
+  },
+  "profile": {
+    "change_avatar": "Đổi ảnh",
+    "email": "Email",
+    "phone": "Số điện thoại",
+    "address": "Địa chỉ",
+    "general_info": "Thông tin chung",
+    "password": "Mật khẩu",
+    "statistics": "Thống kê",
+    "first_name": "Tên",
+    "last_name": "Họ",
+    "gender": "Giới tính",
+    "male": "Nam",
+    "female": "Nữ",
+    "current_password": "Nhập mật khẩu hiện tại",
+    "new_password": "Nhập mật khẩu mới",
+    "confirm_password": "Xác nhận mật khẩu",
+    "enter_current_password": "Nhập mật khẩu cũ",
+    "enter_new_password": "Nhập mật khẩu mới",
+    "confirm_new_password": "Xác nhận mật khẩu mới",
+    "change_password": "Đổi mật khẩu",
+    "save": "Lưu",
+    "logout": "Đăng xuất",
+    "error": {
+      "token_not_found": "Không tìm thấy token, user chưa đăng nhập!",
+      "user_not_found": "Không tìm thấy user: {message}",
+      "fetch_error": "Lỗi khi lấy thông tin user: {error}",
+      "login_required": "Vui lòng đăng nhập lại!",
+      "update_failed": "Cập nhật thất bại!",
+      "invalid_input": "Vui lòng nhập chính xác đầy đủ thông tin",
+      "general_error": "Có lỗi xảy ra",
+      "password_incorrect": "Mật khẩu không chính xác"
+    },
+    "success": {
+      "update_success": "Cập nhật thông tin thành công!",
+      "password_changed": "Thay đổi mật khẩu thành công",
+      "logout_success": "Đăng xuất thành công"
+    }
+  }
 }

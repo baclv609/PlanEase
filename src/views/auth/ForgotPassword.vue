@@ -11,8 +11,8 @@ const formState = ref({ email: "" });
 const errorMail = ref({});
 const rules = {
   email: [
-    { required: true, message: "Please enter email", trigger: "blur" },
-    { type: "email", message: "Invalid email", trigger: ["blur", "change"] },
+    { required: true, message: $t('auth.forgot_password.error.email_required'), trigger: "blur" },
+    { type: "email", message: $t('auth.forgot_password.error.email_invalid'), trigger: ["blur", "change"] },
   ],
 };
 
@@ -44,11 +44,11 @@ const onSubmit = async () => {
   // console.log(data);
   await axios.post(`${dirApi}user/send-reset-password-mail`, data)
     .then(response => {
-      message.success(response.data.message);
+      message.success($t('auth.forgot_password.success.reset_link_sent'));
       router.push({name: "reset-password"});
     })
     .catch(error => {
-      message.error(error.data.message || "An error occurred");
+      message.error(error.data.message || $t('auth.forgot_password.error.general_error'));
       // console.log(error);
       errorMail.value = error.response.data.errors
       // console.log(errorMail.value);
@@ -64,25 +64,33 @@ const onSubmit = async () => {
     <div class="container max-w-lg mx-auto py-10">
       <div class="text-center">
         <img class="w-16 h-14 mx-auto" src="../../assets/images/logo.png" alt="Logo" />
-        <h1 class="mt-4 text-2xl font-semibold tracking-wide text-gray-800">Forgot password</h1>
-        <p class="mt-2 text-gray-500">Enter your email to receive OTP code to reset password.</p>
+        <h1 class="mt-4 text-2xl font-semibold tracking-wide text-gray-800">{{ $t('auth.forgot_password.title') }}</h1>
+        <p class="mt-2 text-gray-500">{{ $t('auth.forgot_password.description') }}</p>
       </div>
 
       <a-form class="mt-6" layout="vertical" :model="formState" :rules="rules" @finish="onSubmit">
-        <a-form-item label="Email" name="email">
-          <a-input v-model:value="formState.email" class="border border-orange-300" type="email" placeholder="Nhập email của bạn" :class="{'border-red-500':errorMail.email }"/>
+        <a-form-item :label="$t('auth.forgot_password.email')" name="email">
+          <a-input 
+            v-model:value="formState.email" 
+            class="border border-orange-300" 
+            type="email" 
+            :placeholder="$t('auth.forgot_password.enter_email')" 
+            :class="{'border-red-500':errorMail.email }"
+          />
 
           <span class="text-red-500" v-if="errorMail.email">{{ errorMail.email[0] }}</span>
         </a-form-item>
         
         <a-form-item>
-          <a-button :loading="isLoading" type="primary" class="gradient-btn" html-type="submit" block>Send</a-button>
+          <a-button :loading="isLoading" type="primary" class="gradient-btn" html-type="submit" block>
+            {{ $t('auth.forgot_password.send') }}
+          </a-button>
         </a-form-item>
       </a-form>
 
       <div class="mt-6 text-center">
         <router-link to="/login" class="text-sm text-orange-500 hover:underline">
-          Back to login
+          {{ $t('auth.forgot_password.back_to_login') }}
         </router-link>
       </div>
     </div>
