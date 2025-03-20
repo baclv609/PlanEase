@@ -29,7 +29,7 @@ const selectedTimezone = computed(() => settingsStore.timeZone);
 const calendarRef = ref(null);
 
 // Kéo thả
-const { eventDrop } = useCalendarDrop();
+const { eventDrop, eventResize } = useCalendarDrop();
 
 
 function calculateDuration(start_time, end_time) {
@@ -314,8 +314,14 @@ watch(
     validRange: settingsStore.validRange,
     editable: true,
     selectable: true,
+    selectMirror: true,
+    snapDuration: '00:15:00', // Cho phép kéo thả với độ chính xác 15 phút
+    slotDuration: '00:30:00', // Độ dài mỗi ô thời gian
+    slotMinTime: '00:00:00', // Thời gian bắt đầu trong ngày
+    slotMaxTime: '24:00:00', // Thời gian kết thúc trong ngày
     events: transformedEvents.value.length ? transformedEvents.value : [],
     eventDrop,
+    eventResize,
     nowIndicator: true,
     dateClick: openAddEventModal,
     eventClick: openEventDetailModal,
