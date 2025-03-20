@@ -1,5 +1,18 @@
 <template>
   <div class="mini-calendar">
+    <div class="calendar-toolbar">
+      <a-space>
+        <a-button
+          type="primary"
+          :loading="syncing"
+          @click="handleSync"
+          size="small"
+        >
+          <template #icon><SyncOutlined /></template>
+          Đồng bộ
+        </a-button>
+      </a-space>
+    </div>
     <FullCalendar
       ref="calendarRef"
       :options="calendarOptions"
@@ -17,6 +30,9 @@ import { useRouter } from 'vue-router';
 import { useCalendarStore } from '@/stores/calendarStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import axios from 'axios';
+import { SyncOutlined } from '@ant-design/icons-vue';
+import syncService from '@/services/syncService';
+import { message } from 'ant-design-vue';
 
 const props = defineProps({
   events: {
@@ -40,6 +56,8 @@ const selectedEvents = ref([]);
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem('access_token');
+
+const syncing = ref(false);
 
 // Add debounce function at the top of script
 const debounce = (fn, delay) => {
@@ -319,6 +337,34 @@ watch(() => props.events, () => {
   }
 }, { deep: true });
 
+// Thêm hàm đồng bộ
+const handleSync = async () => {
+  if (syncing.value) return;
+  
+  // Kiểm tra đăng nhập Google
+  if (!localStorage.getItem('google_token')) {
+    message.warning('Vui lòng đăng nhập với Google để đồng bộ lịch');
+    return;
+  }
+  
+  syncing.value = true;
+  try {
+    await syncService.performSync();
+    message.success('Đồng bộ thành công');
+    // Sau khi đồng bộ xong, cập nhật lại calendar
+    await fetchEventsForDate(selectedDate.value);
+  } catch (error) {
+    console.error('Error syncing:', error);
+    if (error.message.includes('Chưa đăng nhập với Google')) {
+      message.error('Vui lòng đăng nhập lại với Google để tiếp tục');
+    } else {
+      message.error('Không thể đồng bộ. Vui lòng thử lại sau.');
+    }
+  } finally {
+    syncing.value = false;
+  }
+};
+
 onMounted(() => {
   // Initialize calendar with current date
   selectedDate.value = dayjs();
@@ -503,5 +549,11 @@ onMounted(() => {
 
 :deep(.fc-view) {
   width: fit-content !important;
+}
+
+.calendar-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
 }
 </style> 

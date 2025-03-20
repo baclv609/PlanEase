@@ -38,10 +38,18 @@ export const useSettingsStore = defineStore("settings", {
     defaultRecurrence: "none",
 
     calendarRef: null, // Lưu tham chiếu đến FullCalendar
+
+    googleCalendar: {
+      selectedCalendars: [],
+      autoSync: false,
+      syncInterval: '60',
+      syncRange: '30',
+      includeHolidays: true,
+      lastSync: null
+    }
   }),
 
   actions: {
- 
     updateTimeFormat(newValue) {
       // Chuyển đổi từ chuỗi JSON sang object
       const parsedValue = JSON.parse(newValue);
@@ -125,6 +133,32 @@ export const useSettingsStore = defineStore("settings", {
       this.updateFullCalendar();
     },
 
+    async updateGoogleCalendarSettings(settings) {
+      this.googleCalendar = {
+        ...this.googleCalendar,
+        ...settings
+      };
+
+      // Here you can add API call to save settings to backend
+      try {
+        // Example API call:
+        // await api.post('/settings/google-calendar', this.googleCalendar);
+      } catch (error) {
+        console.error('Error saving Google Calendar settings:', error);
+        throw error;
+      }
+    },
+
+    async loadGoogleCalendarSettings() {
+      try {
+        // Example API call:
+        // const response = await api.get('/settings/google-calendar');
+        // this.googleCalendar = response.data;
+      } catch (error) {
+        console.error('Error loading Google Calendar settings:', error);
+        throw error;
+      }
+    }
   },
 });
 
