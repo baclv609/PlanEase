@@ -3,123 +3,117 @@
         @close="handleClose" @update:open="(val) => emit('update:visible', val)" :destroyOnClose="true"
         :maskClosable="false">
         <template #extra>
-            <!-- Buttons -->
             <div class="flex gap-2">
-                <a-button type="primary" @click="handleSubmit">Lưu</a-button>
-                <a-button>Hủy</a-button>
+                <a-button type="primary" @click="handleSubmit" :loading="isLoading" class="px-6">Lưu</a-button>
             </div>
         </template>
-        <a-form layout="vertical" :model="formState" :rules="formRules" @submit.prevent="handleSubmit">
-            <!-- Title -->
-            <a-form-item label="Tiêu đề">
-                <div class="flex items-center mb-4">
-                    <div class="w-8 h-8 mr-2 flex items-center justify-center">
-                        <a-badge :color="formState.color_code" :style="{ width: '24px', height: '24px', borderRadius: '50%' }" />
+        <a-form ref="formRef" layout="vertical" :model="formState" :rules="formRules" @submit.prevent="handleSubmit" class="event-form">
+            <!-- Title Section -->
+            <div class="form-section">
+                <div class="section-title">
+                    <EditOutlined class="text-gray-500 mr-2" />
+                    <span>Tiêu đề</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex h-8 justify-center w-8 items-center mr-3">
+                        <div :style="{ backgroundColor: formState.color_code, width: '12px', height: '12px', borderRadius: '50%' }"></div>
                     </div>
                     <a-input placeholder="Add title"
-                        class="w-full min-w-[200px] bg-gray-50" 
+                        class="bg-gray-50 rounded-lg w-full min-w-[200px]" 
                         v-model:value="formState.title" />
                 </div>
-            </a-form-item>
+            </div>
 
-            <!-- Date and Time -->
-            <div class="flex items-center mb-4">
-                <div class="w-6 h-6 mr-2">
-                    <CalendarOutlined class="text-gray-500" />
+            <!-- Date and Time Section -->
+            <div class="form-section">
+                <div class="section-title">
+                    <CalendarOutlined class="text-gray-500 mr-2" />
+                    <span>Thời gian</span>
+                </div>
+                <div class="grid grid-cols-1 gap-3">
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <a-form-item label="Thời gian bắt đầu" name="start">
+                            <DatePicker v-model:value="formState.start" 
+                                show-time
+                                :format="'YYYY-MM-DD HH:mm'"
+                                class="w-full"
+                                :disabled-time="formState.allDay ? () => ({
+                                    disabledHours: () => Array.from({ length: 24 }, (_, i) => i),
+                                    disabledMinutes: () => Array.from({ length: 60 }, (_, i) => i),
+                                    disabledSeconds: () => Array.from({ length: 60 }, (_, i) => i)
+                                }) : undefined"
+                                :allow-clear="false"
+                                />
+                        </a-form-item>
+                        <a-form-item label="Thời gian kết thúc" name="end">
+                            <DatePicker v-model:value="formState.end" 
+                                show-time
+                                :format="'YYYY-MM-DD HH:mm'"
+                                class="w-full"
+                                :disabled-time="formState.allDay ? () => ({
+                                    disabledHours: () => Array.from({ length: 24 }, (_, i) => i),
+                                    disabledMinutes: () => Array.from({ length: 60 }, (_, i) => i),
+                                    disabledSeconds: () => Array.from({ length: 60 }, (_, i) => i)
+                                }) : undefined"
+                                :allow-clear="false"
+                                />
+                        </a-form-item>
+                    </div>
+                    <a-form-item label="Múi giờ" name="timezone_code">
+                        <a-select v-model:value="formState.timezone_code" show-search placeholder="Múi giờ"
+                            :filter-option="filterOption" class="w-full">
+                            <a-select-option v-for="timezone in timezones" :key="timezone" :value="timezone">
+                                {{ timezone }} - {{ getGmtOffset(timezone) }}
+                            </a-select-option>
+                        </a-select>
+                    </a-form-item>
+                    <div class="flex items-center">
+                        <a-checkbox v-model:checked="formState.allDay">Cả ngày</a-checkbox>
+                        <a-checkbox v-model:checked="formState.is_repeat" class="ml-6">Lặp lại</a-checkbox>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description Section -->
+            <div class="form-section">
+                <div class="flex justify-between items-center">
+                    <div class="section-title">
+                        <AlignLeftOutlined class="text-gray-500 mr-2" />
+                        <span>Mô tả</span>
+                    </div>
+    
+                    <div class="section-title">
+                        <PaperClipOutlined class="text-gray-500 mr-2" />
+                        <a class="text-blue-600 cursor-pointer hover:text-blue-800">Thêm Tập Tin Đính Kèm</a>
+                    </div>
                 </div>
 
-                <a-form-item label="Thời gian bắt đầu" name="start">
-                    <DatePicker v-model:value="formState.start" show-time class="w-full min-w-[200px]"
-                        format="YYYY-MM-DD HH:mm" :disabled="formState.allDay" />
-                </a-form-item>
-                <a-form-item label="Thời gian kết thúc" name="end">
-                    <DatePicker v-model:value="formState.end" show-time class="w-full min-w-[200px]"
-                        format="YYYY-MM-DD HH:mm" :disabled="formState.allDay" />
-                </a-form-item>
-                <a-form-item label="Múi giờ" name="timezone_code" class="ml-4">
-                    <a-select v-model:value="formState.timezone_code" show-search placeholder="Múi giờ"
-                        :filter-option="filterOption" class="w-full">
-                        <a-select-option v-for="timezone in timezones" :key="timezone" :value="timezone">
-                            {{ timezone }} - {{ getGmtOffset(timezone) }}
-                        </a-select-option>
-                    </a-select>
+                <a-form-item name="description" class="w-full">
+                    <a-textarea v-model:value="formState.description" placeholder="Nội dung" :rows="4" 
+                        class="rounded-lg" />
                 </a-form-item>
             </div>
 
-            <!-- All day & Repeat -->
-            <div class="flex items-center mb-4 ml-8">
-                <a-checkbox v-model:checked="formState.allDay">Cả ngày</a-checkbox>
-                <a-checkbox v-model:checked="formState.is_repeat" class="ml-6">Lặp lại</a-checkbox>
-            </div>
-
-            <!-- Location -->
-            <div class="flex mb-4">
-                <div class="w-6 h-6 mr-2">
-                    <EnvironmentOutlined class="text-gray-500" />
+            <!-- Location Section -->
+            <div class="form-section">
+                <div class="section-title">
+                    <EnvironmentOutlined class="text-gray-500 mr-2" />
+                    <span>Địa điểm</span>
                 </div>
                 <a-form-item name="location" class="w-full">
-                    <a-input placeholder="Địa điểm" class="bg-gray-50" v-model:value="formState.location" />
+                    <a-input placeholder="Địa điểm" class="bg-gray-50 rounded-lg" v-model:value="formState.location" />
                 </a-form-item>
             </div>
 
-            <!-- Event Type -->
-            <div class="flex mb-4">
-                <div class="w-6 h-6 mr-2">
-                    <TagOutlined class="text-gray-500" />
+            <!-- Participants Section -->
+            <div class="form-section" v-if="formState.type == 'event'">
+                <div class="section-title">
+                    <UserOutlined class="text-gray-500 mr-2" />
+                    <span>Người tham gia</span>
                 </div>
-                <a-form-item name="type" class="w-full md:w-1/3">
-                    <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="w-full rounded-lg">
-                        <Select.Option value="event">Sự kiện</Select.Option>
-                        <Select.Option value="task">Việc cần làm</Select.Option>
-                    </Select>
-                </a-form-item>
-                <a-form-item name="color_code" class="w-full md:w-1/3 ml-2">
-                    <a-select v-model:value="formState.color_code" placeholder="Chọn màu" class="w-full rounded-lg">
-                        <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
-                            <div class="flex items-center">
-                                <div class="w-4 h-4 mr-2" :style="{ backgroundColor: color.value }"></div>
-                                <span>{{ color.label }}</span>
-                            </div>
-                        </a-select-option>
-                    </a-select>
-                </a-form-item>
-            </div>
-
-            <!-- Calendar -->
-            <div class="flex mb-4">
-                <div class="w-6 h-6 mr-2">
-                    <CalendarOutlined class="text-gray-500" />
-                </div>
-                <a-form-item name="tags" class="w-full">
-                    <a-select v-model:value="formState.tags" class="w-full bg-gray-50" placeholder="Chọn loại"
-                        :options="tags" :maxTagCount="5"> </a-select>
-                </a-form-item>
-            </div>
-
-            <!-- Privacy & Add to calendar -->
-            <div class="flex items-center mb-4 ml-8">
-                <a-checkbox v-model="formState.isPrivate">Riêng tư</a-checkbox>
-                <a-checkbox v-model="formState.is_busy" class="ml-6">Đánh dấu là bận</a-checkbox>
-            </div>
-
-            <!-- URL -->
-            <div class="flex mb-4">
-                <div class="w-6 h-6 mr-2">
-                    <LinkOutlined class="text-gray-500" />
-                </div>
-                <a-form-item name="url" class="w-full">
-                    <a-input placeholder="Nhập url" class="bg-gray-50" v-model:value="formState.url" />
-                </a-form-item>
-            </div>
-
-            <!-- Participants -->
-            <div class="flex mb-4" v-if="formState.type == 'event'">
-                <div class="w-6 h-6 mr-2">
-                    <UserOutlined class="text-gray-500" />
-                </div>
-                <div class="flex-1">
-                    <a-select v-model:value="formState.attendees" v-if="formState.type == 'event'" mode="multiple"
-                        label-in-value placeholder="Khách mời" style="width: 100%" :filter-option="false"
+                <div class="space-y-4">
+                    <a-select v-model:value="formState.attendees" mode="multiple"
+                        label-in-value placeholder="Khách mời" class="w-full" :filter-option="false"
                         :not-found-content="state.fetching ? undefined : null" :options="state.data"
                         @search="fetchUser">
                         <template v-if="state.fetching" #notFoundContent>
@@ -127,156 +121,190 @@
                         </template>
                     </a-select>
 
-                    <div class="mt-2">
-
-                        <div class="flex mb-4" v-if="formState.attendees && formState.attendees.length > 0">
-                            <a-checkbox v-model="formState.accessView">Cho phép xem sự kiện</a-checkbox>
-                            <a-checkbox v-model="formState.accessEdit" class="ml-4">Cho phép chỉnh sửa sự
-                                kiện</a-checkbox>
-                        </div>
-
-                        <!-- <a-switch class="mr-2 mb-2" v-model="formState.uuid" /> Chia sẻ sự kiện -->
-                        <!-- <span v-if="formState?.uuid">Link: {{
-                            `${origin}/calendar/event/${formState?.uuid}/invite`
-                        }}</span> -->
-
-                        <!-- <div v-if="formState?.uuid"
-                            class="flex items-center p-2 border rounded-lg bg-gray-100 space-x-2">
-                            <router-link :to="`/calendar/event/${formState?.uuid}/invite`"
-                                class="text-blue-600 hover:underline truncate w-48">
-                                {{ `${origin}/calendar/event/${formState?.uuid}/invite` }}
-                            </router-link>
-
-                            <button @click="copyToClipboard" class="p-2 bg-gray-200 rounded-lg hover:bg-gray-300">
-                                <CopyOutlined />
-                            </button>
-                        </div> -->
+                    <div v-if="formState.attendees && formState.attendees.length > 0" class="flex gap-4 items-center">
+                        <a-checkbox v-model="formState.accessView">Cho phép xem sự kiện</a-checkbox>
+                        <a-checkbox v-model="formState.accessEdit">Cho phép chỉnh sửa sự kiện</a-checkbox>
                     </div>
                 </div>
             </div>
 
-            <!-- Notification -->
-            <div class="flex mb-4">
-                <div class="w-6 h-6 mr-2">
-                    <BellOutlined class="text-gray-500" />
+            <!-- Event Type Section -->
+            <div class="form-section">
+                <div class="section-title">
+                    <TagOutlined class="text-gray-500 mr-2" />
+                    <span>Loại sự kiện</span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <Col span="24">
-                    <div class="flex items-center">
-                        <Checkbox v-model:checked="formState.is_reminder">Bật nhắc nhở</Checkbox>
-                        <div class="flex ml-8" v-if="formState.is_reminder" @click="addReminder">
-                            <a class="text-blue-600 text-sm">Thêm thông báo nhắc</a>
-                        </div>
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <a-form-item name="type">
+                        <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="rounded-lg w-full">
+                            <Select.Option value="event">Sự kiện</Select.Option>
+                            <Select.Option value="task">Việc cần làm</Select.Option>
+                        </Select>
+                    </a-form-item>
+                    <a-form-item name="color_code">
+                        <a-select v-model:value="formState.color_code" placeholder="Chọn màu" class="rounded-lg w-full">
+                            <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
+                                <div class="flex items-center">
+                                    <div class="h-4 rounded-full w-4 mr-2" :style="{ backgroundColor: color.value }"></div>
+                                    <span>{{ color.label }}</span>
+                                </div>
+                            </a-select-option>
+                        </a-select>
+                    </a-form-item>
 
-                    </div>
-                    <div v-if="formState.is_reminder" class="mt-2">
-                        <div v-for="(reminder, index) in formState.reminder" :key="index" class="mb-2">
-                            <Row :gutter="8" align="middle">
-                                <Col span="7" class="flex items-center">
-                                <Select v-model:value="reminder.type" placeholder="Chọn loại nhắc nhở" style="flex: 1;">
-                                    <Select.Option value="email">Email</Select.Option>
-                                    <Select.Option value="web">Web</Select.Option>
-                                </Select>
-                                <span class="ml-4">trước</span>
-                                </Col>
-                                <Col span="5">
-                                <InputNumber v-model:value="reminder.time" min="1"
-                                    @blur="reminder.time = reminder.time || 1" placeholder="Thời gian"
-                                    style="width: 100%;" />
-                                </Col>
-                                <Col span="5">
-                                <Select v-model:value="reminder.unit" placeholder="Đơn vị" style="width: 100%;">
-                                    <Select.Option value="minutes">Phút</Select.Option>
-                                    <Select.Option value="hours">Giờ</Select.Option>
-                                </Select>
-                                </Col>
-                                <Col span="3">
-                                <Button type="danger" @click="removeReminder(index)">
-                                    <DeleteOutlined class="text-red-500 text-xl" />
-                                </Button>
-                                </Col>
-                            </Row>
-                        </div>
-                    </div>
-                    </Col>
+                    <!-- Calendar Section -->
+                    <a-form-item name="tags" class="w-full">
+                        <a-select v-model:value="formState.tags" class="bg-gray-50 rounded-lg w-full" placeholder="Chọn loại"
+                            :options="tags" :maxTagCount="5"> </a-select>
+                    </a-form-item>
+
                 </div>
             </div>
 
-            <!-- Rich Text Editor -->
-            <div class="flex mb-4">
-                <div class="w-6 h-6 mr-2">
-                    <TagOutlined class="text-gray-500" />
+            <!-- Privacy Section -->
+            <div class="grid grid-cols-1 form-section gap-2 md:grid-cols-2">
+                <div>
+                    <div class="section-title">
+                        <LockOutlined class="text-gray-500 mr-2" />
+                        <span>Quyền riêng tư</span>
+                    </div>
+                    <div class="flex gap-6 items-center">
+                        <a-checkbox v-model="formState.isPrivate">Riêng tư</a-checkbox>
+                        <a-checkbox v-model="formState.is_busy">Đánh dấu là bận</a-checkbox>
+                    </div>
                 </div>
-                <a-form-item name="description" class="w-full">
-                    <a-textarea v-model:value="formState.description" placeholder="Nội dung" :rows="4" />
+
+                <div>
+                    <!-- Notification Section -->
+                    <div class="section-title">
+                        <BellOutlined class="text-gray-500 mr-2" />
+                        <span>Thông báo</span>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <Checkbox v-model:checked="formState.is_reminder">Bật nhắc nhở</Checkbox>
+                            <div v-if="formState.is_reminder" @click="addReminder" class="cursor-pointer">
+                                <a class="text-blue-600 hover:text-blue-800">Thêm thông báo nhắc</a>
+                            </div>
+                        </div>
+
+                        <div v-if="formState.is_reminder" class="space-y-3">
+                            <div v-for="(reminder, index) in formState.reminder" :key="index" 
+                                class="bg-gray-50 p-3 rounded-lg">
+                                <Row :gutter="16" align="middle">
+                                    <Col span="9" class="flex items-center">
+                                        <Select v-model:value="reminder.type" placeholder="Chọn loại nhắc nhở" class="w-full">
+                                            <Select.Option value="email">Email</Select.Option>
+                                            <Select.Option value="web">Web</Select.Option>
+                                        </Select>
+                                        <span class="ml-4">trước</span>
+                                    </Col>
+                                    <Col span="5">
+                                        <InputNumber v-model:value="reminder.time" min="1"
+                                            @blur="reminder.time = reminder.time || 1" placeholder="Thời gian"
+                                            class="w-full" />
+                                    </Col>
+                                    <Col span="6">
+                                        <Select v-model:value="reminder.unit" placeholder="Đơn vị" class="w-full">
+                                            <Select.Option value="minutes">Phút</Select.Option>
+                                            <Select.Option value="hours">Giờ</Select.Option>
+                                        </Select>
+                                    </Col>
+                                    <Col span="3">
+                                        <Button type="text" @click="removeReminder(index)" class="text-red-500 hover:text-red-700">
+                                            <DeleteOutlined class="text-lg" />
+                                        </Button>
+                                    </Col>
+                                </Row>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- URL Section -->
+            <div class="form-section">
+                <div class="section-title">
+                    <LinkOutlined class="text-gray-500 mr-2" />
+                    <span>Liên kết</span>
+                </div>
+                <a-form-item name="url" class="w-full">
+                    <a-input placeholder="Nhập url" class="bg-gray-50 rounded-lg" v-model:value="formState.url" />
                 </a-form-item>
             </div>
 
-            <!-- Attachment -->
-            <div class="flex mb-6">
-                <div class="w-6 h-6 mr-2">
-                    <PaperClipOutlined class="text-gray-500" />
-                </div>
-                <a class="text-blue-600 text-sm">Thêm Tập Tin Đính Kèm</a>
-            </div>
-
-            <div class="my-2"></div>
+            <!-- Recurrence Section -->
             <template v-if="formState.is_repeat">
-                <Card title="Cài đặt lặp lại" size="small">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-4">
-                        <div class="flex flex-col space-y-6">
-                            <div class="w-full">
-                                <label class="font-semibold">Kiểu lặp lại</label>
-                                <Select v-model:value="formState.rrule.freq" :options="freqOptions" />
+                <div class="form-section">
+                    <div class="section-title">
+                        <CalendarOutlined class="text-gray-500 mr-2" />
+                        <span>Cài đặt lặp lại</span>
+                    </div>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-gray-700 block font-medium mb-2">Kiểu lặp lại</label>
+                                <Select v-model:value="formState.rrule.freq" :options="freqOptions" class="w-full" />
                             </div>
 
-                            <div class="w-full" v-if="formState.rrule.freq === 'weekly'">
-                                <label class="font-semibold">Ngày trong tuần</label>
-                                <Checkbox.Group v-model:value="formState.rrule.byweekday" :options="weekDays" />
+                            <div v-if="formState.rrule.freq === 'weekly'">
+                                <label class="text-gray-700 block font-medium mb-2">Ngày trong tuần</label>
+                                <Checkbox.Group v-model:value="formState.rrule.byweekday" :options="weekDays" 
+                                    class="grid grid-cols-4 gap-2" />
                             </div>
 
-                            <div class="w-full" v-if="formState.rrule.freq === 'monthly'">
-                                <label class="font-semibold">Lặp vào các ngày</label>
+                            <div v-if="formState.rrule.freq === 'monthly'">
+                                <label class="text-gray-700 block font-medium mb-2">Lặp vào các ngày</label>
                                 <a-select v-model:value="formState.rrule.bymonthday" mode="multiple"
-                                    placeholder="Chọn ngày" style="width: 100%;"
+                                    placeholder="Chọn ngày" class="w-full"
                                     :options="monthDays.map(day => ({ label: `Ngày ${day}`, value: day }))" />
                             </div>
 
-                            <div class="w-full">
-                                <label class="font-semibold">Khoảng cách lặp lại</label>
-                                <Input v-model:value="formState.rrule.interval" type="number" min="1"
-                                    @blur="formState.rrule.interval = formState.rrule.interval || 1" />
+                            <div>
+                                <label class="text-gray-700 block font-medium mb-2">Khoảng cách lặp lại</label>
+                                <Input v-model:value="formState.rrule.interval" 
+                                    type="number" 
+                                    min="1"
+                                    :max="999"
+                                    @input="(e) => {
+                                        const value = parseInt(e.target.value);
+                                        if (value < 1) formState.rrule.interval = 1;
+                                    }"
+                                    @blur="!formState.rrule.interval || formState.rrule.interval < 1 ? formState.rrule.interval = 1 : formState.rrule.interval" 
+                                    class="w-full" />
                             </div>
                         </div>
 
-                        <div class="flex flex-col space-y-6">
-                            <div class="w-full">
-                                <label class="font-semibold">Kết thúc</label>
-                                <a-radio-group v-model:value="formState.rrule.endType" class="mb-3">
+                        <div class="space-y-4">
+                            <div class="flex flex-col gap-2 mb-8">
+                                <label class="text-gray-700 font-medium">Kết thúc</label>
+                                <a-radio-group v-model:value="formState.rrule.endType" class="flex">
                                     <a-radio value="">Không bao giờ</a-radio>
                                     <a-radio value="until">Ngày cụ thể</a-radio>
                                     <a-radio value="count">Số lần lặp</a-radio>
                                 </a-radio-group>
                             </div>
-                            <div class="flex gap-8">
-                                <div class="w-[48%]" v-if="formState.rrule.endType === 'count'">
-                                    <label class="font-semibold">Giới hạn số lần lặp</label>
-                                    <Input v-model:value="formState.rrule.count" type="number" min="1" class="w-full" />
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div v-if="formState.rrule.endType === 'count'">
+                                    <label class="text-gray-700 block font-medium mb-2">Giới hạn số lần lặp</label>
+                                    <Input v-model:value="formState.rrule.count" type="number" min="1" placeholder="Nhập số lần lặp"
+                                        class="w-full" />
                                 </div>
 
-                                <div class="w-[48%]" v-if="formState.rrule.endType === 'until'">
-                                    <label class="font-semibold">Ngày kết thúc</label>
+                                <div v-if="formState.rrule.endType === 'until'">
+                                    <label class="text-gray-700 block font-medium mb-2">Ngày kết thúc</label>
                                     <a-date-picker v-model:value="formState.rrule.until" placeholder="Chọn ngày"
                                         class="w-full" />
                                 </div>
 
-                                <div class="w-[48%]">
-                                    <label class="font-semibold">Loại trừ ngày</label>
+                                <div>
+                                    <label class="text-gray-700 block font-medium mb-2">Loại trừ ngày</label>
                                     <DatePicker v-model:value="selectedDate" format="YYYY-MM-DD" class="w-full"
                                         @change="handleExcludeDate" />
-                                    <div v-if="formState.exclude_time.length">
+                                    <div v-if="formState.exclude_time.length" class="flex flex-wrap gap-2 mt-2">
                                         <Tag v-for="(date, index) in formState.exclude_time" :key="index" closable
-                                            @close="removeExcludeDate(index)">
+                                            @close="removeExcludeDate(index)" class="rounded-full">
                                             {{ dayjs(date).format('YYYY-MM-DD') }}
                                         </Tag>
                                     </div>
@@ -284,7 +312,7 @@
                             </div>
                         </div>
                     </div>
-                </Card>
+                </div>
             </template>
         </a-form>
     </a-drawer>
@@ -300,16 +328,12 @@ import {
     LinkOutlined,
     BellOutlined,
     DeleteOutlined,
-    BoldOutlined,
-    ItalicOutlined,
-    UnderlineOutlined,
-    StrikethroughOutlined,
-    OrderedListOutlined,
-    UnorderedListOutlined,
+    EditOutlined,
+    LockOutlined,
     PaperClipOutlined,
-    CopyOutlined
+    AlignLeftOutlined
 } from '@ant-design/icons-vue';
-import { Button, Checkbox, Col, InputNumber, message, Row, Card, Tag, Select, DatePicker, Input, Modal } from 'ant-design-vue';
+import { Button, Checkbox, Col, InputNumber, message, Row, Card, Tag, Select, DatePicker, Input } from 'ant-design-vue';
 import { QuillEditor } from '@vueup/vue-quill';
 import 'quill/dist/quill.snow.css';
 // import moment from "moment-timezone";
@@ -350,7 +374,7 @@ const token = localStorage.getItem('access_token');
 const timezones = moment.tz.names();
 const tags = ref([]);
 const origin = ref(typeof window !== 'undefined' ? window.location.origin : '');
-
+const isLoading = ref(false);
 const originalIsRepeat = ref(false); // Lưu trạng thái ban đầu của is_repeat
 
 
@@ -425,10 +449,10 @@ const updateFormStateFromProps = (event) => {
             type: event.type || "event",
             location: event.location || "",
             url: event.url || "",
-            attendees: Array.isArray(event.attendees)
+            attendees: Array.isArray(event.attendees) && event.attendees.length > 0
                 ? event.attendees.map(att => ({
-                    label: att.email,
-                    value: att.id
+                    label: att.email || att.user?.email || '',
+                    value: att.user_id || att.id || att.user?.id || ''
                 }))
                 : [],
             tags: Array.isArray(event.tags)
@@ -570,8 +594,7 @@ const formState = ref({
 
 const rules = {
     title: [
-        { required: true, message: "Tiêu đề không được để trống", trigger: "blur" },
-        { min: 3, message: "Tiêu đề phải có ít nhất 3 ký tự", trigger: "blur" },
+        { max: 255, message: "Tiêu đề quá dài", trigger: "blur" },
     ],
     time: [
         { required: true, message: "Vui lòng chọn thời gian", trigger: "change" },
@@ -580,17 +603,6 @@ const rules = {
                 if (!value || value.length !== 2) return Promise.reject("Thời gian không hợp lệ");
                 if (dayjs(value[0]).isAfter(value[1])) return Promise.reject("Thời gian bắt đầu không thể sau thời gian kết thúc");
                 return Promise.resolve();
-            },
-            trigger: "change",
-        },
-    ],
-    timezone_code: [
-        { required: true, message: "Vui lòng chọn múi giờ", trigger: "change" },
-        {
-            validator: (_, value) => {
-                return moment.tz.names().includes(value)
-                    ? Promise.resolve()
-                    : Promise.reject("Múi giờ không hợp lệ");
             },
             trigger: "change",
         },
@@ -661,13 +673,12 @@ const rules = {
 watch(
     () => formState.value.is_repeat,
     async (newValue) => {
-        // console.log("Cập nhật is_repeat:", newValue);
         await nextTick(); // Chờ Vue cập nhật xong trước khi gán dữ liệu mới
 
         if (newValue) {
             // Nếu bật lặp lại, đảm bảo rrule có dữ liệu mặc định
-            formState.value.rrule = formState.value.rrule || {
-                freq: "daily",
+            formState.value.rrule = {
+                freq: "daily", // Set mặc định là daily
                 interval: 1,
                 count: null,
                 until: null,
@@ -695,15 +706,38 @@ watch(
 );
 
 watch(
-    () => formState.value.allDay,
-    (newValue) => {
-        if (newValue) {
-            // Giữ nguyên ngày nhưng set giờ về 00:00:00 và 23:59:59
-            formState.value.start = dayjs(formState.value.start).hour(0).minute(0).second(0);
-            formState.value.end = dayjs(formState.value.end).hour(0).minute(0).second(0);
+  () => formState.value.allDay,
+  (newValue) => {
+    if (newValue) {
+      // Khi bật cả ngày
+      if (formState.value.start) {
+        formState.value.start = dayjs(formState.value.start).hour(0).minute(0).second(0);
+      }
+      if (formState.value.end) {
+        const startDate = dayjs(formState.value.start).hour(0).minute(0).second(0);
+        const endDate = dayjs(formState.value.end).hour(0).minute(0).second(0);
+        
+        if (endDate.isSame(startDate)) {
+          // Nếu cùng ngày, cộng thêm 1 ngày và set giờ về 00:00:00
+          formState.value.end = dayjs(startDate).add(1, 'day').hour(0).minute(0).second(0);
+        } else {
+          // Nếu khác ngày, chỉ set giờ về 00:00:00
+          formState.value.end = formState.value.end && dayjs(formState.value.end).hour() == 0 && dayjs(formState.value.end).minute() == 0 
+            ? dayjs(formState.value.end).hour(0).minute(0).second(0)
+            : dayjs(formState.value.end).add(1, 'day').hour(0).minute(0).second(0);
         }
+      }
+    } else {
+      // Khi tắt cả ngày, set lại thời gian mặc định
+      if (formState.value.start) {
+        formState.value.start = dayjs(formState.value.start).hour(dayjs().hour()).minute(dayjs().minute());
+      }
+      if (formState.value.end) {
+        formState.value.end = dayjs(formState.value.end).hour(dayjs().hour()).minute(dayjs().minute());
+      }
     }
-);
+  }
+)
 
 const freqOptions = [
     { label: "Hàng ngày", value: "daily" },
@@ -916,74 +950,85 @@ const handleExcludeDate = (date) => {
     }
 };
 
+const formRef = ref();
 
 // Xử lý cập nhật sự kiện
-const handleSubmit = () => {
-    if (originalIsRepeat.value === true) {
-        Modal.confirm({
-            title: "Cập nhật sự kiện lặp lại",
-            width: 500,
-            content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
-                h("div", { class: "mb-3" }, [
-                    h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
-                        h("input", {
-                            type: "radio",
-                            name: "editOption",
-                            value: "EDIT_1",
-                            class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
-                            checked: editOption.value === "EDIT_1",
-                            onInput: (e) => {
-                                editOption.value = e.target.value;
-                            },
-                        }),
-                        h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
+const handleSubmit = async () => {
+    try {
+        // Validate form using formRef
+        await formRef.value.validate();
+
+        // If validation passes, proceed with update
+        if (originalIsRepeat.value === true) {
+            Modal.confirm({
+                title: "Cập nhật sự kiện lặp lại",
+                width: 500,
+                content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
+                    h("div", { class: "mb-3" }, [
+                        h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                            h("input", {
+                                type: "radio",
+                                name: "editOption",
+                                value: "EDIT_1",
+                                class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                                checked: editOption.value === "EDIT_1",
+                                onInput: (e) => {
+                                    editOption.value = e.target.value;
+                                },
+                            }),
+                            h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
+                        ]),
+                    ]),
+                    h("div", { class: "mb-3" }, [
+                        h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                            h("input", {
+                                type: "radio",
+                                name: "editOption",
+                                value: "EDIT_1B",
+                                class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                                checked: editOption.value === "EDIT_1B",
+                                onInput: (e) => {
+                                    editOption.value = e.target.value;
+                                },
+                            }),
+                            h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
+                        ]),
+                    ]),
+                    h("div", { class: "mb-3" }, [
+                        h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                            h("input", {
+                                type: "radio",
+                                name: "editOption",
+                                value: "EDIT_A",
+                                class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                                checked: editOption.value === "EDIT_A",
+                                onInput: (e) => {
+                                    editOption.value = e.target.value;
+                                },
+                            }),
+                            h("span", { class: "text-lg" }, "Cập nhật tất cả sự kiện"),
+                        ]),
                     ]),
                 ]),
-                h("div", { class: "mb-3" }, [
-                    h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
-                        h("input", {
-                            type: "radio",
-                            name: "editOption",
-                            value: "EDIT_1B",
-                            class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
-                            checked: editOption.value === "EDIT_1B",
-                            onInput: (e) => {
-                                editOption.value = e.target.value;
-                            },
-                        }),
-                        h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
-                    ]),
-                ]),
-                h("div", { class: "mb-3" }, [
-                    h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
-                        h("input", {
-                            type: "radio",
-                            name: "editOption",
-                            value: "EDIT_A",
-                            class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
-                            checked: editOption.value === "EDIT_A",
-                            onInput: (e) => {
-                                editOption.value = e.target.value;
-                            },
-                        }),
-                        h("span", { class: "text-lg" }, "Cập nhật tất cả sự kiện"),
-                    ]),
-                ]),
-            ]),
-            okText: "Cập nhật",
-            cancelText: "Hủy",
-            onOk() {
-                updateEvent({ code: editOption.value, date: formState.value.start, id: formState.value.id });
-            },
-        });
-    } else {
-        // Nếu không có lặp lại, cập nhật ngay lập tức
-        updateEvent({ code: "EDIT_N", date: formState.value.start, id: formState.value.id });
+                okText: "Cập nhật",
+                cancelText: "Hủy",
+                onOk() {
+                    updateEvent({ code: editOption.value, date: formState.value.start, id: formState.value.id });
+                },
+            });
+        } else {
+            // Nếu không có lặp lại, cập nhật ngay lập tức
+            updateEvent({ code: "EDIT_N", date: formState.value.start, id: formState.value.id });
+        }
+    } catch (error) {
+
     }
 };
 
 // Hàm cập nhật sự kiện
 const updateEvent = async ({ code, date, id }) => {
+    isLoading.value = true;
+    console.log(formState.value.attendees)
     try {
         const dataApi = {
             id: id,
@@ -1023,6 +1068,8 @@ const updateEvent = async ({ code, date, id }) => {
             bymonthday: formState.value.rrule?.bymonthday.length ? formState.value.rrule.bymonthday : null,
             bymonth: formState.value.rrule?.bymonth.length ? formState.value.rrule.bymonth : null,
         };
+
+        console.log("data send",dataApi);
 
         const res = await axios.put(`${import.meta.env.VITE_API_BASE_URL}tasks/${id}`, dataApi, {
             headers: {
@@ -1109,6 +1156,8 @@ const updateEvent = async ({ code, date, id }) => {
     } catch (error) {
         console.error("Lỗi khi cập nhật sự kiện:", error);
         message.error("Đã xảy ra lỗi. Vui lòng thử lại.");
+    } finally {
+        isLoading.value = false;
     }
 };
 
@@ -1130,34 +1179,128 @@ watch(
 </script>
 
 <style scoped>
+.event-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-section {
+    background-color: white;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid #f3f4f6;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    color: #374151;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
 :deep(.ant-input-borderless) {
     background: transparent;
 }
 
 :deep(.ant-select-selector) {
     background-color: rgb(249, 250, 251) !important;
+    border-radius: 0.5rem !important;
 }
 
-/* Tăng khoảng cách giữa các phần tử */
-.grid {
-    gap: 1.5rem;
-    /* Tăng khoảng cách giữa các cột */
+:deep(.ant-input),
+:deep(.ant-select),
+:deep(.ant-picker) {
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
 }
 
-.switch-checkbox {
-    /* Tùy chỉnh cho checkbox nếu cần */
+:deep(.ant-input:hover),
+:deep(.ant-select:hover),
+:deep(.ant-picker:hover) {
+    border-color: #1890ff;
 }
 
-/* Tùy chỉnh cho các thành phần chọn và nhập */
-.a-select,
-.ant-input {
-    border-radius: 8px;
-    /* Tạo góc bo tròn */
+:deep(.ant-checkbox-wrapper) {
+    transition: color 0.2s;
 }
 
-/* Tùy chỉnh cho Tag */
-.ant-tag {
-    margin-top: 0.5rem;
-    /* Tăng khoảng cách trên cho tag */
+:deep(.ant-checkbox-wrapper:hover) {
+    color: #2563eb;
+}
+
+:deep(.ant-tag) {
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+}
+
+.recurrence-card {
+    background-color: #f9fafb;
+    border-color: #e5e7eb;
+}
+
+:deep(.ant-card-head) {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+:deep(.ant-radio-wrapper) {
+    transition: color 0.2s;
+}
+
+:deep(.ant-radio-wrapper:hover) {
+    color: #2563eb;
+}
+
+:deep(.ant-btn) {
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+:deep(.ant-btn-primary) {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+:deep(.ant-btn-primary:hover) {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.ant-drawer-content-wrapper) {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.ant-drawer-header) {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+:deep(.ant-drawer-title) {
+    font-size: 1.125rem;
+    font-weight: 500;
+}
+
+:deep(.ant-form-item) {
+    margin-bottom: 0.75rem;
+}
+
+:deep(.ant-form-item-label) {
+    padding-bottom: 0.25rem;
+}
+
+:deep(.ant-checkbox-group) {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .form-section {
+        padding: 0.5rem;
+    }
+    
+    :deep(.ant-checkbox-group) {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 </style>

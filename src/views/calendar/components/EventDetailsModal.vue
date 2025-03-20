@@ -600,7 +600,7 @@ const getMessagesByGroup = async (taskId) => {
             </div>
             <div>
               <p class="font-medium mb-0">Lịch</p>
-              <p class="text-sm text-gray-600">My Calendar</p>
+              <p class="text-sm text-gray-600">{{ event.tag_name || 'Không có' }}</p>
             </div>
           </div>
         </div>
@@ -634,7 +634,7 @@ const getMessagesByGroup = async (taskId) => {
       </a-tab-pane>
 
       <a-tab-pane v-if="event.type == 'event' && event.attendees.length > 0" key="discuss" tab="Thảo luận">
-        <div class="flex h-screen bg-gray-100 h-[550px]">
+        <div class="flex h-screen bg-gray-100 h-[540px]">
           <!-- Main chat area -->
           <div class="flex-1 flex flex-col">
             
