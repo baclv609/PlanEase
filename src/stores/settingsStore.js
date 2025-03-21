@@ -14,7 +14,7 @@ export const useSettingsStore = defineStore("settings", {
     // Cài đặt thời gian
     timeZone: "Asia/Saigon",
     timeZoneOffset: moment.tz("Asia/Saigon").utcOffset() / 60, 
-    timeFormat: "24h",
+    timeFormat: localStorage.getItem("timeFormat") || "24h",
     slotDuration: "00:30:00",
     language: localStorage.getItem("appLanguage") || "vi",
 
@@ -22,7 +22,7 @@ export const useSettingsStore = defineStore("settings", {
     titleFormat: { year: "numeric", month: "long" }, // Định dạng tiêu đề lịch
     dayHeaderFormat: { weekday: "long", day: "numeric" }, // Định dạng ngày trong cột
     dateFormat: "YYYY-MM-DD", // Mặc định hiển thị theo chuẩn YYYY-MM-DD
-    eventTimeFormat: { hour: "2-digit", minute: "2-digit", meridiem: false }, // Định dạng ngày trong sự kiện
+    eventTimeFormat: { hour: "2-digit", minute: "2-digit", hour12: false }, // Định dạng ngày trong sự kiện
     initialDate: new Date().toISOString().split("T")[0], // Ngày bắt đầu
     firstDay: 1, // Ngày đầu tuần (0 = Chủ nhật, 1 = Thứ hai)
     multiMonthYear: false, // Hiển thị nhiều tháng
@@ -38,22 +38,54 @@ export const useSettingsStore = defineStore("settings", {
     defaultRecurrence: "none",
 
     calendarRef: null, // Lưu tham chiếu đến FullCalendar
+
+    // Cập nhật định dạng thời gian cho các cột
+    columnHeaderFormat: {
+      weekday: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    },
   }),
 
   actions: {
  
     updateTimeFormat(newValue) {
-      // Chuyển đổi từ chuỗi JSON sang object
-      const parsedValue = JSON.parse(newValue);
-    
-      // Cập nhật định dạng thời gian
-      this.eventTimeFormat = parsedValue;
-    
+      console.log("Updating time format to:", newValue);
+      this.timeFormat = newValue;
+      
+      // Cập nhật eventTimeFormat dựa trên timeFormat mới
+      this.eventTimeFormat = {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: newValue === "12h"
+      };
+
+      // Cập nhật định dạng thời gian cho các cột
+      this.columnHeaderFormat = {
+        weekday: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: newValue === "12h"
+      };
+      
       // Lưu vào localStorage
+      localStorage.setItem("timeFormat", newValue);
       this.saveToLocalStorage();
-    
+      
       // Cập nhật FullCalendar
-      this.updateFullCalendar();
+      if (this.calendarRef && this.calendarRef.getApi) {
+        const calendarApi = this.calendarRef.getApi();
+        calendarApi.setOption('eventTimeFormat', this.eventTimeFormat);
+        calendarApi.setOption('slotLabelFormat', {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: newValue === "12h"
+        });
+        calendarApi.refetchEvents();
+      }
     },
     
     toggleTimeFormat() {
@@ -67,8 +99,9 @@ export const useSettingsStore = defineStore("settings", {
         showWeekNumbers: this.showWeekNumbers,
         themeMode: this.themeMode,
         timeZone: this.timeZone,
-        timeZoneOffset: moment.tz(this.timeZone).utcOffset() / 60, // Lưu offset múi giờ
+        timeZoneOffset: moment.tz(this.timeZone).utcOffset() / 60,
         timeFormat: this.timeFormat,
+        eventTimeFormat: this.eventTimeFormat,
         language: this.language,
         firstDay: this.firstDay,
         enableNotifications: this.enableNotifications,

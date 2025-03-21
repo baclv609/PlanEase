@@ -204,7 +204,7 @@ export function useCalendar(calendarRef) {
     },
     { deep: true }
   );
-watch(
+  watch(
     () => ({
       timeZone: settingsStore.timeZone,
       firstDay: settingsStore.firstDay,
@@ -216,6 +216,11 @@ watch(
     }),
     () => {
       console.log("Cập nhật lịch từ Pinia Settings Store...");
+      if (calendarRef.value) {
+        const calendarApi = calendarRef.value.getApi();
+        calendarApi.setOption('eventTimeFormat', settingsStore.eventTimeFormat);
+        calendarApi.refetchEvents();
+      }
       calendarKey.value++; // Buộc FullCalendar render lại
     },
     { deep: true }
@@ -231,10 +236,13 @@ watch(
   watch(
     () => settingsStore.timeFormat,
     (newFormat) => {
-      settingsStore.eventTimeFormat =
-        newFormat === '24h'
-          ? { hour: '2-digit', minute: '2-digit', hour12: false }
-          : { hour: '2-digit', minute: '2-digit', hour12: true };
+      console.log("Cập nhật định dạng thời gian:", newFormat);
+      if (calendarRef.value) {
+        const calendarApi = calendarRef.value.getApi();
+        calendarApi.setOption('eventTimeFormat', settingsStore.eventTimeFormat);
+        calendarApi.refetchEvents();
+      }
+      calendarKey.value++;
     }
   );
 
@@ -310,7 +318,18 @@ watch(
     initialDate: settingsStore.initialDate,
     initialView: settingsStore.displayMode,
     eventTimeFormat: settingsStore.eventTimeFormat,
-    dayHeaderFormat: settingsStore.dayHeaderFormat || { weekday: 'short', day: 'numeric' },
+    slotLabelFormat: {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: settingsStore.timeFormat === "12h"
+    },
+    dayHeaderFormat: settingsStore.dayHeaderFormat || { 
+      weekday: 'short', 
+      day: 'numeric',
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: settingsStore.timeFormat === "12h"
+    },
     titleFormat: settingsStore.titleFormat,
     validRange: settingsStore.validRange,
     editable: true,
