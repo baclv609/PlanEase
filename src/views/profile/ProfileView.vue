@@ -81,8 +81,8 @@
         </a-form>
 
         <div class="flex gap-2">
-          <a-button type="primary" @click="saveChanges" :loading="isLoading">Lưu</a-button>
-          <a-button type="primary" danger @click="handleLogout">Đăng xuất</a-button>
+          <a-button class="bg-[#227C9D] text-white hover:!text-white transition rounded-lg" @click="saveChanges" :loading="isLoading">Lưu</a-button>
+          <a-button class="bg-[#FE6D73] text-white hover:!text-white transition rounded-lg" @click="handleLogout">Đăng xuất</a-button>
         </div>
       </a-tab-pane>
 
@@ -110,7 +110,7 @@
             <span class="text-red-400 text-sm" v-if="errors.password_confirmation">{{ errors.password_confirmation[0] }}</span>
           </a-form-item>
 
-          <a-button type="primary" :loading="isLoading" @click="changePassword" class="w-50">Change Password</a-button>
+          <a-button class="bg-[#227C9D] text-white hover:!text-white transition rounded-lg" :loading="isLoading" @click="changePassword">Đổi mật khẩu</a-button>
         </a-form>
       </a-tab-pane>
 

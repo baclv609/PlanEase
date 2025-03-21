@@ -421,7 +421,7 @@ const getMessagesByGroup = async (taskId) => {
 </script>
 
 <template>
-  <Modal v-model:open="isVisible" width="750px" :footer="null" :closable="false">
+  <Modal v-model:open="isVisible" width="750px" :footer="null" :closable="false" :centered="true">
 
     <div class="flex items-center justify-end mr-2 space-x-3">
       <button
@@ -634,7 +634,7 @@ const getMessagesByGroup = async (taskId) => {
       </a-tab-pane>
 
       <a-tab-pane v-if="event.type == 'event' && event.attendees.length > 0" key="discuss" tab="Thảo luận">
-        <div class="flex h-screen bg-gray-100 h-[540px]">
+        <div class="flex bg-gray-100 h-[550px]">
           <!-- Main chat area -->
           <div class="flex-1 flex flex-col">
             
@@ -702,18 +702,18 @@ const getMessagesByGroup = async (taskId) => {
             <!-- Input area -->
             <div class="bg-white border-t py-2 border-gray-200">
               <div v-if="replyingTo" class="p-2 bg-gray-100 border-l-4 border-blue-500 rounded flex items-center justify-between">
-                <p class="text-sm text-gray-600">Replying to: <b>{{ replyingTo.text }}</b></p>
-                <button class="text-red-500 text-xs" @click="cancelReply"><CloseOutlined /></button>
+                <p class="text-sm text-gray-600">Đang trả lời: <b>{{ replyingTo.text }}</b></p>
+                <button class="text-[#FE6D73] bg-transparent text-xs border-none cursor-pointer hover:bg-[#FE6D73] hover:text-white transition rounded-full px-[10px] py-2" @click="cancelReply"><CloseOutlined /></button>
               </div>
               <form @submit.prevent="sendMessage" class="flex space-x-2 w-full">
                 <div class="flex-1 w-11/12">
                   <input v-model="newMessage"
-                    class="flex-1 border w-full px-2 border-gray-400 rounded-lg py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="flex-1 border w-full px-2 border-[#227C9D] rounded-lg py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Nhập tin nhắn..." />
                 </div>
                 <div class="w-1/12">
                   <button type="submit"
-                    class="bg-blue-500 text-white w-full h-full rounded-lg border-none cursor-pointer hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    class="bg-[#227C9D] text-white w-full h-full transition rounded-lg border-none cursor-pointer hover:bg-[#15C5B2] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     :disabled="!newMessage.trim()">
                     <SendOutlined />
                   </button>

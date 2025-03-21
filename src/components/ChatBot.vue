@@ -2,10 +2,10 @@
     <div class="relative">
         <!-- Popup Trigger Button -->
         <button @click="toggleChat"
-            class="flex bg-indigo-600 border-none justify-center p-3 rounded-full shadow-lg text-white bottom-6 cursor-pointer duration-200 fixed hover:bg-indigo-700 items-center right-6 transition-all z-10"
+            class="flex bg-[#227C9D] border-none justify-center p-3 rounded-full shadow-lg text-white bottom-6 cursor-pointer duration-200 fixed hover:bg-[#15C5B2] items-center right-6 transition-all z-10"
             :class="{'rotate-45': isChatOpen }">
             <MessageOutlined v-if="!isChatOpen" class="h-full text-lg w-full" />
-            <PlusOutlined v-else class="h-full text-lg w-full"/>
+            <CloseOutlined v-else class="h-full text-lg w-full"/>
         </button>
 
         <!-- Chat Component -->
@@ -17,7 +17,7 @@
                 class="flex flex-col bg-white border border-gray-200 rounded-lg shadow-xl w-80 bottom-24 fixed overflow-hidden right-6 sm:w-96 z-10"
                 style="height: 400px;">
                 <!-- Chat Header -->
-                <div class="flex bg-indigo-600 justify-between p-4 text-white items-center">
+                <div class="flex bg-[#227C9D] justify-between p-4 text-white items-center">
                     <div class="flex items-center">
                         <div class="flex bg-white/20 h-10 justify-center rounded-full w-10 items-center mr-3">
                             <RobotOutlined class="h-full text-xl"/>
@@ -67,15 +67,15 @@
                 </div>
 
                 <!-- Chat Input -->
-                <div class="bg-white border-gray-200 border-t p-3">
+                <div class="bg-white border border-t-2 border-gray-600 p-3">
                     <div class="flex items-center">
                         <input v-model="newMessage" @keyup.enter="sendMessage" type="text"
                             placeholder="Nhập tin nhắn..."
-                            class="flex-1 border border-gray-300 rounded-full focus:ring-2 focus:ring-indigo-500 px-4 py-2" />
+                            class="flex-1 border border-1 border-[#227C9D] rounded-full px-4 py-2 focus:outline-none" />
                         <button @click="sendMessage"
-                            class="bg-indigo-600 rounded-full text-white cursor-pointer focus:outline-none hover:bg-indigo-700 ml-2 px-[10px] py-2"
+                            class="bg-[#227C9D] rounded-full text-white cursor-pointer focus:outline-none ml-2 px-[10px] py-2"
                             :disabled="!newMessage.trim()">
-                            <SendOutlined class="h-full w-full" />
+                            <SendOutlined />
                         </button>
                     </div>
                 </div>
@@ -138,8 +138,8 @@ const sendMessage = async () => {
             }
         );
 
-        isTyping.value = false;
         if(response.data.code == 200){
+            isTyping.value = false;
             console.log(response);
 
             messages.value.push({
@@ -150,7 +150,7 @@ const sendMessage = async () => {
         }
     } catch (error) {
         isTyping.value = false;
-        if(response.data.code == 500){
+        if(error){
             console.log(response);
 
             messages.value.push({
@@ -180,7 +180,7 @@ onMounted(() => {
 </script>
 <style scoped>
     .chat_ai {
-        width: 550px !important;
-        height: 600px !important;
+        width: 500px !important;
+        height: 500px !important;
     }
 </style>
