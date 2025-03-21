@@ -40,7 +40,7 @@
       </div>
     </a-layout-header>
 
-    <a-layout>
+    <a-layout class="!bg-white">
       <a-layout-sider width="300" class="shadow !bg-white my-2 ml-1 rounded-lg">
         <!-- <a-button type="primary" block class="mb-4">{{ $t('+ Create Event') }}</a-button> -->
 

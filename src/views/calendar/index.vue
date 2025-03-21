@@ -447,18 +447,18 @@ onMounted(() => {
   <div>
     <!-- Custom Header -->
     <div class="custom-header">
-      <div class="flex  items-center">
+      <div class="flex items-center">
         <span class="header-title mr-3 capitalize">{{ currentDate }}</span>
 
         <div class="header-controls">
           
-          <Button @click="goToPrev" type="text">
+          <Button @click="goToPrev" type="text" class="px-3 border border-1 border-[#15C5B2] rounded-full hover:!bg-[#FEF9ED]">
             <left-outlined />
           </Button>
-          <Button @click="goToNext" type="text">
+          <Button @click="goToNext" type="text" class="px-3 border border-1 border-[#15C5B2] rounded-full hover:!bg-[#FEF9ED]">
             <RightOutlined />
           </Button>
-          <Button @click="goToToday" type="default">
+          <Button @click="goToToday" type="default" class="border border-1 font-semibold text-gray-500 hover:!bg-[#FEF9ED] hover:!text-gray-500 border-[#15C5B2] rounded-full hover:!border-[#15C5B2]">
             <template #icon>
               <CalendarOutlined />
             </template>
@@ -477,7 +477,9 @@ onMounted(() => {
     </div>
 
     <!-- FullCalendar -->
-    <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions" @datesSet="onDatesSet" />
+    <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions" @datesSet="onDatesSet" 
+      class="bg-[#FEF9ED]"
+    />
 
     <!-- Modal thêm sự kiện -->
     <EventModal :open="isAddEventModalVisible" :event="selectedEventAdd" @save="handleEventModalSuccess"
@@ -505,8 +507,6 @@ onMounted(() => {
   margin-bottom: 10px;
   padding: 10px;
   background: #fff;
-  /* border-radius: 8px; */
-   /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
 }
 
 .header-title {
@@ -529,5 +529,21 @@ onMounted(() => {
 
 .view-toggle {
   display: flex;
+}
+
+:deep(.fc .fc-daygrid-day-number) {
+  width: 100% !important;
+  text-align: center !important;
+  color: black !important;
+  font-weight: 600 !important;
+}
+
+:deep(.fc .fc-daygrid-day-top) {
+  display: flex !important;
+  justify-content: center !important;
+}
+
+:deep(.fc-col-header-cell-cushion) {
+  color: black !important;
 }
 </style>
