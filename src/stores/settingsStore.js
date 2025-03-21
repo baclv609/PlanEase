@@ -84,6 +84,13 @@ export const useSettingsStore = defineStore("settings", {
           minute: "2-digit",
           hour12: newValue === "12h"
         });
+        calendarApi.setOption('columnHeaderFormat', {
+          weekday: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: newValue === "12h"
+        });
         calendarApi.refetchEvents();
       }
     },
