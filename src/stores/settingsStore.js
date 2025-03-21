@@ -27,6 +27,10 @@ export const useSettingsStore = defineStore("settings", {
     firstDay: 1, // Ngày đầu tuần (0 = Chủ nhật, 1 = Thứ hai)
     multiMonthYear: false, // Hiển thị nhiều tháng
 
+    // Cài đặt hiển thị năm dạng lưới
+    multiMonthMaxColumns: parseInt(localStorage.getItem("multiMonthMaxColumns")) || 3,
+    showNonCurrentDates: localStorage.getItem("showNonCurrentDates") === "true",
+
     // validRange: { start: "2025-01-01", end: "2025-12-31" }, // Giới hạn ngày
 
     // Thông báo & Nhắc nhở
@@ -114,6 +118,8 @@ export const useSettingsStore = defineStore("settings", {
         enableNotifications: this.enableNotifications,
         enableRecurringEvents: this.enableRecurringEvents,
         reminderTime: this.reminderTime,
+        multiMonthMaxColumns: this.multiMonthMaxColumns,
+        showNonCurrentDates: this.showNonCurrentDates,
       };
       localStorage.setItem("userSettings", JSON.stringify(settingsToSave));
     },    
@@ -162,6 +168,14 @@ export const useSettingsStore = defineStore("settings", {
     updateSetting(key, value) {
       this[key] = value;
       this.saveToLocalStorage(); // Luôn lưu lại khi cập nhật
+      this.updateFullCalendar();
+    },
+
+    updateMultiMonthSettings(columns, showNonCurrent) {
+      this.multiMonthMaxColumns = columns;
+      this.showNonCurrentDates = showNonCurrent;
+      localStorage.setItem("multiMonthMaxColumns", columns);
+      localStorage.setItem("showNonCurrentDates", showNonCurrent);
       this.updateFullCalendar();
     },
 

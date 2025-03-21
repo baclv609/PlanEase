@@ -19,6 +19,11 @@ import {
   RightOutlined,
   InfoCircleOutlined,
   SettingOutlined,
+  AppstoreOutlined,
+  UnorderedListOutlined,
+  FieldTimeOutlined,
+  ClockCircleOutlined,
+  PlusOutlined
 } from "@ant-design/icons-vue";
 
 // Import store & composables
@@ -31,6 +36,7 @@ import ScheduleEditView from "../schedule/ScheduleEditView.vue";
 import EventModal from "./components/EventModal.vue";
 import EventDetailModal from "./components/EventDetailsModal.vue";
 import ChatBot from "@/components/ChatBot.vue";
+import SettingsModal from "@/components/settings/SettingsModal.vue";
 
 import { useEchoStore } from "@/stores/echoStore";
 
@@ -441,56 +447,117 @@ onMounted(() => {
     updateCurrentDate();
   }
 });
+
+const isSettingsModalVisible = ref(false);
+
+// Xử lý thay đổi chế độ xem
+const handleViewChange = (e) => {
+  const newView = e.target.value;
+  settingsStore.updateDisplayMode(newView);
+  if (calendarRef.value) {
+    calendarRef.value.getApi().changeView(newView);
+  }
+};
+
+// Hiển thị modal
+const showSettingsModal = () => {
+  isSettingsModalVisible.value = true;
+};
+
+const showAddEventModal = () => {
+  selectedEventAdd.value = {
+    start: new Date(),
+    end: new Date(new Date().getTime() + 30 * 60000),
+    allDay: false,
+  };
+  isAddEventModalVisible.value = true;
+};
+
+// Tiêu đề view hiện tại
+const currentViewTitle = computed(() => {
+  if (calendarRef.value) {
+    return calendarRef.value.getApi().view.title;
+  }
+  return '';
+});
 </script>
 
 <template>
-  <div>
-    <!-- Custom Header -->
-    <div class="custom-header">
-      <div class="flex  items-center">
-        <span class="header-title mr-3 capitalize">{{ currentDate }}</span>
-
-        <div class="header-controls">
-          
-          <Button @click="goToPrev" type="text">
-            <left-outlined />
-          </Button>
-          <Button @click="goToNext" type="text">
-            <RightOutlined />
-          </Button>
-          <Button @click="goToToday" type="default">
-            <template #icon>
-              <CalendarOutlined />
-            </template>
-            {{ getTodayLabel }}
-          </Button>
+  <div class="calendar-container">
+    <!-- Header -->
+    <div class="calendar-header flex items-center justify-between mb-4 p-4 bg-white rounded-lg shadow-sm">
+      <div class="flex items-center space-x-4">
+        <!-- Nút điều hướng -->
+        <div class="flex items-center space-x-2">
+          <a-button @click="goToPrev">
+            <template #icon><left-outlined /></template>
+          </a-button>
+          <a-button @click="goToToday">Hôm nay</a-button>
+          <a-button @click="goToNext">
+            <template #icon><right-outlined /></template>
+          </a-button>
         </div>
+        
+        <!-- Tiêu đề -->
+        <h2 class="text-xl font-semibold">{{ currentViewTitle }}</h2>
       </div>
 
-      <div class="view-toggle">
-        <Segmented v-model:value="currentView" :options="[
-          { label: 'Ngày', value: 'timeGridDay' },
-          { label: 'Tuần', value: 'timeGridWeek' },
-          { label: 'Tháng', value: 'dayGridMonth' },
-        ]" @change="changeView" />
+      <!-- Các nút chức năng -->
+      <div class="flex items-center space-x-2">
+        <!-- Nút chuyển đổi chế độ xem nhanh -->
+        <a-radio-group v-model:value="currentView" @change="handleViewChange" button-style="solid">
+          <a-radio-button value="multiMonthYear">
+            <template #icon><AppstoreOutlined /></template>
+            Lưới
+          </a-radio-button>
+          <a-radio-button value="listYear">
+            <template #icon><UnorderedListOutlined /></template>
+            Danh sách
+          </a-radio-button>
+          <a-radio-button value="dayGridMonth">
+            <template #icon><CalendarOutlined /></template>
+            Tháng
+          </a-radio-button>
+          <a-radio-button value="timeGridWeek">
+            <template #icon><FieldTimeOutlined /></template>
+            Tuần
+          </a-radio-button>
+          <a-radio-button value="timeGridDay">
+            <template #icon><ClockCircleOutlined /></template>
+            Ngày
+          </a-radio-button>
+        </a-radio-group>
+
       </div>
     </div>
 
-    <!-- FullCalendar -->
-    <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions" @datesSet="onDatesSet" />
+    <!-- Calendar -->
+    <div class="calendar-body">
+      <FullCalendar
+        ref="calendarRef"
+        :key="calendarKey"
+        :options="calendarOptions"
+        class="calendar-main"
+      />
+    </div>
 
-    <!-- Modal thêm sự kiện -->
-    <EventModal :open="isAddEventModalVisible" :event="selectedEventAdd" @save="handleEventModalSuccess"
-      @cancel="isAddEventModalVisible = false" />
+    <!-- Modals -->
+    <!-- <SettingsModal
+      v-model:isModalOpen="isSettingsModalVisible"
+    />
+     -->
+    <EventDetailModal
+      v-if="isEventDetailModalVisible"
+      v-model:visible="isEventDetailModalVisible"
+      :event="selectedEvent"
+      @success="handleEventModalSuccess"
+      @delete="handleDeleteEvent"
+    />
 
-    <!-- Modal chi tiết sự kiện -->
-    <EventDetailModal :open="isEventDetailModalVisible" :event="selectedEvent"  @editTask="openEditDrawer"
-      @close="isEventDetailModalVisible = false" @delete="handleDeleteEvent" />
-
-      <ScheduleEditView :open="isEditDrawerVisible" :event="selectedEventToEdit"  
-       @update:visible="isEditDrawerVisible = $event" 
-       @cancel="isEditDrawerVisible = false" 
-       @calendar-updated="handleCalendarUpdate"/>
+    <ScheduleEditView :open="isEditDrawerVisible" :event="selectedEventToEdit"  
+     @update:visible="isEditDrawerVisible = $event" 
+     @cancel="isEditDrawerVisible = false" 
+     @calendar-updated="handleCalendarUpdate"/>
 
     <ChatBot />
 
@@ -498,36 +565,44 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.custom-header {
+.calendar-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+  padding: 1rem;
+}
+
+.calendar-header {
+  margin-bottom: 1rem;
+}
+
+.calendar-body {
+  flex: 1;
+  min-height: 0;
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.calendar-main {
+  height: 100%;
+}
+
+/* Custom styles for radio buttons */
+.ant-radio-group {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  padding: 10px;
-  background: #fff;
-  /* border-radius: 8px; */
-   /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
 }
 
-.header-title {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.header-controls {
+.ant-radio-button-wrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
+  padding: 0 12px;
 }
 
-.header-icons {
-  display: flex;
-  gap: 12px;
-  font-size: 18px;
-  color: #888;
-}
-
-.view-toggle {
-  display: flex;
+.ant-radio-button-wrapper .anticon {
+  margin-right: 4px;
 }
 </style>
