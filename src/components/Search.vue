@@ -93,12 +93,12 @@ const applyFilters = () => {
 </script>
 
 <template>
-    <div class="relative w-full max-w-xl mx-auto">
+    <div class="relative w-full max-w-md mx-auto">
         <a-form layout="vertical" @finish="applyFilters">
             <!-- Thanh tìm kiếm chính -->
-            <div class="flex items-center border border-2 border-gray-500 bg-white rounded-full shadow-[0_3px_10px_rgba(0,0,0,0.2)] px-4">
+            <div class="flex items-center bg-white rounded-full px-3" style="border: 1.5px solid #15C5B2;">
                 <a-input v-model:value="eventName" placeholder="Tìm kiếm"
-                    class="border-none flex-1 !shadow-none !ring-0 !outline-none focus:!ring-0 focus:!outline-none focus:!shadow-none"
+                    class="border-none flex-1 !shadow-none !ring-0 p-0 !outline-none text-sm"
                     @pressEnter="applyFilters">
                     <template #prefix>
                         <SearchOutlined class="text-gray-500 text-lg mx-2" />

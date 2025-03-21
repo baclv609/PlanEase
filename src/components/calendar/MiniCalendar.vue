@@ -340,7 +340,7 @@ onMounted(() => {
 
 <style scoped>
 .mini-calendar {
-  background: white;
+  background: #16c4b3;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 8px;
@@ -350,9 +350,26 @@ onMounted(() => {
 :deep(.fc) {
   font-family: inherit;
   --fc-small-font-size: 0.85em;
+  border: none !important;
+}
+
+:deep(.fc-theme-standard td),
+:deep(.fc-theme-standard th),
+:deep(.fc-theme-standard .fc-scrollgrid) {
+  border: none !important;
+}
+
+:deep(.fc-scrollgrid-section-header),
+:deep(.fc-scrollgrid-section-body) {
+  border: none !important;
+}
+
+:deep(.fc-scrollgrid) {
+  border: none !important;
 }
 
 :deep(.fc-toolbar-title) {
+  color: #fefefe !important;
   font-size: 0.95rem !important;
   font-weight: 500;
 }
@@ -364,11 +381,13 @@ onMounted(() => {
 
 :deep(.fc-col-header) {
   font-size: 0.8rem;
+  background-color: white;
 }
 
 :deep(.fc-col-header-cell) {
-  padding: 4px 0 !important;
-  text-transform: capitalize;
+  color: #595959 !important;
+  font-weight: 500;
+  background-color: #16c4b3;
 }
 
 :deep(.fc-col-header-cell-cushion) {
@@ -376,6 +395,7 @@ onMounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #ffffff;
 }
 
 :deep(.fc-daygrid-day) {
@@ -416,14 +436,7 @@ onMounted(() => {
 }
 
 :deep(.fc-daygrid-day-number) {
-  font-size: 0.8rem;
-  margin: 0;
-  padding: 0 !important;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: white;
 }
 
 :deep(.fc-event) {
@@ -431,9 +444,12 @@ onMounted(() => {
   width: 4px !important;
   height: 4px !important;
   margin: 1px !important;
+  background-color: #1890ff !important;
+  border-color: #1890ff !important;
 }
 
 :deep(.fc-more-link) {
+  color: #1890ff !important;
   font-size: 0.7rem;
   padding: 0;
   margin: 0;
@@ -442,11 +458,17 @@ onMounted(() => {
 }
 
 :deep(.fc-day-today) {
-  background-color: #e6f7ff !important;
+  background-color: #FFCC77 !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+}
+
+:deep(.fc-day-today .fc-daygrid-day-frame) {
+  border-radius: 20% !important;
 }
 
 :deep(.fc-day-today .fc-daygrid-day-number) {
-  color: #1890ff;
+  color: white;
   font-weight: 600;
 }
 
@@ -467,11 +489,9 @@ onMounted(() => {
 :deep(.fc-next-button) {
   background-color: transparent !important;
   border-color: transparent !important;
-  color: #595959 !important;
-  
-  &:hover {
-    background-color: #f0f0f0 !important;
-  }
+  color: #ffffff !important;
+  border-radius: 50%;
+  padding: 15px 10px;
   
   &:focus {
     box-shadow: none !important;
@@ -483,10 +503,8 @@ onMounted(() => {
   z-index: 1;
 }
 
-:deep(.fc-day-other) {
-  .fc-daygrid-day-number {
-    opacity: 0.5;
-  }
+:deep(.fc-day-other .fc-daygrid-day-number) {
+  color: rgba(0, 0, 0, 0.7);
 }
 
 :deep(.fc-day-disabled) {

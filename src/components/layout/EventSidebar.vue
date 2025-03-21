@@ -1,6 +1,20 @@
 <template>
-  <a-card :bodyStyle="{ padding: '16px' }">
-    <a-button type="primary" class="my-2" block @click="openAddCalendarModal">+ Tạo Sự Kiện Mới</a-button>
+  <a-card :bodyStyle="{ padding: '16px' }" class="!bg-transparent border-none shadow-none">
+    <a-dropdown :trigger="['click']">
+      <a-button class="mb-3 w-50 bg-[#FECA7B] text-black font-bold px-6 py-6 border-none flex items-center justify-center gap-2 rounded-full hover:!text-white transition-colors">
+        <PlusOutlined /> Tạo mới <CaretDownOutlined />
+      </a-button>
+      <template #overlay>
+        <a-menu class="!bg-[#FECA7B]">
+          <a-menu-item @click="createEvent" class="!text-white transition-colors hover:!bg-[#15C5B2]">
+            <CalendarOutlined class="mr-2" /> Tạo sự kiện
+          </a-menu-item>
+          <a-menu-item @click="createTask" class="!text-white transition-colors hover:!bg-[#15C5B2]">
+            <CheckSquareOutlined class="mr-2" /> Tạo việc cần làm
+          </a-menu-item>
+        </a-menu>
+      </template>
+    </a-dropdown>
 
     <div class="calendar-section">
       <MiniCalendar 
@@ -11,13 +25,13 @@
       />
     </div>
 
-    <div class="mt-5">
-      <h2>Sự kiện sắp tới</h2>
+    <div class="mt-3">
+      <h2 class="mb-0">Sự kiện sắp tới</h2>
       <p>Đừng bỏ lỡ các sự kiện đã lên lịch</p>
       <a-list :data-source="filteredEvents" bordered>
         <template #renderItem="{ item }">
           <a-list-item>
-            <div class="w-full flex items-center justify-between">
+            <div class="flex justify-between w-full items-center">
               <a-badge :color="item.color" />
               <div class="event-details">
                 <strong>{{ item.date }}</strong>
@@ -30,33 +44,32 @@
       </a-list>
     </div>
 
-    <div class="mt-5">
+    <div class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-lg font-semibold">Lịch của tôi</h3>
-        <PlusOutlined class="cursor-pointer text-blue-500 text-xl hover:scale-110 transition-transform"
-          @click="openAddCalendarModal" />
+        <PlusOutlined class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]" />
       </div>
 
       <a-checkbox-group v-model:value="selectedCalendars" class="flex flex-col gap-2" @change="updateFilteredEvents">
         <!-- Lịch của tôi -->
         <div v-if="myCalendars.length">
-          <h4 class="text-sm font-semibold text-gray-500 mb-2">📌 Lịch của tôi</h4>
+          <h4 class="text-gray-500 text-sm font-semibold mb-2">📌 Lịch của tôi</h4>
 
           <div v-for="(calendar, index) in displayedCalendars" :key="calendar.id"
-            class="flex items-center justify-between p-2 rounded-lg transition-all shadow-sm border border-gray-200 hover:shadow-md bg-white"
+            class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
             :style="{ borderLeft: `4px solid ${calendar.color}` }">
 
             <div class="flex items-center">
               <span
                 :style="{ backgroundColor: calendar.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '8px' }"></span>
               <!-- Hình tròn nhỏ -->
-              <a-checkbox :value="calendar.id" class="ml-2">
-                <span class="text-sm font-medium text-gray-700">{{ calendar.name }}</span>
+              <a-checkbox :value="calendar.id" class="">
+                <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
               </a-checkbox>
             </div>
 
             <a-dropdown>
-              <EllipsisOutlined class="cursor-pointer text-gray-500 text-lg hover:text-black transition" />
+              <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
               <template #overlay>
                 <a-menu>
                   <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
@@ -81,21 +94,21 @@
 
         <!-- Lịch được chia sẻ -->
         <div v-if="sharedCalendars.length" class="mt-4">
-          <h4 class="text-sm font-semibold text-gray-500 mb-2">🔗 Lịch được chia sẻ</h4>
+          <h4 class="text-gray-500 text-sm font-semibold mb-2">🔗 Lịch được chia sẻ</h4>
           <div v-for="(calendar, index) in displayedSharedCalendars" :key="calendar.id"
-            class="flex items-center justify-between p-2 rounded-lg transition-all shadow-sm border border-gray-200 hover:shadow-md bg-white"
+            class="flex bg-white border border-gray-200 justify-between p-2 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
             :style="{ borderLeft: `5px solid ${calendar.color}` }">
 
             <div class="flex items-center">
               <span
                 :style="{ backgroundColor: calendar.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '8px' }"></span>
               <a-checkbox :value="calendar.id" class="ml-2">
-                <span class="text-sm font-medium text-gray-700">{{ calendar.name }}</span>
+                <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
               </a-checkbox>
             </div>
 
             <a-dropdown>
-              <EllipsisOutlined class="cursor-pointer text-gray-500 text-lg hover:text-black transition" />
+              <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
               <template #overlay>
                 <a-menu>
                   <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
@@ -129,7 +142,7 @@
         <a-input v-model:value="newTagCalendar.name" placeholder="Nhập tên tag" />
       </a-form-item>
       <a-form-item label="Màu sắc (Hex Code)">
-        <input type="color" v-model="newTagCalendar.color" class="w-10 h-10 border rounded cursor-pointer" />
+        <input type="color" v-model="newTagCalendar.color" class="border h-10 rounded w-10 cursor-pointer" />
       </a-form-item>
       <a-form-item label="Mô tả">
         <a-textarea v-model:value="newTagCalendar.description" placeholder="Nhập mô tả tag" :rows="3" />
@@ -143,7 +156,7 @@
         <a-input v-model:value="selectedTagCalendar.name" placeholder="Nhập tên tag" />
       </a-form-item>
       <a-form-item label="Màu sắc (Hex Code)">
-        <input type="color" v-model="selectedTagCalendar.color" class="w-10 h-10 border rounded cursor-pointer" />
+        <input type="color" v-model="selectedTagCalendar.color" class="border h-10 rounded w-10 cursor-pointer" />
       </a-form-item>
       <a-form-item label="Mô tả">
         <a-textarea v-model:value="selectedTagCalendar.description" placeholder="Nhập mô tả tag" :rows="3" />
@@ -158,6 +171,13 @@
     </a-form>
   </a-modal>
 
+  <EventModal 
+    :open="isAddEventModalVisible" 
+    :event="selectedEventAdd" 
+    @save="handleEventModalSuccess"
+    @cancel="isAddEventModalVisible = false" 
+  />
+
 </template>
 
 <script setup>
@@ -168,6 +188,9 @@ import {
   EllipsisOutlined,
   CaretDownOutlined,
   CaretUpOutlined,
+  CloseOutlined,
+  CalendarOutlined,
+  CheckSquareOutlined,
 } from "@ant-design/icons-vue";
 
 import dayjs from "dayjs";
@@ -179,6 +202,7 @@ import { useEchoStore } from "@/stores/echoStore";
 import debounce from 'lodash/debounce';
 import MiniCalendar from '@/components/calendar/MiniCalendar.vue';
 import { useSettingsStore } from "@/stores/settingsStore";
+import EventModal from "@/views/calendar/components/EventModal.vue";
 
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
@@ -201,6 +225,9 @@ const events = ref([]);
 
 const showAll = ref(false);
 const showAllShared = ref(false);
+
+const isAddEventModalVisible = ref(false);
+const selectedEventAdd = ref(null);
 
 
 // Lấy thông tin khách mời
@@ -295,13 +322,12 @@ const updateFilteredEvents = () => {
   );
 };
 
-const openAddCalendarModal = () => {
-  isModalOpenAddTag.value = true;
-};
-
-
 const displayOnly = (calendarId) => {
   selectedCalendars.value = [calendarId];
+};
+
+const openDrawerAdd = () => {
+  isModalOpenAddTag.value = true;
 };
 
 // Giới hạn hiển thị
@@ -372,7 +398,7 @@ const handleOk = async () => {
       },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -492,4 +518,27 @@ onMounted(() => {
   echoStore.initEcho();
   echoStore.startListening();
 });
+
+const createEvent = () => {
+  selectedEventAdd.value = {
+    type: 'event',
+    start: dayjs().format('YYYY-MM-DD HH:mm'),
+    end: dayjs().add(30, 'minutes').format('YYYY-MM-DD HH:mm'),
+    allDay: false,
+  };
+  isAddEventModalVisible.value = true;
+};
+
+const createTask = () => {
+  selectedEventAdd.value = { 
+    type: 'task' 
+  };
+  isAddEventModalVisible.value = true;
+};
+
+const handleEventModalSuccess = () => {
+  isAddEventModalVisible.value = false;
+  selectedEventAdd.value = null;
+};
+
 </script>
