@@ -473,7 +473,8 @@ onMounted(() => {
 }
 
 :deep(.fc-highlight) {
-  background-color: rgba(24, 144, 255, 0.1) !important;
+  background-color: #ffcd77c5 !important;
+  border-radius: 20px;
 }
 
 :deep(.fc-header-toolbar) {
