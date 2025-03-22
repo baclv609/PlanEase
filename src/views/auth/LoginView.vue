@@ -4,6 +4,9 @@ import axios from "axios";
 import { message } from "ant-design-vue";
 import router from "@/router";
 import { useEchoStore } from "@/stores/echoStore";
+import { useSettings } from "@/composables/useSettings";
+
+const { transformSettings } = useSettings();
 
 const formState = reactive({
     email: "",
@@ -31,7 +34,8 @@ const onFinish = async (values) => {
         if (res.data.code === 200) {
             message.success(res.data.message || "Login successfully");
             // console.log(res.data.data.access_token);
-            // console.log("user", res.data.data.user);
+            const userSetting = transformSettings(res.data.data.setting);
+            localStorage.setItem("userSettings", JSON.stringify(userSetting));
             localStorage.setItem("user", JSON.stringify(res.data.data.user));
             localStorage.setItem("access_token", res.data.data.access_token);
 
@@ -45,6 +49,7 @@ const onFinish = async (values) => {
         const errorMessage =
             error.response?.data?.message || "An error occurred, please try again";
         message.error(errorMessage);
+        console.log('Error:', error);
     }
 };
 
