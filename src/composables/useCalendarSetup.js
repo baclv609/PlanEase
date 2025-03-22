@@ -227,6 +227,8 @@ export function useCalendar(calendarRef) {
       console.log("Calendar settings changed:", newSettings);
       if (calendarRef.value) {
         const calendarApi = calendarRef.value.getApi();
+        
+        // Cập nhật các tùy chọn
         calendarApi.setOption('titleFormat', newSettings.titleFormat);
         calendarApi.setOption('dayHeaderFormat', newSettings.dayHeaderFormat);
         calendarApi.setOption('eventTimeFormat', {
@@ -234,6 +236,12 @@ export function useCalendar(calendarRef) {
           minute: "2-digit",
           hour12: newSettings.timeFormat === "12h"
         });
+        
+        // Cập nhật lại view hiện tại
+        const currentView = calendarApi.view.type;
+        calendarApi.changeView(currentView);
+        
+        // Cập nhật lại sự kiện
         calendarApi.refetchEvents();
       }
       calendarKey.value++;
@@ -373,7 +381,7 @@ export function useCalendar(calendarRef) {
         multiMonthMaxColumns: settingsStore.multiMonthMaxColumns || 3,
         multiMonthMinWidth: 300,
         showNonCurrentDates: settingsStore.showNonCurrentDates,
-        titleFormat: { year: 'numeric' },
+        titleFormat: settingsStore.titleFormat,
         dayMaxEvents: true,
         moreLinkContent: (args) => `+${args.num}`,
         multiMonthTitleFormat: { month: 'long' }

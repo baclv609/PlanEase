@@ -156,7 +156,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, computed } from "vue";
+import { defineProps, defineEmits, ref, computed, onMounted, watch } from "vue";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useI18n } from "vue-i18n";
 import moment from "moment-timezone";
@@ -227,6 +227,7 @@ const selectedDayHeaderFormat = ref(JSON.stringify(settings.dayHeaderFormat));
 const selectedTimeFormat = ref(settings.timeFormat);
 
 const updateTitleFormat = (newValue) => {
+  // console.log("Selected title format:", newValue);
   const parsedValue = JSON.parse(newValue);
   settingsStore.updateTitleFormat(parsedValue);
 };
@@ -326,4 +327,17 @@ const updateMultiMonthSettings = () => {
      settings.showNonCurrentDates
    );
  };
+
+// Khi component được tạo, đồng bộ giá trị từ store
+onMounted(() => {
+  selectedTitleFormat.value = JSON.stringify(settings.titleFormat);
+});
+
+// Watch sự thay đổi từ store để cập nhật select
+watch(
+  () => settings.titleFormat,
+  (newFormat) => {
+    selectedTitleFormat.value = JSON.stringify(newFormat);
+  }
+);
 </script>

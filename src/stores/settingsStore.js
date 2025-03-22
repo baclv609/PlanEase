@@ -59,19 +59,20 @@ export const useSettingsStore = defineStore("settings", {
       console.log("Updating time format to:", newValue);
       this.timeFormat = newValue;
       
-      // Cập nhật eventTimeFormat dựa trên timeFormat mới
+      // Cập nhật định dạng thời gian cho sự kiện
       this.eventTimeFormat = {
         hour: "2-digit",
         minute: "2-digit",
+        meridiem: newValue === "12h" ? "short" : false,
         hour12: newValue === "12h"
       };
 
-      // Cập nhật định dạng thời gian cho các cột
+      // Cập nhật định dạng cho các cột
       this.columnHeaderFormat = {
-        weekday: "long",
-        day: "numeric",
+        ...this.columnHeaderFormat,
         hour: "2-digit",
         minute: "2-digit",
+        meridiem: newValue === "12h" ? "short" : false,
         hour12: newValue === "12h"
       };
       
@@ -79,22 +80,17 @@ export const useSettingsStore = defineStore("settings", {
       localStorage.setItem("timeFormat", newValue);
       this.saveToLocalStorage();
       
-      // Cập nhật FullCalendar
+      // Cập nhật FullCalendar nếu có
       if (this.calendarRef && this.calendarRef.getApi) {
         const calendarApi = this.calendarRef.getApi();
+        
+        // Cập nhật định dạng thời gian cho sự kiện
         calendarApi.setOption('eventTimeFormat', this.eventTimeFormat);
-        calendarApi.setOption('slotLabelFormat', {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: newValue === "12h"
-        });
-        calendarApi.setOption('columnHeaderFormat', {
-          weekday: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: newValue === "12h"
-        });
+        
+        // Cập nhật định dạng thời gian cho các khe thời gian
+        calendarApi.setOption('slotLabelFormat', this.eventTimeFormat);
+        
+        // Buộc calendar refresh để áp dụng thay đổi
         calendarApi.refetchEvents();
       }
     },
@@ -113,6 +109,8 @@ export const useSettingsStore = defineStore("settings", {
         timeZoneOffset: moment.tz(this.timeZone).utcOffset() / 60,
         timeFormat: this.timeFormat,
         eventTimeFormat: this.eventTimeFormat,
+        titleFormat: this.titleFormat,
+        dayHeaderFormat: this.dayHeaderFormat,
         language: this.language,
         firstDay: this.firstDay,
         enableNotifications: this.enableNotifications,
@@ -157,10 +155,21 @@ export const useSettingsStore = defineStore("settings", {
       if (this.calendarRef && this.calendarRef.getApi) {
         const calendarApi = this.calendarRef.getApi();
         calendarApi.setOption('titleFormat', newValue);
+        
+        // Cập nhật lại view hiện tại
+        const currentView = calendarApi.view.type;
+        calendarApi.changeView(currentView);
+        
+        // Cập nhật lại sự kiện
         calendarApi.refetchEvents();
       }
       
-      this.saveToLocalStorage();
+      // Lưu vào localStorage
+      const settingsToSave = {
+        ...JSON.parse(localStorage.getItem("userSettings") || "{}"),
+        titleFormat: newValue
+      };
+      localStorage.setItem("userSettings", JSON.stringify(settingsToSave));
     },
     loadFromLocalStorage() {
       const savedSettings = JSON.parse(localStorage.getItem("userSettings"));
