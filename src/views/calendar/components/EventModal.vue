@@ -248,7 +248,7 @@ const rules = {
 
 const handleExcludeDate = (date) => {
   if (date) {
-    const formattedDate = dayjs(date).hour(dayjs(formState.value.start).hour()).minute(dayjs(formState.value.start).minute()).format("YYYY-MM-DD HH:mm:ss");
+    const formattedDate = dayjs(date).hour(dayjs(formState.value.start).hour()).minute(dayjs(formState.value.start).minute()).second(0).format("YYYY-MM-DD HH:mm:ss");
     if (!formState.value.exclude_time.includes(formattedDate)) {
       formState.value.exclude_time.push(formattedDate);
     }

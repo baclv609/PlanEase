@@ -333,7 +333,7 @@ import {
     PaperClipOutlined,
     AlignLeftOutlined
 } from '@ant-design/icons-vue';
-import { Button, Checkbox, Col, InputNumber, message, Row, Card, Tag, Select, DatePicker, Input } from 'ant-design-vue';
+import { Button, Checkbox, Col, InputNumber, message, Row, Card, Tag, Select, DatePicker, Input, Modal } from 'ant-design-vue';
 import { QuillEditor } from '@vueup/vue-quill';
 import 'quill/dist/quill.snow.css';
 // import moment from "moment-timezone";
@@ -943,7 +943,7 @@ const filterOption = (input, option) => {
 };
 const handleExcludeDate = (date) => {
     if (date) {
-        const formattedDate = dayjs(date).hour(dayjs(formState.value.start).hour()).minute(dayjs(formState.value.start).minute()).format("YYYY-MM-DDTHH:mm");
+        const formattedDate = dayjs(date).hour(dayjs(formState.value.start).hour()).minute(dayjs(formState.value.start).minute()).second(0).format("YYYY-MM-DD HH:mm:ss");
         if (!formState.value.exclude_time.includes(formattedDate)) {
             formState.value.exclude_time.push(formattedDate);
         }
@@ -1021,7 +1021,7 @@ const handleSubmit = async () => {
             updateEvent({ code: "EDIT_N", date: formState.value.start, id: formState.value.id });
         }
     } catch (error) {
-
+        console.log(error)
     }
 };
 
