@@ -4,9 +4,12 @@ import axios from "axios";
 import { message } from "ant-design-vue";
 import router from "@/router";
 import { useEchoStore } from "@/stores/echoStore";
-import { useSettings } from "@/composables/useSettings";
+import { useSettingsStore } from "@/stores/settingsStore";
 
-const { transformSettings } = useSettings();
+const settingsStore = useSettingsStore();
+const echoStore = useEchoStore();
+
+// const { transformSettings } = useSettings();
 
 const formState = reactive({
     email: "",
@@ -30,16 +33,27 @@ const onFinish = async (values) => {
         isLoading.value = true;
         const res = await axios.post(`${dirApi}auth/login`, values);
 
-        // console.log(import.meta.env.BASE_URL);
         if (res.data.code === 200) {
             message.success(res.data.message || "Login successfully");
-            // console.log(res.data.data.access_token);
-            const userSetting = transformSettings(res.data.data.setting);
-            localStorage.setItem("userSettings", JSON.stringify(userSetting));
-            localStorage.setItem("user", JSON.stringify(res.data.data.user));
+
+            // Khởi tạo settings từ API response
+            if (res.data.data.setting) {
+                console.log("res.data.data.setting", res.data.data.setting);
+                settingsStore.initializeFromApi(res.data.data.setting);
+            } else {
+                settingsStore.setDefaultSettings();
+            }
+
+            // Xử lý thông tin user trước khi lưu
+            const userData = res.data.data.user ? {
+                ...res.data.data.user,
+                id: Number(res.data.data.user.id),
+                role: String(res.data.data.user.role || 'user')
+            } : null;
+
+            localStorage.setItem("user", JSON.stringify(userData));
             localStorage.setItem("access_token", res.data.data.access_token);
 
-            const echoStore = useEchoStore();
             echoStore.initEcho();
             echoStore.startListening();
 
@@ -49,9 +63,34 @@ const onFinish = async (values) => {
         const errorMessage =
             error.response?.data?.message || "An error occurred, please try again";
         message.error(errorMessage);
-        console.log('Error:', error);
+        console.error('Login error:', error);
+    } finally {
+        isLoading.value = false;
     }
 };
+
+// Hàm helper để validate và convert setting
+const validateAndConvertSettings = (settings) => {
+    return {
+        ...settings,
+        id: Number(settings.id) || 0,
+        user_id: Number(settings.user_id) || 0,
+        theme: String(settings.theme) || 'light',
+        language: String(settings.language) || 'en',
+        timezone_code: String(settings.timezone_code) || 'UTC',
+        time_format: String(settings.time_format) || 'H:mm',
+        date_format: String(settings.date_format) || 'Y-m-d'
+    };
+};
+
+// Hàm helper để lấy setting mặc định
+const getDefaultSettings = () => ({
+    theme: 'light',
+    language: 'en',
+    timezone_code: 'UTC',
+    time_format: 'H:mm',
+    date_format: 'Y-m-d'
+});
 
 const loginWithGoogle = async () => {
     try {
@@ -60,12 +99,13 @@ const loginWithGoogle = async () => {
     } catch (error) {
         console.log('Error:', error);
     }
-  };
+};
 </script>
 
 <template>
     <div class="flex justify-center items-center h-[100vh]">
-        <div class="flex p-20 w-full justify-items-center max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-xl lg:max-w-6xl">
+        <div
+            class="flex p-20 w-full justify-items-center max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-xl lg:max-w-6xl">
             <div class="hidden bg-cover lg:block lg:w-1/2 mx-auto my-auto">
                 <img src="../../assets/images/login-calendar-cuate_1-removebg-preview.png" alt="">
             </div>
@@ -83,25 +123,28 @@ const loginWithGoogle = async () => {
                     <span class="w-1/5 border-b lg:w-1/4"></span>
                 </div>
 
-                <a-form-item label="Email" name="email" class="mt-4 block mb-2 text-sm font-medium text-gray-600" for="email">
-                    <a-input v-model:value="formState.email" id="LoggingEmailAddress" class="px-4 py-2 border border-orange-300 text-gray-700"
-                        type="email" />
+                <a-form-item label="Email" name="email" class="mt-4 block mb-2 text-sm font-medium text-gray-600"
+                    for="email">
+                    <a-input v-model:value="formState.email" id="LoggingEmailAddress"
+                        class="px-4 py-2 border border-orange-300 text-gray-700" type="email" />
                 </a-form-item>
 
                 <a-form-item label="Password" name="password" class="mt-4 block mb-2 text-sm font-medium text-gray-600">
-                    <a-input-password v-model:value="formState.password" class="px-4 py-2 border border-orange-300 text-gray-700" />
+                    <a-input-password v-model:value="formState.password"
+                        class="px-4 py-2 border border-orange-300 text-gray-700" />
                 </a-form-item>
                 <div class="flex justify-end">
-                    <router-link to="/forgot-password" class="underline decoration-orange-300 text-xs font-medium text-gray-500 hover:underline">Forgot password?</router-link>
+                    <router-link to="/forgot-password"
+                        class="underline decoration-orange-300 text-xs font-medium text-gray-500 hover:underline">Forgot
+                        password?</router-link>
                 </div>
 
                 <!-- <a-form-item name="remember"> -->
-                    <!-- <a-checkbox v-model:checked="formState.remember">Giữ đăng nhập cho những lần sau</a-checkbox> -->
+                <!-- <a-checkbox v-model:checked="formState.remember">Giữ đăng nhập cho những lần sau</a-checkbox> -->
                 <!-- </a-form-item> -->
 
                 <div class="mt-3">
-                    <button
-                        class="gradient-btn" >
+                    <button class="gradient-btn">
                         Login
                     </button>
                 </div>
@@ -110,8 +153,9 @@ const loginWithGoogle = async () => {
                     <p class="text-sm font-medium">Or login with google</p>
                 </div>
 
-                <button @click.prevent="loginWithGoogle" class="no-underline border-google flex items-center justify-center mt-4 text-gray-600 transition-colors duration-300 transform rounded-lg hover:bg-gray-50">
-                    
+                <button @click.prevent="loginWithGoogle"
+                    class="no-underline border-google flex items-center justify-center mt-4 text-gray-600 transition-colors duration-300 transform rounded-lg hover:bg-gray-50">
+
                     <div class="px-4 py-2 flex">
                         <svg class="w-6 h-6" viewBox="0 0 40 40">
                             <path
@@ -134,7 +178,8 @@ const loginWithGoogle = async () => {
 
                 <div class="flex items-center justify-center flex-col gap-4 mt-4">
                     <router-link to="/register"
-                        class="underline decoration-orange-300 text-sm text-gray-500 hover:underline">don't have an Account?
+                        class="underline decoration-orange-300 text-sm text-gray-500 hover:underline">don't have an
+                        Account?
                     </router-link>
                 </div>
             </a-form>
@@ -142,33 +187,35 @@ const loginWithGoogle = async () => {
         <div class="absolute bottom-4">
             <p class="block m-0 text-sm leading-10 text-gray-600">
                 Experience without registration
-                <router-link to="/" class="text-sm text-gray-500 font-medium underline decoration-orange-300 transform hover:text-orange-300">Click here!</router-link>
+                <router-link to="/"
+                    class="text-sm text-gray-500 font-medium underline decoration-orange-300 transform hover:text-orange-300">Click
+                    here!</router-link>
             </p>
         </div>
     </div>
 </template>
 
 <style scoped>
-    .gradient-btn {
-        width: 100%;
-        padding: 10px 20px;
-        font-size: 16px;
-        font-weight: bold;
-        color: black;
-        background: linear-gradient(to right, #FFE8A3, #FF9800);
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    }
+.gradient-btn {
+    width: 100%;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: black;
+    background: linear-gradient(to right, #FFE8A3, #FF9800);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
 
-    .gradient-btn:hover {
-        opacity: 0.9;
-    }
+.gradient-btn:hover {
+    opacity: 0.9;
+}
 
-    .border-google {
-        border: 0.9px solid orange;
-        width: 100%;
-        cursor: pointer;
-    }
+.border-google {
+    border: 0.9px solid orange;
+    width: 100%;
+    cursor: pointer;
+}
 </style>
