@@ -19,6 +19,11 @@ import {
   RightOutlined,
   InfoCircleOutlined,
   SettingOutlined,
+  AppstoreOutlined,
+   UnorderedListOutlined,
+   FieldTimeOutlined,
+   ClockCircleOutlined,
+   PlusOutlined
 } from "@ant-design/icons-vue";
 
 // Import store & composables
@@ -472,6 +477,8 @@ onMounted(() => {
           { label: 'Ngày', value: 'timeGridDay' },
           { label: 'Tuần', value: 'timeGridWeek' },
           { label: 'Tháng', value: 'dayGridMonth' },
+          { label: 'Năm', value: 'multiMonthYear' },
+          { label: 'Danh sách', value: 'listYear' }
         ]" @change="changeView" />
       </div>
     </div>

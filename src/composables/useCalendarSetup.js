@@ -4,6 +4,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import rrulePlugin from '@fullcalendar/rrule';
+import multiMonthPlugin from '@fullcalendar/multimonth';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { RRule } from 'rrule';
@@ -340,14 +341,48 @@ export function useCalendar(calendarRef) {
     updateTransformedEvents();
   };
   const calendarOptions = computed(() => ({
-    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin, rrulePlugin, luxonPlugin],
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin, rrulePlugin, luxonPlugin, multiMonthPlugin],
     headerToolbar: false,
     locale: settingsStore.language,
-    dayMaxEvents: 4,
+    // dayMaxEvents: 4,
+    dayMaxEvents: true,
     timeZone: selectedTimezone.value,
     firstDay: settingsStore.firstDay,
     initialDate: settingsStore.initialDate,
     initialView: settingsStore.displayMode,
+    views: {
+      multiMonthYear: {
+        type: 'multiMonth',
+        duration: { years: 1 },
+        multiMonthMaxColumns: settingsStore.multiMonthMaxColumns || 3,
+        multiMonthMinWidth: 300,
+        showNonCurrentDates: settingsStore.showNonCurrentDates,
+        titleFormat: { year: 'numeric' },
+        dayHeaderFormat: { weekday: 'narrow' },
+        stickyHeaderDates: true,
+        dayMaxEvents: true,
+        moreLinkContent: (args) => {
+          return `+${args.num} sự kiện`;
+        },
+        multiMonthTitleFormat: { month: 'long' },
+        monthMode: true,
+        fixedWeekCount: false,
+        showMonthCnt: 12
+      },
+      listYear: {
+        type: 'list',
+        duration: { years: 1 },
+        titleFormat: { year: 'numeric' },
+        listDayFormat: { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' },
+        listDaySideFormat: false,
+        noEventsContent: 'Không có sự kiện nào',
+        eventTimeFormat: {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: settingsStore.timeFormat === '12h'
+        }
+      }
+    },
     eventTimeFormat: {
       hour: "2-digit",
       minute: "2-digit",
@@ -394,6 +429,44 @@ export function useCalendar(calendarRef) {
       console.log(isLoading ? 'Đang tải sự kiện...' : 'Đã tải xong sự kiện');
     },
   }));
+
+   // Add watcher for year view settings
+   watch(
+    () => ({
+      multiMonthMaxColumns: settingsStore.multiMonthMaxColumns,
+      showNonCurrentDates: settingsStore.showNonCurrentDates,
+      displayMode: settingsStore.displayMode
+    }),
+    (newSettings) => {
+      if (calendarRef.value && settingsStore.displayMode === 'multiMonthYear') {
+        console.log('Updating year view settings:', newSettings);
+        const calendarApi = calendarRef.value.getApi();
+        calendarApi.setOption('views', {
+          multiMonthYear: {
+            type: 'multiMonth',
+            duration: { years: 1 },
+            multiMonthMaxColumns: newSettings.multiMonthMaxColumns,
+            multiMonthMinWidth: 300,
+            showNonCurrentDates: newSettings.showNonCurrentDates,
+            titleFormat: { year: 'numeric' },
+            dayHeaderFormat: { weekday: 'narrow' },
+            stickyHeaderDates: true,
+            dayMaxEvents: true,
+            moreLinkContent: (args) => {
+              return `+${args.num} sự kiện`;
+            },
+            multiMonthTitleFormat: { month: 'long' },
+            monthMode: true,
+            fixedWeekCount: false,
+            showMonthCnt: 12
+          }
+        });
+        calendarApi.changeView('multiMonthYear');
+      }
+    },
+    { deep: true }
+  );
+
   return {
     calendarKey,
     calendarOptions,
