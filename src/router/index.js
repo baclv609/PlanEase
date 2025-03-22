@@ -9,6 +9,7 @@ import support from "./support";
 import settingsRouter from "./settings";
 import calendar from "./calendar";
 import users from "./users";
+import roles from "./role";
 import { message } from 'ant-design-vue';
 
 
@@ -17,6 +18,7 @@ const routes = [
   ...auth,
   ...settingsRouter,
   ...users,
+  ...roles,
   ...dashboard,
   ...schedule,
   ...event,
