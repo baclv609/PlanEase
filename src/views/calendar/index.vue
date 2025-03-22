@@ -19,6 +19,11 @@ import {
   RightOutlined,
   InfoCircleOutlined,
   SettingOutlined,
+  AppstoreOutlined,
+   UnorderedListOutlined,
+   FieldTimeOutlined,
+   ClockCircleOutlined,
+   PlusOutlined
 } from "@ant-design/icons-vue";
 
 // Import store & composables
@@ -468,13 +473,24 @@ onMounted(() => {
       </div>
 
       <div class="view-toggle">
-        <Segmented v-model:value="currentView" :options="[
+        <!-- <Segmented v-model:value="currentView" :options="[
           { label: 'Ngày', value: 'timeGridDay' },
           { label: 'Tuần', value: 'timeGridWeek' },
           { label: 'Tháng', value: 'dayGridMonth' },
-        ]" @change="changeView" />
+          { label: 'Năm', value: 'multiMonthYear' },
+          { label: 'Danh sách', value: 'listYear' }
+        ]" @change="changeView" /> -->
+        <a-select v-model:value="currentView" @change="changeView" style="width: 150px">
+          <a-select-option value="timeGridDay">Ngày</a-select-option>
+          <a-select-option value="timeGridWeek">Tuần</a-select-option>
+          <a-select-option value="dayGridMonth">Tháng</a-select-option>
+          <a-select-option value="multiMonthYear">Năm</a-select-option>
+          <a-select-option value="listYear">Danh sách</a-select-option>
+        </a-select>
+
       </div>
     </div>
+
 
     <!-- FullCalendar -->
     <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions" @datesSet="onDatesSet" 

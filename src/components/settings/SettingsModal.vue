@@ -5,10 +5,9 @@
     width="650px"
     @ok="handleSave"
     @cancel="emit('update:isModalOpen', false)"
-    :footer=null
+    :footer="null"
   >
     <a-tabs :activeKey="activeTab" @change="(key) => (activeTab = key)">
-
       <!-- Cài đặt giao diện -->
       <a-tab-pane key="display" tab="Giao diện">
         <a-form layout="vertical">
@@ -17,11 +16,35 @@
               v-model:value="settings.displayMode"
               @change="changeView(settings.displayMode)"
             >
+              <a-select-option value="multiMonthYear">Năm (Lưới)</a-select-option>
+              <a-select-option value="listYear">Ngày (Danh sách)</a-select-option>
               <a-select-option value="dayGridMonth">Tháng</a-select-option>
               <a-select-option value="timeGridWeek">Tuần</a-select-option>
               <a-select-option value="timeGridDay">Ngày</a-select-option>
             </a-select>
           </a-form-item>
+
+           <!-- Tùy chọn hiển thị cho chế độ xem năm dạng lưới -->
+           <template v-if="settings.displayMode === 'multiMonthYear'">
+             <a-form-item label="Số cột hiển thị">
+               <a-select 
+                 v-model:value="settings.multiMonthMaxColumns"
+                 @change="updateMultiMonthSettings"
+               >
+                 <a-select-option :value="2">2 cột</a-select-option>
+                 <a-select-option :value="3">3 cột</a-select-option>
+                 <a-select-option :value="4">4 cột</a-select-option>
+               </a-select>
+             </a-form-item>
+             
+             <a-form-item label="Hiển thị ngày ngoài tháng">
+               <a-switch 
+                 v-model:checked="settings.showNonCurrentDates"
+                 @change="updateMultiMonthSettings"
+               />
+             </a-form-item>
+           </template>
+ 
           <a-form-item label="Hiển thị ngày nghỉ">
             <a-switch v-model:checked="settings.showWeekNumbers" />
           </a-form-item>
@@ -133,7 +156,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, computed } from "vue";
+import { defineProps, defineEmits, ref, computed, onMounted, watch } from "vue";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useI18n } from "vue-i18n";
 import moment from "moment-timezone";
@@ -164,6 +187,10 @@ const columnHeaderFormatOptions = [
     value: { weekday: "long", day: "numeric" },
   },
   {
+    label: "Chỉ thứ (VD: Thứ Hai)",
+    value: { weekday: "long" },
+  },
+  {
     label: "Ngày + Tháng (VD: 24 Thg 2)",
     value: { day: "numeric", month: "short" },
   },
@@ -187,21 +214,22 @@ const titleFormatOptions = [
 const timeFormatOptions = [
   {
     label: "12 giờ (AM/PM)",
-    value: "12h"
+    value: "12h",
   },
   {
     label: "24 giờ",
-    value: "24h"
-  }
+    value: "24h",
+  },
 ];
 
-const selectedTitleFormat = ref(JSON.stringify(settings.titleFormat)); // Lưu dạng string JSON
+const selectedTitleFormat = ref(JSON.stringify(settings.titleFormat));
 const selectedDayHeaderFormat = ref(JSON.stringify(settings.dayHeaderFormat));
 const selectedTimeFormat = ref(settings.timeFormat);
 
 const updateTitleFormat = (newValue) => {
-  settings.titleFormat = JSON.parse(newValue); 
-  updateFullCalendar();
+  // console.log("Selected title format:", newValue);
+  const parsedValue = JSON.parse(newValue);
+  settingsStore.updateTitleFormat(parsedValue);
 };
 
 const updateTimeFormat = (newValue) => {
@@ -224,9 +252,8 @@ const updateFullCalendar = () => {
 };
 
 const updateColumnHeaderFormat = (newValue) => {
-  const parsedValue = JSON.parse(newValue); // Chuyển lại object từ JSON string
-  settingsStore.dayHeaderFormat = parsedValue;
-  settings.dayHeaderFormat = parsedValue;
+  const parsedValue = JSON.parse(newValue);
+  settingsStore.updateColumnHeaderFormat(parsedValue);
 };
 
 const changeLanguage = (newLang) => {
@@ -293,4 +320,24 @@ const resetSettings = () => {
   settingsStore.$reset();
   settingsStore.updateFullCalendar();
 };
+ 
+const updateMultiMonthSettings = () => {
+   settingsStore.updateMultiMonthSettings(
+     settings.multiMonthMaxColumns,
+     settings.showNonCurrentDates
+   );
+ };
+
+// Khi component được tạo, đồng bộ giá trị từ store
+onMounted(() => {
+  selectedTitleFormat.value = JSON.stringify(settings.titleFormat);
+});
+
+// Watch sự thay đổi từ store để cập nhật select
+watch(
+  () => settings.titleFormat,
+  (newFormat) => {
+    selectedTitleFormat.value = JSON.stringify(newFormat);
+  }
+);
 </script>

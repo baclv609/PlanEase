@@ -29,6 +29,10 @@ export const useSettingsStore = defineStore("settings", {
 
     // validRange: { start: "2025-01-01", end: "2025-12-31" }, // Giới hạn ngày
 
+    // Cài đặt hiển thị năm dạng lưới
+    multiMonthMaxColumns: parseInt(localStorage.getItem("multiMonthMaxColumns")) || 3,
+    showNonCurrentDates: localStorage.getItem("showNonCurrentDates") === "true",
+
     // Thông báo & Nhắc nhở
     enableNotifications: true,
     reminderTime: "10m",
@@ -55,19 +59,20 @@ export const useSettingsStore = defineStore("settings", {
       console.log("Updating time format to:", newValue);
       this.timeFormat = newValue;
       
-      // Cập nhật eventTimeFormat dựa trên timeFormat mới
+      // Cập nhật định dạng thời gian cho sự kiện
       this.eventTimeFormat = {
         hour: "2-digit",
         minute: "2-digit",
+        meridiem: newValue === "12h" ? "short" : false,
         hour12: newValue === "12h"
       };
 
-      // Cập nhật định dạng thời gian cho các cột
+      // Cập nhật định dạng cho các cột
       this.columnHeaderFormat = {
-        weekday: "long",
-        day: "numeric",
+        ...this.columnHeaderFormat,
         hour: "2-digit",
         minute: "2-digit",
+        meridiem: newValue === "12h" ? "short" : false,
         hour12: newValue === "12h"
       };
       
@@ -75,22 +80,17 @@ export const useSettingsStore = defineStore("settings", {
       localStorage.setItem("timeFormat", newValue);
       this.saveToLocalStorage();
       
-      // Cập nhật FullCalendar
+      // Cập nhật FullCalendar nếu có
       if (this.calendarRef && this.calendarRef.getApi) {
         const calendarApi = this.calendarRef.getApi();
+        
+        // Cập nhật định dạng thời gian cho sự kiện
         calendarApi.setOption('eventTimeFormat', this.eventTimeFormat);
-        calendarApi.setOption('slotLabelFormat', {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: newValue === "12h"
-        });
-        calendarApi.setOption('columnHeaderFormat', {
-          weekday: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: newValue === "12h"
-        });
+        
+        // Cập nhật định dạng thời gian cho các khe thời gian
+        calendarApi.setOption('slotLabelFormat', this.eventTimeFormat);
+        
+        // Buộc calendar refresh để áp dụng thay đổi
         calendarApi.refetchEvents();
       }
     },
@@ -109,11 +109,16 @@ export const useSettingsStore = defineStore("settings", {
         timeZoneOffset: moment.tz(this.timeZone).utcOffset() / 60,
         timeFormat: this.timeFormat,
         eventTimeFormat: this.eventTimeFormat,
+        titleFormat: this.titleFormat,
+        dayHeaderFormat: this.dayHeaderFormat,
         language: this.language,
         firstDay: this.firstDay,
         enableNotifications: this.enableNotifications,
         enableRecurringEvents: this.enableRecurringEvents,
         reminderTime: this.reminderTime,
+
+        multiMonthMaxColumns: this.multiMonthMaxColumns,
+        showNonCurrentDates: this.showNonCurrentDates,
       };
       localStorage.setItem("userSettings", JSON.stringify(settingsToSave));
     },    
@@ -129,13 +134,42 @@ export const useSettingsStore = defineStore("settings", {
     },
     // Cập nhật cài đặt lịch
     updateColumnHeaderFormat(newValue) {
+      console.log("Updating column header format:", newValue);
       this.dayHeaderFormat = newValue;
-      this.updateFullCalendar();
+      
+      // Cập nhật FullCalendar
+      if (this.calendarRef && this.calendarRef.getApi) {
+        const calendarApi = this.calendarRef.getApi();
+        calendarApi.setOption('dayHeaderFormat', newValue);
+        calendarApi.refetchEvents();
+      }
+      
+      this.saveToLocalStorage();
     },
     // Định dạng tiêu đề lịch
     updateTitleFormat(newValue) {
+      console.log("Updating title format:", newValue);
       this.titleFormat = newValue;
-      this.updateFullCalendar();
+      
+      // Cập nhật FullCalendar
+      if (this.calendarRef && this.calendarRef.getApi) {
+        const calendarApi = this.calendarRef.getApi();
+        calendarApi.setOption('titleFormat', newValue);
+        
+        // Cập nhật lại view hiện tại
+        const currentView = calendarApi.view.type;
+        calendarApi.changeView(currentView);
+        
+        // Cập nhật lại sự kiện
+        calendarApi.refetchEvents();
+      }
+      
+      // Lưu vào localStorage
+      const settingsToSave = {
+        ...JSON.parse(localStorage.getItem("userSettings") || "{}"),
+        titleFormat: newValue
+      };
+      localStorage.setItem("userSettings", JSON.stringify(settingsToSave));
     },
     loadFromLocalStorage() {
       const savedSettings = JSON.parse(localStorage.getItem("userSettings"));
@@ -162,6 +196,14 @@ export const useSettingsStore = defineStore("settings", {
     updateSetting(key, value) {
       this[key] = value;
       this.saveToLocalStorage(); // Luôn lưu lại khi cập nhật
+      this.updateFullCalendar();
+    },
+  
+    updateMultiMonthSettings(columns, showNonCurrent) {
+      this.multiMonthMaxColumns = columns;
+      this.showNonCurrentDates = showNonCurrent;
+      localStorage.setItem("multiMonthMaxColumns", columns);
+      localStorage.setItem("showNonCurrentDates", showNonCurrent);
       this.updateFullCalendar();
     },
 
