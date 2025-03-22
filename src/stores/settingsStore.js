@@ -136,13 +136,31 @@ export const useSettingsStore = defineStore("settings", {
     },
     // Cập nhật cài đặt lịch
     updateColumnHeaderFormat(newValue) {
+      console.log("Updating column header format:", newValue);
       this.dayHeaderFormat = newValue;
-      this.updateFullCalendar();
+      
+      // Cập nhật FullCalendar
+      if (this.calendarRef && this.calendarRef.getApi) {
+        const calendarApi = this.calendarRef.getApi();
+        calendarApi.setOption('dayHeaderFormat', newValue);
+        calendarApi.refetchEvents();
+      }
+      
+      this.saveToLocalStorage();
     },
     // Định dạng tiêu đề lịch
     updateTitleFormat(newValue) {
+      console.log("Updating title format:", newValue);
       this.titleFormat = newValue;
-      this.updateFullCalendar();
+      
+      // Cập nhật FullCalendar
+      if (this.calendarRef && this.calendarRef.getApi) {
+        const calendarApi = this.calendarRef.getApi();
+        calendarApi.setOption('titleFormat', newValue);
+        calendarApi.refetchEvents();
+      }
+      
+      this.saveToLocalStorage();
     },
     loadFromLocalStorage() {
       const savedSettings = JSON.parse(localStorage.getItem("userSettings"));

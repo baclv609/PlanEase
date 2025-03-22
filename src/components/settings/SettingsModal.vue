@@ -187,6 +187,10 @@ const columnHeaderFormatOptions = [
     value: { weekday: "long", day: "numeric" },
   },
   {
+    label: "Chỉ thứ (VD: Thứ Hai)",
+    value: { weekday: "long" },
+  },
+  {
     label: "Ngày + Tháng (VD: 24 Thg 2)",
     value: { day: "numeric", month: "short" },
   },
@@ -218,13 +222,13 @@ const timeFormatOptions = [
   },
 ];
 
-const selectedTitleFormat = ref(JSON.stringify(settings.titleFormat)); // Lưu dạng string JSON
+const selectedTitleFormat = ref(JSON.stringify(settings.titleFormat));
 const selectedDayHeaderFormat = ref(JSON.stringify(settings.dayHeaderFormat));
 const selectedTimeFormat = ref(settings.timeFormat);
 
 const updateTitleFormat = (newValue) => {
-  settings.titleFormat = JSON.parse(newValue);
-  updateFullCalendar();
+  const parsedValue = JSON.parse(newValue);
+  settingsStore.updateTitleFormat(parsedValue);
 };
 
 const updateTimeFormat = (newValue) => {
@@ -247,9 +251,8 @@ const updateFullCalendar = () => {
 };
 
 const updateColumnHeaderFormat = (newValue) => {
-  const parsedValue = JSON.parse(newValue); // Chuyển lại object từ JSON string
-  settingsStore.dayHeaderFormat = parsedValue;
-  settings.dayHeaderFormat = parsedValue;
+  const parsedValue = JSON.parse(newValue);
+  settingsStore.updateColumnHeaderFormat(parsedValue);
 };
 
 const changeLanguage = (newLang) => {

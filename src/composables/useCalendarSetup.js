@@ -68,27 +68,29 @@ export function useCalendarEvents() {
   const formattedEvents = computed(() =>
     rawEvents.value.map((event) => {
       const start = event.start_time
-        ? DateTime.fromISO(event.start_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
+        ? DateTime.fromISO(event.start_time, { zone: 'utc' })
+            .setZone(selectedTimezone.value)
+            .toISO() 
         : null;
       const end = event.end_time
-        ? DateTime.fromISO(event.end_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
+        ? DateTime.fromISO(event.end_time, { zone: 'utc' })
+            .setZone(selectedTimezone.value)
+            .toISO() 
         : null;
 
-      const permissionUser = () => {
-        if (event.user_id == user_id || (event.attendees && event.attendees.some(attendee => 
+      const isEditable = event.user_id == user_id || 
+        (event.attendees && event.attendees.some(attendee => 
           attendee.user_id == user_id && attendee.role == 'editor'
-        ))) {
-          return true;
-        }
-        return false;
-      }
+        ));
 
-      // Định dạng thời gian cho tooltip và hiển thị
       const formatTime = (date) => {
         if (!date) return null;
-        const dateTime = DateTime.fromISO(date);
-        return dateTime.toFormat(settingsStore.timeFormat === "12h" ? "hh:mm a" : "HH:mm");
+        return DateTime.fromISO(date)
+          .toFormat(settingsStore.timeFormat === "12h" ? "hh:mm a" : "HH:mm");
       };
+
+      const formattedStartTime = formatTime(start);
+      const formattedEndTime = formatTime(end);
 
       return {
         id: event.id,
@@ -106,7 +108,7 @@ export function useCalendarEvents() {
         backgroundColor: event.color_code || '#3788d8',
         borderColor: event.color_code || '#3788d8',
         location: event.location,
-        editable: permissionUser(),
+        editable: isEditable,
         display: 'block',
         displayEventTime: true,
         displayEventEnd: true,
@@ -125,8 +127,8 @@ export function useCalendarEvents() {
           byweekday: event.rrule.byweekday || null,
           bymonth: event.rrule.bymonth || null,
           bymonthday: event.rrule.bymonthday || null,
-          formattedStartTime: formatTime(start),
-          formattedEndTime: formatTime(end),
+          formattedStartTime,
+          formattedEndTime,
           messages: [],
           comments: [],
           attachments: [],
@@ -217,13 +219,28 @@ export function useCalendar(calendarRef) {
   watch(
     () => ({
       titleFormat: settingsStore.titleFormat,
-      columnHeaderFormat: settingsStore.columnHeaderFormat,
+      dayHeaderFormat: settingsStore.dayHeaderFormat,
+      timeFormat: settingsStore.timeFormat,
+      displayMode: settingsStore.displayMode
     }),
-    () => {
+    (newSettings) => {
+      console.log("Calendar settings changed:", newSettings);
+      if (calendarRef.value) {
+        const calendarApi = calendarRef.value.getApi();
+        calendarApi.setOption('titleFormat', newSettings.titleFormat);
+        calendarApi.setOption('dayHeaderFormat', newSettings.dayHeaderFormat);
+        calendarApi.setOption('eventTimeFormat', {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: newSettings.timeFormat === "12h"
+        });
+        calendarApi.refetchEvents();
+      }
       calendarKey.value++;
     },
     { deep: true }
   );
+
   watch(
     () => ({
       timeZone: settingsStore.timeZone,
@@ -344,7 +361,6 @@ export function useCalendar(calendarRef) {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin, rrulePlugin, luxonPlugin, multiMonthPlugin],
     headerToolbar: false,
     locale: settingsStore.language,
-    // dayMaxEvents: 4,
     dayMaxEvents: true,
     timeZone: selectedTimezone.value,
     firstDay: settingsStore.firstDay,
@@ -358,16 +374,9 @@ export function useCalendar(calendarRef) {
         multiMonthMinWidth: 300,
         showNonCurrentDates: settingsStore.showNonCurrentDates,
         titleFormat: { year: 'numeric' },
-        dayHeaderFormat: { weekday: 'narrow' },
-        stickyHeaderDates: true,
         dayMaxEvents: true,
-        moreLinkContent: (args) => {
-          return `+${args.num} sự kiện`;
-        },
-        multiMonthTitleFormat: { month: 'long' },
-        monthMode: true,
-        fixedWeekCount: false,
-        showMonthCnt: 12
+        moreLinkContent: (args) => `+${args.num}`,
+        multiMonthTitleFormat: { month: 'long' }
       },
       listYear: {
         type: 'list',
@@ -375,12 +384,7 @@ export function useCalendar(calendarRef) {
         titleFormat: { year: 'numeric' },
         listDayFormat: { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' },
         listDaySideFormat: false,
-        noEventsContent: 'Không có sự kiện nào',
-        eventTimeFormat: {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: settingsStore.timeFormat === '12h'
-        }
+        noEventsContent: 'Không có sự kiện nào'
       }
     },
     eventTimeFormat: {
@@ -393,22 +397,12 @@ export function useCalendar(calendarRef) {
       minute: "2-digit",
       hour12: settingsStore.timeFormat === "12h"
     },
-    dayHeaderFormat: settingsStore.dayHeaderFormat || { 
-      weekday: 'short', 
-      day: 'numeric',
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: settingsStore.timeFormat === "12h"
-    },
+    dayHeaderFormat: settingsStore.dayHeaderFormat,
     titleFormat: settingsStore.titleFormat,
     validRange: settingsStore.validRange,
     editable: true,
     selectable: true,
     selectMirror: true,
-    snapDuration: '00:15:00',
-    slotDuration: '00:30:00',
-    slotMinTime: '00:00:00',
-    slotMaxTime: '24:00:00',
     events: transformedEvents.value.length ? transformedEvents.value : [],
     eventDrop,
     eventResize,
@@ -430,8 +424,8 @@ export function useCalendar(calendarRef) {
     },
   }));
 
-   // Add watcher for year view settings
-   watch(
+  // Cập nhật watcher cho view năm
+  watch(
     () => ({
       multiMonthMaxColumns: settingsStore.multiMonthMaxColumns,
       showNonCurrentDates: settingsStore.showNonCurrentDates,
@@ -441,27 +435,24 @@ export function useCalendar(calendarRef) {
       if (calendarRef.value && settingsStore.displayMode === 'multiMonthYear') {
         console.log('Updating year view settings:', newSettings);
         const calendarApi = calendarRef.value.getApi();
-        calendarApi.setOption('views', {
-          multiMonthYear: {
-            type: 'multiMonth',
-            duration: { years: 1 },
-            multiMonthMaxColumns: newSettings.multiMonthMaxColumns,
-            multiMonthMinWidth: 300,
-            showNonCurrentDates: newSettings.showNonCurrentDates,
-            titleFormat: { year: 'numeric' },
-            dayHeaderFormat: { weekday: 'narrow' },
-            stickyHeaderDates: true,
-            dayMaxEvents: true,
-            moreLinkContent: (args) => {
-              return `+${args.num} sự kiện`;
-            },
-            multiMonthTitleFormat: { month: 'long' },
-            monthMode: true,
-            fixedWeekCount: false,
-            showMonthCnt: 12
-          }
-        });
-        calendarApi.changeView('multiMonthYear');
+        
+        const viewOptions = {
+          type: 'multiMonth',
+          duration: { years: 1 },
+          multiMonthMaxColumns: newSettings.multiMonthMaxColumns,
+          multiMonthMinWidth: 300,
+          showNonCurrentDates: newSettings.showNonCurrentDates,
+          titleFormat: { year: 'numeric' },
+          dayMaxEvents: true,
+          moreLinkContent: (args) => `+${args.num}`,
+          multiMonthTitleFormat: { month: 'long' }
+        };
+
+        if (calendarApi.view.type === 'multiMonthYear') {
+          calendarApi.setOption('views', { multiMonthYear: viewOptions });
+        } else {
+          calendarApi.changeView('multiMonthYear', viewOptions);
+        }
       }
     },
     { deep: true }
