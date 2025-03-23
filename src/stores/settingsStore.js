@@ -37,7 +37,8 @@ export const useSettingsStore = defineStore("settings", {
 
     // Thông báo & Nhắc nhở
     enableNotifications: true,
-    reminderTime: "10m",
+    notificationType: 'both',
+    reminderTime: '15',
 
     // Sự kiện lặp lại
     enableRecurringEvents: true,
@@ -79,7 +80,9 @@ export const useSettingsStore = defineStore("settings", {
         dayHeaderFormat: apiSettings.column_header_format_option ? JSON.parse(apiSettings.column_header_format_option) : { weekday: 'long' },
         showWeekNumbers: Boolean(apiSettings.is_display_dayoff),
         multiMonthMaxColumns: Number(apiSettings.multi_month_max_columns) || 3,
-        showNonCurrentDates: Boolean(apiSettings.show_non_current_dates)
+        showNonCurrentDates: Boolean(apiSettings.show_non_current_dates),
+        notificationType: apiSettings.notification_type || 'both',
+        reminderTime: apiSettings.reminder_time || '15'
       };
 
       // Update state
@@ -98,28 +101,20 @@ export const useSettingsStore = defineStore("settings", {
         const dirApi = import.meta.env.VITE_API_BASE_URL;
         const token = localStorage.getItem('access_token');
         
-        // Convert store settings to API format
         const apiSettings = {
-          // id: this.id,
-          user_id: this.user_id,
-          display_type : this.displayMode,
-          language: this.language,
-          timezone_code: this.timeZone,
-          time_format: this.timeFormat,
-          first: this.firstDay,
-          is_display_dayoff: this.showWeekNumbers,
-          column_header_format_option: JSON.stringify(this.dayHeaderFormat),
-          date_format: this.dateFormat,
-          theme: this.themeMode,
-          time_format: this.timeFormat,
-          title_format: JSON.stringify(this.titleFormat),
-          day_header_format: JSON.stringify(this.dayHeaderFormat),
-          multi_month_max_columns: this.multiMonthMaxColumns,
-          tittle_format_options: this.titleFormat,
-          // show_non_current_dates: this.showNonCurrentDates
+          display_type: this.displayMode, // dayGridMonth, timeGridWeek, timeGridDay, listWeek
+          language: this.language, // vi, en
+          timezone_code: this.timeZone, // Asia/Saigon
+          first: this.firstDay, // 1: chủ nhật, 2: thứ hai, 3: thứ ba, 4: thứ tư, 5: thứ năm, 6: thứ sáu, 7: thứ bảy 
+          is_display_dayoff: this.showWeekNumbers ? 1 : 0, // 0: không hiển thị, 1: hiển thị 
+          column_header_format_option: this.dayHeaderFormat, // định dạng ngày trong cột
+          date_format: this.dateFormat, // YYYY-MM-DD
+          hour_format: this.timeFormat, // 24h, 12h
+          theme: this.themeMode, // light, dark
+          notification_type: this.notificationType, // email, notification, both
+          tittle_format_options: this.titleFormat, // định dạng tiêu đề lịch
         };
 
-        // Call API to update settings with token in header
         const response = await axios.put(`${dirApi}setting/change`, apiSettings, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -128,9 +123,7 @@ export const useSettingsStore = defineStore("settings", {
         });
 
         if (response.data.code === 200) {
-          // Save to localStorage
           this.saveToLocalStorage();
-          // Update calendar
           this.updateFullCalendar();
           return true;
         }
@@ -156,8 +149,9 @@ export const useSettingsStore = defineStore("settings", {
         dayHeaderFormat: this.dayHeaderFormat,
         showWeekNumbers: this.showWeekNumbers,
         multiMonthMaxColumns: this.multiMonthMaxColumns,
-        showNonCurrentDates: this.showNonCurrentDates
-        // Thêm các thuộc tính khác nếu cần
+        showNonCurrentDates: this.showNonCurrentDates,
+        notificationType: this.notificationType,
+        reminderTime: this.reminderTime
       };
 
       // Lưu object đã lọc vào localStorage
@@ -183,35 +177,7 @@ export const useSettingsStore = defineStore("settings", {
       }
     },
 
-    // Cập nhật settings
-    async updateSettings(settings) {
-      try {
-        // Call API to update settings
-        const response = await fetch('/api/setting/change', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(settings)
-        });
 
-        if (!response.ok) {
-          throw new Error('Failed to update settings');
-        }
-
-        // Update local state with new settings
-        Object.assign(this.$state, settings);
-        // Save to localStorage
-        this.saveToLocalStorage();
-        // Update calendar
-        this.updateFullCalendar();
-
-        return true;
-      } catch (error) {
-        console.error('Error updating settings:', error);
-        return false;
-      }
-    },
 
     // Set default settings
     setDefaultSettings() {
@@ -223,7 +189,7 @@ export const useSettingsStore = defineStore("settings", {
         language: 'vi',
         firstDay: 1,
         enableRecurringEvents: true,
-        reminderTime: '10m',
+        reminderTime: '15',
         showNonCurrentDates: false,
         dayHeaderFormat: {
           weekday: 'long',
@@ -420,7 +386,7 @@ export const useSettingsStore = defineStore("settings", {
         },
         
         // Reminder settings
-        reminderTime: String(settings.reminderTime || '10m'),
+        reminderTime: String(settings.reminderTime || '15'),
         
         // Time zone offset
         timezoneOffset: Number(settings.timezoneOffset || 0)

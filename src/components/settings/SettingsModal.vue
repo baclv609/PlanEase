@@ -18,6 +18,7 @@
           <a-anchor-link href="#display" title="Giao diện" />
           <a-anchor-link href="#time" title="Thời gian" />
           <a-anchor-link href="#calendar" title="Lịch" />
+          <a-anchor-link href="#notification" title="Thông báo" />
           <a-anchor-link href="#language" :title="$t('language')" />
         </a-anchor>
       </div>
@@ -140,19 +141,24 @@
               </a-select>
             </a-form-item>
 
-            <!-- Hiển thị nhiều tháng -->
-            <!-- <a-form-item label="Hiển thị nhiều tháng">
-              <a-switch v-model:checked="settings.multiMonthYear" />
-            </a-form-item>
+          </a-form>
+        </div>
 
-            <a-form-item v-if="settings.multiMonthYear" label="Chọn tháng hiển thị">
+        <!-- Notification Section -->
+        <div id="notification" style="margin-bottom: 24px;">
+          <h3>Thông báo</h3>
+          <a-form layout="vertical">
+            <a-form-item label="Loại thông báo">
               <a-select
-                v-model:value="settings.selectedMonths"
-                mode="multiple"
-                placeholder="Chọn tháng..."
-                :options="monthOptions"
-              />
-            </a-form-item> -->
+                v-model:value="tempSettings.notificationType"
+                placeholder="Chọn loại thông báo"
+              >
+                <a-select-option value="both">Hệ thống và cửa sổ thông báo trình duyệt</a-select-option>
+                <a-select-option value="desktop">Chỉ thông báo hệ thống</a-select-option>
+                <a-select-option value="alerts">Cửa sổ thông báo trình duyệt</a-select-option>
+                <a-select-option value="off">Tắt thông báo</a-select-option>
+              </a-select>
+            </a-form-item>
           </a-form>
         </div>
 
@@ -164,8 +170,6 @@
               <a-select v-model:value="tempSettings.language" @change="changeLanguage">
                 <a-select-option value="vi">Tiếng Việt</a-select-option>
                 <a-select-option value="en">English</a-select-option>
-                <!-- <a-select-option value="fr">Français</a-select-option>
-                <a-select-option value="ja">日本語</a-select-option> -->
               </a-select>
             </a-form-item>
           </a-form>
@@ -254,14 +258,22 @@ const selectedDayHeaderFormat = ref(JSON.stringify(settings.dayHeaderFormat));
 const selectedTimeFormat = ref(settings.timeFormat);
 const formState = ref({});
 
+const defaultNotificationSettings = {
+  notificationType: 'email',
+  reminderTime: '15'
+};
+
+const tempSettings = ref({
+  ...settings,
+  notificationType: settings.notificationType || defaultNotificationSettings.notificationType,
+  reminderTime: settings.reminderTime || defaultNotificationSettings.reminderTime
+});
+
 onMounted(() => {
   // Khởi tạo formState với giá trị từ store
     formState.value = { ...settingsStore.getCurrentSettings };
     console.log('Initial form state:', formState.value); // Debug log
 });
-
-// Khởi tạo tempSettings với giá trị từ settings
-const tempSettings = ref({...settings});
 
 // Cập nhật lại các hàm xử lý sự kiện
 const changeView = (view) => {
