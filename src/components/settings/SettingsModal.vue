@@ -179,7 +179,13 @@
 
     <div class="flex justify-end mt-4 gap-2">
       <a-button @click="handleCancel">Hủy</a-button>
-      <a-button type="primary" @click="handleSave">Lưu thay đổi</a-button>
+      <a-button 
+        type="primary" 
+        :loading="isSaving" 
+        @click="handleSave"
+      >
+        {{ isSaving ? 'Đang lưu...' : 'Lưu thay đổi' }}
+      </a-button>
       <a-button type="primary" danger @click="resetSettings">Reset</a-button>
     </div>
   </a-modal>
@@ -269,6 +275,8 @@ const tempSettings = ref({
   reminderTime: settings.reminderTime || defaultNotificationSettings.reminderTime
 });
 
+const isSaving = ref(false);
+
 onMounted(() => {
   // Khởi tạo formState với giá trị từ store
     formState.value = { ...settingsStore.getCurrentSettings };
@@ -303,26 +311,53 @@ const updateMultiMonthSettings = () => {
 // Cập nhật hàm handleSave
 const handleSave = async () => {
   try {
-    // Update all settings in store
+    isSaving.value = true;
+    
+    // Lưu settings hiện tại để có thể khôi phục nếu API fail
+    const previousSettings = { ...settings };
+    
+    // Tạm thời áp dụng settings mới cho API call
     Object.assign(settings, tempSettings.value);
     
     // Save to API
     const success = await settingsStore.saveSettings();
     
     if (success) {
+      // Nếu API thành công
       // Update language if changed
       if (settings.language !== locale.value) {
         locale.value = settings.language;
       }
       
-      message.success('Settings saved successfully');
+      // Cập nhật calendar và lưu vào localStorage
+      settingsStore.saveToLocalStorage();
+      settingsStore.updateFullCalendar();
+      
+      message.success('Cài đặt đã được lưu');
       emit("update:isModalOpen", false);
     } else {
-      message.error('Failed to save settings');
+      // Nếu API thất bại, khôi phục lại settings cũ
+      Object.assign(settings, previousSettings);
+      // Khôi phục lại tempSettings
+      tempSettings.value = { ...previousSettings };
+      
+      message.error('Không thể lưu cài đặt, vui lòng thử lại');
     }
   } catch (error) {
+    // Trong trường hợp có lỗi, cũng khôi phục settings cũ
+    Object.assign(settings, previousSettings);
+    tempSettings.value = { ...previousSettings };
+    
     console.error('Error saving settings:', error);
-    message.error('An error occurred while saving settings');
+    
+    // Hiển thị lỗi cụ thể nếu có
+    if (error.response?.data?.message) {
+      message.error(error.response.data.message);
+    } else {
+      message.error('Đã xảy ra lỗi khi lưu cài đặt');
+    }
+  } finally {
+    isSaving.value = false;
   }
 };
 
@@ -337,6 +372,17 @@ const handleCancel = () => {
 const resetSettings = () => {
   settingsStore.$reset();
   tempSettings.value = { ...settingsStore.$state };
+
+  // Cập nhật lại các hàm xử lý sự kiện
+  changeView(settingsStore.displayMode);
+  updateTimeFormat(settingsStore.timeFormat);
+  updateTitleFormat(JSON.stringify(settingsStore.titleFormat));
+  updateColumnHeaderFormat(JSON.stringify(settingsStore.dayHeaderFormat));
+  changeLanguage(settingsStore.language);
+  updateMultiMonthSettings();
+
+  message.success('Cài đặt đã được reset');
+  
 };
 
 // Danh sách tháng 1-12

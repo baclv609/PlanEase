@@ -123,14 +123,13 @@ export const useSettingsStore = defineStore("settings", {
         });
 
         if (response.data.code === 200) {
-          this.saveToLocalStorage();
-          this.updateFullCalendar();
           return true;
         }
-        return false;
+        
+        throw new Error(response.data.message || 'Failed to save settings');
       } catch (error) {
         console.error('Error saving settings:', error);
-        return false;
+        throw error; // Ném lỗi để component có thể xử lý
       }
     },
 
@@ -176,8 +175,6 @@ export const useSettingsStore = defineStore("settings", {
         console.warn("calendarRef is not available when calling updateFullCalendar");
       }
     },
-
-
 
     // Set default settings
     setDefaultSettings() {
