@@ -59,7 +59,7 @@ export function useCalendarEvents() {
         return;
       }
       rawEvents.value = response.data.data || [];
-      console.log(rawEvents.value);
+      // console.log(rawEvents.value);
     } catch (error) {
       console.error('Lỗi khi tải lịch trình:', error);
     }
@@ -198,7 +198,7 @@ export function useCalendar(calendarRef) {
   const updateTransformedEvents = () => {
     transformedEvents.value = [...formattedEvents.value];
     transformedEvents.value.forEach((event) => calendarStore.addEventStore(event));
-    console.log('transformedEvents', transformedEvents.value);
+    // console.log('transformedEvents', transformedEvents.value);
   };
 
   onMounted(async () => {

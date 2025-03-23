@@ -110,7 +110,7 @@ const fetchNotification = async () => {
   try {
     if(response.data.code == 200) {
       notifications.value = response.data.data.notifications;
-      console.log('notification: ',notifications.value);
+      // console.log('notification: ',notifications.value);
     }
   } catch (error) {
     console.log(error);
