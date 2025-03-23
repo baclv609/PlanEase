@@ -2,154 +2,190 @@
   <a-modal
     :open="isModalOpen"
     title="Cài đặt lịch trình"
-    width="650px"
+    width="850px"
     @ok="handleSave"
-    @cancel="emit('update:isModalOpen', false)"
+    @cancel="handleCancel"
     :footer="null"
   >
-    <a-tabs :activeKey="activeTab" @change="(key) => (activeTab = key)">
-      <!-- Cài đặt giao diện -->
-      <a-tab-pane key="display" tab="Giao diện">
-        <a-form layout="vertical">
-          <a-form-item label="Chế độ hiển thị">
-            <a-select
-              v-model:value="settings.displayMode"
-              @change="changeView(settings.displayMode)"
-            >
-              <a-select-option value="multiMonthYear">Năm (Lưới)</a-select-option>
-              <a-select-option value="listYear">Ngày (Danh sách)</a-select-option>
-              <a-select-option value="dayGridMonth">Tháng</a-select-option>
-              <a-select-option value="timeGridWeek">Tuần</a-select-option>
-              <a-select-option value="timeGridDay">Ngày</a-select-option>
-            </a-select>
-          </a-form-item>
+    <div class="flex" style="height: 500px;">
+      <!-- Anchor Menu - Fixed position -->
+      <div style="position: sticky; top: 0; width: 200px; height: 100%;">
+        <a-anchor 
+          :affix="false" 
+          @change="handleAnchorChange"
+          :get-container="() => containerRef"
+        >
+          <a-anchor-link href="#display" title="Giao diện" />
+          <a-anchor-link href="#time" title="Thời gian" />
+          <a-anchor-link href="#calendar" title="Lịch" />
+          <a-anchor-link href="#notification" title="Thông báo" />
+          <a-anchor-link href="#language" :title="$t('language')" />
+        </a-anchor>
+      </div>
 
-           <!-- Tùy chọn hiển thị cho chế độ xem năm dạng lưới -->
-           <template v-if="settings.displayMode === 'multiMonthYear'">
-             <a-form-item label="Số cột hiển thị">
-               <a-select 
-                 v-model:value="settings.multiMonthMaxColumns"
-                 @change="updateMultiMonthSettings"
-               >
-                 <a-select-option :value="2">2 cột</a-select-option>
-                 <a-select-option :value="3">3 cột</a-select-option>
-                 <a-select-option :value="4">4 cột</a-select-option>
-               </a-select>
-             </a-form-item>
-             
-             <a-form-item label="Hiển thị ngày ngoài tháng">
-               <a-switch 
-                 v-model:checked="settings.showNonCurrentDates"
-                 @change="updateMultiMonthSettings"
-               />
-             </a-form-item>
-           </template>
+      <!-- Content Area - Scrollable -->
+      <div 
+        ref="containerRef"
+        style="margin-left: 20px; flex: 1; overflow-y: auto; height: 100%; padding-right: 20px;"
+      >
+        <!-- Display Section -->
+        <div id="display" style="margin-bottom: 24px;">
+          <h3>Giao diện</h3>
+          <a-form layout="vertical">
+            <a-form-item label="Chế độ hiển thị">
+              <a-select
+                v-model:value="tempSettings.displayMode"
+                @change="changeView"
+              >
+                <a-select-option value="multiMonthYear">Năm (Lưới)</a-select-option>
+                <a-select-option value="listYear">Ngày (Danh sách)</a-select-option>
+                <a-select-option value="dayGridMonth">Tháng</a-select-option>
+                <a-select-option value="timeGridWeek">Tuần</a-select-option>
+                <a-select-option value="timeGridDay">Ngày</a-select-option>
+              </a-select>
+            </a-form-item>
+
+             <!-- Tùy chọn hiển thị cho chế độ xem năm dạng lưới -->
+             <template v-if="tempSettings.displayMode === 'multiMonthYear'">
+               <a-form-item label="Số cột hiển thị">
+                 <a-select 
+                   v-model:value="tempSettings.multiMonthMaxColumns"
+                   @change="updateMultiMonthSettings"
+                 >
+                   <a-select-option :value="2">2 cột</a-select-option>
+                   <a-select-option :value="3">3 cột</a-select-option>
+                   <a-select-option :value="4">4 cột</a-select-option>
+                 </a-select>
+               </a-form-item>
+               
+               <a-form-item label="Hiển thị ngày ngoài tháng">
+                 <a-switch 
+                   v-model:checked="tempSettings.showNonCurrentDates"
+                   @change="updateMultiMonthSettings"
+                 />
+               </a-form-item>
+             </template>
  
-          <a-form-item label="Hiển thị ngày nghỉ">
-            <a-switch v-model:checked="settings.showWeekNumbers" />
-          </a-form-item>
-        </a-form>
-      </a-tab-pane>
+            <a-form-item label="Hiển thị ngày nghỉ">
+              <a-switch v-model:checked="tempSettings.showWeekNumbers" />
+            </a-form-item>
+          </a-form>
+        </div>
 
-      <!-- Cài đặt thời gian -->
-      <a-tab-pane key="time" tab="Thời gian">
-        <a-form layout="vertical">
-          <!-- Múi giờ -->
-          <a-form-item label="Múi giờ">
-            <a-select
-              v-model:value="settings.timeZone"
-              show-search
-              placeholder="Chọn múi giờ..."
-              :options="timeZoneOptions"
-              :filter-option="filterTimeZones"
-              @change="logTimeZone"
-            />
-          </a-form-item>
+        <!-- Time Section -->
+        <div id="time" style="margin-bottom: 24px;">
+          <h3>Thời gian</h3>
+          <a-form layout="vertical">
+            <!-- Múi giờ -->
+            <a-form-item label="Múi giờ">
+              <a-select
+                v-model:value="tempSettings.timeZone"
+                show-search
+                placeholder="Chọn múi giờ..."
+                :options="timeZoneOptions"
+                :filter-option="filterTimeZones"
+                @change="logTimeZone"
+              />
+            </a-form-item>
 
-          <a-form-item label="Định dạng giờ">
-            <a-select v-model:value="selectedTimeFormat" @change="updateTimeFormat">
-              <a-select-option
-                v-for="option in timeFormatOptions"
-                :key="option.label"
-                :value="option.value"
+            <a-form-item label="Định dạng giờ">
+              <a-select v-model:value="selectedTimeFormat" @change="updateTimeFormat">
+                <a-select-option
+                  v-for="option in timeFormatOptions"
+                  :key="option.label"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-form>
+        </div>
+
+        <!-- Calendar Section -->
+        <div id="calendar" style="margin-bottom: 24px;">
+          <h3>Lịch</h3>
+          <a-form layout="vertical">
+            <a-form-item label="Định dạng tiêu đề lịch">
+              <a-select v-model:value="selectedTitleFormat" @change="updateTitleFormat">
+                <a-select-option
+                  v-for="option in titleFormatOptions"
+                  :key="option.label"
+                  :value="JSON.stringify(option.value)"
+                >
+                  {{ option.label }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+
+            <a-form-item label="Định dạng ngày trong cột">
+              <a-select
+                v-model:value="selectedDayHeaderFormat"
+                @change="updateColumnHeaderFormat"
               >
-                {{ option.label }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-form>
-      </a-tab-pane>
+                <a-select-option
+                  v-for="option in columnHeaderFormatOptions"
+                  :key="option.label"
+                  :value="JSON.stringify(option.value)"
+                >
+                  {{ option.label }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
 
-      <!-- Cài đặt lịch -->
-      <a-tab-pane key="calendar" tab="Lịch">
-        <a-form layout="vertical">
-          <a-form-item label="Định dạng tiêu đề lịch">
-            <a-select v-model:value="selectedTitleFormat" @change="updateTitleFormat">
-              <a-select-option
-                v-for="option in titleFormatOptions"
-                :key="option.label"
-                :value="JSON.stringify(option.value)"
+            <a-form-item label="Ngày bắt đầu tuần">
+              <a-select v-model:value="tempSettings.firstDay">
+                <a-select-option :value="0">Chủ Nhật</a-select-option>
+                <a-select-option :value="1">Thứ Hai</a-select-option>
+                <a-select-option :value="6">Thứ Bảy</a-select-option>
+              </a-select>
+            </a-form-item>
+
+          </a-form>
+        </div>
+
+        <!-- Notification Section -->
+        <div id="notification" style="margin-bottom: 24px;">
+          <h3>Thông báo</h3>
+          <a-form layout="vertical">
+            <a-form-item label="Loại thông báo">
+              <a-select
+                v-model:value="tempSettings.notificationType"
+                placeholder="Chọn loại thông báo"
               >
-                {{ option.label }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
+                <a-select-option value="both">Hệ thống và cửa sổ thông báo trình duyệt</a-select-option>
+                <a-select-option value="desktop">Chỉ thông báo hệ thống</a-select-option>
+                <a-select-option value="alerts">Cửa sổ thông báo trình duyệt</a-select-option>
+                <a-select-option value="off">Tắt thông báo</a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-form>
+        </div>
 
-          <a-form-item label="Định dạng ngày trong cột">
-            <a-select
-              v-model:value="selectedDayHeaderFormat"
-              @change="updateColumnHeaderFormat"
-            >
-              <a-select-option
-                v-for="option in columnHeaderFormatOptions"
-                :key="option.label"
-                :value="JSON.stringify(option.value)"
-              >
-                {{ option.label }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
+        <!-- Language Section -->
+        <div id="language" style="margin-bottom: 24px;">
+          <h3>{{ $t('language') }}</h3>
+          <a-form layout="vertical">
+            <a-form-item label="Ngôn ngữ">
+              <a-select v-model:value="tempSettings.language" @change="changeLanguage">
+                <a-select-option value="vi">Tiếng Việt</a-select-option>
+                <a-select-option value="en">English</a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-form>
+        </div>
+      </div>
+    </div>
 
-          <a-form-item label="Ngày bắt đầu tuần">
-            <a-select v-model:value="settings.firstDay">
-              <a-select-option :value="0">Chủ Nhật</a-select-option>
-              <a-select-option :value="1">Thứ Hai</a-select-option>
-              <a-select-option :value="6">Thứ Bảy</a-select-option>
-            </a-select>
-          </a-form-item>
-
-          <!-- Hiển thị nhiều tháng -->
-          <!-- <a-form-item label="Hiển thị nhiều tháng">
-            <a-switch v-model:checked="settings.multiMonthYear" />
-          </a-form-item>
-
-          <a-form-item v-if="settings.multiMonthYear" label="Chọn tháng hiển thị">
-            <a-select
-              v-model:value="settings.selectedMonths"
-              mode="multiple"
-              placeholder="Chọn tháng..."
-              :options="monthOptions"
-            />
-          </a-form-item> -->
-        </a-form>
-      </a-tab-pane>
-
-      <!-- Ngôn ngữ -->
-      <a-tab-pane key="language" :tab="$t('language')">
-        <a-form layout="vertical">
-          <a-form-item label="Ngôn ngữ">
-            <a-select v-model:value="settings.language" @change="changeLanguage">
-              <a-select-option value="vi">Tiếng Việt</a-select-option>
-              <a-select-option value="en">English</a-select-option>
-              <!-- <a-select-option value="fr">Français</a-select-option>
-              <a-select-option value="ja">日本語</a-select-option> -->
-            </a-select>
-          </a-form-item>
-        </a-form>
-      </a-tab-pane>
-    </a-tabs>
-
-    <div class="flex justify-end mt-4">
+    <div class="flex justify-end mt-4 gap-2">
+      <a-button @click="handleCancel">Hủy</a-button>
+      <a-button 
+        type="primary" 
+        :loading="isSaving" 
+        @click="handleSave"
+      >
+        {{ isSaving ? 'Đang lưu...' : 'Lưu thay đổi' }}
+      </a-button>
       <a-button type="primary" danger @click="resetSettings">Reset</a-button>
     </div>
   </a-modal>
@@ -160,6 +196,7 @@ import { defineProps, defineEmits, ref, computed, onMounted, watch } from "vue";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useI18n } from "vue-i18n";
 import moment from "moment-timezone";
+import { message } from "ant-design-vue";
 
 const { locale } = useI18n();
 const props = defineProps({
@@ -225,41 +262,127 @@ const timeFormatOptions = [
 const selectedTitleFormat = ref(JSON.stringify(settings.titleFormat));
 const selectedDayHeaderFormat = ref(JSON.stringify(settings.dayHeaderFormat));
 const selectedTimeFormat = ref(settings.timeFormat);
+const formState = ref({});
 
-const updateTitleFormat = (newValue) => {
-  // console.log("Selected title format:", newValue);
-  const parsedValue = JSON.parse(newValue);
-  settingsStore.updateTitleFormat(parsedValue);
+const defaultNotificationSettings = {
+  notificationType: 'email',
+  reminderTime: '15'
+};
+
+const tempSettings = ref({
+  ...settings,
+  notificationType: settings.notificationType || defaultNotificationSettings.notificationType,
+  reminderTime: settings.reminderTime || defaultNotificationSettings.reminderTime
+});
+
+const isSaving = ref(false);
+
+onMounted(() => {
+  // Khởi tạo formState với giá trị từ store
+    formState.value = { ...settingsStore.getCurrentSettings };
+    console.log('Initial form state:', formState.value); // Debug log
+});
+
+// Cập nhật lại các hàm xử lý sự kiện
+const changeView = (view) => {
+  tempSettings.value.displayMode = view;
 };
 
 const updateTimeFormat = (newValue) => {
-  settingsStore.updateTimeFormat(newValue);
+  tempSettings.value.timeFormat = newValue;
 };
 
-const changeView = (view) => {
-  if (settingsStore.calendarRef) {
-    settingsStore.calendarRef.getApi().changeView(view);
-    // updateCurrentDate();
-    settingsStore.updateDisplayMode(view);
-  } else {
-    console.error("calendarRef is not available in changeView");
-  }
-};
-
-// Hàm cập nhật FullCalendar khi thay đổi cài đặt
-const updateFullCalendar = () => {
-  settingsStore.updateFullCalendar();
+const updateTitleFormat = (newValue) => {
+  tempSettings.value.titleFormat = JSON.parse(newValue);
 };
 
 const updateColumnHeaderFormat = (newValue) => {
-  const parsedValue = JSON.parse(newValue);
-  settingsStore.updateColumnHeaderFormat(parsedValue);
+  tempSettings.value.dayHeaderFormat = JSON.parse(newValue);
 };
 
 const changeLanguage = (newLang) => {
-  settingsStore.language = newLang; // Cập nhật state trong Pinia
-  locale.value = newLang; // Cập nhật Vue I18n
-  settingsStore.saveToLocalStorage(); // Lưu vào localStorage
+  tempSettings.value.language = newLang;
+};
+
+const updateMultiMonthSettings = () => {
+  // Không cần thay đổi gì vì đã sử dụng v-model với tempSettings
+};
+
+// Cập nhật hàm handleSave
+const handleSave = async () => {
+  try {
+    isSaving.value = true;
+    
+    // Lưu settings hiện tại để có thể khôi phục nếu API fail
+    const previousSettings = { ...settings };
+    
+    // Tạm thời áp dụng settings mới cho API call
+    Object.assign(settings, tempSettings.value);
+    
+    // Save to API
+    const success = await settingsStore.saveSettings();
+    
+    if (success) {
+      // Nếu API thành công
+      // Update language if changed
+      if (settings.language !== locale.value) {
+        locale.value = settings.language;
+      }
+      
+      // Cập nhật calendar và lưu vào localStorage
+      settingsStore.saveToLocalStorage();
+      settingsStore.updateFullCalendar();
+      
+      message.success('Cài đặt đã được lưu');
+      emit("update:isModalOpen", false);
+    } else {
+      // Nếu API thất bại, khôi phục lại settings cũ
+      Object.assign(settings, previousSettings);
+      // Khôi phục lại tempSettings
+      tempSettings.value = { ...previousSettings };
+      
+      message.error('Không thể lưu cài đặt, vui lòng thử lại');
+    }
+  } catch (error) {
+    // Trong trường hợp có lỗi, cũng khôi phục settings cũ
+    Object.assign(settings, previousSettings);
+    tempSettings.value = { ...previousSettings };
+    
+    console.error('Error saving settings:', error);
+    
+    // Hiển thị lỗi cụ thể nếu có
+    if (error.response?.data?.message) {
+      message.error(error.response.data.message);
+    } else {
+      message.error('Đã xảy ra lỗi khi lưu cài đặt');
+    }
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+// Cập nhật hàm handleCancel
+const handleCancel = () => {
+  // Reset tempSettings về giá trị từ store
+  tempSettings.value = { ...settings };
+  emit("update:isModalOpen", false);
+};
+
+// Cập nhật hàm resetSettings
+const resetSettings = () => {
+  settingsStore.$reset();
+  tempSettings.value = { ...settingsStore.$state };
+
+  // Cập nhật lại các hàm xử lý sự kiện
+  changeView(settingsStore.displayMode);
+  updateTimeFormat(settingsStore.timeFormat);
+  updateTitleFormat(JSON.stringify(settingsStore.titleFormat));
+  updateColumnHeaderFormat(JSON.stringify(settingsStore.dayHeaderFormat));
+  changeLanguage(settingsStore.language);
+  updateMultiMonthSettings();
+
+  message.success('Cài đặt đã được reset');
+  
 };
 
 // Danh sách tháng 1-12
@@ -301,36 +424,10 @@ const logTimeZone = (value) => {
   console.log("🕒 Giờ GMT:", moment.tz(value).utcOffset() / 60);
 };
 
-// Lưu cài đặt
-const handleSave = () => {
-  settingsStore.saveToLocalStorage(); // Lưu lại vào localStorage
-  settingsStore.updateFullCalendar(); // Cập nhật FullCalendar
-  emit("update:isModalOpen", false);
-};
-
-// Reset các giá trị cài đặt về ban đầu và đóng modal
-const handleCancel = () => {
-  settingsStore.loadFromLocalStorage();
-  // Đóng modal
-  emit("update:isModalOpen", false);
-};
-
-// Reset về mặc định
-const resetSettings = () => {
-  settingsStore.$reset();
-  settingsStore.updateFullCalendar();
-};
- 
-const updateMultiMonthSettings = () => {
-   settingsStore.updateMultiMonthSettings(
-     settings.multiMonthMaxColumns,
-     settings.showNonCurrentDates
-   );
- };
-
-// Khi component được tạo, đồng bộ giá trị từ store
+// Khi component được mounted
 onMounted(() => {
-  selectedTitleFormat.value = JSON.stringify(settings.titleFormat);
+  // Khởi tạo tempSettings với giá trị từ store
+  tempSettings.value = { ...settings };
 });
 
 // Watch sự thay đổi từ store để cập nhật select
@@ -340,4 +437,19 @@ watch(
     selectedTitleFormat.value = JSON.stringify(newFormat);
   }
 );
+
+// Add ref for container
+const containerRef = ref(null);
+
+// Update handleAnchorChange function for immediate scroll
+const handleAnchorChange = (link) => {
+  const section = link.slice(1);
+  const element = document.getElementById(section);
+  if (element && containerRef.value) {
+    containerRef.value.scrollTo({
+      top: element.offsetTop,
+      behavior: 'instant' // Changed from 'smooth' to 'instant' for immediate scroll
+    });
+  }
+};
 </script>

@@ -46,6 +46,18 @@ export const useSettings = () => {
                 language: navigator.language.startsWith("vi") ? "vi" : "en",
                 themeMode: "light",
                 firstDay: 1,
+                displayMode: "dayGridMonth",
+                columnHeaderFormatOption: { weekday: "long", day: "numeric" },
+                showWeekNumbers: false,
+                multiMonthMaxColumns: 3,
+                showNonCurrentDates: false,
+                titleFormat: { year: "numeric", month: "long", day: "numeric" },
+                hourFormat: new Intl.DateTimeFormat(navigator.language, { hour: "numeric" })
+                    .resolvedOptions().hourCycle.includes("h12") ? "12h" : "24h",
+                dateFormat: "YYYY-MM-DD",
+                eventTimeFormat: { hour: "2-digit", minute: "2-digit", hour12: false },
+                reminderTime: "10m"
+                
             };
 
             settingsStore.$patch(defaultSettings);
