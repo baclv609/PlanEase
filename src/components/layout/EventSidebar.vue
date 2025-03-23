@@ -578,7 +578,6 @@ const handleEventModalSuccess = () => {
   selectedEventAdd.value = null;
 };
 
-// Fetch upcoming tasks
 const fetchUpcomingTasks = async () => {
   loading.value = true;
   error.value = null;
@@ -590,15 +589,41 @@ const fetchUpcomingTasks = async () => {
       }
     });
 
-    if (response.data.code === 200) {
-      upcomingTasks.value = response.data.data;
+    // Check if response exists and has data
+    if (response?.data?.code === 200) {
+      // If data exists but is empty array, set empty array
+      upcomingTasks.value = response.data.data || [];
     } else {
-      throw new Error(response.data.message || 'Không thể tải danh sách sự kiện');
+      // If response code is not 200, throw error with message
+      throw new Error(response?.data?.message || 'Không thể tải danh sách sự kiện');
     }
+
   } catch (err) {
     console.error('Error fetching upcoming tasks:', err);
-    error.value = 'Không thể tải danh sách sự kiện';
-    message.error('Không thể tải danh sách sự kiện');
+    
+    // Handle different types of errors
+    if (err.response) {
+      // Server responded with error status
+      if (err.response.status === 500) {
+        error.value = 'Lỗi máy chủ, vui lòng thử lại sau';
+      } else if (err.response.status === 401) {
+        error.value = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
+      } else {
+        error.value = err.response.data?.message || 'Không thể tải danh sách sự kiện';
+      }
+    } else if (err.request) {
+      // Request made but no response received
+      error.value = 'Không thể kết nối đến máy chủ';
+    } else {
+      // Other errors
+      error.value = 'Đã xảy ra lỗi, vui lòng thử lại';
+    }
+
+    // Clear tasks on error
+    upcomingTasks.value = [];
+    
+    // Show error message
+    message.error(error.value);
   } finally {
     loading.value = false;
   }
