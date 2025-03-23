@@ -76,8 +76,8 @@ export const useSettingsStore = defineStore("settings", {
         dateFormat: apiSettings.date_format || 'YYYY-MM-DD',
         firstDay: Number(apiSettings.first) || 1,
         themeMode: apiSettings.theme || 'light',
-        titleFormat: apiSettings.tittle_format_option ? JSON.parse(apiSettings.tittle_format_option) : { year: 'numeric', month: 'long' },
-        dayHeaderFormat: apiSettings.column_header_format_option ? JSON.parse(apiSettings.column_header_format_option) : { weekday: 'long' },
+        titleFormat: apiSettings.tittle_format_option ? apiSettings.tittle_format_option : { year: 'numeric', month: 'long' },
+        dayHeaderFormat: apiSettings.column_header_format_option ? apiSettings.column_header_format_option : { weekday: 'long' },
         showWeekNumbers: Boolean(apiSettings.is_display_dayoff),
         multiMonthMaxColumns: Number(apiSettings.multi_month_max_columns) || 3,
         showNonCurrentDates: Boolean(apiSettings.show_non_current_dates),
@@ -372,8 +372,8 @@ export const useSettingsStore = defineStore("settings", {
         
         // Header format
         dayHeaderFormat: settings.dayHeaderFormat || {
-          weekday: 'long',
-          day: 'numeric'
+          day: 'numeric',
+          weekday: 'long'
         },
         
         // Title format
