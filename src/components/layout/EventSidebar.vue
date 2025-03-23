@@ -28,16 +28,47 @@
     <div class="mt-3">
       <h2 class="mb-0">Sự kiện sắp tới</h2>
       <p>Đừng bỏ lỡ các sự kiện đã lên lịch</p>
-      <a-list :data-source="filteredEvents" bordered>
+      
+      <!-- Loading state -->
+      <div v-if="loading" class="flex justify-center my-4">
+        <a-spin />
+      </div>
+
+      <!-- Error state -->
+      <a-empty
+        v-else-if="error"
+        :description="error"
+        class="my-4"
+      >
+        <template #extra>
+          <a-button type="primary" @click="fetchUpcomingTasks">
+            Thử lại
+          </a-button>
+        </template>
+      </a-empty>
+
+      <!-- No events -->
+      <a-empty
+        v-else-if="!upcomingTasks.length"
+        description="Không có sự kiện nào trong 24h tới"
+        class="my-4"
+      />
+
+      <!-- Events list -->
+      <a-list v-else :data-source="upcomingTasks" bordered>
         <template #renderItem="{ item }">
           <a-list-item>
             <div class="flex justify-between w-full items-center">
-              <a-badge :color="item.color" />
-              <div class="event-details">
-                <strong>{{ item.date }}</strong>
-                <p>{{ item.name }}</p>
+              <a-badge :color="getEventColor(item.priority)" />
+              <div class="event-details flex-1 mx-3">
+                <div class="font-medium">{{ item.title }}</div>
+                <div class="text-sm text-gray-500">
+                  {{ formatDateTime(item.start_time) }}
+                </div>
               </div>
-              <a-tag :color="item.color">{{ item.time }}</a-tag>
+              <a-tag :color="getEventColor(item.priority)">
+                {{ formatTimeFromNow(item.start_time) }}
+              </a-tag>
             </div>
           </a-list-item>
         </template>
@@ -194,7 +225,7 @@ import {
 } from "@ant-design/icons-vue";
 
 import dayjs from "dayjs";
-import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed, onUnmounted } from "vue";
 import { message } from "ant-design-vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
@@ -203,6 +234,7 @@ import debounce from 'lodash/debounce';
 import MiniCalendar from '@/components/calendar/MiniCalendar.vue';
 import { useSettingsStore } from "@/stores/settingsStore";
 import EventModal from "@/views/calendar/components/EventModal.vue";
+import moment from 'moment';
 
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
@@ -228,6 +260,10 @@ const showAllShared = ref(false);
 
 const isAddEventModalVisible = ref(false);
 const selectedEventAdd = ref(null);
+
+const upcomingTasks = ref([]);
+const loading = ref(false);
+const error = ref(null);
 
 
 // Lấy thông tin khách mời
@@ -517,6 +553,7 @@ const handleUpdateOk = async () => {
 onMounted(() => {
   echoStore.initEcho();
   echoStore.startListening();
+  fetchUpcomingTasks();
 });
 
 const createEvent = () => {
@@ -541,4 +578,106 @@ const handleEventModalSuccess = () => {
   selectedEventAdd.value = null;
 };
 
+const fetchUpcomingTasks = async () => {
+  loading.value = true;
+  error.value = null;
+  
+  try {
+    const response = await axios.get(`${dirApi}tasks/upComingTasks`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    // Check if response exists and has data
+    if (response?.data?.code === 200) {
+      // If data exists but is empty array, set empty array
+      upcomingTasks.value = response.data.data || [];
+    } else {
+      // If response code is not 200, throw error with message
+      throw new Error(response?.data?.message || 'Không thể tải danh sách sự kiện');
+    }
+
+  } catch (err) {
+    console.error('Error fetching upcoming tasks:', err);
+    
+    // Handle different types of errors
+    if (err.response) {
+      // Server responded with error status
+      if (err.response.status === 500) {
+        error.value = 'Lỗi máy chủ, vui lòng thử lại sau';
+      } else if (err.response.status === 401) {
+        error.value = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
+      } else {
+        error.value = err.response.data?.message || 'Không thể tải danh sách sự kiện';
+      }
+    } else if (err.request) {
+      // Request made but no response received
+      error.value = 'Không thể kết nối đến máy chủ';
+    } else {
+      // Other errors
+      error.value = 'Đã xảy ra lỗi, vui lòng thử lại';
+    }
+
+    // Clear tasks on error
+    upcomingTasks.value = [];
+    
+    // Show error message
+    message.error(error.value);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// Format date time
+const formatDateTime = (datetime) => {
+  return moment(datetime).format('HH:mm - DD/MM/YYYY');
+};
+
+// Format time from now
+const formatTimeFromNow = (datetime) => {
+  return moment(datetime).fromNow();
+};
+
+// Get color based on priority
+const getEventColor = (priority) => {
+  const colors = {
+    high: 'red',
+    medium: 'orange',
+    low: 'blue',
+    default: 'gray'
+  };
+  return colors[priority?.toLowerCase()] || colors.default;
+};
+
+// Auto refresh every minute
+let refreshInterval;
+
+onMounted(() => {
+  fetchUpcomingTasks();
+  
+  // Refresh every minute
+  refreshInterval = setInterval(() => {
+    fetchUpcomingTasks();
+  }, 60000); // 60000ms = 1 minute
+});
+
+onUnmounted(() => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+  }
+});
+
 </script>
+
+<style scoped>
+.event-details {
+  overflow: hidden;
+}
+
+.event-details div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
