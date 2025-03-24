@@ -722,14 +722,14 @@ const getEventColor = (priority) => {
 // Auto refresh every minute
 let refreshInterval;
 
-onMounted(() => {
-  fetchUpcomingTasks();
+// onMounted(() => {
+//   fetchUpcomingTasks();
   
-  // Refresh every minute
-  refreshInterval = setInterval(() => {
-    fetchUpcomingTasks();
-  }, 60000); // 60000ms = 1 minute
-});
+//   // Refresh every minute
+//   refreshInterval = setInterval(() => {
+//     fetchUpcomingTasks();
+//   }, 60000); // 60000ms = 1 minute
+// });
 
 onUnmounted(() => {
   if (refreshInterval) {
