@@ -24,6 +24,15 @@ const roles = [
         meta: {
             layout: 'dashboard',
         }
+    },
+
+    {
+        path: '/roles/trashed',
+        name: 'role-trashed',
+        component: () => import('@/views/roles/TrashedRoleView.vue'),
+        meta: {
+            layout: 'dashboard',
+        }
     }
 ]
 
