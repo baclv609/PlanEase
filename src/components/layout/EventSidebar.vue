@@ -636,78 +636,129 @@ const formatDateTime = (datetime) => {
 
 // Format time from now
 const formatTimeFromNow = (datetime) => {
-  const userSettings = JSON.parse(localStorage.getItem("userSettings"));
-  const language = userSettings.language || "vi";
+  const { language = "vi" } = JSON.parse(localStorage.getItem("userSettings")) || {};
   moment.locale(language);
-  
+
   const now = moment();
   const eventTime = moment(datetime);
   const diffMinutes = eventTime.diff(now, 'minutes');
-  const diffHours = eventTime.diff(now, 'hours');
-  const diffDays = eventTime.diff(now, 'days');
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  
   const isToday = eventTime.isSame(now, 'day');
   const isTomorrow = eventTime.isSame(now.clone().add(1, 'day'), 'day');
-  const isOngoing = diffMinutes <= 0 && diffMinutes > -60; // Sự kiện đang diễn ra (trong vòng 1 giờ qua)
+  const isOngoing = diffMinutes <= 0 && diffMinutes > -60;
 
-  // Customize the output based on language
-  if (language === 'vi') {
-    if (isOngoing) {
-      return 'Đang diễn ra';
-    } else if (diffMinutes < 0) {
-      // Sự kiện đã qua
-      if (diffHours > -24) {
-        return `${Math.abs(diffHours)} giờ trước`;
-      } else if (diffDays > -7) {
-        return `${Math.abs(diffDays)} ngày trước`;
-      } else {
-        return eventTime.format('DD/MM/YYYY HH:mm');
-      }
-    } else {
-      // Sự kiện sắp tới
-      if (diffMinutes < 60) {
-        return `${diffMinutes} phút nữa`;
-      } else if (diffHours < 24) {
-        return `${diffHours} giờ nữa`;
-      } else if (diffDays < 7) {
-        return `${diffDays} ngày nữa`;
-      } else if (isToday) {
-        return `Hôm nay ${eventTime.format('HH:mm')}`;
-      } else if (isTomorrow) {
-        return `Ngày mai ${eventTime.format('HH:mm')}`;
-      } else {
-        return eventTime.format('DD/MM/YYYY HH:mm');
-      }
-    }
+  const formats = {
+    vi: {
+      ongoing: 'Đang diễn ra',
+      past: (unit, value) => `${Math.abs(value)} ${unit} trước`,
+      future: (unit, value) => `${value} ${unit} nữa`,
+      today: `Hôm nay ${eventTime.format('HH:mm')}`,
+      tomorrow: `Ngày mai ${eventTime.format('HH:mm')}`,
+      default: eventTime.format('DD/MM/YYYY HH:mm'),
+    },
+    en: {
+      ongoing: 'Ongoing',
+      past: (unit, value) => `${Math.abs(value)} ${unit} ago`,
+      future: (unit, value) => `in ${value} ${unit}`,
+      today: `Today at ${eventTime.format('HH:mm')}`,
+      tomorrow: `Tomorrow at ${eventTime.format('HH:mm')}`,
+      default: eventTime.format('MM/DD/YYYY HH:mm'),
+    },
+  };
+
+  const t = formats[language] || formats.en;
+
+  if (isOngoing) return t.ongoing;
+  if (diffMinutes < 0) {
+    return diffHours > -24 ? t.past(language === "vi" ? "giờ" : "hours", diffHours) 
+         : diffDays > -7 ? t.past(language === "vi" ? "ngày" : "days", diffDays) 
+         : t.default;
   } else {
-    if (isOngoing) {
-      return 'Ongoing';
-    } else if (diffMinutes < 0) {
-      // Past events
-      if (diffHours > -24) {
-        return `${Math.abs(diffHours)} hours ago`;
-      } else if (diffDays > -7) {
-        return `${Math.abs(diffDays)} days ago`;
-      } else {
-        return eventTime.format('MM/DD/YYYY HH:mm');
-      }
-    } else {
-      // Upcoming events
-      if (diffMinutes < 60) {
-        return `in ${diffMinutes} minutes`;
-      } else if (diffHours < 24) {
-        return `in ${diffHours} hours`;
-      } else if (diffDays < 7) {
-        return `in ${diffDays} days`;
-      } else if (isToday) {
-        return `Today at ${eventTime.format('HH:mm')}`;
-      } else if (isTomorrow) {
-        return `Tomorrow at ${eventTime.format('HH:mm')}`;
-      } else {
-        return eventTime.format('MM/DD/YYYY HH:mm');
-      }
-    }
+    return diffMinutes < 60 ? t.future(language === "vi" ? "phút" : "minutes", diffMinutes) 
+         : diffHours < 24 ? t.future(language === "vi" ? "giờ" : "hours", diffHours) 
+         : diffDays < 7 ? t.future(language === "vi" ? "ngày" : "days", diffDays) 
+         : isToday ? t.today 
+         : isTomorrow ? t.tomorrow 
+         : t.default;
   }
 };
+
+
+// const formatTimeFromNow = (datetime) => {
+//   const userSettings = JSON.parse(localStorage.getItem("userSettings"));
+//   const language = userSettings.language || "vi";
+//   moment.locale(language);
+  
+//   const now = moment();
+//   const eventTime = moment(datetime);
+//   const diffMinutes = eventTime.diff(now, 'minutes');
+//   const diffHours = eventTime.diff(now, 'hours');
+//   const diffDays = eventTime.diff(now, 'days');
+//   const isToday = eventTime.isSame(now, 'day');
+//   const isTomorrow = eventTime.isSame(now.clone().add(1, 'day'), 'day');
+//   const isOngoing = diffMinutes <= 0 && diffMinutes > -60; // Sự kiện đang diễn ra (trong vòng 1 giờ qua)
+
+//   // Customize the output based on language
+//   if (language === 'vi') {
+//     if (isOngoing) {
+//       return 'Đang diễn ra';
+//     } else if (diffMinutes < 0) {
+//       // Sự kiện đã qua
+//       if (diffHours > -24) {
+//         return `${Math.abs(diffHours)} giờ trước`;
+//       } else if (diffDays > -7) {
+//         return `${Math.abs(diffDays)} ngày trước`;
+//       } else {
+//         return eventTime.format('DD/MM/YYYY HH:mm');
+//       }
+//     } else {
+//       // Sự kiện sắp tới
+//       if (diffMinutes < 60) {
+//         return `${diffMinutes} phút nữa`;
+//       } else if (diffHours < 24) {
+//         return `${diffHours} giờ nữa`;
+//       } else if (diffDays < 7) {
+//         return `${diffDays} ngày nữa`;
+//       } else if (isToday) {
+//         return `Hôm nay ${eventTime.format('HH:mm')}`;
+//       } else if (isTomorrow) {
+//         return `Ngày mai ${eventTime.format('HH:mm')}`;
+//       } else {
+//         return eventTime.format('DD/MM/YYYY HH:mm');
+//       }
+//     }
+//   } else {
+//     if (isOngoing) {
+//       return 'Ongoing';
+//     } else if (diffMinutes < 0) {
+//       // Past events
+//       if (diffHours > -24) {
+//         return `${Math.abs(diffHours)} hours ago`;
+//       } else if (diffDays > -7) {
+//         return `${Math.abs(diffDays)} days ago`;
+//       } else {
+//         return eventTime.format('MM/DD/YYYY HH:mm');
+//       }
+//     } else {
+//       // Upcoming events
+//       if (diffMinutes < 60) {
+//         return `in ${diffMinutes} minutes`;
+//       } else if (diffHours < 24) {
+//         return `in ${diffHours} hours`;
+//       } else if (diffDays < 7) {
+//         return `in ${diffDays} days`;
+//       } else if (isToday) {
+//         return `Today at ${eventTime.format('HH:mm')}`;
+//       } else if (isTomorrow) {
+//         return `Tomorrow at ${eventTime.format('HH:mm')}`;
+//       } else {
+//         return eventTime.format('MM/DD/YYYY HH:mm');
+//       }
+//     }
+//   }
+// };
 // Get color based on priority
 const getEventColor = (priority) => {
   const colors = {
@@ -731,11 +782,11 @@ let refreshInterval;
 //   }, 60000); // 60000ms = 1 minute
 // });
 
-onUnmounted(() => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval);
-  }
-});
+// onUnmounted(() => {
+//   if (refreshInterval) {
+//     clearInterval(refreshInterval);
+//   }
+// });
 
 </script>
 
