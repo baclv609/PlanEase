@@ -551,8 +551,8 @@ const handleUpdateOk = async () => {
 
 // Lắng nghe sự kiện real-time
 onMounted(() => {
-  echoStore.initEcho();
-  echoStore.startListening();
+  // echoStore.initEcho();
+  // echoStore.startListening();
   fetchUpcomingTasks();
 });
 
