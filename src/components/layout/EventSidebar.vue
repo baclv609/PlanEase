@@ -86,7 +86,7 @@
         <div v-if="myCalendars.length">
           <h4 class="text-gray-500 text-sm font-semibold mb-2">📌 Lịch của tôi</h4>
 
-          <div v-for="(calendar, index) in displayedCalendars" :key="calendar.id"
+          <div v-for="calendar in displayedCalendars" :key="calendar.id"
             class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
             :style="{ borderLeft: `4px solid ${calendar.color}` }">
 
@@ -111,7 +111,7 @@
               </template>
             </a-dropdown>
           </div>
-          <div v-if="myCalendars.length > 5" class="flex justify-center mt-2">
+          <div v-if="myCalendars.length > 5" class="flex justify-center mt-2" >
             <a-button type="text" @click="showAll = !showAll">
               <template v-if="showAll">
                 <CaretUpOutlined />
@@ -126,7 +126,7 @@
         <!-- Lịch được chia sẻ -->
         <div v-if="sharedCalendars.length" class="mt-4">
           <h4 class="text-gray-500 text-sm font-semibold mb-2">🔗 Lịch được chia sẻ</h4>
-          <div v-for="(calendar, index) in displayedSharedCalendars" :key="calendar.id"
+          <div v-for="calendar in displayedSharedCalendars" :key="calendar.id"
             class="flex bg-white border border-gray-200 justify-between p-2 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
             :style="{ borderLeft: `5px solid ${calendar.color}` }">
 
@@ -636,9 +636,78 @@ const formatDateTime = (datetime) => {
 
 // Format time from now
 const formatTimeFromNow = (datetime) => {
-  return moment(datetime).fromNow();
-};
+  const userSettings = JSON.parse(localStorage.getItem("userSettings"));
+  const language = userSettings.language || "vi";
+  moment.locale(language);
+  
+  const now = moment();
+  const eventTime = moment(datetime);
+  const diffMinutes = eventTime.diff(now, 'minutes');
+  const diffHours = eventTime.diff(now, 'hours');
+  const diffDays = eventTime.diff(now, 'days');
+  const isToday = eventTime.isSame(now, 'day');
+  const isTomorrow = eventTime.isSame(now.clone().add(1, 'day'), 'day');
+  const isOngoing = diffMinutes <= 0 && diffMinutes > -60; // Sự kiện đang diễn ra (trong vòng 1 giờ qua)
 
+  // Customize the output based on language
+  if (language === 'vi') {
+    if (isOngoing) {
+      return 'Đang diễn ra';
+    } else if (diffMinutes < 0) {
+      // Sự kiện đã qua
+      if (diffHours > -24) {
+        return `${Math.abs(diffHours)} giờ trước`;
+      } else if (diffDays > -7) {
+        return `${Math.abs(diffDays)} ngày trước`;
+      } else {
+        return eventTime.format('DD/MM/YYYY HH:mm');
+      }
+    } else {
+      // Sự kiện sắp tới
+      if (diffMinutes < 60) {
+        return `${diffMinutes} phút nữa`;
+      } else if (diffHours < 24) {
+        return `${diffHours} giờ nữa`;
+      } else if (diffDays < 7) {
+        return `${diffDays} ngày nữa`;
+      } else if (isToday) {
+        return `Hôm nay ${eventTime.format('HH:mm')}`;
+      } else if (isTomorrow) {
+        return `Ngày mai ${eventTime.format('HH:mm')}`;
+      } else {
+        return eventTime.format('DD/MM/YYYY HH:mm');
+      }
+    }
+  } else {
+    if (isOngoing) {
+      return 'Ongoing';
+    } else if (diffMinutes < 0) {
+      // Past events
+      if (diffHours > -24) {
+        return `${Math.abs(diffHours)} hours ago`;
+      } else if (diffDays > -7) {
+        return `${Math.abs(diffDays)} days ago`;
+      } else {
+        return eventTime.format('MM/DD/YYYY HH:mm');
+      }
+    } else {
+      // Upcoming events
+      if (diffMinutes < 60) {
+        return `in ${diffMinutes} minutes`;
+      } else if (diffHours < 24) {
+        return `in ${diffHours} hours`;
+      } else if (diffDays < 7) {
+        return `in ${diffDays} days`;
+      } else if (isToday) {
+        return `Today at ${eventTime.format('HH:mm')}`;
+      } else if (isTomorrow) {
+        return `Tomorrow at ${eventTime.format('HH:mm')}`;
+      } else {
+        return eventTime.format('MM/DD/YYYY HH:mm');
+      }
+    }
+  }
+};
 // Get color based on priority
 const getEventColor = (priority) => {
   const colors = {
