@@ -499,7 +499,8 @@ onMounted(() => {
 
     <!-- Modal thêm sự kiện -->
     <EventModal :open="isAddEventModalVisible" :event="selectedEventAdd" @save="handleEventModalSuccess"
-      @cancel="isAddEventModalVisible = false" />
+      @cancel="isAddEventModalVisible = false" 
+      :isAddEventModalVisible="isAddEventModalVisible"/>
 
     <!-- Modal chi tiết sự kiện -->
     <EventDetailModal :open="isEventDetailModalVisible" :event="selectedEvent"  @editTask="openEditDrawer"

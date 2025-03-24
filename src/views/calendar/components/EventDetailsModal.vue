@@ -24,6 +24,7 @@ import { AlignLeftOutlined,
          DeleteOutlined,
          EditOutlined, 
          EnvironmentOutlined, 
+         FileProtectOutlined, 
          MailOutlined, 
          QuestionOutlined, 
          SendOutlined, 
@@ -35,6 +36,7 @@ import { useEchoStore } from "@/stores/echoStore";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import { attachTypeApi } from "ant-design-vue/es/message";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -322,8 +324,9 @@ const accept = async (uuid) => {
       }
 
       if(response.data.code == 200) {
-        message.info(response.data.message);
+        message.success(response.data.message);
         emit("delete");
+        emit("close", false);
       }
 
     } catch(error) {
@@ -346,6 +349,7 @@ const refuse = async (uuid) => {
     if(response.data.code == 200) {
       message.info(response.data.message)
       emit("delete");
+      emit("close", false);
     }
 
   } catch(error) {
@@ -418,6 +422,16 @@ const getMessagesByGroup = async (taskId) => {
     console.log("Loi xay ra khi lay tin nhan: ", error);
   }
 }
+
+const dayMap = {
+  MO: "T2",
+  TU: "T3",
+  WE: "T4",
+  TH: "T5",
+  FR: "T6",
+  SA: "T7",
+  SU: "CN"
+};
 </script>
 
 <template>
@@ -425,19 +439,19 @@ const getMessagesByGroup = async (taskId) => {
 
     <div class="flex items-center justify-end mr-2 space-x-3">
       <button
-        v-if="event.user_id == user.id || (event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.role == 'editor'))"
+        v-if="event.user_id == user.id || (event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.role == 'editor' && attendee.status == 'yes'))"
         class="text-gray-800 px-[10px] py-2 border-none rounded-full cursor-pointer bg-transparent hover:bg-gray-100 transition"
         @click="handleEditTask">
         <EditOutlined class="text-xl" />
       </button>
       <button
-        v-if="event.user_id == user.id || (event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.role == 'editor'))"
+        v-if="event.user_id == user.id || (event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.role == 'editor' && attendee.status == 'yes'))"
         class="text-gray-800 px-[10px] py-2 border-none rounded-full cursor-pointer bg-transparent hover:bg-gray-100 transition"
         @click="handleDelete">
         <DeleteOutlined class="text-xl" />
       </button>
       <button
-        v-if="event.user_id == user.id || (event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.role == 'editor'))"
+        v-if="(event.user_id == user.id && !event.is_private)"
         class="text-gray-800 px-[10px] py-2 border-none rounded-full cursor-pointer bg-transparent hover:bg-gray-100 transition"
         @click="showModalLink">
         <ShareAltOutlined class="text-xl" />
@@ -467,11 +481,32 @@ const getMessagesByGroup = async (taskId) => {
             <div>
               <p class="text-gray-800 mb-0">{{ formatDateTime(event.start) }} {{ event.end ? formatDateTime(event.end) :
                 ''}}, {{ event.timezone }}</p>
-              <p class="text-gray-800" v-if="event.recurrence && event.recurrence != 'none'">
-                <span v-if="event.info.extendedProps.freq === 'daily'">Hàng ngày</span>
-                <span v-else-if="event.info.extendedProps.freq === 'weekly'">Hàng tuần</span>
-                <span v-else-if="event.info.extendedProps.freq === 'monthly'">Hàng tháng</span>
-                <span v-else-if="event.info.extendedProps.freq === 'yearly'">Hàng năm</span>
+              <p class="text-gray-800 mb-0" v-if="event.recurrence && event.recurrence != 'none'">
+                <span v-if="event.info.extendedProps.freq === 'daily'">
+                  {{ event.info.extendedProps.interval <= 1 ? 'Hàng ngày' : `${event.info.extendedProps.interval} ngày một lần` }}
+                  {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
+                  {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
+                </span>
+                <span v-else-if="event.info.extendedProps.freq === 'weekly'">
+                  {{ event.info.extendedProps.interval <= 1 ? 'Hàng tuần' : `${event.info.extendedProps.interval} tuần một lần` }}
+                  {{ event.info.extendedProps.byweekday && event.info.extendedProps.byweekday.length > 0 ? `,vào ${event.info.extendedProps.byweekday.map(day => dayMap[day]).join(', ')}` : '' }}
+                  {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
+                  {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
+                </span>
+                <span v-else-if="event.info.extendedProps.freq === 'monthly'">
+                  {{ event.info.extendedProps.interval <= 1 ? 'Hàng tháng' : `${event.info.extendedProps.interval} tháng một lần` }}
+                  {{ event.info.extendedProps.bymonthday && event.info.extendedProps.bymonthday.length > 0 ? `,vào ngày ${event.info.extendedProps.bymonthday.join(', ')}` : '' }}
+                  {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
+                  {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
+                </span>
+                <span v-else-if="event.info.extendedProps.freq === 'yearly'">
+                  {{ event.info.extendedProps.interval <= 1 ? 'Hàng năm' : `${event.info.extendedProps.interval} năm một lần` }}
+                  {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
+                  {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
+                </span>
+              </p>
+              <p class="text-gray-800 mb-0" v-if="event.is_all_day">
+                Sự kiện cả ngày
               </p>
             </div>
           </div>
@@ -601,6 +636,15 @@ const getMessagesByGroup = async (taskId) => {
             <div>
               <p class="font-medium mb-0">Lịch</p>
               <p class="text-sm text-gray-600">{{ event.tag_name || 'Không có' }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-start" v-if="event.is_private">
+            <div class="w-6 h-6 flex-shrink-0 mr-3">
+              <FileProtectOutlined class="text-xl text-gray-500 w-6 h-6" />
+            </div>
+            <div>
+              <p class="font-semibold mb-0">Riêng tư</p>
             </div>
           </div>
         </div>
