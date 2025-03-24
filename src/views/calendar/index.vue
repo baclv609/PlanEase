@@ -12,7 +12,7 @@ import dayjs from "dayjs";
 import 'dayjs/locale/vi';
 
 // Import antd-vue components
-import { Button, Segmented, Tooltip } from "ant-design-vue";
+import { Button, Segmented, Tooltip, Skeleton } from "ant-design-vue";
 import {
   CalendarOutlined,
   LeftOutlined,
@@ -68,6 +68,7 @@ const {
   isEventDetailModalVisible,
   handleDeleteEvent,
   handleEventModalSuccess,
+  isCalendarLoading,
 } = useCalendar(calendarRef);
 
 onMounted(() => {
@@ -449,7 +450,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <div class="calendar-wrapper">
+
     <!-- Custom Header -->
     <div class="custom-header">
       <div class="flex items-center">
@@ -473,13 +475,6 @@ onMounted(() => {
       </div>
 
       <div class="view-toggle">
-        <!-- <Segmented v-model:value="currentView" :options="[
-          { label: 'Ngày', value: 'timeGridDay' },
-          { label: 'Tuần', value: 'timeGridWeek' },
-          { label: 'Tháng', value: 'dayGridMonth' },
-          { label: 'Năm', value: 'multiMonthYear' },
-          { label: 'Danh sách', value: 'listYear' }
-        ]" @change="changeView" /> -->
         <a-select v-model:value="currentView" @change="changeView" style="width: 150px">
           <a-select-option value="timeGridDay">Ngày</a-select-option>
           <a-select-option value="timeGridWeek">Tuần</a-select-option>
@@ -491,12 +486,18 @@ onMounted(() => {
       </div>
     </div>
 
-
-    <!-- FullCalendar -->
-    <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions" @datesSet="onDatesSet" 
-      class="bg-[#FEF9ED]"
-    />
-
+    <a-skeleton :loading="isCalendarLoading" active>
+      <template #default>
+        <FullCalendar 
+          ref="calendarRef" 
+          :key="calendarKey" 
+          :options="calendarOptions" 
+          @datesSet="onDatesSet"
+          class="bg-[#FEF9ED]"
+        />
+      </template>
+    </a-skeleton>
+    
     <!-- Modal thêm sự kiện -->
     <EventModal :open="isAddEventModalVisible" :event="selectedEventAdd" @save="handleEventModalSuccess"
       @cancel="isAddEventModalVisible = false" 
@@ -517,6 +518,24 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.calendar-wrapper {
+  width: 100%;
+  min-height: 600px;
+  background-color: #FEF9ED;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+/* Tùy chỉnh style cho skeleton */
+:deep(.ant-skeleton) {
+  width: 100%;
+  height: 100%;
+}
+
+:deep(.ant-skeleton-content) {
+  padding: 16px;
+}
+
 .custom-header {
   display: flex;
   align-items: center;

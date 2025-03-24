@@ -357,6 +357,8 @@ export function useCalendar(calendarRef) {
     await fetchEvents();
     updateTransformedEvents();
   };
+  const isCalendarLoading = ref(false);
+
   const calendarOptions = computed(() => ({
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin, rrulePlugin, luxonPlugin, multiMonthPlugin],
     headerToolbar: false,
@@ -420,7 +422,8 @@ export function useCalendar(calendarRef) {
       isAddEventModalVisible.value = true;
     },
     loading: (isLoading) => {
-      console.log(isLoading ? 'Đang tải sự kiện...' : 'Đã tải xong sự kiện');
+      isCalendarLoading.value = isLoading;
+      // console.log(isLoading ? 'Đang tải sự kiện...' : 'Đã tải xong sự kiện');
     },
   }));
 
@@ -468,6 +471,7 @@ export function useCalendar(calendarRef) {
     selectedEvent,
     handleDeleteEvent,
     selectedEventAdd,
+    isCalendarLoading,
   };
 }
 
