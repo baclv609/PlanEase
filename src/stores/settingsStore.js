@@ -7,57 +7,60 @@ import axios from 'axios';
 import { message } from 'ant-design-vue';
 
 export const useSettingsStore = defineStore("settings", {
-  state: () => ({
-    // 🖥 Cài đặt giao diện
-    displayMode: localStorage.getItem("displayMode") || "dayGridMonth", // Lưu chế độ xem vào localStorage
-    showWeekNumbers: false,
-    themeMode: "light",
+  state: () => {
+    // Load initial state from localStorage
+    const savedSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+    
+    return {
+      // 🖥 Cài đặt giao diện
+      displayMode: savedSettings.displayMode || "dayGridMonth",
+      showWeekNumbers: savedSettings.showWeekNumbers || false,
+      themeMode: savedSettings.themeMode || "light",
 
-    // Cài đặt thời gian
-    timeZone: "Asia/Saigon",
-    timeZoneOffset: moment.tz("Asia/Saigon").utcOffset() / 60, 
-    timeFormat: localStorage.getItem("timeFormat") || "24h",
-    slotDuration: "00:30:00",
-    language: localStorage.getItem("appLanguage") || "vi",
+      // Cài đặt thời gian
+      timeZone: savedSettings.timeZone || "Asia/Saigon",
+      timeZoneOffset: savedSettings.timeZoneOffset || moment.tz("Asia/Saigon").utcOffset() / 60,
+      timeFormat: savedSettings.timeFormat || "24h",
+      slotDuration: savedSettings.slotDuration || "00:30:00",
+      language: savedSettings.language || "vi",
 
-    // Cài đặt lịch
-    titleFormat: { year: "numeric", month: "long" }, // Định dạng tiêu đề lịch
-    dayHeaderFormat: { weekday: "long", day: "numeric" }, // Định dạng ngày trong cột
-    dateFormat: "YYYY-MM-DD", // Mặc định hiển thị theo chuẩn YYYY-MM-DD
-    eventTimeFormat: { hour: "2-digit", minute: "2-digit", hour12: false }, // Định dạng ngày trong sự kiện
-    initialDate: new Date().toISOString().split("T")[0], // Ngày bắt đầu
-    firstDay: 1, 
-    multiMonthYear: false, // Hiển thị nhiều tháng
+      // Cài đặt lịch
+      titleFormat: savedSettings.titleFormat || { year: "numeric", month: "long" },
+      dayHeaderFormat: savedSettings.dayHeaderFormat || { weekday: "long", day: "numeric" },
+      dateFormat: savedSettings.dateFormat || "YYYY-MM-DD",
+      eventTimeFormat: savedSettings.eventTimeFormat || { hour: "2-digit", minute: "2-digit", hour12: false },
+      initialDate: savedSettings.initialDate || new Date().toISOString().split("T")[0],
+      firstDay: savedSettings.firstDay || 1,
+      multiMonthYear: savedSettings.multiMonthYear || false,
 
-    // validRange: { start: "2025-01-01", end: "2025-12-31" }, // Giới hạn ngày
+      // Cài đặt hiển thị năm dạng lưới
+      multiMonthMaxColumns: savedSettings.multiMonthMaxColumns || 3,
+      showNonCurrentDates: savedSettings.showNonCurrentDates || false,
 
-    // Cài đặt hiển thị năm dạng lưới
-    multiMonthMaxColumns: parseInt(localStorage.getItem("multiMonthMaxColumns")) || 3,
-    showNonCurrentDates: localStorage.getItem("showNonCurrentDates") === "true",
+      // Thông báo & Nhắc nhở
+      enableNotifications: savedSettings.enableNotifications ?? true,
+      notificationType: savedSettings.notificationType || 'both',
+      reminderTime: savedSettings.reminderTime || '15',
 
-    // Thông báo & Nhắc nhở
-    enableNotifications: true,
-    notificationType: 'both',
-    reminderTime: '15',
+      // Sự kiện lặp lại
+      enableRecurringEvents: savedSettings.enableRecurringEvents ?? true,
+      defaultRecurrence: savedSettings.defaultRecurrence || "none",
 
-    // Sự kiện lặp lại
-    enableRecurringEvents: true,
-    defaultRecurrence: "none",
+      calendarRef: null,
 
-    calendarRef: null, // Lưu tham chiếu đến FullCalendar
+      // Cập nhật định dạng thời gian cho các cột
+      columnHeaderFormat: savedSettings.columnHeaderFormat || {
+        weekday: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      },
 
-    // Cập nhật định dạng thời gian cho các cột
-    columnHeaderFormat: {
-      weekday: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false
-    },
-
-    settings: null,
-    loading: false,
-  }),
+      settings: savedSettings.settings || null,
+      loading: false,
+    };
+  },
 
   getters: {
     getCurrentSettings: (state) => state.settings
@@ -66,33 +69,76 @@ export const useSettingsStore = defineStore("settings", {
   actions: {
     // Initialize settings from API response
     initializeFromApi(apiSettings) {
-      // Convert API settings to match our store format
-      const convertedSettings = {
-        user_id: Number(apiSettings.user_id),
-        displayMode: apiSettings.display_type || 'dayGridMonth',
-        language: apiSettings.language || 'vi',
-        timeZone: apiSettings.timezone_code || 'Asia/Saigon',
-        timeFormat: apiSettings.hour_format || '24h',
-        dateFormat: apiSettings.date_format || 'YYYY-MM-DD',
+      const transformedSettings = {
+        // Cài đặt giao diện
+        displayMode: apiSettings.display_type || "dayGridMonth",
+        showWeekNumbers: apiSettings.is_display_dayoff ? true : false,
+        themeMode: apiSettings.theme || "light",
+
+        // Cài đặt thời gian
+        timeZone: apiSettings.timezone_code || "Asia/Saigon",
+        timeZoneOffset: moment.tz(apiSettings.timezone_code || "Asia/Saigon").utcOffset() / 60,
+        timeFormat: apiSettings.hour_format || "24h",
+        slotDuration: "00:30:00",
+        language: apiSettings.language || "vi",
+
+        // Cài đặt lịch
+        titleFormat: apiSettings.tittle_format_options || { year: "numeric", month: "long" },
+        dayHeaderFormat: {
+          weekday: this.mapWeekdayFormat(apiSettings.column_header_format_option?.weekday) || "long",
+          day: apiSettings.column_header_format_option?.day || "numeric",
+        },
+        dateFormat: apiSettings.date_format || "YYYY-MM-DD",
+        eventTimeFormat: {
+          hour: apiSettings.hour_format === "24h" ? "2-digit" : "numeric",
+          minute: "2-digit",
+          hour12: apiSettings.hour_format !== "24h",
+        },
+        initialDate: new Date().toISOString().split("T")[0],
         firstDay: Number(apiSettings.first) || 1,
-        themeMode: apiSettings.theme || 'light',
-        titleFormat: apiSettings.tittle_format_option ? apiSettings.tittle_format_option : { year: 'numeric', month: 'long' },
-        dayHeaderFormat: apiSettings.column_header_format_option ? apiSettings.column_header_format_option : { weekday: 'long' },
-        showWeekNumbers: Boolean(apiSettings.is_display_dayoff),
+        multiMonthYear: false,
+
+        // Cài đặt hiển thị năm dạng lưới
         multiMonthMaxColumns: Number(apiSettings.multi_month_max_columns) || 3,
-        showNonCurrentDates: Boolean(apiSettings.show_non_current_dates),
-        notificationType: apiSettings.notification_type || 'both',
-        reminderTime: apiSettings.reminder_time || '15'
+        showNonCurrentDates: apiSettings.show_non_current_dates === true,
+
+        // Thông báo & Nhắc nhở
+        enableNotifications: true,
+        notificationType: apiSettings.notification_type || "both",
+        reminderTime: apiSettings.reminder_time || "15",
+
+        // Sự kiện lặp lại
+        enableRecurringEvents: true,
+        defaultRecurrence: "none",
+
+        // Cập nhật định dạng thời gian cho các cột
+        columnHeaderFormat: {
+          weekday: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: apiSettings.hour_format !== "24h"
+        }
       };
 
       // Update state
-      Object.assign(this.$state, convertedSettings);
+      Object.assign(this.$state, transformedSettings);
       
       // Save to localStorage
       this.saveToLocalStorage();
       
       // Update calendar
       this.updateFullCalendar();
+    },
+
+    // Add new method to map weekday format
+    mapWeekdayFormat(weekday) {
+      const formatMap = {
+        'short': 'long',  // Map 'short' to 'long' for select option
+        'narrow': 'long',
+        'long': 'long'
+      };
+      return formatMap[weekday] || 'long';
     },
 
     // Save settings to API
@@ -137,20 +183,30 @@ export const useSettingsStore = defineStore("settings", {
     saveToLocalStorage() {
       // Tạo một object mới chỉ chứa các thuộc tính cần thiết
       const settingsToSave = {
-        id: this.id,
-        user_id: this.user_id,
         displayMode: this.displayMode,
-        language: this.language,
+        showWeekNumbers: this.showWeekNumbers,
+        themeMode: this.themeMode,
         timeZone: this.timeZone,
+        timeZoneOffset: this.timeZoneOffset,
         timeFormat: this.timeFormat,
-        firstDay: this.firstDay,
+        slotDuration: this.slotDuration,
+        language: this.language,
         titleFormat: this.titleFormat,
         dayHeaderFormat: this.dayHeaderFormat,
-        showWeekNumbers: this.showWeekNumbers,
+        dateFormat: this.dateFormat,
+        eventTimeFormat: this.eventTimeFormat,
+        initialDate: this.initialDate,
+        firstDay: this.firstDay,
+        multiMonthYear: this.multiMonthYear,
         multiMonthMaxColumns: this.multiMonthMaxColumns,
         showNonCurrentDates: this.showNonCurrentDates,
+        enableNotifications: this.enableNotifications,
         notificationType: this.notificationType,
-        reminderTime: this.reminderTime
+        reminderTime: this.reminderTime,
+        enableRecurringEvents: this.enableRecurringEvents,
+        defaultRecurrence: this.defaultRecurrence,
+        columnHeaderFormat: this.columnHeaderFormat,
+        settings: this.settings
       };
 
       // Lưu object đã lọc vào localStorage
@@ -170,9 +226,15 @@ export const useSettingsStore = defineStore("settings", {
     // Update FullCalendar
     updateFullCalendar() {
       if (this.calendarRef && this.calendarRef.getApi) {
-        this.calendarRef.getApi().refetchEvents();
-      } else {
-        console.warn("calendarRef is not available when calling updateFullCalendar");
+        try {
+          const api = this.calendarRef.getApi();
+          if (api) {
+            api.refetchEvents();
+          }
+        } catch (error) {
+          console.log("Calendar not ready yet, skipping update");
+          // Có thể thêm logic retry ở đây nếu cần
+        }
       }
     },
 
@@ -372,8 +434,8 @@ export const useSettingsStore = defineStore("settings", {
         
         // Header format
         dayHeaderFormat: settings.dayHeaderFormat || {
-          day: 'numeric',
-          weekday: 'long'
+          weekday: 'long',
+          day: 'numeric'
         },
         
         // Title format

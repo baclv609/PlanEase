@@ -590,7 +590,7 @@ const filterOption = (input, option) => {
 // lấy offset timezone
 const getGmtOffset = (tz) => {
   const offset = moment.tz(tz).utcOffset(); // Lấy offset tính bằng phút
-  return `UTC${offset >= 0 ? "+" : ""}${offset / 60}`; // Định dạng GMT
+  return `UTC${offset >= 0 ? "+" : ""}${offset / 60}`; // Định dạng UTC
 };
 
 // cập nhật giờ thông báo

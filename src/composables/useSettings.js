@@ -11,8 +11,8 @@ export const useSettings = () => {
             themeMode: apiSettings.theme,
             timeZone: apiSettings.timezone_code,
             dayHeaderFormat: {
-                weekday: apiSettings.column_header_format_option.weekday,
                 day: apiSettings.column_header_format_option.day,
+                weekday: apiSettings.column_header_format_option.weekday,
             },
             enableNotifications: true,
             enableRecurringEvents: true,
