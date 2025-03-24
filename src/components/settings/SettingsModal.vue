@@ -380,11 +380,11 @@ const monthOptions = computed(() =>
   }))
 );
 
-// Lấy danh sách múi giờ kèm theo GMT offset
+// Lấy danh sách múi giờ kèm theo UTC offset
 const timeZoneOptions = computed(() => {
   return moment.tz.names().map((tz) => {
     const offset = moment.tz(tz).utcOffset() / 60; // Lấy offset theo giờ
-    const offsetText = offset >= 0 ? `GMT+${offset}` : `GMT${offset}`;
+    const offsetText = offset >= 0 ? `UTC+${offset}` : `UTC${offset}`;
     return {
       label: `${tz} (${offsetText})`,
       value: tz,
@@ -392,11 +392,11 @@ const timeZoneOptions = computed(() => {
   });
 });
 
-// Hiển thị múi giờ đã chọn với GMT offset
+// Hiển thị múi giờ đã chọn với UTC offset
 const selectedTimeZone = computed(() => {
   const tz = settings.timeZone || moment.tz.guess();
   const offset = moment.tz(tz).utcOffset() / 60;
-  const offsetText = offset >= 0 ? `GMT+${offset}` : `GMT${offset}`;
+  const offsetText = offset >= 0 ? `UTC+${offset}` : `UTC${offset}`;
   return `${tz} (${offsetText})`;
 });
 
@@ -408,7 +408,7 @@ const filterTimeZones = (input, option) => {
 // Log giá trị múi giờ khi thay đổi
 const logTimeZone = (value) => {
   console.log("🔍 Múi giờ được chọn:", value);
-  console.log("🕒 Giờ GMT:", moment.tz(value).utcOffset() / 60);
+  console.log("🕒 Giờ UTC:", moment.tz(value).utcOffset() / 60);
 };
 
 // Khi component được mounted

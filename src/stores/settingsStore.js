@@ -226,9 +226,15 @@ export const useSettingsStore = defineStore("settings", {
     // Update FullCalendar
     updateFullCalendar() {
       if (this.calendarRef && this.calendarRef.getApi) {
-        this.calendarRef.getApi().refetchEvents();
-      } else {
-        console.warn("calendarRef is not available when calling updateFullCalendar");
+        try {
+          const api = this.calendarRef.getApi();
+          if (api) {
+            api.refetchEvents();
+          }
+        } catch (error) {
+          console.log("Calendar not ready yet, skipping update");
+          // Có thể thêm logic retry ở đây nếu cần
+        }
       }
     },
 
