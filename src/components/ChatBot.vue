@@ -151,7 +151,7 @@ const sendMessage = async () => {
     } catch (error) {
         isTyping.value = false;
         if(error){
-            console.log(response);
+            console.log(error);
 
             messages.value.push({
                 text: 'Sorry, I can not create event as you told me. Please try again later.',

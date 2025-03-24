@@ -37,7 +37,8 @@ export const useEchoStore = defineStore("echo", () => {
         echo.value.private(`App.Models.User.${user.id}`)
             .listen(".task.reminder", async (event) => {
                 if (!("Notification" in window)) {
-                    console.log("Trình duyệt này không hỗ trợ thông báo");
+                    // console.log("Trình duyệt này không hỗ trợ thông báo");
+                    alert("🔔🔔 Nhắc nhở sự kiện sắp đến")
                     return;
                 }
 

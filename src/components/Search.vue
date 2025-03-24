@@ -47,9 +47,11 @@ const fetchTags = async () => {
     }
 };
 
-fetchTags();
 const toggleFilters = () => {
     showFilters.value = !showFilters.value;
+    if (showFilters.value) {
+        fetchTags();
+    }
 };
 
 watch(start, (newStart) => {

@@ -18,6 +18,7 @@ import {
   message,
   Tag,
   Drawer,
+  Upload,
 } from "ant-design-vue";
 import debounce from 'lodash/debounce';
 import { 
@@ -35,7 +36,9 @@ import {
   TeamOutlined,
   ScheduleOutlined,
   CloseCircleOutlined,
-  SyncOutlined
+  SyncOutlined,
+  UploadOutlined,
+  LinkOutlined,
 } from '@ant-design/icons-vue';
 import moment from "moment-timezone";
 import dayjs from "dayjs";
@@ -58,9 +61,9 @@ const tags = ref([]);
 const isLoading = ref(false);
 
 const colors = [
+  { label: 'Xanh dương', value: '#1890ff' }, 
   { label: 'Đỏ', value: '#ff4d4f' }, 
   { label: 'Xanh lá cây', value: '#52c41a' },
-  { label: 'Xanh dương', value: '#1890ff' }, 
   { label: 'Vàng', value: '#faad14' }, 
   { label: 'Tím', value: '#722ed1' },
   { label: 'Xám', value: '#bfbfbf' }, 
@@ -81,11 +84,14 @@ const formState = ref({
   attendees: [], // Danh sách người tham gia (Array[String])
   sendMail: null,
   tag_id: null,
-
+  role: 'viewer', // Thêm role mặc định là viewer
+  is_private: 0,
   start: null,
   end: null,
   allDay: false,
   type: "event",
+  attachments: [], // Thêm trường attachments
+  link: null,
 
   // Màu sắc
   backgroundColor: colors[0].value,
@@ -113,6 +119,34 @@ const formState = ref({
     : "Asia/Saigon",
 });
 
+// Lấy tag của người dùng
+const getAllTagByUser = async () => {
+  try {
+    const res = await axios.get(`${dirApi}tags`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if(res.data.code == 200) {
+      tags.value = res.data.data;
+    }
+  } catch (error) {
+    console.log('Loi lay tags', error);
+  }
+}
+
+// Add watcher for isAddEventModalVisible
+watch(
+  () => props.isAddEventModalVisible,
+  (newVal) => {
+    if (newVal) {
+      getAllTagByUser();
+    }
+  },
+  { immediate: true }
+);
+
 watch(
   eventData,
   (newVal) => {
@@ -125,29 +159,22 @@ watch(
   { immediate: true }
 );
 
-// Lấy tag của người dùng
-const getAllTagByUser = async () => {
-  try {
-    const res = await axios.get(`${dirApi}tags`, {
-      headers: {
-      Authorization: `Bearer ${token}`
-      }
-    });
-
-    if(res.data.code == 200) {
-      tags.value = res.data.data;
+watch(
+  () => formState.value.is_private,
+  (newVal) => {
+    if(newVal) {
+      formState.value.attendees = [];
     }
-  } catch (error) {
-    console.log('Loi lay tags', error);
   }
-}
+)
 
 onMounted(() => {
-  getAllTagByUser();
-  // Set default color
-  formState.value.color_code = colors[0].value;
-  formState.value.backgroundColor = colors[0].value;
-  formState.value.borderColor = colors[0].value;
+  if(props.isAddEventModalVisible) {
+    // Set default color
+    formState.value.color_code = colors[0].value;
+    formState.value.backgroundColor = colors[0].value;
+    formState.value.borderColor = colors[0].value;
+  }
 });
 
 const resetForm = () => {
@@ -158,11 +185,13 @@ const resetForm = () => {
     location: "",
     attendees: [], // Danh sách người tham gia (Array[String])
     tag_id: null,
-
+    role: 'viewer', // Thêm role mặc định là viewer
+    is_private: false,
     start: null,
     end: null,
     allDay: false,
     type: "event",
+    attachments: [], // Thêm trường attachments
 
     // Màu sắc
     backgroundColor: colors[0].value,
@@ -353,6 +382,8 @@ const handleSave = async () => {
       exclude_time: formState.value.exclude_time || null,
       timezone_code: formState.value.timezone_code ? formState.value.timezone_code : null,
       type: formState.value.type ? formState.value.type : null,
+      tag_id: formState.value.tag_id || null,
+      is_private: formState.value.is_private || 0,
 
       freq: formState.value.rrule?.freq ? formState.value.rrule?.freq : null,
       interval: formState.value.rrule?.interval ?? 1,
@@ -484,6 +515,10 @@ const formatReminders = (reminders) => {
 };
 const removeReminder = (index) => {
   formState.value.reminder.splice(index, 1);
+  // Tắt nhắc nhở nếu không còn reminder nào
+  if (formState.value.reminder.length == 0) {
+    formState.value.is_reminder = false;
+  }
 };
 const handleCancel = () => {
   formRef.value?.clearValidate();
@@ -543,7 +578,7 @@ const transformAttendeesData = (data) => {
   return data.map(option => ({
     user_id: option.value,
     status: 'pending',
-    role: 'viewer'
+    role: formState.value.role
   }));
 };
 
@@ -581,6 +616,47 @@ const resetEventSpecificFields = () => {
   formState.value.attendees = [];
   formState.value.is_busy = false;
 };
+
+// chọn thứ mặc định khi chọn lặp tuần
+watch(
+  () => formState.value.rrule?.freq,
+  (newVal) => {
+    if (newVal === 'weekly' && formState.value.start) {
+      const startDay = dayjs(formState.value.start).day();
+      const weekdays = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+      formState.value.rrule.byweekday = [weekdays[startDay]];
+    } else if (newVal === 'monthly' && formState.value.start) {
+      // Lấy ngày trong tháng từ ngày bắt đầu
+      const startDay = dayjs(formState.value.start).date();
+      formState.value.rrule.bymonthday = [startDay];
+    }
+  }
+);
+
+// chọn mặc định thứ của ngày bắt đầu khi không chọn thứ
+watch(
+  () => formState.value.rrule?.byweekday,
+  (newVal) => {
+    if (formState.value.rrule?.freq === 'weekly' && (!newVal || newVal.length === 0) && formState.value.start) {
+      
+      const startDay = dayjs(formState.value.start).day();
+      
+      const weekdays = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+      formState.value.rrule.byweekday = [weekdays[startDay]];
+    }
+  }
+);
+
+watch(
+  () => formState.value.rrule?.bymonthday,
+  (newVal) => {
+    if (formState.value.rrule?.freq === 'monthly' && (!newVal || newVal.length === 0) && formState.value.start) {
+      // Lấy ngày trong tháng từ ngày bắt đầu
+      const startDay = dayjs(formState.value.start).date();
+      formState.value.rrule.bymonthday = [startDay];
+    }
+  }
+);
 </script>
 
 <template>
@@ -588,7 +664,7 @@ const resetEventSpecificFields = () => {
     :open="isAddEventModalVisible" 
     title="Thêm Sự Kiện Mới" 
     @close="handleCancel"
-    width="60%"
+    width="65%"
     class="event-drawer"
   >
     <template #extra>
@@ -620,6 +696,26 @@ const resetEventSpecificFields = () => {
                     class="rounded-md" 
                   />
                 </Form.Item>
+                <div class="flex items-center gap-3 mb-3">
+                  <span class="text-sm text-gray-700">Tệp đính kèm</span>
+                  <Upload
+                    v-model:file-list="formState.attachments"
+                    :before-upload="() => false"
+                    multiple
+                    :max-count="5"
+                    class="flex-1"
+                  >
+                    <Button class="rounded-md">
+                      <UploadOutlined /> Tải lên
+                    </Button>
+                    <template #itemRender="{ file, actions }">
+                      <div class="flex items-center justify-between w-full">
+                        <span class="truncate">{{ file.name }}</span>
+                        <CloseCircleOutlined @click="actions.remove" class="text-gray-400 hover:text-red-500" />
+                      </div>
+                    </template>
+                  </Upload>
+                </div>
                 <Form.Item label="Địa điểm" name="location" class="mb-3">
                   <Input v-model:value="formState.location" placeholder="Nhập địa điểm" class="rounded-md">
                     <template #prefix>
@@ -627,6 +723,15 @@ const resetEventSpecificFields = () => {
                     </template>
                   </Input>
                 </Form.Item>
+
+                <Form.Item label="Liên kết" name="link" class="mb-3">
+                  <Input v-model:value="formState.link" placeholder="Nhập URL" class="rounded-md">
+                    <template #prefix>
+                      <LinkOutlined class="text-gray-400" />
+                    </template>
+                  </Input>
+                </Form.Item>
+
                 <div class="grid grid-cols-3 gap-3 mb-3">
                   <Form.Item label="Lịch trình" name="type" class="mb-0">
                     <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="rounded-md">
@@ -647,7 +752,7 @@ const resetEventSpecificFields = () => {
                   </a-form-item>
 
                   <Form.Item label="Gắn thẻ" name="tag" class="mb-0">
-                    <Select v-model="formState.tag_id" placeholder="Chọn loại" class="rounded-md">
+                    <Select v-model:value="formState.tag_id" placeholder="Chọn loại" class="rounded-md">
                       <Select.Option v-for="tag in tags" :key="tag.id" :value="tag.id">
                         {{ tag.name }}
                       </Select.Option>
@@ -655,7 +760,7 @@ const resetEventSpecificFields = () => {
                   </Form.Item>
                 </div>
                 <div v-if="formState.type == 'event'">
-                  <Form.Item label="Khách mời" class="mb-0">
+                  <Form.Item label="Khách mời" class="mb-2">
                     <a-select
                       v-model:value="formState.attendees"
                       mode="multiple"
@@ -675,6 +780,13 @@ const resetEventSpecificFields = () => {
                       </template>
                     </a-select>
                   </Form.Item>
+                  <div class="flex items-center gap-2">
+                    <span>Quyền khách mời:</span>
+                    <a-radio-group v-model:value="formState.role" class="flex gap-4">
+                      <a-radio value="viewer">Chỉ xem</a-radio>
+                      <a-radio value="editor">Được sửa</a-radio>
+                    </a-radio-group>
+                  </div>
                 </div>
               </Card>
             </Col>
@@ -731,19 +843,22 @@ const resetEventSpecificFields = () => {
                     </a-select-option>
                   </a-select>
                 </Form.Item>
-                <div class="grid grid-cols-3 gap-3 mb-3">
+                <div class="grid grid-cols-4 gap-3 mb-3">
                   <Form.Item label="Cả ngày" name="is_all_day" class="mb-0">
                     <Switch v-model:checked="formState.is_all_day" />
                   </Form.Item>
                   <Form.Item label="Lặp lại" name="is_repeat" class="mb-0">
                     <Switch v-model:checked="formState.is_repeat" />
                   </Form.Item>
+                  <Form.Item label="Riêng tư" v-if="formState.type == 'event'" name="is_private" class="mb-0">
+                    <Switch v-model:checked="formState.is_private" />
+                  </Form.Item>
                   <Form.Item v-if="formState.type == 'event'" label="Bận" name="is_busy" class="mb-0">
                     <Switch v-model:checked="formState.is_busy" />
                   </Form.Item>
                 </div>
                 <div class="space-y-2">
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-2" v-if="formState.type == 'event'">
                     <Form.Item name="is_reminder" class="mb-0">
                       <Checkbox v-model:checked="formState.is_reminder">Bật nhắc nhở</Checkbox>
                     </Form.Item>

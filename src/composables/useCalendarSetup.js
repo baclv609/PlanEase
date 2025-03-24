@@ -129,12 +129,8 @@ export function useCalendarEvents() {
           bymonthday: event.rrule.bymonthday || null,
           formattedStartTime,
           formattedEndTime,
-          messages: [],
-          comments: [],
           attachments: [],
-          status: event.status || 'pending',
-          priority: event.priority || 'medium',
-          category: event.category || 'general',
+          is_private: event.is_private ? true : false,
           created_at: event.created_at || new Date().toISOString(),
           updated_at: event.updated_at || new Date().toISOString()
         },
@@ -334,13 +330,9 @@ export function useCalendar(calendarRef) {
       is_reminder: extendedProps.is_reminder || false,
       reminder: extendedProps.reminder || [],
       location: extendedProps.location || '',
+      is_private: extendedProps.is_private,
       info: event._def || null,
-      messages: extendedProps.messages || [],
-      comments: extendedProps.comments || [],
       attachments: extendedProps.attachments || [],
-      status: extendedProps.status || 'pending',
-      priority: extendedProps.priority || 'medium',
-      category: extendedProps.category || 'general',
       created_at: extendedProps.created_at || new Date().toISOString(),
       updated_at: extendedProps.updated_at || new Date().toISOString()
     };
