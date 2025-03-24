@@ -3,7 +3,7 @@
     <a-card title="Quản lý Role" :bordered="false">
       <template #extra>
         <a-space>
-          <a-button type="default" class="trash-btn">
+          <a-button type="default" class="trash-btn" @click="handleTrashed">
             <template #icon><DeleteOutlined /></template>
             Role đã xóa
           </a-button>
@@ -35,10 +35,17 @@
                 <template #icon><EditOutlined /></template>
                 Sửa
               </a-button>
-              <a-button type="danger" size="small" @click="handleDelete(record)">
-                <template #icon><DeleteOutlined /></template>
-                Xóa
-              </a-button>
+              <a-popconfirm
+                title="Bạn có chắc chắn muốn xóa role này?"
+                ok-text="Đồng ý"
+                cancel-text="Hủy"
+                @confirm="handleDelete(record)"
+              >
+                <a-button type="danger" size="small">
+                  <template #icon><DeleteOutlined /></template>
+                  Xóa
+                </a-button>
+              </a-popconfirm>
             </a-space>
           </template>
         </template>
@@ -127,9 +134,28 @@ const handleEdit = (record) => {
   console.log('Edit role:', record);
 };
 
-const handleDelete = (record) => {
-  message.info('Chức năng đang được phát triển');
-  console.log('Delete role:', record);
+const handleDelete = async (record) => {
+  try {
+    const response = await axios.delete(`${dirApi}admin/roles/${record.id}/delete`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+
+    if (response.data.code === 200) {
+      message.success('Xóa role thành công');
+      fetchRoles();
+    } else {
+      message.error(response.data.message || 'Có lỗi xảy ra khi xóa role');
+    }
+  } catch (error) {
+    console.error('Lỗi khi xóa role:', error);
+    message.error(error.response?.data?.message || 'Có lỗi xảy ra khi xóa role');
+  }
+};
+
+const handleTrashed = () => {
+  router.push({ name: 'role-trashed' });
 };
 
 const handleCreate = () => {
