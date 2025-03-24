@@ -6,24 +6,17 @@
     @ok="handleSave"
     @cancel="handleCancel"
     :footer="null"
-  > 
-    <div class="flex" style="min-height: 450px;">
+  >
+    <div class="flex" style="min-height: 450px">
       <!-- Tabs Menu - Left Side -->
-      <a-tabs
-        v-model:activeKey="activeTabKey"
-        tab-position="left"
-        style="width: 100%"
-      >
+      <a-tabs v-model:activeKey="activeTabKey" tab-position="left" style="width: 100%">
         <!-- Giao diện Tab -->
         <a-tab-pane key="display" tab="Giao diện">
           <div class="tab-content">
             <h3>Giao diện</h3>
             <a-form layout="vertical">
               <a-form-item label="Chế độ hiển thị">
-                <a-select
-                  v-model:value="tempSettings.displayMode"
-                  @change="changeView"
-                >
+                <a-select v-model:value="tempSettings.displayMode" @change="changeView">
                   <a-select-option value="multiMonthYear">Năm (Lưới)</a-select-option>
                   <a-select-option value="listYear">Ngày (Danh sách)</a-select-option>
                   <a-select-option value="dayGridMonth">Tháng</a-select-option>
@@ -35,7 +28,7 @@
               <!-- Tùy chọn hiển thị cho chế độ xem năm dạng lưới -->
               <template v-if="tempSettings.displayMode === 'multiMonthYear'">
                 <a-form-item label="Số cột hiển thị">
-                  <a-select 
+                  <a-select
                     v-model:value="tempSettings.multiMonthMaxColumns"
                     @change="updateMultiMonthSettings"
                   >
@@ -44,15 +37,15 @@
                     <a-select-option :value="4">4 cột</a-select-option>
                   </a-select>
                 </a-form-item>
-                
+
                 <a-form-item label="Hiển thị ngày ngoài tháng">
-                  <a-switch 
+                  <a-switch
                     v-model:checked="tempSettings.showNonCurrentDates"
                     @change="updateMultiMonthSettings"
                   />
                 </a-form-item>
               </template>
-  
+
               <a-form-item label="Hiển thị ngày nghỉ">
                 <a-switch v-model:checked="tempSettings.showWeekNumbers" />
               </a-form-item>
@@ -130,7 +123,6 @@
                   <a-select-option :value="6">Thứ Bảy</a-select-option>
                 </a-select>
               </a-form-item>
-
             </a-form>
           </div>
         </a-tab-pane>
@@ -145,9 +137,15 @@
                   v-model:value="tempSettings.notificationType"
                   placeholder="Chọn loại thông báo"
                 >
-                  <a-select-option value="both">Hệ thống và cửa sổ thông báo trình duyệt</a-select-option>
-                  <a-select-option value="desktop">Chỉ thông báo hệ thống</a-select-option>
-                  <a-select-option value="alerts">Cửa sổ thông báo trình duyệt</a-select-option>
+                  <a-select-option value="both"
+                    >Hệ thống và cửa sổ thông báo trình duyệt</a-select-option
+                  >
+                  <a-select-option value="desktop"
+                    >Chỉ thông báo hệ thống</a-select-option
+                  >
+                  <a-select-option value="alerts"
+                    >Cửa sổ thông báo trình duyệt</a-select-option
+                  >
                   <a-select-option value="off">Tắt thông báo</a-select-option>
                 </a-select>
               </a-form-item>
@@ -158,7 +156,7 @@
         <!-- Ngôn ngữ Tab -->
         <a-tab-pane key="language" :tab="$t('language')">
           <div class="tab-content">
-            <h3>{{ $t('language') }}</h3>
+            <h3>{{ $t("language") }}</h3>
             <a-form layout="vertical">
               <a-form-item label="Ngôn ngữ">
                 <a-select v-model:value="tempSettings.language" @change="changeLanguage">
@@ -174,12 +172,8 @@
 
     <div class="flex justify-end mt-4 gap-2">
       <a-button @click="handleCancel">Hủy</a-button>
-      <a-button 
-        type="primary" 
-        :loading="isSaving" 
-        @click="handleSave"
-      >
-        {{ isSaving ? 'Đang lưu...' : 'Lưu thay đổi' }}
+      <a-button type="primary" :loading="isSaving" @click="handleSave">
+        {{ isSaving ? "Đang lưu..." : "Lưu thay đổi" }}
       </a-button>
       <a-button type="primary" danger @click="resetSettings">Reset</a-button>
     </div>
@@ -203,14 +197,12 @@ const emit = defineEmits(["update:isModalOpen"]);
 const settingsStore = useSettingsStore();
 const settings = settingsStore.$state;
 
-const activeTabKey = ref('display');
+const activeTabKey = ref("display");
 
 const columnHeaderFormatOptions = [
   {
     label: "Thứ viết tắt + Ngày (VD: T2, 24)",
-    value: {
-      weekday: "short",
-      day: "numeric",
+    value: { day: "numeric", weekday: "short",
       omitCommas: true,
     },
   },
@@ -260,22 +252,23 @@ const selectedTimeFormat = ref(settings.timeFormat);
 const formState = ref({});
 
 const defaultNotificationSettings = {
-  notificationType: 'email',
-  reminderTime: '15'
+  notificationType: "email",
+  reminderTime: "15",
 };
 
 const tempSettings = ref({
   ...settings,
-  notificationType: settings.notificationType || defaultNotificationSettings.notificationType,
-  reminderTime: settings.reminderTime || defaultNotificationSettings.reminderTime
+  notificationType:
+    settings.notificationType || defaultNotificationSettings.notificationType,
+  reminderTime: settings.reminderTime || defaultNotificationSettings.reminderTime,
 });
 
 const isSaving = ref(false);
 
 onMounted(() => {
   // Khởi tạo formState với giá trị từ store
-    formState.value = { ...settingsStore.getCurrentSettings };
-    // console.log('Initial form state:', formState.value); // Debug log
+  formState.value = { ...settingsStore.getCurrentSettings };
+  // console.log('Initial form state:', formState.value); // Debug log
 });
 
 // Cập nhật lại các hàm xử lý sự kiện
@@ -307,49 +300,49 @@ const updateMultiMonthSettings = () => {
 const handleSave = async () => {
   try {
     isSaving.value = true;
-    
+
     // Lưu settings hiện tại để có thể khôi phục nếu API fail
     const previousSettings = { ...settings };
-    
+
     // Tạm thời áp dụng settings mới cho API call
     Object.assign(settings, tempSettings.value);
-    
+
     // Save to API
     const success = await settingsStore.saveSettings();
-    
+
     if (success) {
       // Nếu API thành công
       // Update language if changed
       if (settings.language !== locale.value) {
         locale.value = settings.language;
       }
-      
+
       // Cập nhật calendar và lưu vào localStorage
       settingsStore.saveToLocalStorage();
       settingsStore.updateFullCalendar();
-      
-      message.success('Cài đặt đã được lưu');
+
+      message.success("Cài đặt đã được lưu");
       emit("update:isModalOpen", false);
     } else {
       // Nếu API thất bại, khôi phục lại settings cũ
       Object.assign(settings, previousSettings);
       // Khôi phục lại tempSettings
       tempSettings.value = { ...previousSettings };
-      
-      message.error('Không thể lưu cài đặt, vui lòng thử lại');
+
+      message.error("Không thể lưu cài đặt, vui lòng thử lại");
     }
   } catch (error) {
     // Trong trường hợp có lỗi, cũng khôi phục settings cũ
     Object.assign(settings, previousSettings);
     tempSettings.value = { ...previousSettings };
-    
-    console.error('Error saving settings:', error);
-    
+
+    console.error("Error saving settings:", error);
+
     // Hiển thị lỗi cụ thể nếu có
     if (error.response?.data?.message) {
       message.error(error.response.data.message);
     } else {
-      message.error('Đã xảy ra lỗi khi lưu cài đặt');
+      message.error("Đã xảy ra lỗi khi lưu cài đặt");
     }
   } finally {
     isSaving.value = false;
@@ -376,8 +369,7 @@ const resetSettings = () => {
   changeLanguage(settingsStore.language);
   updateMultiMonthSettings();
 
-  message.success('Cài đặt đã được reset');
-  
+  message.success("Cài đặt đã được reset");
 };
 
 // Danh sách tháng 1-12
