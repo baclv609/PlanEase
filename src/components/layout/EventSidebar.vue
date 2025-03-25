@@ -55,24 +55,32 @@
       />
 
       <!-- Events list -->
-      <a-list v-else :data-source="formattedUpcomingTasks" bordered>
-        <template #renderItem="{ item }">
-          <a-list-item>
-            <div class="flex justify-between w-full items-center">
-              <!-- <a-badge :color="getEventColor(item.priority)" /> -->
-              <div class="event-details flex-1 mx-3">
-                <div class="font-medium">{{ item.title }}</div>
-                <div class="text-sm text-gray-500">
-                  {{ formatDateTime(item.start_time) }}
+      <template v-if="formattedUpcomingTasks.length">
+        <a-list :data-source="displayedUpcomingTasks" bordered>
+          <template #renderItem="{ item }">
+            <a-list-item>
+              <div class="flex justify-between w-full items-center">
+                <div class="event-details flex-1 mx-3">
+                  <div class="font-medium">{{ item.title }}</div>
+                  <div class="text-sm text-gray-500">
+                    {{ formatDateTime(item.start_time) }}
+                  </div>
                 </div>
+                <a-tag :color="getEventColor(item.priority)">
+                  {{ item.formattedTime }}
+                </a-tag>
               </div>
-              <a-tag :color="getEventColor(item.priority)">
-                {{ item.formattedTime }}
-              </a-tag>
-            </div>
-          </a-list-item>
-        </template>
-      </a-list>
+            </a-list-item>
+          </template>
+        </a-list>
+
+        <!-- Nút xem thêm -->
+        <div v-if="hasMoreTasks" class="text-center mt-3">
+          <a-button type="link" @click="viewMoreEvents">
+            {{ settingsStore.language === 'vi' ? 'Xem thêm' : 'View more' }}
+          </a-button>
+        </div>
+      </template>
     </div>
 
     <div class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
@@ -362,11 +370,11 @@ watch(
     settingsStore.timeFormat
   ],
   async ([newLanguage, newTimezone, newTimeFormat]) => {
-    console.log("Settings changed:", {
-      language: newLanguage,
-      timezone: newTimezone,
-      timeFormat: newTimeFormat
-    });
+    // console.log("Settings changed:", {
+    //   language: newLanguage,
+    //   timezone: newTimezone,
+    //   timeFormat: newTimeFormat
+    // });
     
     moment.locale(newLanguage);
     moment.tz.setDefault(newTimezone);
@@ -791,6 +799,21 @@ const getEventColor = (priority) => {
     default: 'gray'
   };
   return colors[priority?.toLowerCase()] || colors.default;
+};
+
+// 1. Thêm computed property để giới hạn số lượng sự kiện
+const displayedUpcomingTasks = computed(() => {
+  return formattedUpcomingTasks.value.slice(0, 3);
+});
+
+// 2. Thêm computed property để kiểm tra có sự kiện còn lại không
+const hasMoreTasks = computed(() => {
+  return formattedUpcomingTasks.value.length > 3;
+});
+
+// Thêm hàm xử lý click vào nút xem thêm
+const viewMoreEvents = () => {
+  router.push({ name: 'upcoming' });
 };
 
 </script>

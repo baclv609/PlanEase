@@ -74,6 +74,16 @@ const calendar = [
     },
   },
   {
+    path: "/calendar/upcoming",
+    name: "upcoming",
+    component: () => import("@/views/calendar/upcoming/index.vue"),
+    meta: {
+      requiresAuth: true,
+      layout: "default",
+      notAuthRequired: false,
+    },
+  },
+  {
     path: "/calendar/test-changes-calendar",
     component: () => import("@/views/testClender/EventForm.vue"),
   }
