@@ -49,17 +49,17 @@
 
       <!-- No events -->
       <a-empty
-        v-else-if="!upcomingTasks.length"
+        v-else-if="!formattedUpcomingTasks.length"
         description="Không có sự kiện nào trong 24h tới"
         class="my-4"
       />
 
       <!-- Events list -->
-      <a-list v-else :data-source="upcomingTasks" bordered>
+      <a-list v-else :data-source="formattedUpcomingTasks" bordered>
         <template #renderItem="{ item }">
           <a-list-item>
             <div class="flex justify-between w-full items-center">
-              <a-badge :color="getEventColor(item.priority)" />
+              <!-- <a-badge :color="getEventColor(item.priority)" /> -->
               <div class="event-details flex-1 mx-3">
                 <div class="font-medium">{{ item.title }}</div>
                 <div class="text-sm text-gray-500">
@@ -67,7 +67,7 @@
                 </div>
               </div>
               <a-tag :color="getEventColor(item.priority)">
-                {{ formatTimeFromNow(item.start_time) }}
+                {{ item.formattedTime }}
               </a-tag>
             </div>
           </a-list-item>
@@ -225,7 +225,7 @@ import {
 } from "@ant-design/icons-vue";
 
 import dayjs from "dayjs";
-import { ref, onMounted, onBeforeUnmount, computed, onUnmounted } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed, onUnmounted, watch } from "vue";
 import { message } from "ant-design-vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
@@ -234,7 +234,7 @@ import debounce from 'lodash/debounce';
 import MiniCalendar from '@/components/calendar/MiniCalendar.vue';
 import { useSettingsStore } from "@/stores/settingsStore";
 import EventModal from "@/views/calendar/components/EventModal.vue";
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
@@ -305,12 +305,102 @@ const fetchUser = debounce(async (value) => {
     state.value.fetching = false;
   }
 }, 300);
-// Kết thúc hàm lấy thông tin khách mời
 
 // Khởi tạo echo store
 const echoStore = useEchoStore();
 
 const settingsStore = useSettingsStore();
+
+
+// 1. 
+const fetchUpcomingTasks = async () => {
+  loading.value = true;
+  error.value = null;
+  
+  try {
+    const response = await axios.get(`${dirApi}tasks/upComingTasks`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (response?.data?.code === 200) {
+      upcomingTasks.value = response.data.data || [];
+    } else {
+      throw new Error(response?.data?.message || 'Không thể tải danh sách sự kiện');
+    }
+
+  } catch (err) {
+    console.error('Error fetching upcoming tasks:', err);
+    
+    if (err.response) {
+      if (err.response.status === 500) {
+        error.value = 'Lỗi máy chủ, vui lòng thử lại sau';
+      } else if (err.response.status === 401) {
+        error.value = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
+      } else {
+        error.value = err.response.data?.message || 'Không thể tải danh sách sự kiện';
+      }
+    } else if (err.request) {
+      error.value = 'Không thể kết nối đến máy chủ';
+    } else {
+      error.value = 'Đã xảy ra lỗi, vui lòng thử lại';
+    }
+
+    upcomingTasks.value = [];
+    message.error(error.value);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 2. 
+watch(
+  () => [
+    settingsStore.language, 
+    settingsStore.timeZone,
+    settingsStore.timeFormat
+  ],
+  async ([newLanguage, newTimezone, newTimeFormat]) => {
+    console.log("Settings changed:", {
+      language: newLanguage,
+      timezone: newTimezone,
+      timeFormat: newTimeFormat
+    });
+    
+    moment.locale(newLanguage);
+    moment.tz.setDefault(newTimezone);
+    
+    await fetchUpcomingTasks();
+  },
+  { immediate: true }
+);
+
+// 3. Định nghĩa computed property
+const formattedUpcomingTasks = computed(() => {
+  return upcomingTasks.value.map(task => ({
+    ...task,
+    formattedTime: formatTimeFromNow(task.start_time)
+  }));
+});
+
+// 4. Thêm interval refresh trong onMounted
+onMounted(() => {
+  fetchUpcomingTasks();
+  
+  // Refresh mỗi phút
+  // refreshInterval = setInterval(() => {
+  //   fetchUpcomingTasks();
+  // }, 60000);
+});
+
+// 5. Cleanup trong onUnmounted
+
+// onUnmounted(() => {
+//   if (refreshInterval) {
+//     clearInterval(refreshInterval);
+//   }
+// });
 
 const handleDateSelect = ({ date, events }) => {
   if (!date) return;
@@ -332,7 +422,6 @@ const handleDateSelect = ({ date, events }) => {
 const handleRangeSelect = ({ start, end, events }) => {
   if (!start || !end) return;
   
-  // Update settings store with the start date
   settingsStore.initialDate = start.format('YYYY-MM-DD');
   
   // Navigate to the range view
@@ -535,7 +624,6 @@ const handleUpdateOk = async () => {
       message.success("Cập nhật tag thành công!");
       isModalOpenUpdateTag.value = false;
 
-      // Dùng dữ liệu từ API để cập nhật danh sách, tránh lệch dữ liệu
       myCalendars.value = myCalendars.value.map(tag =>
         tag.id === response.data.data.id
           ? response.data.data // Cập nhật theo API response
@@ -543,7 +631,7 @@ const handleUpdateOk = async () => {
       );
     }
   } catch (error) {
-    console.error("❌ Lỗi khi cập nhật tag:", error);
+    console.error("Lỗi khi cập nhật tag:", error);
     message.error("Lỗi khi cập nhật tag!");
   }
 };
@@ -578,187 +666,122 @@ const handleEventModalSuccess = () => {
   selectedEventAdd.value = null;
 };
 
-const fetchUpcomingTasks = async () => {
-  loading.value = true;
-  error.value = null;
-  
-  try {
-    const response = await axios.get(`${dirApi}tasks/upComingTasks`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    // Check if response exists and has data
-    if (response?.data?.code === 200) {
-      // If data exists but is empty array, set empty array
-      upcomingTasks.value = response.data.data || [];
-    } else {
-      // If response code is not 200, throw error with message
-      throw new Error(response?.data?.message || 'Không thể tải danh sách sự kiện');
-    }
-
-  } catch (err) {
-    console.error('Error fetching upcoming tasks:', err);
-    
-    // Handle different types of errors
-    if (err.response) {
-      // Server responded with error status
-      if (err.response.status === 500) {
-        error.value = 'Lỗi máy chủ, vui lòng thử lại sau';
-      } else if (err.response.status === 401) {
-        error.value = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
-      } else {
-        error.value = err.response.data?.message || 'Không thể tải danh sách sự kiện';
-      }
-    } else if (err.request) {
-      // Request made but no response received
-      error.value = 'Không thể kết nối đến máy chủ';
-    } else {
-      // Other errors
-      error.value = 'Đã xảy ra lỗi, vui lòng thử lại';
-    }
-
-    // Clear tasks on error
-    upcomingTasks.value = [];
-    
-    // Show error message
-    message.error(error.value);
-  } finally {
-    loading.value = false;
-  }
-};
-
-// Format date time
 const formatDateTime = (datetime) => {
-  return moment(datetime).format('HH:mm - DD/MM/YYYY');
+  const { timeFormat, timeZone } = settingsStore;
+  
+  // Đảm bảo moment sử dụng đúng múi giờ
+  moment.tz.setDefault(timeZone);
+  
+  // Chuyển đổi datetime từ UTC sang múi giờ local
+  const eventTime = moment.utc(datetime).tz(timeZone);
+  
+  let timeStr;
+  if (timeFormat === '12h') {
+    // Định dạng 12h với AM/PM
+    timeStr = eventTime.format('hh:mm A');
+  } else {
+    // Định dạng 24h
+    timeStr = eventTime.format('HH:mm');
+  }
+  
+  const dateStr = eventTime.format('DD/MM/YYYY');
+  
+  // Kết hợp thời gian và ngày tháng
+  return `${timeStr} - ${dateStr}`;
 };
 
 // Format time from now
 const formatTimeFromNow = (datetime) => {
-  const { language = "vi" } = JSON.parse(localStorage.getItem("userSettings")) || {};
+  const { language, timeZone, timeFormat } = settingsStore;
+  
+  // Log để debug
+  // console.log("Input datetime (UTC):", datetime);
+  // console.log("Current settings:", { language, timeZone, timeFormat });
+  
   moment.locale(language);
-
+  moment.tz.setDefault(timeZone);
+  
+  // Chuyển đổi datetime từ UTC sang múi giờ local
   const now = moment();
-  const eventTime = moment(datetime);
+  const eventTime = moment.utc(datetime).tz(timeZone);
+  
+  // console.log("Now in local timezone:", now.format());
+  // console.log("Event time in local timezone:", eventTime.format());
+  
+  // Tính toán khoảng cách thời gian
   const diffMinutes = eventTime.diff(now, 'minutes');
   const diffHours = Math.floor(diffMinutes / 60);
   const diffDays = Math.floor(diffHours / 24);
   
+  // Kiểm tra các trường hợp đặc biệt
   const isToday = eventTime.isSame(now, 'day');
   const isTomorrow = eventTime.isSame(now.clone().add(1, 'day'), 'day');
   const isOngoing = diffMinutes <= 0 && diffMinutes > -60;
+
+  const formatTime = (time) => {
+    if (timeFormat === '12h') {
+      return time.format('hh:mm A'); // 12h format với AM/PM
+    }
+    return time.format('HH:mm'); // 24h format
+  };
 
   const formats = {
     vi: {
       ongoing: 'Đang diễn ra',
       past: (unit, value) => `${Math.abs(value)} ${unit} trước`,
       future: (unit, value) => `${value} ${unit} nữa`,
-      today: `Hôm nay ${eventTime.format('HH:mm')}`,
-      tomorrow: `Ngày mai ${eventTime.format('HH:mm')}`,
-      default: eventTime.format('DD/MM/YYYY HH:mm'),
+      today: `Hôm nay ${formatTime(eventTime)}`,
+      tomorrow: `Ngày mai ${formatTime(eventTime)}`,
+      default: eventTime.format('DD/MM/YYYY ') + formatTime(eventTime),
     },
     en: {
       ongoing: 'Ongoing',
       past: (unit, value) => `${Math.abs(value)} ${unit} ago`,
       future: (unit, value) => `in ${value} ${unit}`,
-      today: `Today at ${eventTime.format('HH:mm')}`,
-      tomorrow: `Tomorrow at ${eventTime.format('HH:mm')}`,
-      default: eventTime.format('MM/DD/YYYY HH:mm'),
+      today: `Today at ${formatTime(eventTime)}`,
+      tomorrow: `Tomorrow at ${formatTime(eventTime)}`,
+      default: eventTime.format('MM/DD/YYYY ') + formatTime(eventTime),
     },
   };
 
   const t = formats[language] || formats.en;
 
-  if (isOngoing) return t.ongoing;
-  if (diffMinutes < 0) {
-    return diffHours > -24 ? t.past(language === "vi" ? "giờ" : "hours", diffHours) 
-         : diffDays > -7 ? t.past(language === "vi" ? "ngày" : "days", diffDays) 
-         : t.default;
+  let result;
+  if (isOngoing) {
+    result = t.ongoing;
+  } else if (diffMinutes < 0) {
+    // Sự kiện đã qua
+    if (diffMinutes > -60) {
+      result = t.past(language === "vi" ? "phút" : "minutes", Math.abs(diffMinutes));
+    } else if (diffHours > -24) {
+      result = t.past(language === "vi" ? "giờ" : "hours", Math.abs(diffHours));
+    } else if (diffDays > -7) {
+      result = t.past(language === "vi" ? "ngày" : "days", Math.abs(diffDays));
+    } else {
+      result = t.default;
+    }
   } else {
-    return diffMinutes < 60 ? t.future(language === "vi" ? "phút" : "minutes", diffMinutes) 
-         : diffHours < 24 ? t.future(language === "vi" ? "giờ" : "hours", diffHours) 
-         : diffDays < 7 ? t.future(language === "vi" ? "ngày" : "days", diffDays) 
-         : isToday ? t.today 
-         : isTomorrow ? t.tomorrow 
-         : t.default;
+    // Sự kiện sắp tới
+    if (diffMinutes < 60) {
+      result = t.future(language === "vi" ? "phút" : "minutes", diffMinutes);
+    } else if (diffHours < 24) {
+      result = t.future(language === "vi" ? "giờ" : "hours", diffHours);
+    } else if (diffDays < 7) {
+      result = t.future(language === "vi" ? "ngày" : "days", diffDays);
+    } else if (isToday) {
+      result = t.today;
+    } else if (isTomorrow) {
+      result = t.tomorrow;
+    } else {
+      result = t.default;
+    }
   }
+  
+  // console.log("Final result:", result);
+  return result;
 };
 
 
-// const formatTimeFromNow = (datetime) => {
-//   const userSettings = JSON.parse(localStorage.getItem("userSettings"));
-//   const language = userSettings.language || "vi";
-//   moment.locale(language);
-  
-//   const now = moment();
-//   const eventTime = moment(datetime);
-//   const diffMinutes = eventTime.diff(now, 'minutes');
-//   const diffHours = eventTime.diff(now, 'hours');
-//   const diffDays = eventTime.diff(now, 'days');
-//   const isToday = eventTime.isSame(now, 'day');
-//   const isTomorrow = eventTime.isSame(now.clone().add(1, 'day'), 'day');
-//   const isOngoing = diffMinutes <= 0 && diffMinutes > -60; // Sự kiện đang diễn ra (trong vòng 1 giờ qua)
-
-//   // Customize the output based on language
-//   if (language === 'vi') {
-//     if (isOngoing) {
-//       return 'Đang diễn ra';
-//     } else if (diffMinutes < 0) {
-//       // Sự kiện đã qua
-//       if (diffHours > -24) {
-//         return `${Math.abs(diffHours)} giờ trước`;
-//       } else if (diffDays > -7) {
-//         return `${Math.abs(diffDays)} ngày trước`;
-//       } else {
-//         return eventTime.format('DD/MM/YYYY HH:mm');
-//       }
-//     } else {
-//       // Sự kiện sắp tới
-//       if (diffMinutes < 60) {
-//         return `${diffMinutes} phút nữa`;
-//       } else if (diffHours < 24) {
-//         return `${diffHours} giờ nữa`;
-//       } else if (diffDays < 7) {
-//         return `${diffDays} ngày nữa`;
-//       } else if (isToday) {
-//         return `Hôm nay ${eventTime.format('HH:mm')}`;
-//       } else if (isTomorrow) {
-//         return `Ngày mai ${eventTime.format('HH:mm')}`;
-//       } else {
-//         return eventTime.format('DD/MM/YYYY HH:mm');
-//       }
-//     }
-//   } else {
-//     if (isOngoing) {
-//       return 'Ongoing';
-//     } else if (diffMinutes < 0) {
-//       // Past events
-//       if (diffHours > -24) {
-//         return `${Math.abs(diffHours)} hours ago`;
-//       } else if (diffDays > -7) {
-//         return `${Math.abs(diffDays)} days ago`;
-//       } else {
-//         return eventTime.format('MM/DD/YYYY HH:mm');
-//       }
-//     } else {
-//       // Upcoming events
-//       if (diffMinutes < 60) {
-//         return `in ${diffMinutes} minutes`;
-//       } else if (diffHours < 24) {
-//         return `in ${diffHours} hours`;
-//       } else if (diffDays < 7) {
-//         return `in ${diffDays} days`;
-//       } else if (isToday) {
-//         return `Today at ${eventTime.format('HH:mm')}`;
-//       } else if (isTomorrow) {
-//         return `Tomorrow at ${eventTime.format('HH:mm')}`;
-//       } else {
-//         return eventTime.format('MM/DD/YYYY HH:mm');
-//       }
-//     }
-//   }
-// };
 // Get color based on priority
 const getEventColor = (priority) => {
   const colors = {
@@ -769,24 +792,6 @@ const getEventColor = (priority) => {
   };
   return colors[priority?.toLowerCase()] || colors.default;
 };
-
-// Auto refresh every minute
-let refreshInterval;
-
-// onMounted(() => {
-//   fetchUpcomingTasks();
-  
-//   // Refresh every minute
-//   refreshInterval = setInterval(() => {
-//     fetchUpcomingTasks();
-//   }, 60000); // 60000ms = 1 minute
-// });
-
-// onUnmounted(() => {
-//   if (refreshInterval) {
-//     clearInterval(refreshInterval);
-//   }
-// });
 
 </script>
 
