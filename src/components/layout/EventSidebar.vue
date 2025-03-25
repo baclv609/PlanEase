@@ -59,7 +59,7 @@
         <template #renderItem="{ item }">
           <a-list-item>
             <div class="flex justify-between w-full items-center">
-              <a-badge :color="getEventColor(item.priority)" />
+              <!-- <a-badge :color="getEventColor(item.priority)" /> -->
               <div class="event-details flex-1 mx-3">
                 <div class="font-medium">{{ item.title }}</div>
                 <div class="text-sm text-gray-500">
@@ -356,15 +356,21 @@ const fetchUpcomingTasks = async () => {
 
 // 2. 
 watch(
-  () => [settingsStore.language, settingsStore.timeZone],
-  async ([newLanguage, newTimezone]) => {
-    console.log("Settings changed - Language:", newLanguage, "Timezone:", newTimezone);
+  () => [
+    settingsStore.language, 
+    settingsStore.timeZone,
+    settingsStore.timeFormat
+  ],
+  async ([newLanguage, newTimezone, newTimeFormat]) => {
+    console.log("Settings changed:", {
+      language: newLanguage,
+      timezone: newTimezone,
+      timeFormat: newTimeFormat
+    });
     
-    // Cập nhật locale và timezone cho moment
     moment.locale(newLanguage);
     moment.tz.setDefault(newTimezone);
     
-    // Fetch lại dữ liệu để cập nhật thời gian
     await fetchUpcomingTasks();
   },
   { immediate: true }
@@ -416,7 +422,6 @@ const handleDateSelect = ({ date, events }) => {
 const handleRangeSelect = ({ start, end, events }) => {
   if (!start || !end) return;
   
-  // Update settings store with the start date
   settingsStore.initialDate = start.format('YYYY-MM-DD');
   
   // Navigate to the range view
@@ -619,7 +624,6 @@ const handleUpdateOk = async () => {
       message.success("Cập nhật tag thành công!");
       isModalOpenUpdateTag.value = false;
 
-      // Dùng dữ liệu từ API để cập nhật danh sách, tránh lệch dữ liệu
       myCalendars.value = myCalendars.value.map(tag =>
         tag.id === response.data.data.id
           ? response.data.data // Cập nhật theo API response
@@ -662,61 +666,81 @@ const handleEventModalSuccess = () => {
   selectedEventAdd.value = null;
 };
 
-// Format date time
 const formatDateTime = (datetime) => {
-  return moment(datetime).format('HH:mm - DD/MM/YYYY');
+  const { timeFormat, timeZone } = settingsStore;
+  
+  // Đảm bảo moment sử dụng đúng múi giờ
+  moment.tz.setDefault(timeZone);
+  
+  // Chuyển đổi datetime từ UTC sang múi giờ local
+  const eventTime = moment.utc(datetime).tz(timeZone);
+  
+  let timeStr;
+  if (timeFormat === '12h') {
+    // Định dạng 12h với AM/PM
+    timeStr = eventTime.format('hh:mm A');
+  } else {
+    // Định dạng 24h
+    timeStr = eventTime.format('HH:mm');
+  }
+  
+  const dateStr = eventTime.format('DD/MM/YYYY');
+  
+  // Kết hợp thời gian và ngày tháng
+  return `${timeStr} - ${dateStr}`;
 };
 
 // Format time from now
 const formatTimeFromNow = (datetime) => {
-  const { language, timeZone } = settingsStore;
+  const { language, timeZone, timeFormat } = settingsStore;
   
   // Log để debug
-  console.log("Input datetime (UTC):", datetime);
-  console.log("Current timezone:", timeZone);
+  // console.log("Input datetime (UTC):", datetime);
+  // console.log("Current settings:", { language, timeZone, timeFormat });
   
-  // Đảm bảo moment sử dụng đúng múi giờ
   moment.locale(language);
   moment.tz.setDefault(timeZone);
   
   // Chuyển đổi datetime từ UTC sang múi giờ local
   const now = moment();
-  const eventTime = moment.utc(datetime).tz(timeZone); // Xử lý input là UTC
+  const eventTime = moment.utc(datetime).tz(timeZone);
   
-  // Log để debug
-  console.log("Now in local timezone:", now.format());
-  console.log("Event time in local timezone:", eventTime.format());
+  // console.log("Now in local timezone:", now.format());
+  // console.log("Event time in local timezone:", eventTime.format());
   
+  // Tính toán khoảng cách thời gian
   const diffMinutes = eventTime.diff(now, 'minutes');
   const diffHours = Math.floor(diffMinutes / 60);
   const diffDays = Math.floor(diffHours / 24);
   
+  // Kiểm tra các trường hợp đặc biệt
   const isToday = eventTime.isSame(now, 'day');
   const isTomorrow = eventTime.isSame(now.clone().add(1, 'day'), 'day');
   const isOngoing = diffMinutes <= 0 && diffMinutes > -60;
 
-  // Log để debug
-  console.log("Time difference in minutes:", diffMinutes);
-  console.log("Is ongoing:", isOngoing);
-  console.log("Is today:", isToday);
-  console.log("Is tomorrow:", isTomorrow);
+  const formatTime = (time) => {
+    if (timeFormat === '12h') {
+      return time.format('hh:mm A'); // 12h format với AM/PM
+    }
+    return time.format('HH:mm'); // 24h format
+  };
 
   const formats = {
     vi: {
       ongoing: 'Đang diễn ra',
       past: (unit, value) => `${Math.abs(value)} ${unit} trước`,
       future: (unit, value) => `${value} ${unit} nữa`,
-      today: `Hôm nay ${eventTime.format('HH:mm')}`,
-      tomorrow: `Ngày mai ${eventTime.format('HH:mm')}`,
-      default: eventTime.format('DD/MM/YYYY HH:mm'),
+      today: `Hôm nay ${formatTime(eventTime)}`,
+      tomorrow: `Ngày mai ${formatTime(eventTime)}`,
+      default: eventTime.format('DD/MM/YYYY ') + formatTime(eventTime),
     },
     en: {
       ongoing: 'Ongoing',
       past: (unit, value) => `${Math.abs(value)} ${unit} ago`,
       future: (unit, value) => `in ${value} ${unit}`,
-      today: `Today at ${eventTime.format('HH:mm')}`,
-      tomorrow: `Tomorrow at ${eventTime.format('HH:mm')}`,
-      default: eventTime.format('MM/DD/YYYY HH:mm'),
+      today: `Today at ${formatTime(eventTime)}`,
+      tomorrow: `Tomorrow at ${formatTime(eventTime)}`,
+      default: eventTime.format('MM/DD/YYYY ') + formatTime(eventTime),
     },
   };
 
@@ -726,26 +750,34 @@ const formatTimeFromNow = (datetime) => {
   if (isOngoing) {
     result = t.ongoing;
   } else if (diffMinutes < 0) {
-    result = diffHours > -24 
-      ? t.past(language === "vi" ? "giờ" : "hours", diffHours) 
-      : diffDays > -7 
-        ? t.past(language === "vi" ? "ngày" : "days", diffDays) 
-        : t.default;
+    // Sự kiện đã qua
+    if (diffMinutes > -60) {
+      result = t.past(language === "vi" ? "phút" : "minutes", Math.abs(diffMinutes));
+    } else if (diffHours > -24) {
+      result = t.past(language === "vi" ? "giờ" : "hours", Math.abs(diffHours));
+    } else if (diffDays > -7) {
+      result = t.past(language === "vi" ? "ngày" : "days", Math.abs(diffDays));
+    } else {
+      result = t.default;
+    }
   } else {
-    result = diffMinutes < 60 
-      ? t.future(language === "vi" ? "phút" : "minutes", diffMinutes) 
-      : diffHours < 24 
-        ? t.future(language === "vi" ? "giờ" : "hours", diffHours) 
-        : diffDays < 7 
-          ? t.future(language === "vi" ? "ngày" : "days", diffDays) 
-          : isToday 
-            ? t.today 
-            : isTomorrow 
-              ? t.tomorrow 
-              : t.default;
+    // Sự kiện sắp tới
+    if (diffMinutes < 60) {
+      result = t.future(language === "vi" ? "phút" : "minutes", diffMinutes);
+    } else if (diffHours < 24) {
+      result = t.future(language === "vi" ? "giờ" : "hours", diffHours);
+    } else if (diffDays < 7) {
+      result = t.future(language === "vi" ? "ngày" : "days", diffDays);
+    } else if (isToday) {
+      result = t.today;
+    } else if (isTomorrow) {
+      result = t.tomorrow;
+    } else {
+      result = t.default;
+    }
   }
   
-  console.log("Final result:", result);
+  // console.log("Final result:", result);
   return result;
 };
 
