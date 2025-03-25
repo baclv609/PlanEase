@@ -1,5 +1,10 @@
 <template>
- <a-drawer title="Profile" :width="'70%'" :open="open" @close="onClose">
+ <a-drawer 
+  :title="$t('profile_drawer.title')" 
+  :width="'70%'" 
+  :open="open" 
+  @close="onClose"
+ >
   <ProfileView />
 </a-drawer>
 
