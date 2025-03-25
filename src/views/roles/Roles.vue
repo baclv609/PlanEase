@@ -103,11 +103,14 @@ const fetchRoles = async (params = {}) => {
     });
 
     if (response.data && Array.isArray(response.data.data)) {
-      dataSource.value.list = response.data.data.map((role, index) => ({
-        id: role.id || index + 1,
-        ...role
-      }));
-      pagination.value.total = response.data.total || response.data.data.length;
+      dataSource.value.list = response.data.data
+        .filter(role => role.name.toLowerCase() !== 'super admin')
+        .map((role, index) => ({
+          id: role.id || index + 1,
+          ...role
+        }));
+      
+      pagination.value.total = dataSource.value.list.length;
     } else {
       console.error("API dữ liệu không hợp lệ:", response.data);
       dataSource.value = { list: [], total: 0 };
@@ -130,8 +133,7 @@ const handleView = (record) => {
 };
 
 const handleEdit = (record) => {
-  message.info('Chức năng đang được phát triển');
-  console.log('Edit role:', record);
+  router.push({ name: 'role-update', params: { id: record.id } });
 };
 
 const handleDelete = async (record) => {

@@ -1,6 +1,6 @@
 const users = [
     {
-        path: '/users',
+        path: '/dashboard/users',
         name: 'users',
         component: () => import('@/views/users/Users.vue'),
         meta: {
@@ -15,7 +15,7 @@ const users = [
     //     meta: { requiresAuth: true },
     // },
     {
-        path: '/users/:id',
+        path: '/dashboard/users/:id/detail',
         name: 'users-detail',
         component: () => import('@/views/users/UserDetailView.vue'),
         meta: {

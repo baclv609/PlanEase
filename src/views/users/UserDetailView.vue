@@ -67,6 +67,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { ArrowLeftOutlined } from '@ant-design/icons-vue';
+import { message } from 'ant-design-vue';
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 
@@ -82,19 +83,24 @@ const fetchUserDetail = async () => {
       headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
     });
 
-    if (response.data && response.data.user) {
-      user.value = response.data.user;
-    } else {
-      user.value = response.data.data;
+    let userData = response.data && response.data.user ? response.data.user : response.data.data;
+
+    if (!userData) {
+      message.error('Không tìm thấy thông tin người dùng');
+      router.push('/dashboard/users');
+      return;
     }
+
+    user.value = userData;
   } catch (error) {
     console.error('Lỗi khi lấy thông tin user:', error);
-    user.value = null;
+    message.error('Không thể lấy thông tin người dùng');
+    router.push('/dashboard/users');
   }
 };
 
 const goBack = () => {
-  router.push('/users');
+  router.push('/dashboard/users');
 };
 
 onMounted(() => {

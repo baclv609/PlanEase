@@ -121,10 +121,18 @@ const fetchDeletedRoles = async () => {
                 ...role
             }));
             pagination.value.total = response.data.total || response.data.data.length;
+
+            if (dataSource.value.list.length === 0) {
+                message.info('Không có role nào trong thùng rác');
+            }
         }
     } catch (error) {
         console.error('Lỗi khi tải danh sách role đã xóa:', error);
-        message.error('Có lỗi xảy ra khi tải danh sách role đã xóa');
+        if (error.response && error.response.status !== 404) {
+            message.error('Có lỗi xảy ra khi tải danh sách role đã xóa');
+        } else {
+            message.info('Không có role nào trong thùng rác');
+        }
     } finally {
         loading.value = false;
     }
@@ -172,7 +180,7 @@ const handleForceDelete = async (record) => {
 };
 
 const goBack = () => {
-    router.push('/roles');
+    router.push('/dashboard/roles');
 };
 
 // Fetch data when component mounted

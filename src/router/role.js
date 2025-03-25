@@ -1,6 +1,6 @@
 const roles = [
     {
-        path: '/roles',
+        path: '/dashboard/roles',
         name: 'roles',
         component: () => import('@/views/roles/Roles.vue'),
         meta: {
@@ -9,7 +9,7 @@ const roles = [
     },
 
     {
-        path: '/roles/:id',
+        path: '/dashboard/roles/:id/detail',
         name: 'role-detail',
         component: () => import('@/views/roles/RoleDetailView.vue'),
         meta: {
@@ -18,7 +18,7 @@ const roles = [
     },
 
     {
-        path: '/roles/create',
+        path: '/dashboard/roles/create',
         name: 'role-create',
         component: () => import('@/views/roles/CreateRoleView.vue'),
         meta: {
@@ -27,9 +27,18 @@ const roles = [
     },
 
     {
-        path: '/roles/trashed',
+        path: '/dashboard/roles/trashed',
         name: 'role-trashed',
         component: () => import('@/views/roles/TrashedRoleView.vue'),
+        meta: {
+            layout: 'dashboard',
+        }
+    },
+
+    {
+        path: '/dashboard/roles/:id/edit',
+        name: 'role-update',
+        component: () => import('@/views/roles/UpdateRoleView.vue'),
         meta: {
             layout: 'dashboard',
         }
