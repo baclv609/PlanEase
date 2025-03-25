@@ -8,18 +8,14 @@
         <div
           class="relative flex flex-wrap items-center justify-between gap-6 py-3 md:gap-0 md:py-4"
         >
-          <div
-            class="relative z-20 flex w-full justify-between md:px-0 lg:w-fit"
-          >
+          <div class="relative z-20 flex w-full justify-between md:px-0 lg:w-fit">
             <router-link
               to="/#home"
               aria-label="logo"
               class="flex items-center space-x-2"
             >
               <div aria-hidden="true" class="flex space-x-1">
-                <div
-                  class="size-4 rounded-full bg-gray-900 dark:bg-white"
-                ></div>
+                <div class="size-4 rounded-full bg-gray-900 dark:bg-white"></div>
                 <div class="h-6 w-2 bg-primary"></div>
               </div>
               <span class="text-2xl font-bold text-gray-900 dark:text-white"

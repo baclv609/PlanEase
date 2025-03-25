@@ -91,5 +91,46 @@
       "password_changed": "Thay đổi mật khẩu thành công",
       "logout_success": "Đăng xuất thành công"
     }
+  },
+  "event": {
+    "create_new": "Tạo Sự Kiện Mới",
+    "upcoming": "Sự kiện sắp tới",
+    "dont_miss": "Đừng bỏ lỡ các sự kiện đã lên lịch",
+    "my_calendar": "Lịch của tôi",
+    "shared_calendar": "Lịch được chia sẻ",
+    "show_only": "Hiển thị duy nhất",
+    "details": "Chi tiết",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "add_tag": "Thêm Tag",
+    "update_tag": "Cập nhật Tag",
+    "tag_name": "Tên Tag",
+    "enter_tag_name": "Nhập tên tag",
+    "color": "Màu sắc (Mã Hex)",
+    "description": "Mô tả",
+    "enter_description": "Nhập mô tả tag",
+    "invitees": "Người được mời",
+    "guests": "Khách mời",
+    "error": {
+      "fetch_tags": "Không thể lấy danh sách tag của bạn",
+      "fetch_shared_tags": "Không thể lấy danh sách tag được chia sẻ",
+      "server_connection": "Lỗi kết nối máy chủ",
+      "enter_tag_name": "Vui lòng nhập tên tag!",
+      "tag_exists": "Tag này đã tồn tại!",
+      "add_tag_error": "Lỗi khi thêm tag: {message}",
+      "server_error": "Không thể kết nối đến máy chủ!",
+      "delete_tag_error": "Không thể xóa tag. Vui lòng thử lại.",
+      "update_tag_error": "Lỗi khi cập nhật tag!",
+      "general_error": "Đã xảy ra lỗi!"
+    },
+    "success": {
+      "tag_created": "Đã thêm tag: {name}",
+      "tag_deleted": "Đã xóa tag thành công!",
+      "tag_updated": "Đã cập nhật tag thành công!"
+    }
+  },
+  "profile_drawer": {
+    "title": "Hồ sơ",
+    "close": "Đóng"
   }
 }

@@ -127,5 +127,9 @@
       "tag_deleted": "Tag deleted successfully!",
       "tag_updated": "Tag updated successfully!"
     }
+  },
+  "profile_drawer": {
+    "title": "Profile",
+    "close": "Close"
   }
 }

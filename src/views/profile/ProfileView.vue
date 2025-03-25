@@ -205,7 +205,7 @@ const fileList = ref([]);
 const fetchUserProfile = async () => {
   try {
     if (!token) {
-      console.error($t("profile.error.token_not_found"));
+      console.error("profile.error.token_not_found");
       return;
     }
 
@@ -219,11 +219,12 @@ const fetchUserProfile = async () => {
       user.value = response.data.data;
     } else {
       console.error(
-        $t("profile.error.user_not_found", { message: response.data.message })
+        "profile.error.user_not_found",
+        { message: response.data.message }
       );
     }
   } catch (error) {
-    console.error($t("profile.error.fetch_error", { error }));
+    console.error("profile.error.fetch_error", { error });
   }
 };
 
@@ -231,7 +232,7 @@ const fetchUserProfile = async () => {
 const saveChanges = async () => {
   try {
     if (!token) {
-      message.error($t("profile.error.login_required"));
+      message.error("profile.error.login_required");
       return;
     }
 
@@ -252,7 +253,7 @@ const saveChanges = async () => {
     });
 
     if (response.data.code === 200) {
-      message.success($t("profile.success.update_success"));
+      message.success("profile.success.update_success");
 
       Object.keys(errors).forEach((key) => (errors[key] = ""));
 
@@ -260,14 +261,14 @@ const saveChanges = async () => {
 
       user.value = { ...response.data.data };
     } else {
-      message.error(response.data.message || $t("profile.error.update_failed"));
+      message.error(response.data.message || "profile.error.update_failed");
     }
   } catch (err) {
     if (err.status == 422) {
-      message.warning($t("profile.error.invalid_input"));
+      message.warning("profile.error.invalid_input");
       Object.assign(errors, err.response.data.errors);
     } else {
-      message.error($t("profile.error.general_error"));
+      message.error("profile.error.general_error");
     }
   } finally {
     isLoading.value = false;
@@ -294,7 +295,7 @@ const changePassword = async () => {
     );
 
     if (response.data.code == 200) {
-      message.success($t("profile.success.password_changed"));
+      message.success("profile.success.password_changed");
 
       Object.keys(errors).forEach((key) => (errors[key] = ""));
 
@@ -302,12 +303,12 @@ const changePassword = async () => {
     }
   } catch (err) {
     if (err.status == 422) {
-      message.warning($t("profile.error.invalid_input"));
+      message.warning("profile.error.invalid_input");
       Object.assign(errors, err.response.data.errors);
     } else if (err.status == 400) {
-      message.warning($t("profile.error.password_incorrect"));
+      message.warning("profile.error.password_incorrect");
     } else {
-      message.error($t("profile.error.general_error"));
+      message.error("profile.error.general_error");
     }
   } finally {
     isLoading.value = false;
@@ -326,11 +327,11 @@ const handleLogout = () => {
       echoStore.stopListening();
       echoStore.destroyEcho();
 
-      message.success(response.data.message || $t("profile.success.logout_success"));
+      message.success(response.data.message || "profile.success.logout_success");
       router.push({ name: "home" });
     })
     .catch(() => {
-      message.error($t("profile.error.general_error"));
+      message.error("profile.error.general_error");
     });
 };
 
