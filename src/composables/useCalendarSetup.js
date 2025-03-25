@@ -203,7 +203,7 @@ export function useCalendar(calendarRef) {
   });
 
   watch(selectedTimezone, (newTimezone) => {
-    console.log(`Timezone đã thay đổi: ${newTimezone}`);
+    // console.log(`Timezone đã thay đổi: ${newTimezone}`);
     updateTransformedEvents();
     if (calendarRef.value) {
         const calendarApi = calendarRef.value.getApi();

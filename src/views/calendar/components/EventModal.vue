@@ -402,7 +402,7 @@ const handleSave = async () => {
         : null,
     };
 
-    console.log(dataApi);
+    // console.log(dataApi);
 
     const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}tasks`, dataApi, {
       headers: {
