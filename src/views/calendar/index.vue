@@ -12,13 +12,18 @@ import dayjs from "dayjs";
 import 'dayjs/locale/vi';
 
 // Import antd-vue components
-import { Button, Segmented, Tooltip } from "ant-design-vue";
+import { Button, Segmented, Tooltip, Skeleton } from "ant-design-vue";
 import {
   CalendarOutlined,
   LeftOutlined,
   RightOutlined,
   InfoCircleOutlined,
   SettingOutlined,
+  AppstoreOutlined,
+   UnorderedListOutlined,
+   FieldTimeOutlined,
+   ClockCircleOutlined,
+   PlusOutlined
 } from "@ant-design/icons-vue";
 
 // Import store & composables
@@ -63,6 +68,7 @@ const {
   isEventDetailModalVisible,
   handleDeleteEvent,
   handleEventModalSuccess,
+  isCalendarLoading,
 } = useCalendar(calendarRef);
 
 onMounted(() => {
@@ -444,21 +450,22 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <div class="calendar-wrapper">
+
     <!-- Custom Header -->
     <div class="custom-header">
-      <div class="flex  items-center">
+      <div class="flex items-center">
         <span class="header-title mr-3 capitalize">{{ currentDate }}</span>
 
         <div class="header-controls">
           
-          <Button @click="goToPrev" type="text">
+          <Button @click="goToPrev" type="text" class="px-3 border border-1 border-[#15C5B2] rounded-full hover:!bg-[#FEF9ED]">
             <left-outlined />
           </Button>
-          <Button @click="goToNext" type="text">
+          <Button @click="goToNext" type="text" class="px-3 border border-1 border-[#15C5B2] rounded-full hover:!bg-[#FEF9ED]">
             <RightOutlined />
           </Button>
-          <Button @click="goToToday" type="default">
+          <Button @click="goToToday" type="default" class="border border-1 font-semibold text-gray-500 hover:!bg-[#FEF9ED] hover:!text-gray-500 border-[#15C5B2] rounded-full hover:!border-[#15C5B2]">
             <template #icon>
               <CalendarOutlined />
             </template>
@@ -468,20 +475,33 @@ onMounted(() => {
       </div>
 
       <div class="view-toggle">
-        <Segmented v-model:value="currentView" :options="[
-          { label: 'Ngày', value: 'timeGridDay' },
-          { label: 'Tuần', value: 'timeGridWeek' },
-          { label: 'Tháng', value: 'dayGridMonth' },
-        ]" @change="changeView" />
+        <a-select v-model:value="currentView" @change="changeView" style="width: 150px">
+          <a-select-option value="timeGridDay">Ngày</a-select-option>
+          <a-select-option value="timeGridWeek">Tuần</a-select-option>
+          <a-select-option value="dayGridMonth">Tháng</a-select-option>
+          <a-select-option value="multiMonthYear">Năm</a-select-option>
+          <a-select-option value="listYear">Danh sách</a-select-option>
+        </a-select>
+
       </div>
     </div>
 
-    <!-- FullCalendar -->
-    <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions" @datesSet="onDatesSet" />
-
+    <a-skeleton :loading="isCalendarLoading" active>
+      <template #default>
+        <FullCalendar 
+          ref="calendarRef" 
+          :key="calendarKey" 
+          :options="calendarOptions" 
+          @datesSet="onDatesSet"
+          class="bg-[#FEF9ED]"
+        />
+      </template>
+    </a-skeleton>
+    
     <!-- Modal thêm sự kiện -->
     <EventModal :open="isAddEventModalVisible" :event="selectedEventAdd" @save="handleEventModalSuccess"
-      @cancel="isAddEventModalVisible = false" />
+      @cancel="isAddEventModalVisible = false" 
+      :isAddEventModalVisible="isAddEventModalVisible"/>
 
     <!-- Modal chi tiết sự kiện -->
     <EventDetailModal :open="isEventDetailModalVisible" :event="selectedEvent"  @editTask="openEditDrawer"
@@ -498,6 +518,24 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.calendar-wrapper {
+  width: 100%;
+  min-height: 600px;
+  background-color: #FEF9ED;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+/* Tùy chỉnh style cho skeleton */
+:deep(.ant-skeleton) {
+  width: 100%;
+  height: 100%;
+}
+
+:deep(.ant-skeleton-content) {
+  padding: 16px;
+}
+
 .custom-header {
   display: flex;
   align-items: center;
@@ -505,8 +543,6 @@ onMounted(() => {
   margin-bottom: 10px;
   padding: 10px;
   background: #fff;
-  /* border-radius: 8px; */
-   /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
 }
 
 .header-title {
@@ -529,5 +565,21 @@ onMounted(() => {
 
 .view-toggle {
   display: flex;
+}
+
+:deep(.fc .fc-daygrid-day-number) {
+  width: 100% !important;
+  text-align: center !important;
+  color: black !important;
+  font-weight: 600 !important;
+}
+
+:deep(.fc .fc-daygrid-day-top) {
+  display: flex !important;
+  justify-content: center !important;
+}
+
+:deep(.fc-col-header-cell-cushion) {
+  color: black !important;
 }
 </style>

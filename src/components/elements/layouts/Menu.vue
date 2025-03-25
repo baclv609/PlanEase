@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import { PieChartOutlined, UsergroupAddOutlined } from "@ant-design/icons-vue";
+import { PieChartOutlined, UsergroupAddOutlined, KeyOutlined } from "@ant-design/icons-vue";
 import { useAuth } from "@/composables";
 
 const selectedKeys = ref(["dashboard"]);
@@ -30,11 +30,11 @@ const { authState } = useAuth();
       <router-link :to="{ name: 'users' }"> Quản lý người dùng </router-link>
     </a-menu-item>
 
-    <a-menu-item key="dashboard">
+    <a-menu-item key="roles">
       <template #icon>
-        <PieChartOutlined />
+        <KeyOutlined />
       </template>
-      <router-link :to="{ name: 'dashboard' }"> Quản lý thiết bị </router-link>
+      <router-link :to="{ name: 'roles' }"> Quản lý role </router-link>
     </a-menu-item>
 
     <a-menu-item key="events">

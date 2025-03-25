@@ -9,6 +9,10 @@ import { useRouter, useRoute } from 'vue-router';
 import { message } from 'ant-design-vue';
 import { useEchoStore } from "@/stores/echoStore";
 
+import { useSettingsStore } from '@/stores/settingsStore';
+
+
+const settingsStore = useSettingsStore();
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 
 const router = useRouter();
@@ -27,7 +31,9 @@ onMounted(() => {
         .then(response => {
             if(response.data.code == 200){
                 localStorage.setItem('access_token', token);
+                const userSetting = settingsStore.initializeFromApi(response.data.setting);
                 localStorage.setItem('user', JSON.stringify(response.data.user));
+                localStorage.setItem('userSettings', JSON.stringify(userSetting));
 
                 const echoStore = useEchoStore();
                 echoStore.initEcho();

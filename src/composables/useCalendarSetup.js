@@ -4,6 +4,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import rrulePlugin from '@fullcalendar/rrule';
+import multiMonthPlugin from '@fullcalendar/multimonth';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { RRule } from 'rrule';
@@ -58,7 +59,7 @@ export function useCalendarEvents() {
         return;
       }
       rawEvents.value = response.data.data || [];
-      console.log(rawEvents.value);
+      // console.log(rawEvents.value);
     } catch (error) {
       console.error('Lỗi khi tải lịch trình:', error);
     }
@@ -66,22 +67,30 @@ export function useCalendarEvents() {
 
   const formattedEvents = computed(() =>
     rawEvents.value.map((event) => {
-
       const start = event.start_time
-      ? DateTime.fromISO(event.start_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
-      : null;
+        ? DateTime.fromISO(event.start_time, { zone: 'utc' })
+            .setZone(selectedTimezone.value)
+            .toISO() 
+        : null;
       const end = event.end_time
-        ? DateTime.fromISO(event.end_time, { zone: 'utc' }).setZone(selectedTimezone.value).toISO() 
+        ? DateTime.fromISO(event.end_time, { zone: 'utc' })
+            .setZone(selectedTimezone.value)
+            .toISO() 
         : null;
 
-      const permissionUser = () => {
-        if (event.user_id == user_id || (event.attendees && event.attendees.some(attendee => 
+      const isEditable = event.user_id == user_id || 
+        (event.attendees && event.attendees.some(attendee => 
           attendee.user_id == user_id && attendee.role == 'editor'
-        ))) {
-          return true;
-        }
-        return false;
-      }
+        ));
+
+      const formatTime = (date) => {
+        if (!date) return null;
+        return DateTime.fromISO(date)
+          .toFormat(settingsStore.timeFormat === "12h" ? "hh:mm a" : "HH:mm");
+      };
+
+      const formattedStartTime = formatTime(start);
+      const formattedEndTime = formatTime(end);
 
       return {
         id: event.id,
@@ -99,7 +108,10 @@ export function useCalendarEvents() {
         backgroundColor: event.color_code || '#3788d8',
         borderColor: event.color_code || '#3788d8',
         location: event.location,
-        editable: permissionUser(),
+        editable: isEditable,
+        display: 'block',
+        displayEventTime: true,
+        displayEventEnd: true,
         extendedProps: {
           end_time: event.end_time,
           recurrence: event.is_repeat ?? 0,
@@ -115,6 +127,12 @@ export function useCalendarEvents() {
           byweekday: event.rrule.byweekday || null,
           bymonth: event.rrule.bymonth || null,
           bymonthday: event.rrule.bymonthday || null,
+          formattedStartTime,
+          formattedEndTime,
+          attachments: [],
+          is_private: event.is_private ? true : false,
+          created_at: event.created_at || new Date().toISOString(),
+          updated_at: event.updated_at || new Date().toISOString()
         },
         exdate: Array.isArray(event.exclude_time)
             ? !event.is_all_day ? event.exclude_time.map((date) =>
@@ -176,7 +194,7 @@ export function useCalendar(calendarRef) {
   const updateTransformedEvents = () => {
     transformedEvents.value = [...formattedEvents.value];
     transformedEvents.value.forEach((event) => calendarStore.addEventStore(event));
-    console.log('transformedEvents', transformedEvents.value);
+    // console.log('transformedEvents', transformedEvents.value);
   };
 
   onMounted(async () => {
@@ -185,7 +203,7 @@ export function useCalendar(calendarRef) {
   });
 
   watch(selectedTimezone, (newTimezone) => {
-    console.log(`Timezone đã thay đổi: ${newTimezone}`);
+    // console.log(`Timezone đã thay đổi: ${newTimezone}`);
     updateTransformedEvents();
     if (calendarRef.value) {
         const calendarApi = calendarRef.value.getApi();
@@ -197,14 +215,37 @@ export function useCalendar(calendarRef) {
   watch(
     () => ({
       titleFormat: settingsStore.titleFormat,
-      columnHeaderFormat: settingsStore.columnHeaderFormat,
+      dayHeaderFormat: settingsStore.dayHeaderFormat,
+      timeFormat: settingsStore.timeFormat,
+      displayMode: settingsStore.displayMode
     }),
-    () => {
+    (newSettings) => {
+      console.log("Calendar settings changed:", newSettings);
+      if (calendarRef.value) {
+        const calendarApi = calendarRef.value.getApi();
+        
+        // Cập nhật các tùy chọn
+        calendarApi.setOption('titleFormat', newSettings.titleFormat);
+        calendarApi.setOption('dayHeaderFormat', newSettings.dayHeaderFormat);
+        calendarApi.setOption('eventTimeFormat', {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: newSettings.timeFormat === "12h"
+        });
+        
+        // Cập nhật lại view hiện tại
+        const currentView = calendarApi.view.type;
+        calendarApi.changeView(currentView);
+        
+        // Cập nhật lại sự kiện
+        calendarApi.refetchEvents();
+      }
       calendarKey.value++;
     },
     { deep: true }
   );
-watch(
+
+  watch(
     () => ({
       timeZone: settingsStore.timeZone,
       firstDay: settingsStore.firstDay,
@@ -216,6 +257,11 @@ watch(
     }),
     () => {
       console.log("Cập nhật lịch từ Pinia Settings Store...");
+      if (calendarRef.value) {
+        const calendarApi = calendarRef.value.getApi();
+        calendarApi.setOption('eventTimeFormat', settingsStore.eventTimeFormat);
+        calendarApi.refetchEvents();
+      }
       calendarKey.value++; // Buộc FullCalendar render lại
     },
     { deep: true }
@@ -231,10 +277,13 @@ watch(
   watch(
     () => settingsStore.timeFormat,
     (newFormat) => {
-      settingsStore.eventTimeFormat =
-        newFormat === '24h'
-          ? { hour: '2-digit', minute: '2-digit', hour12: false }
-          : { hour: '2-digit', minute: '2-digit', hour12: true };
+      console.log("Cập nhật định dạng thời gian:", newFormat);
+      if (calendarRef.value) {
+        const calendarApi = calendarRef.value.getApi();
+        calendarApi.setOption('eventTimeFormat', settingsStore.eventTimeFormat);
+        calendarApi.refetchEvents();
+      }
+      calendarKey.value++;
     }
   );
 
@@ -258,28 +307,36 @@ watch(
   };
   
   const openEventDetailModal = (info) => {
+    const event = info.event;
+    const extendedProps = event.extendedProps || {};
+    
     selectedEvent.value = {
-      id: info.event.id,
-      title: info.event.title,
-      uuid: info.event.extendedProps.uuid,
-      user_id: info.event.extendedProps.user_id,
-      type: info.event.extendedProps.type,
-      start: info.event.startStr,
-      end: info.event.endStr,
-      tag_id: info.event.extendedProps.tag_id,
-      tag_name: info.event.extendedProps.tag_name,
-      timezone: info.event.extendedProps.timezone,
-      color: info.event.backgroundColor,
-      is_all_day: info.event.allDay,
-      recurrence: info.event.extendedProps.recurrence || 'none',
-      description: info.event.extendedProps.description || '',
-      attendees: info.event.extendedProps.attendees,
-      is_done: info.event.extendedProps.is_done,
-      is_reminder: info.event.extendedProps.is_reminder ?? 'none',
-      reminder: info.event.extendedProps.reminder ?? 'none',
-      location: info.event.extendedProps.location,
-      info: info.event._def,
+      id: event.id,
+      title: event.title || '',
+      uuid: extendedProps.uuid || null,
+      user_id: extendedProps.user_id || null,
+      type: extendedProps.type || 'task',
+      start: event.startStr || '',
+      end: event.endStr || '',
+      tag_id: extendedProps.tag_id || null,
+      tag_name: extendedProps.tag_name || '',
+      timezone: extendedProps.timezone || settingsStore.timeZone,
+      color: event.backgroundColor || '#3788d8',
+      is_all_day: event.allDay || false,
+      recurrence: extendedProps.recurrence || 0,
+      description: extendedProps.description || '',
+      attendees: extendedProps.attendees || [],
+      is_done: extendedProps.is_done || false,
+      is_reminder: extendedProps.is_reminder || false,
+      reminder: extendedProps.reminder || [],
+      location: extendedProps.location || '',
+      is_private: extendedProps.is_private,
+      info: event._def || null,
+      attachments: extendedProps.attachments || [],
+      created_at: extendedProps.created_at || new Date().toISOString(),
+      updated_at: extendedProps.updated_at || new Date().toISOString()
     };
+    
     isEventDetailModalVisible.value = true;
   };
   const handleEventModalSuccess = async () => {
@@ -300,26 +357,54 @@ watch(
     await fetchEvents();
     updateTransformedEvents();
   };
+  const isCalendarLoading = ref(false);
+
   const calendarOptions = computed(() => ({
-    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin, rrulePlugin, luxonPlugin],
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin, rrulePlugin, luxonPlugin, multiMonthPlugin],
     headerToolbar: false,
     locale: settingsStore.language,
-    dayMaxEvents: 4,
+    dayMaxEvents: true,
     timeZone: selectedTimezone.value,
     firstDay: settingsStore.firstDay,
     initialDate: settingsStore.initialDate,
     initialView: settingsStore.displayMode,
-    eventTimeFormat: settingsStore.eventTimeFormat,
-    dayHeaderFormat: settingsStore.dayHeaderFormat || { weekday: 'short', day: 'numeric' },
+    views: {
+      multiMonthYear: {
+        type: 'multiMonth',
+        duration: { years: 1 },
+        multiMonthMaxColumns: settingsStore.multiMonthMaxColumns || 3,
+        multiMonthMinWidth: 300,
+        showNonCurrentDates: settingsStore.showNonCurrentDates,
+        titleFormat: settingsStore.titleFormat,
+        dayMaxEvents: true,
+        moreLinkContent: (args) => `+${args.num}`,
+        multiMonthTitleFormat: { month: 'long' }
+      },
+      listYear: {
+        type: 'list',
+        duration: { years: 1 },
+        titleFormat: { year: 'numeric' },
+        listDayFormat: { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' },
+        listDaySideFormat: false,
+        noEventsContent: 'Không có sự kiện nào'
+      }
+    },
+    eventTimeFormat: {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: settingsStore.timeFormat === "12h"
+    },
+    slotLabelFormat: {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: settingsStore.timeFormat === "12h"
+    },
+    dayHeaderFormat: settingsStore.dayHeaderFormat,
     titleFormat: settingsStore.titleFormat,
     validRange: settingsStore.validRange,
     editable: true,
     selectable: true,
     selectMirror: true,
-    snapDuration: '00:15:00', // Cho phép kéo thả với độ chính xác 15 phút
-    slotDuration: '00:30:00', // Độ dài mỗi ô thời gian
-    slotMinTime: '00:00:00', // Thời gian bắt đầu trong ngày
-    slotMaxTime: '24:00:00', // Thời gian kết thúc trong ngày
     events: transformedEvents.value.length ? transformedEvents.value : [],
     eventDrop,
     eventResize,
@@ -330,52 +415,52 @@ watch(
       selectedEventAdd.value = {
         start: info.startStr,
         end: info.view.type === 'dayGridMonth'
-          ? dayjs(info.endStr).subtract(1, 'day').format('YYYY-MM-DD') // Sửa lỗi end bị lệch
-          : info.endStr, // Nếu là lịch tuần/ngày, giữ nguyên
-        allDay: info.allDay, // Xác định sự kiện cả ngày
+          ? dayjs(info.endStr).subtract(1, 'day').format('YYYY-MM-DD')
+          : info.endStr,
+        allDay: info.allDay,
       };
-    
       isAddEventModalVisible.value = true;
     },
-    
-
     loading: (isLoading) => {
-      console.log(isLoading ? 'Đang tải sự kiện...' : 'Đã tải xong sự kiện');
+      isCalendarLoading.value = isLoading;
+      // console.log(isLoading ? 'Đang tải sự kiện...' : 'Đã tải xong sự kiện');
     },
-    
-
-     
-    
-    // eventDidMount: (info) => {
-    //   // Khởi tạo tooltip cho sự kiện
-    //   const { title, start, end, location, description } = info.event;
-    
-    //   // Định dạng thời gian
-    //   const startTime = start
-    //   ? dayjs(start).isSame(dayjs(), 'day')
-    //     ? "Hôm nay " + dayjs(start).format("HH:mm")
-    //     : dayjs(start).format("DD/MM/YYYY HH:mm")
-    //   : "Không có thời gian bắt đầu";
-    
-    // const endTime = end
-    //   ? dayjs(end).isSame(dayjs(), 'day')
-    //     ? "Hôm nay " + dayjs(end).format("HH:mm")
-    //     : dayjs(end).format("DD/MM/YYYY HH:mm")
-    //   : "Không có thời gian kết thúc";
-    
-    //   tippy(info.el, {
-    //     content: `
-    //       <strong>${title || "Không có tiêu đề"}</strong><br>
-    //       ${startTime} - ${endTime}<br>
-    //       Địa điểm: ${location || "Không có thông tin"}<br>
-    //       Mô tả: ${description || "Không có mô tả"}
-    //     `,
-    //     allowHTML: true,
-    //     interactive: true,
-    //     theme: 'light',
-    //   });
-    // }
   }));
+
+  // Cập nhật watcher cho view năm
+  watch(
+    () => ({
+      multiMonthMaxColumns: settingsStore.multiMonthMaxColumns,
+      showNonCurrentDates: settingsStore.showNonCurrentDates,
+      displayMode: settingsStore.displayMode
+    }),
+    (newSettings) => {
+      if (calendarRef.value && settingsStore.displayMode === 'multiMonthYear') {
+        console.log('Updating year view settings:', newSettings);
+        const calendarApi = calendarRef.value.getApi();
+        
+        const viewOptions = {
+          type: 'multiMonth',
+          duration: { years: 1 },
+          multiMonthMaxColumns: newSettings.multiMonthMaxColumns,
+          multiMonthMinWidth: 300,
+          showNonCurrentDates: newSettings.showNonCurrentDates,
+          titleFormat: { year: 'numeric' },
+          dayMaxEvents: true,
+          moreLinkContent: (args) => `+${args.num}`,
+          multiMonthTitleFormat: { month: 'long' }
+        };
+
+        if (calendarApi.view.type === 'multiMonthYear') {
+          calendarApi.setOption('views', { multiMonthYear: viewOptions });
+        } else {
+          calendarApi.changeView('multiMonthYear', viewOptions);
+        }
+      }
+    },
+    { deep: true }
+  );
+
   return {
     calendarKey,
     calendarOptions,
@@ -386,6 +471,7 @@ watch(
     selectedEvent,
     handleDeleteEvent,
     selectedEventAdd,
+    isCalendarLoading,
   };
 }
 

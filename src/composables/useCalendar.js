@@ -202,12 +202,12 @@ export function useCalendar() {
     timeZone: settingsStore.timeZone,
     firstDay: settingsStore.firstDay,
     initialDate: settingsStore.initialDate,
-    initialView: settingsStore.displayMode, // 🔹 Thêm vào đây
+    initialView: settingsStore.displayMode, 
     eventTimeFormat: settingsStore.eventTimeFormat,
     // columnHeaderFormat: settingsStore.columnHeaderFormat,
     dayHeaderFormat: settingsStore.dayHeaderFormat || {
-      weekday: "short",
       day: "numeric",
+      weekday: "short",
     },
     titleFormat: settingsStore.titleFormat,
     validRange: settingsStore.validRange,
@@ -284,9 +284,9 @@ export function useCalendar() {
       }
     },
 
-    eventChange: (info) => {
-      console.log("Sự kiện được cập nhật:", info.event);
-    },
+    // eventChange: (info) => {
+    //   console.log("Sự kiện được cập nhật:", info.event);
+    // },
 
 
     // Update task

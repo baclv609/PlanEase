@@ -1,38 +1,38 @@
 <template>
-  <a-layout class="min-h-screen bg-gray-100">
-    <a-layout-header class="sticky top-0 z-50 !bg-white shadow flex justify-between items-center px-6">
-      <div class="flex items-center gap-4">
-        <h1 class="text-lg font-semibold">Calendar App</h1>
+  <a-layout class="bg-gray-100 min-h-screen">
+    <a-layout-header class="flex justify-between shadow !bg-[#FEF9ED] items-center px-6 sticky top-0 z-50">
+      <div class="flex gap-4 items-center">
+        <h1 @click="router.push('/calendar')" class="text-lg font-semibold"><img class="w-20 cursor-pointer" src="@/assets/images/logo.png" alt=""></h1>
       </div>
 
       <Search />
 
-      <div class="flex items-center gap-4">
+      <div class="flex gap-4 items-center">
         <!-- <a-button type="primary" class="bg-yellow-500 text-white">
           <TrophyOutlined /> {{ $t("Update_plane") }}
         </a-button> -->
 
-        <a-tooltip title="">
+        <a-tooltip title="Thông báo">
           <a-badge :count="unreadCount" :offset="[-3, 7]" :show-zero="false">
-            <a-button shape="circle" @click="openNotificationModal">
-              <BellOutlined />
+            <a-button shape="circle" @click="openNotificationModal" class="border border-[#15C5B2] !bg-white hover:!bg-orange-50 transition-colors">
+              <BellOutlined class="text-orange-500" />
             </a-button>
           </a-badge>
         </a-tooltip>
 
-        <a-tooltip title="">
-          <a-button shape="circle" @click="openSettingsModal">
-            <SettingOutlined />
+        <a-tooltip title="Cài đặt">
+          <a-button shape="circle" @click="openSettingsModal" class="border border-[#15C5B2] !bg-white hover:!bg-orange-50 transition-colors">
+            <SettingOutlined class="text-orange-500" />
           </a-button>
         </a-tooltip>
 
         <!-- Profile -->
         <div>
-          <a-avatar :size="40" class="cursor-pointer" @click="openProfileDrawer">
-            <template #icon>
-              <UserOutlined />
-            </template>
-          </a-avatar>
+          <a-tooltip title="Hồ sơ">
+            <a-button shape="circle" @click="openProfileDrawer" class="border border-[#15C5B2] !bg-white hover:!bg-orange-50 transition-colors">
+              <UserOutlined class="text-orange-500" />
+            </a-button>
+          </a-tooltip>
 
           <!-- Drawer Profile -->
           <ProfileDrawer ref="profileDrawerRef" />
@@ -40,25 +40,25 @@
       </div>
     </a-layout-header>
 
-    <a-layout>
-      <a-layout-sider width="330" class="!bg-white my-5 ml-5 shadow">
+    <a-layout class="!bg-white">
+      <a-layout-sider width="300" class="shadow !bg-white my-2 ml-1 rounded-lg">
         <!-- <a-button type="primary" block class="mb-4">{{ $t('+ Create Event') }}</a-button> -->
 
         <EventSidebar />
       </a-layout-sider>
 
-      <a-layout-content class="p-6">
+      <a-layout-content class="p-2">
         <Notification 
           v-model:isNotificationOpen="isNotificationOpen" 
           :notifications="notifications" 
           />
-        <div class="bg-white p-4 shadow rounded-lg">
+        <div class="bg-white p-4 rounded-lg shadow">
           <slot></slot>
         </div>
       </a-layout-content>
     </a-layout>
 
-    <!-- <a-layout-footer class="text-center py-4 text-gray-500">
+    <!-- <a-layout-footer class="text-center text-gray-500 py-4">
       © 2025 Calendar App. All Rights Reserved. | Terms of Use | Privacy Policy
     </a-layout-footer> -->
 
@@ -110,7 +110,7 @@ const fetchNotification = async () => {
   try {
     if(response.data.code == 200) {
       notifications.value = response.data.data.notifications;
-      console.log('notification: ',notifications.value);
+      // console.log('notification: ',notifications.value);
     }
   } catch (error) {
     console.log(error);

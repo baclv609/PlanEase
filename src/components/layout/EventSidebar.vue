@@ -3,6 +3,22 @@
     <a-button type="primary" class="my-2" block @click="openAddCalendarModal"
       >+ {{ $t("event.create_new") }}</a-button
     >
+  <a-card :bodyStyle="{ padding: '16px' }" class="!bg-transparent border-none shadow-none">
+    <a-dropdown :trigger="['click']">
+      <a-button class="mb-3 w-50 bg-[#FECA7B] text-black font-bold px-6 py-6 border-none flex items-center justify-center gap-2 rounded-full hover:!text-white transition-colors">
+        <PlusOutlined /> Tạo mới <CaretDownOutlined />
+      </a-button>
+      <template #overlay>
+        <a-menu class="!bg-[#FECA7B]">
+          <a-menu-item @click="createEvent" class="!text-white transition-colors hover:!bg-[#15C5B2]">
+            <CalendarOutlined class="mr-2" /> Tạo sự kiện
+          </a-menu-item>
+          <a-menu-item @click="createTask" class="!text-white transition-colors hover:!bg-[#15C5B2]">
+            <CheckSquareOutlined class="mr-2" /> Tạo việc cần làm
+          </a-menu-item>
+        </a-menu>
+      </template>
+    </a-dropdown>
 
     <div class="calendar-section">
       <MiniCalendar
@@ -17,28 +33,66 @@
       <h2>{{ $t("event.upcoming") }}</h2>
       <p>{{ $t("event.dont_miss") }}</p>
       <a-list :data-source="filteredEvents" bordered>
+    <div class="mt-3">
+      <h2 class="mb-0">Sự kiện sắp tới</h2>
+      <p>Đừng bỏ lỡ các sự kiện đã lên lịch</p>
+      
+      <!-- Loading state -->
+      <div v-if="loading" class="flex justify-center my-4">
+        <a-spin />
+      </div>
+
+      <!-- Error state -->
+      <a-empty
+        v-else-if="error"
+        :description="error"
+        class="my-4"
+      >
+        <template #extra>
+          <a-button type="primary" @click="fetchUpcomingTasks">
+            Thử lại
+          </a-button>
+        </template>
+      </a-empty>
+
+      <!-- No events -->
+      <a-empty
+        v-else-if="!formattedUpcomingTasks.length"
+        description="Không có sự kiện nào trong 24h tới"
+        class="my-4"
+      />
+
+      <!-- Events list -->
+      <a-list v-else :data-source="formattedUpcomingTasks" bordered>
         <template #renderItem="{ item }">
           <a-list-item>
-            <div class="w-full flex items-center justify-between">
-              <a-badge :color="item.color" />
-              <div class="event-details">
-                <strong>{{ item.date }}</strong>
-                <p>{{ item.name }}</p>
+            <div class="flex justify-between w-full items-center">
+              <!-- <a-badge :color="getEventColor(item.priority)" /> -->
+              <div class="event-details flex-1 mx-3">
+                <div class="font-medium">{{ item.title }}</div>
+                <div class="text-sm text-gray-500">
+                  {{ formatDateTime(item.start_time) }}
+                </div>
               </div>
-              <a-tag :color="item.color">{{ item.time }}</a-tag>
+              <a-tag :color="getEventColor(item.priority)">
+                {{ item.formattedTime }}
+              </a-tag>
             </div>
           </a-list-item>
         </template>
       </a-list>
     </div>
 
-    <div class="mt-5">
+    <div class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-lg font-semibold">{{ $t("event.my_calendar") }}</h3>
         <PlusOutlined
           class="cursor-pointer text-blue-500 text-xl hover:scale-110 transition-transform"
           @click="openAddCalendarModal"
         />
+
+        <h3 class="text-lg font-semibold">Lịch của tôi</h3>
+        <PlusOutlined @click="isModalOpenAddTag = true" class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]" />
       </div>
 
       <a-checkbox-group
@@ -70,6 +124,18 @@
               ></span>
               <a-checkbox :value="calendar.id" class="ml-2">
                 <span class="text-sm font-medium text-gray-700">{{ calendar.name }}</span>
+          <h4 class="text-gray-500 text-sm font-semibold mb-2">📌 Lịch của tôi</h4>
+
+          <div v-for="calendar in displayedCalendars" :key="calendar.id"
+            class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
+            :style="{ borderLeft: `4px solid ${calendar.color}` }">
+
+            <div class="flex items-center">
+              <span
+                :style="{ backgroundColor: calendar.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '8px' }"></span>
+              <!-- Hình tròn nhỏ -->
+              <a-checkbox :value="calendar.id" class="">
+                <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
               </a-checkbox>
             </div>
 
@@ -77,6 +143,8 @@
               <EllipsisOutlined
                 class="cursor-pointer text-gray-500 text-lg hover:text-black transition"
               />
+              <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
+
               <template #overlay>
                 <a-menu>
                   <a-menu-item @click="displayOnly(calendar.id)">{{
@@ -95,7 +163,7 @@
               </template>
             </a-dropdown>
           </div>
-          <div v-if="myCalendars.length > 5" class="flex justify-center mt-2">
+          <div v-if="myCalendars.length > 5" class="flex justify-center mt-2" >
             <a-button type="text" @click="showAll = !showAll">
               <template v-if="showAll">
                 <CaretUpOutlined />
@@ -118,6 +186,11 @@
             class="flex items-center justify-between p-2 rounded-lg transition-all shadow-sm border border-gray-200 hover:shadow-md bg-white"
             :style="{ borderLeft: `5px solid ${calendar.color}` }"
           >
+          <h4 class="text-gray-500 text-sm font-semibold mb-2">🔗 Lịch được chia sẻ</h4>
+          <div v-for="calendar in displayedSharedCalendars" :key="calendar.id"
+            class="flex bg-white border border-gray-200 justify-between p-2 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
+            :style="{ borderLeft: `5px solid ${calendar.color}` }">
+
             <div class="flex items-center">
               <span
                 :style="{
@@ -129,7 +202,7 @@
                 }"
               ></span>
               <a-checkbox :value="calendar.id" class="ml-2">
-                <span class="text-sm font-medium text-gray-700">{{ calendar.name }}</span>
+                <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
               </a-checkbox>
             </div>
 
@@ -237,6 +310,17 @@
       </a-form-item>
     </a-form>
   </a-modal>
+<<<<<<< HEAD
+=======
+
+  <EventModal 
+    :open="isAddEventModalVisible" 
+    :event="selectedEventAdd" 
+    @save="handleEventModalSuccess"
+    @cancel="isAddEventModalVisible = false" 
+  />
+
+>>>>>>> main
 </template>
 
 <script setup>
@@ -247,10 +331,13 @@ import {
   EllipsisOutlined,
   CaretDownOutlined,
   CaretUpOutlined,
+  CloseOutlined,
+  CalendarOutlined,
+  CheckSquareOutlined,
 } from "@ant-design/icons-vue";
 
 import dayjs from "dayjs";
-import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed, onUnmounted, watch } from "vue";
 import { message } from "ant-design-vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
@@ -258,6 +345,8 @@ import { useEchoStore } from "@/stores/echoStore";
 import debounce from "lodash/debounce";
 import MiniCalendar from "@/components/calendar/MiniCalendar.vue";
 import { useSettingsStore } from "@/stores/settingsStore";
+import EventModal from "@/views/calendar/components/EventModal.vue";
+import moment from 'moment-timezone';
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem("access_token");
@@ -324,12 +413,102 @@ const fetchUser = debounce(async (value) => {
     state.value.fetching = false;
   }
 }, 300);
-// Kết thúc hàm lấy thông tin khách mời
 
 // Khởi tạo echo store
 const echoStore = useEchoStore();
 
 const settingsStore = useSettingsStore();
+
+
+// 1. 
+const fetchUpcomingTasks = async () => {
+  loading.value = true;
+  error.value = null;
+  
+  try {
+    const response = await axios.get(`${dirApi}tasks/upComingTasks`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (response?.data?.code === 200) {
+      upcomingTasks.value = response.data.data || [];
+    } else {
+      throw new Error(response?.data?.message || 'Không thể tải danh sách sự kiện');
+    }
+
+  } catch (err) {
+    console.error('Error fetching upcoming tasks:', err);
+    
+    if (err.response) {
+      if (err.response.status === 500) {
+        error.value = 'Lỗi máy chủ, vui lòng thử lại sau';
+      } else if (err.response.status === 401) {
+        error.value = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
+      } else {
+        error.value = err.response.data?.message || 'Không thể tải danh sách sự kiện';
+      }
+    } else if (err.request) {
+      error.value = 'Không thể kết nối đến máy chủ';
+    } else {
+      error.value = 'Đã xảy ra lỗi, vui lòng thử lại';
+    }
+
+    upcomingTasks.value = [];
+    message.error(error.value);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 2. 
+watch(
+  () => [
+    settingsStore.language, 
+    settingsStore.timeZone,
+    settingsStore.timeFormat
+  ],
+  async ([newLanguage, newTimezone, newTimeFormat]) => {
+    console.log("Settings changed:", {
+      language: newLanguage,
+      timezone: newTimezone,
+      timeFormat: newTimeFormat
+    });
+    
+    moment.locale(newLanguage);
+    moment.tz.setDefault(newTimezone);
+    
+    await fetchUpcomingTasks();
+  },
+  { immediate: true }
+);
+
+// 3. Định nghĩa computed property
+const formattedUpcomingTasks = computed(() => {
+  return upcomingTasks.value.map(task => ({
+    ...task,
+    formattedTime: formatTimeFromNow(task.start_time)
+  }));
+});
+
+// 4. Thêm interval refresh trong onMounted
+onMounted(() => {
+  fetchUpcomingTasks();
+  
+  // Refresh mỗi phút
+  // refreshInterval = setInterval(() => {
+  //   fetchUpcomingTasks();
+  // }, 60000);
+});
+
+// 5. Cleanup trong onUnmounted
+
+// onUnmounted(() => {
+//   if (refreshInterval) {
+//     clearInterval(refreshInterval);
+//   }
+// });
 
 const handleDateSelect = ({ date, events }) => {
   if (!date) return;
@@ -383,6 +562,10 @@ const openAddCalendarModal = () => {
 
 const displayOnly = (calendarId) => {
   selectedCalendars.value = [calendarId];
+};
+
+const openDrawerAdd = () => {
+  isModalOpenAddTag.value = true;
 };
 
 // Giới hạn hiển thị
@@ -462,7 +645,7 @@ const handleOk = async () => {
       },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -575,7 +758,170 @@ const handleUpdateOk = async () => {
 
 // Lắng nghe sự kiện real-time
 onMounted(() => {
-  echoStore.initEcho();
-  echoStore.startListening();
+  // echoStore.initEcho();
+  // echoStore.startListening();
+  fetchUpcomingTasks();
 });
+
+const createEvent = () => {
+  selectedEventAdd.value = {
+    type: 'event',
+    start: dayjs().format('YYYY-MM-DD HH:mm'),
+    end: dayjs().add(30, 'minutes').format('YYYY-MM-DD HH:mm'),
+    allDay: false,
+  };
+  isAddEventModalVisible.value = true;
+};
+
+const createTask = () => {
+  selectedEventAdd.value = { 
+    type: 'task' 
+  };
+  isAddEventModalVisible.value = true;
+};
+
+const handleEventModalSuccess = () => {
+  isAddEventModalVisible.value = false;
+  selectedEventAdd.value = null;
+};
+
+const formatDateTime = (datetime) => {
+  const { timeFormat, timeZone } = settingsStore;
+  
+  // Đảm bảo moment sử dụng đúng múi giờ
+  moment.tz.setDefault(timeZone);
+  
+  // Chuyển đổi datetime từ UTC sang múi giờ local
+  const eventTime = moment.utc(datetime).tz(timeZone);
+  
+  let timeStr;
+  if (timeFormat === '12h') {
+    // Định dạng 12h với AM/PM
+    timeStr = eventTime.format('hh:mm A');
+  } else {
+    // Định dạng 24h
+    timeStr = eventTime.format('HH:mm');
+  }
+  
+  const dateStr = eventTime.format('DD/MM/YYYY');
+  
+  // Kết hợp thời gian và ngày tháng
+  return `${timeStr} - ${dateStr}`;
+};
+
+// Format time from now
+const formatTimeFromNow = (datetime) => {
+  const { language, timeZone, timeFormat } = settingsStore;
+  
+  // Log để debug
+  // console.log("Input datetime (UTC):", datetime);
+  // console.log("Current settings:", { language, timeZone, timeFormat });
+  
+  moment.locale(language);
+  moment.tz.setDefault(timeZone);
+  
+  // Chuyển đổi datetime từ UTC sang múi giờ local
+  const now = moment();
+  const eventTime = moment.utc(datetime).tz(timeZone);
+  
+  // console.log("Now in local timezone:", now.format());
+  // console.log("Event time in local timezone:", eventTime.format());
+  
+  // Tính toán khoảng cách thời gian
+  const diffMinutes = eventTime.diff(now, 'minutes');
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  
+  // Kiểm tra các trường hợp đặc biệt
+  const isToday = eventTime.isSame(now, 'day');
+  const isTomorrow = eventTime.isSame(now.clone().add(1, 'day'), 'day');
+  const isOngoing = diffMinutes <= 0 && diffMinutes > -60;
+
+  const formatTime = (time) => {
+    if (timeFormat === '12h') {
+      return time.format('hh:mm A'); // 12h format với AM/PM
+    }
+    return time.format('HH:mm'); // 24h format
+  };
+
+  const formats = {
+    vi: {
+      ongoing: 'Đang diễn ra',
+      past: (unit, value) => `${Math.abs(value)} ${unit} trước`,
+      future: (unit, value) => `${value} ${unit} nữa`,
+      today: `Hôm nay ${formatTime(eventTime)}`,
+      tomorrow: `Ngày mai ${formatTime(eventTime)}`,
+      default: eventTime.format('DD/MM/YYYY ') + formatTime(eventTime),
+    },
+    en: {
+      ongoing: 'Ongoing',
+      past: (unit, value) => `${Math.abs(value)} ${unit} ago`,
+      future: (unit, value) => `in ${value} ${unit}`,
+      today: `Today at ${formatTime(eventTime)}`,
+      tomorrow: `Tomorrow at ${formatTime(eventTime)}`,
+      default: eventTime.format('MM/DD/YYYY ') + formatTime(eventTime),
+    },
+  };
+
+  const t = formats[language] || formats.en;
+
+  let result;
+  if (isOngoing) {
+    result = t.ongoing;
+  } else if (diffMinutes < 0) {
+    // Sự kiện đã qua
+    if (diffMinutes > -60) {
+      result = t.past(language === "vi" ? "phút" : "minutes", Math.abs(diffMinutes));
+    } else if (diffHours > -24) {
+      result = t.past(language === "vi" ? "giờ" : "hours", Math.abs(diffHours));
+    } else if (diffDays > -7) {
+      result = t.past(language === "vi" ? "ngày" : "days", Math.abs(diffDays));
+    } else {
+      result = t.default;
+    }
+  } else {
+    // Sự kiện sắp tới
+    if (diffMinutes < 60) {
+      result = t.future(language === "vi" ? "phút" : "minutes", diffMinutes);
+    } else if (diffHours < 24) {
+      result = t.future(language === "vi" ? "giờ" : "hours", diffHours);
+    } else if (diffDays < 7) {
+      result = t.future(language === "vi" ? "ngày" : "days", diffDays);
+    } else if (isToday) {
+      result = t.today;
+    } else if (isTomorrow) {
+      result = t.tomorrow;
+    } else {
+      result = t.default;
+    }
+  }
+  
+  // console.log("Final result:", result);
+  return result;
+};
+
+
+// Get color based on priority
+const getEventColor = (priority) => {
+  const colors = {
+    high: 'red',
+    medium: 'orange',
+    low: 'blue',
+    default: 'gray'
+  };
+  return colors[priority?.toLowerCase()] || colors.default;
+};
+
 </script>
+
+<style scoped>
+.event-details {
+  overflow: hidden;
+}
+
+.event-details div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
