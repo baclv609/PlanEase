@@ -25,7 +25,7 @@
 
                     <div class="info-item">
                         <div class="info-label">Ngày tạo</div>
-                        <div class="info-content">{{ role.created_at || 'Chưa có thông tin' }}</div>
+                        <div class="info-content">{{ formatDate(role.created_at) || 'Chưa có thông tin' }}</div>
                     </div>
 
                     <a-divider />
@@ -55,6 +55,7 @@ import axios from 'axios'
 import { ArrowLeftOutlined } from '@ant-design/icons-vue';
 import { useRouter } from 'vue-router';
 import { Card as ACard, Spin as ASpin, Tag as ATag, Divider as ADivider } from 'ant-design-vue';
+import dayjs from 'dayjs';
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 
@@ -77,8 +78,11 @@ export default {
         this.fetchRoleDetail()
     },
     methods: {
+        formatDate(date) {
+            return date ? dayjs(date).format('DD/MM/YYYY') : '';
+        },
         goBack() {
-            this.$router.push('/roles')
+            this.$router.push('/dashboard/roles')
         },
         async fetchRoleDetail() {
             try {

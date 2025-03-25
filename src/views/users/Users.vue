@@ -4,7 +4,7 @@
 
     <template #bodyCell="{ column, record, index }">
       <template v-if="column.key === 'id'">
-        {{ index + 1 }}
+        {{ (pagination.current - 1) * pagination.pageSize + index + 1 }}
       </template>
 
       <template v-else-if="column.dataIndex">
@@ -99,7 +99,7 @@ const fetchUsers = async (params = {}) => {
         ...user
       }));
 
-      pagination.value.total = response.data.total;
+      pagination.value.total = response.data.total || response.data.data.length;
     }
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);
@@ -115,7 +115,13 @@ const handleTableChange = (pag) => {
 };
 
 const handleView = (record) => {
-  router.push({ name: 'users-detail', params: { id: record.id } });
+  if (!record || !record.id) {
+    message.error('Không tìm thấy thông tin người dùng');
+    return;
+  }
+
+  router.push(`/dashboard/users/${record.id}/detail`);
+
 };
 
 const handleToggleLock = (record) => {

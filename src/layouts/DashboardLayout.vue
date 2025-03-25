@@ -1,21 +1,62 @@
 <script setup>
 import { createVNode, ref } from "vue";
-import { Modal } from "ant-design-vue";
+import { Modal, message } from "ant-design-vue";
 import {
   ExclamationCircleOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   UserOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons-vue";
+import { useRouter } from 'vue-router';
+import axios from 'axios';
 
 import Sider from "@/components/elements/layouts/Slider.vue";
 import { useSlider, useResize } from "@/composables/index.js";
+import ProfileDrawer from '@/views/profileAdmin/ProfileDrawer.vue';
+import { useEchoStore } from "@/stores/echoStore";
 
+const router = useRouter();
+const dirApi = import.meta.env.VITE_API_BASE_URL;
 const { isCollapsed, actionCollapse } = useSlider();
 const { hasMobile } = useResize();
+const profileDrawer = ref(null);
 
 const handleSider = () => {
   actionCollapse(!isCollapsed.value);
+};
+
+const showProfile = () => {
+  profileDrawer.value?.openDrawer();
+};
+
+const handleLogout = async () => {
+  try {
+    const token = localStorage.getItem('access_token');
+    const response = await axios.post(
+      `${dirApi}auth/logout`,
+      {},
+      { 
+        headers: { 
+          Authorization: `Bearer ${token}` 
+        } 
+      }
+    );
+
+    // Xóa token và thông tin user khỏi localStorage
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user');
+
+    // Dừng Echo listener nếu có
+    const echoStore = useEchoStore();
+    echoStore.stopListening();
+    echoStore.destroyEcho();
+
+    message.success('Đăng xuất thành công');
+    router.push({ name: 'home' });
+  } catch (error) {
+    message.error('Có lỗi xảy ra khi đăng xuất');
+  }
 };
 </script>
 
@@ -56,16 +97,16 @@ const handleSider = () => {
 
               <template #overlay>
                 <a-menu>
-                  <a-menu-item>
+                  <a-menu-item @click="showProfile">
                     <template #icon>
                       <UserOutlined />
                     </template>
                     Hồ sơ
                   </a-menu-item>
 
-                  <a-menu-item>
+                  <a-menu-item @click="handleLogout">
                     <template #icon>
-                      <UserOutlined />
+                      <LogoutOutlined />
                     </template>
                     Đăng xuất
                   </a-menu-item>
@@ -83,6 +124,8 @@ const handleSider = () => {
         Powered by Prepedu interview - v1.0
       </a-layout-footer>
     </a-layout>
+
+    <ProfileDrawer ref="profileDrawer" />
   </a-layout>
 </template>
 

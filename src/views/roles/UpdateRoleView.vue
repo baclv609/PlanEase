@@ -1,5 +1,5 @@
 <template>
-    <div class="create-role-container">
+    <div class="update-role-container">
         <a-button class="back-button" type="primary" ghost @click="goBack">
             <template #icon>
                 <ArrowLeftOutlined />
@@ -7,10 +7,22 @@
             Quay lại danh sách
         </a-button>
 
-        <a-card title="Thêm Role Mới" :bordered="false" class="form-card">
+        <a-card title="Cập nhật Role" :bordered="false" class="form-card">
+            <template #extra>
+                <a-tag :color="role?.deleted_at ? 'pink' : 'green'">
+                    {{ role?.deleted_at ? 'Không hoạt động' : 'Đang hoạt động' }}
+                </a-tag>
+            </template>
+
+            <div v-if="loading" class="loading-container">
+                <a-spin size="large" />
+                <p>Đang tải thông tin...</p>
+            </div>
+
             <a-form
+                v-else
                 :model="formState"
-                name="createRole"
+                name="updateRole"
                 @finish="onFinish"
                 :rules="rules"
                 layout="vertical"
@@ -31,10 +43,10 @@
                         <a-button 
                             type="primary" 
                             html-type="submit" 
-                            :loading="loading"
+                            :loading="submitting"
                         >
                             <template #icon><SaveOutlined /></template>
-                            Lưu
+                            Lưu thay đổi
                         </a-button>
                         <a-button @click="goBack">
                             Hủy
@@ -47,15 +59,18 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import { message } from 'ant-design-vue';
 import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons-vue';
 
 const router = useRouter();
+const route = useRoute();
 const dirApi = import.meta.env.VITE_API_BASE_URL;
-const loading = ref(false);
+const loading = ref(true);
+const submitting = ref(false);
+const role = ref(null);
 
 const formState = reactive({
     name: ''
@@ -68,43 +83,71 @@ const rules = {
     ]
 };
 
-const onFinish = async (values) => {
-    loading.value = true;
+// Fetch role detail
+const fetchRoleDetail = async () => {
     try {
-        const response = await axios.post(`${dirApi}admin/roles`, { name: values.name },
+        const response = await axios.get(`${dirApi}admin/roles/${route.params.id}`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('access_token')}`
+            }
+        });
+
+        if (response.data.code === 200) {
+            role.value = response.data.data;
+            formState.name = response.data.data.name;
+        } else {
+            message.error('Không thể tải thông tin role');
+        }
+    } catch (error) {
+        console.error('Lỗi khi tải thông tin role:', error);
+        message.error('Có lỗi xảy ra khi tải thông tin role');
+    } finally {
+        loading.value = false;
+    }
+};
+
+const onFinish = async (values) => {
+    submitting.value = true;
+    try {
+        const response = await axios.put(
+            `${dirApi}admin/roles/${route.params.id}`,
+            { name: values.name },
             {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`
                 }
             }
         );
-        // console.log('API Response:', response.data);
 
         if (response.data.code === 200) {
-            message.success('Thêm role thành công');
+            message.success('Cập nhật role thành công');
             router.push('/dashboard/roles');
         } else {
-            message.error(response.data.message || 'Có lỗi xảy ra khi thêm role');
+            message.error(response.data.message || 'Có lỗi xảy ra khi cập nhật role');
         }
     } catch (error) {
-        console.error('Error detail:', error.response || error);
+        console.error('Lỗi khi cập nhật role:', error);
         if (error.response?.data?.message) {
             message.error(error.response.data.message);
         } else {
-            message.error('Có lỗi xảy ra khi tạo role');
+            message.error('Có lỗi xảy ra khi cập nhật role');
         }
     } finally {
-        loading.value = false;
+        submitting.value = false;
     }
 };
 
 const goBack = () => {
     router.push('/dashboard/roles');
 };
+
+onMounted(() => {
+    fetchRoleDetail();
+});
 </script>
 
 <style scoped>
-.create-role-container {
+.update-role-container {
     padding: 24px;
     background: #f0f2f5;
     min-height: 100vh;
@@ -125,6 +168,19 @@ const goBack = () => {
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03),
                 0 1px 6px -1px rgba(0, 0, 0, 0.02),
                 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+}
+
+.loading-container p {
+    margin-top: 16px;
+    color: #8c8c8c;
 }
 
 :deep(.ant-form-item-label) {
@@ -148,3 +204,5 @@ const goBack = () => {
     color: #1890ff;
 }
 </style>
+
+
