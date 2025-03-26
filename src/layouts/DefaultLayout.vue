@@ -20,6 +20,13 @@
           </a-badge>
         </a-tooltip>
 
+        <!-- Trash -->
+        <a-tooltip title="Thùng rác">
+          <a-button shape="circle" @click="router.push('/trash')" class="border border-[#15C5B2] !bg-white hover:!bg-orange-50 transition-colors">
+            <DeleteOutlined class="text-orange-500" />
+          </a-button>
+        </a-tooltip>
+
         <a-tooltip title="Cài đặt">
           <a-button shape="circle" @click="openSettingsModal" class="border border-[#15C5B2] !bg-white hover:!bg-orange-50 transition-colors">
             <SettingOutlined class="text-orange-500" />
@@ -68,7 +75,7 @@
 
 <script setup>
 import { ref, defineProps, onMounted, watch } from "vue";
-import { TrophyOutlined, SettingOutlined, UserOutlined, BellOutlined } from "@ant-design/icons-vue";
+import { TrophyOutlined, SettingOutlined, UserOutlined, BellOutlined, DeleteOutlined } from "@ant-design/icons-vue";
 
 import ProfileDrawer from "@/views/profile/ProfileDrawer.vue";
 import SettingCalender from "@/components/settings/SettingsModal.vue";

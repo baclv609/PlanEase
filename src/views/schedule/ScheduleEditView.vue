@@ -1066,12 +1066,17 @@ const handleSubmit = async () => {
             const newFreq = formState.value.rrule?.freq;
             const hasFreqChanged = originalFreq !== newFreq;
 
-            Modal.confirm({
-                title: "Cập nhật sự kiện lặp lại",
-                width: 500,
-                content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
-                    // Show "Update this event only" option only when freq hasn't changed
-                    ...(hasFreqChanged ? [] : [
+            // Check if start time has changed
+            const originalStart = dayjs(props.event?.start);
+            const newStart = formState.value.start;
+            const hasStartChanged = !originalStart.isSame(newStart);
+
+            // Case 1: Only start time changed, frequency unchanged
+            if (hasStartChanged && !hasFreqChanged) {
+                Modal.confirm({
+                    title: "Cập nhật sự kiện lặp lại",
+                    width: 500,
+                    content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
                         h("div", { class: "mb-3" }, [
                             h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
                                 h("input", {
@@ -1087,44 +1092,137 @@ const handleSubmit = async () => {
                                 h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
                             ]),
                         ]),
-                    ]),
-                    h("div", { class: "mb-3" }, [
-                        h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
-                            h("input", {
-                                type: "radio",
-                                name: "editOption",
-                                value: "EDIT_1B",
-                                class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
-                                checked: editOption.value === "EDIT_1B",
-                                onInput: (e) => {
-                                    editOption.value = e.target.value;
-                                },
-                            }),
-                            h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
+                        h("div", { class: "mb-3" }, [
+                            h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                                h("input", {
+                                    type: "radio",
+                                    name: "editOption",
+                                    value: "EDIT_1B",
+                                    class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                                    checked: editOption.value === "EDIT_1B",
+                                    onInput: (e) => {
+                                        editOption.value = e.target.value;
+                                    },
+                                }),
+                                h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
+                            ]),
                         ]),
                     ]),
-                    h("div", { class: "mb-3" }, [
-                        h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
-                            h("input", {
-                                type: "radio",
-                                name: "editOption",
-                                value: "EDIT_A",
-                                class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
-                                checked: editOption.value === "EDIT_A",
-                                onInput: (e) => {
-                                    editOption.value = e.target.value;
-                                },
-                            }),
-                            h("span", { class: "text-lg" }, "Cập nhật tất cả sự kiện"),
+                    okText: "Cập nhật",
+                    cancelText: "Hủy",
+                    onOk() {
+                        updateEvent({ code: editOption.value, date: formState.value.start, id: formState.value.id });
+                    },
+                });
+            }
+            // Case 2: Both frequency and start time changed
+            else if (hasFreqChanged && hasStartChanged) {
+                // Automatically use EDIT_1B without showing modal
+                updateEvent({ code: "EDIT_1B", date: formState.value.start, id: formState.value.id });
+            }
+            // Case 3: Only frequency changed
+            else if (hasFreqChanged) {
+                Modal.confirm({
+                    title: "Cập nhật sự kiện lặp lại",
+                    width: 500,
+                    content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
+                        h("div", { class: "mb-3" }, [
+                            h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                                h("input", {
+                                    type: "radio",
+                                    name: "editOption",
+                                    value: "EDIT_1B",
+                                    class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                                    checked: editOption.value === "EDIT_1B",
+                                    onInput: (e) => {
+                                        editOption.value = e.target.value;
+                                    },
+                                }),
+                                h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
+                            ]),
+                        ]),
+                        h("div", { class: "mb-3" }, [
+                            h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                                h("input", {
+                                    type: "radio",
+                                    name: "editOption",
+                                    value: "EDIT_A",
+                                    class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                                    checked: editOption.value === "EDIT_A",
+                                    onInput: (e) => {
+                                        editOption.value = e.target.value;
+                                    },
+                                }),
+                                h("span", { class: "text-lg" }, "Cập nhật tất cả sự kiện"),
+                            ]),
                         ]),
                     ]),
-                ]),
-                okText: "Cập nhật",
-                cancelText: "Hủy",
-                onOk() {
-                    updateEvent({ code: editOption.value, date: formState.value.start, id: formState.value.id });
-                },
-            });
+                    okText: "Cập nhật",
+                    cancelText: "Hủy",
+                    onOk() {
+                        updateEvent({ code: editOption.value, date: formState.value.start, id: formState.value.id });
+                    },
+                });
+            }
+            // Case 4: No changes to frequency or start time
+            else {
+                Modal.confirm({
+                    title: "Cập nhật sự kiện lặp lại",
+                    width: 500,
+                    content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
+                        h("div", { class: "mb-3" }, [
+                            h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                                h("input", {
+                                    type: "radio",
+                                    name: "editOption",
+                                    value: "EDIT_1",
+                                    class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                                    checked: editOption.value === "EDIT_1",
+                                    onInput: (e) => {
+                                        editOption.value = e.target.value;
+                                    },
+                                }),
+                                h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
+                            ]),
+                        ]),
+                        h("div", { class: "mb-3" }, [
+                            h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                                h("input", {
+                                    type: "radio",
+                                    name: "editOption",
+                                    value: "EDIT_1B",
+                                    class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                                    checked: editOption.value === "EDIT_1B",
+                                    onInput: (e) => {
+                                        editOption.value = e.target.value;
+                                    },
+                                }),
+                                h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
+                            ]),
+                        ]),
+                        h("div", { class: "mb-3" }, [
+                            h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                                h("input", {
+                                    type: "radio",
+                                    name: "editOption",
+                                    value: "EDIT_A",
+                                    class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                                    checked: editOption.value === "EDIT_A",
+                                    onInput: (e) => {
+                                        editOption.value = e.target.value;
+                                    },
+                                }),
+                                h("span", { class: "text-lg" }, "Cập nhật tất cả sự kiện"),
+                            ]),
+                        ]),
+                    ]),
+                    okText: "Cập nhật",
+                    cancelText: "Hủy",
+                    onOk() {
+                        updateEvent({ code: editOption.value, date: formState.value.start, id: formState.value.id });
+                    },
+                });
+            }
         } else {
             // Nếu không có lặp lại, cập nhật ngay lập tức
             updateEvent({ code: "EDIT_N", date: formState.value.start, id: formState.value.id });
@@ -1160,8 +1258,8 @@ const updateEvent = async ({ code, date, id }) => {
             reminder: formatReminders(formState.value.reminder) || null,
             color_code: formState.value.color_code || null,
             is_busy: formState.value.is_busy ? 1 : 0,
-            is_all_day: formState.value.allDay || 0,
-            is_repeat: formState.value.is_repeat || 0,
+            is_all_day: formState.value.allDay ? 1 : 0,
+            is_repeat: formState.value.is_repeat ? 1 : 0,
             parent_id: formState.value.parent_id || null,
             rrule: formState.value.rrule || null,
             exclude_time: formState.value.exclude_time || null,
