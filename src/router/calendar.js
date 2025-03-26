@@ -86,7 +86,18 @@ const calendar = [
   {
     path: "/calendar/test-changes-calendar",
     component: () => import("@/views/testClender/EventForm.vue"),
-  }
+  },
+  {
+    path: "/trash",
+    name: "trash",
+    meta: { requiresAuth: true },
+    component: () => import("@/views/calendar/TrashView.vue"),
+    meta: {
+      layout: "default",
+      notAuthRequired: false,
+      requiresAuth: true,
+    },
+  },
 ];
 
 export default calendar;
