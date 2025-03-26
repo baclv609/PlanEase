@@ -131,5 +131,50 @@
   "profile_drawer": {
     "title": "Profile",
     "close": "Close"
+  },
+  "common": {
+    "create": "Create New",
+    "retry": "Retry",
+    "viewMore": "View More",
+    "description": "Description",
+    "back": "Back"
+  },
+  "calendar": {
+    "createEvent": "Create Event",
+    "createTask": "Create Task",
+    "upcomingEvents": "Upcoming Events",
+    "dontMissEvents": "Don't miss your scheduled events",
+    "noUpcomingEvents": "No events in next 24 hours",
+    "myCalendar": "My Calendar",
+    "myCalendars": "📌 My Calendars",
+    "sharedCalendars": "🔗 Shared Calendars",
+    "displayOnly": "Display Only",
+    "details": "Details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "tagName": "Tag Name",
+    "enterTagName": "Enter tag name",
+    "colorHex": "Color (Hex Code)",
+    "enterTagDescription": "Enter tag description",
+    "updateTag": "Update Tag",
+    "addTag": "Add Tag"
+  },
+  "errors": {
+    "serverError": "Server error, please try again later",
+    "sessionExpired": "Session expired, please login again",
+    "connectionError": "Could not connect to server",
+    "generalError": "An error occurred, please try again",
+    "failedToLoadEvents": "Failed to load events",
+    "tagExists": "This tag already exists!",
+    "failedToAddTag": "Failed to add tag",
+    "failedToDeleteTag": "Failed to delete tag. Please try again."
+  },
+  "validation": {
+    "tagNameRequired": "Please enter tag name!"
+  },
+  "success": {
+    "tagAdded": "Added tag: {name}",
+    "tagDeleted": "Tag deleted successfully!",
+    "tagUpdated": "Tag updated successfully!"
   }
 }

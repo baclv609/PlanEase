@@ -132,5 +132,50 @@
   "profile_drawer": {
     "title": "Hồ sơ",
     "close": "Đóng"
+  },
+  "common": {
+    "create": "Tạo mới",
+    "retry": "Thử lại",
+    "viewMore": "Xem thêm",
+    "description": "Mô tả",
+    "back": "Quay lại"
+  },
+  "calendar": {
+    "createEvent": "Tạo sự kiện",
+    "createTask": "Tạo việc cần làm",
+    "upcomingEvents": "Sự kiện sắp tới",
+    "dontMissEvents": "Đừng bỏ lỡ các sự kiện đã lên lịch",
+    "noUpcomingEvents": "Không có sự kiện nào trong 24h tới",
+    "myCalendar": "Lịch của tôi",
+    "myCalendars": "📌 Lịch của tôi",
+    "sharedCalendars": "🔗 Lịch được chia sẻ",
+    "displayOnly": "Hiển thị duy nhất",
+    "details": "Chi tiết",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "tagName": "Tên tag",
+    "enterTagName": "Nhập tên tag",
+    "colorHex": "Màu sắc (Mã Hex)",
+    "enterTagDescription": "Nhập mô tả tag",
+    "updateTag": "Cập nhật Tag",
+    "addTag": "Thêm Tag"
+  },
+  "errors": {
+    "serverError": "Lỗi máy chủ, vui lòng thử lại sau",
+    "sessionExpired": "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại",
+    "connectionError": "Không thể kết nối đến máy chủ",
+    "generalError": "Đã xảy ra lỗi, vui lòng thử lại",
+    "failedToLoadEvents": "Không thể tải danh sách sự kiện",
+    "tagExists": "Tag này đã tồn tại!",
+    "failedToAddTag": "Không thể thêm tag",
+    "failedToDeleteTag": "Không thể xóa tag. Vui lòng thử lại."
+  },
+  "validation": {
+    "tagNameRequired": "Vui lòng nhập tên tag!"
+  },
+  "success": {
+    "tagAdded": "Đã thêm tag: {name}",
+    "tagDeleted": "Tag đã được xóa thành công!",
+    "tagUpdated": "Cập nhật tag thành công!"
   }
 }

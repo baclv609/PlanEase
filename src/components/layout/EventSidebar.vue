@@ -1,23 +1,34 @@
 <template>
-  <a-card :bodyStyle="{ padding: '16px' }" class="!bg-transparent border-none shadow-none">
+  <a-card
+    :bodyStyle="{ padding: '16px' }"
+    class="!bg-transparent border-none shadow-none"
+  >
     <a-dropdown :trigger="['click']">
-      <a-button class="mb-3 w-50 bg-[#FECA7B] text-black font-bold px-6 py-6 border-none flex items-center justify-center gap-2 rounded-full hover:!text-white transition-colors">
-        <PlusOutlined /> Tạo mới <CaretDownOutlined />
+      <a-button
+        class="mb-3 w-50 bg-[#FECA7B] text-black font-bold px-6 py-6 border-none flex items-center justify-center gap-2 rounded-full hover:!text-white transition-colors"
+      >
+        <PlusOutlined /> {{ t("common.create") }} <CaretDownOutlined />
       </a-button>
       <template #overlay>
         <a-menu class="!bg-[#FECA7B]">
-          <a-menu-item @click="createEvent" class="!text-white transition-colors hover:!bg-[#15C5B2]">
-            <CalendarOutlined class="mr-2" /> Tạo sự kiện
+          <a-menu-item
+            @click="createEvent"
+            class="!text-white transition-colors hover:!bg-[#15C5B2]"
+          >
+            <CalendarOutlined class="mr-2" /> {{ t("calendar.createEvent") }}
           </a-menu-item>
-          <a-menu-item @click="createTask" class="!text-white transition-colors hover:!bg-[#15C5B2]">
-            <CheckSquareOutlined class="mr-2" /> Tạo việc cần làm
+          <a-menu-item
+            @click="createTask"
+            class="!text-white transition-colors hover:!bg-[#15C5B2]"
+          >
+            <CheckSquareOutlined class="mr-2" /> {{ t("calendar.createTask") }}
           </a-menu-item>
         </a-menu>
       </template>
     </a-dropdown>
 
     <div class="calendar-section">
-      <MiniCalendar 
+      <MiniCalendar
         :events="filteredEvents"
         @dateSelect="handleDateSelect"
         @rangeSelect="handleRangeSelect"
@@ -26,23 +37,19 @@
     </div>
 
     <div class="mt-3">
-      <h2 class="mb-0">Sự kiện sắp tới</h2>
-      <p>Đừng bỏ lỡ các sự kiện đã lên lịch</p>
-      
+      <h2 class="mb-0">{{ t("calendar.upcomingEvents") }}</h2>
+      <p>{{ t("calendar.dontMissEvents") }}</p>
+
       <!-- Loading state -->
       <div v-if="loading" class="flex justify-center my-4">
         <a-spin />
       </div>
 
       <!-- Error state -->
-      <a-empty
-        v-else-if="error"
-        :description="error"
-        class="my-4"
-      >
+      <a-empty v-else-if="error" :description="error" class="my-4">
         <template #extra>
           <a-button type="primary" @click="fetchUpcomingTasks">
-            Thử lại
+            {{ t("common.retry") }}
           </a-button>
         </template>
       </a-empty>
@@ -50,7 +57,7 @@
       <!-- No events -->
       <a-empty
         v-else-if="!formattedUpcomingTasks.length"
-        description="Không có sự kiện nào trong 24h tới"
+        :description="t('calendar.noUpcomingEvents')"
         class="my-4"
       />
 
@@ -77,7 +84,7 @@
         <!-- Nút xem thêm -->
         <div v-if="hasMoreTasks" class="text-center mt-3">
           <a-button type="link" @click="viewMoreEvents">
-            {{ settingsStore.language === 'vi' ? 'Xem thêm' : 'View more' }}
+            {{ t("common.viewMore") }}
           </a-button>
         </div>
       </template>
@@ -172,51 +179,79 @@
         </div>
       </a-checkbox-group>
     </div>
-
   </a-card>
 
-  <a-modal v-model:open="isModalOpenAddTag" title="Thêm tag" @ok="handleOk">
+  <a-modal v-model:open="isModalOpenAddTag" :title="t('calendar.addTag')" @ok="handleOk">
     <a-form layout="vertical">
-      <a-form-item label="Tên tag" required>
-        <a-input v-model:value="newTagCalendar.name" placeholder="Nhập tên tag" />
+      <a-form-item :label="t('calendar.tagName')" required>
+        <a-input
+          v-model:value="newTagCalendar.name"
+          :placeholder="t('calendar.enterTagName')"
+        />
       </a-form-item>
-      <a-form-item label="Màu sắc (Hex Code)">
-        <input type="color" v-model="newTagCalendar.color" class="border h-10 rounded w-10 cursor-pointer" />
+      <a-form-item :label="t('calendar.colorHex')">
+        <input
+          type="color"
+          v-model="newTagCalendar.color"
+          class="border h-10 rounded w-10 cursor-pointer"
+        />
       </a-form-item>
-      <a-form-item label="Mô tả">
-        <a-textarea v-model:value="newTagCalendar.description" placeholder="Nhập mô tả tag" :rows="3" />
+      <a-form-item :label="t('common.description')">
+        <a-textarea
+          v-model:value="newTagCalendar.description"
+          :placeholder="t('calendar.enterTagDescription')"
+          :rows="3"
+        />
       </a-form-item>
     </a-form>
   </a-modal>
 
-  <a-modal v-model:open="isModalOpenUpdateTag" title="Cập nhật Tag" @ok="handleUpdateOk">
+  <a-modal
+    v-model:open="isModalOpenUpdateTag"
+    :title="t('calendar.updateTag')"
+    @ok="handleUpdateOk"
+  >
     <a-form layout="vertical">
       <a-form-item label="Tên tag" required>
         <a-input v-model:value="selectedTagCalendar.name" placeholder="Nhập tên tag" />
       </a-form-item>
       <a-form-item label="Màu sắc (Hex Code)">
-        <input type="color" v-model="selectedTagCalendar.color" class="border h-10 rounded w-10 cursor-pointer" />
+        <input
+          type="color"
+          v-model="selectedTagCalendar.color"
+          class="border h-10 rounded w-10 cursor-pointer"
+        />
       </a-form-item>
       <a-form-item label="Mô tả">
-        <a-textarea v-model:value="selectedTagCalendar.description" placeholder="Nhập mô tả tag" :rows="3" />
+        <a-textarea
+          v-model:value="selectedTagCalendar.description"
+          placeholder="Nhập mô tả tag"
+          :rows="3"
+        />
       </a-form-item>
 
       <a-form-item label="Người được mời">
-        <a-select v-model:value="selectedTagCalendar.attendees" mode="multiple" label-in-value placeholder="Khách mời"
-          style="width: 100%" :filter-option="false" :not-found-content="state.fetching ? undefined : null"
-          :options="state.data" @search="fetchUser" />
+        <a-select
+          v-model:value="selectedTagCalendar.attendees"
+          mode="multiple"
+          label-in-value
+          placeholder="Khách mời"
+          style="width: 100%"
+          :filter-option="false"
+          :not-found-content="state.fetching ? undefined : null"
+          :options="state.data"
+          @search="fetchUser"
+        />
       </a-form-item>
-
     </a-form>
   </a-modal>
 
-  <EventModal 
-    :open="isAddEventModalVisible" 
-    :event="selectedEventAdd" 
+  <EventModal
+    :open="isAddEventModalVisible"
+    :event="selectedEventAdd"
     @save="handleEventModalSuccess"
-    @cancel="isAddEventModalVisible = false" 
+    @cancel="isAddEventModalVisible = false"
   />
-
 </template>
 
 <script setup>
@@ -238,21 +273,28 @@ import { message } from "ant-design-vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { useEchoStore } from "@/stores/echoStore";
-import debounce from 'lodash/debounce';
-import MiniCalendar from '@/components/calendar/MiniCalendar.vue';
+import debounce from "lodash/debounce";
+import MiniCalendar from "@/components/calendar/MiniCalendar.vue";
 import { useSettingsStore } from "@/stores/settingsStore";
 import EventModal from "@/views/calendar/components/EventModal.vue";
-import moment from 'moment-timezone';
-
+import moment from "moment-timezone";
+import { useI18n } from "vue-i18n";
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
-const token = localStorage.getItem('access_token');
+const token = localStorage.getItem("access_token");
+
+const { t } = useI18n();
 
 const isModalOpenAddTag = ref(false);
 const isModalOpenUpdateTag = ref(false);
 
 const newTagCalendar = ref({ name: "", color: "#1890ff", description: "" });
-const selectedTagCalendar = ref({ name: "", color: "#1890ff", description: "", shared_user: "" });
+const selectedTagCalendar = ref({
+  name: "",
+  color: "#1890ff",
+  description: "",
+  shared_user: "",
+});
 
 const selectedDate = ref(dayjs());
 const selectedCalendars = ref([]);
@@ -273,11 +315,10 @@ const upcomingTasks = ref([]);
 const loading = ref(false);
 const error = ref(null);
 
-
 // Lấy thông tin khách mời
 const state = ref({
   data: [],
-  fetching: false
+  fetching: false,
 });
 
 let lastFetchId = 0;
@@ -297,17 +338,17 @@ const fetchUser = debounce(async (value) => {
     const response = await axios.get(`${dirApi}guest?search=${value}`, {
       headers: {
         Authorization: `Bearer ${token}`,
-      }
+      },
     });
 
     if (fetchId !== lastFetchId) return;
 
-    state.value.data = response.data.data.map(user => ({
+    state.value.data = response.data.data.map((user) => ({
       label: `${user.email}`,
-      value: user.id
+      value: user.id,
     }));
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error("Error fetching users:", error);
     state.value.data = [];
   } finally {
     state.value.fetching = false;
@@ -319,40 +360,38 @@ const echoStore = useEchoStore();
 
 const settingsStore = useSettingsStore();
 
-
-// 1. 
+// 1.
 const fetchUpcomingTasks = async () => {
   loading.value = true;
   error.value = null;
-  
+
   try {
     const response = await axios.get(`${dirApi}tasks/upComingTasks`, {
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     if (response?.data?.code === 200) {
       upcomingTasks.value = response.data.data || [];
     } else {
-      throw new Error(response?.data?.message || 'Không thể tải danh sách sự kiện');
+      throw new Error(response?.data?.message || t("errors.failedToLoadEvents"));
     }
-
   } catch (err) {
-    console.error('Error fetching upcoming tasks:', err);
-    
+    console.error("Error fetching upcoming tasks:", err);
+
     if (err.response) {
       if (err.response.status === 500) {
-        error.value = 'Lỗi máy chủ, vui lòng thử lại sau';
+        error.value = t("errors.serverError");
       } else if (err.response.status === 401) {
-        error.value = 'Phiên đăng nhập hết hạn, vui lòng đăng nhập lại';
+        error.value = t("errors.sessionExpired");
       } else {
-        error.value = err.response.data?.message || 'Không thể tải danh sách sự kiện';
+        error.value = err.response.data?.message || t("errors.failedToLoadEvents");
       }
     } else if (err.request) {
-      error.value = 'Không thể kết nối đến máy chủ';
+      error.value = t("errors.connectionError");
     } else {
-      error.value = 'Đã xảy ra lỗi, vui lòng thử lại';
+      error.value = t("errors.generalError");
     }
 
     upcomingTasks.value = [];
@@ -362,23 +401,19 @@ const fetchUpcomingTasks = async () => {
   }
 };
 
-// 2. 
+// 2.
 watch(
-  () => [
-    settingsStore.language, 
-    settingsStore.timeZone,
-    settingsStore.timeFormat
-  ],
+  () => [settingsStore.language, settingsStore.timeZone, settingsStore.timeFormat],
   async ([newLanguage, newTimezone, newTimeFormat]) => {
     // console.log("Settings changed:", {
     //   language: newLanguage,
     //   timezone: newTimezone,
     //   timeFormat: newTimeFormat
     // });
-    
+
     moment.locale(newLanguage);
     moment.tz.setDefault(newTimezone);
-    
+
     await fetchUpcomingTasks();
   },
   { immediate: true }
@@ -386,16 +421,16 @@ watch(
 
 // 3. Định nghĩa computed property
 const formattedUpcomingTasks = computed(() => {
-  return upcomingTasks.value.map(task => ({
+  return upcomingTasks.value.map((task) => ({
     ...task,
-    formattedTime: formatTimeFromNow(task.start_time)
+    formattedTime: formatTimeFromNow(task.start_time),
   }));
 });
 
 // 4. Thêm interval refresh trong onMounted
 onMounted(() => {
   fetchUpcomingTasks();
-  
+
   // Refresh mỗi phút
   // refreshInterval = setInterval(() => {
   //   fetchUpcomingTasks();
@@ -412,40 +447,40 @@ onMounted(() => {
 
 const handleDateSelect = ({ date, events }) => {
   if (!date) return;
-  
+
   const year = date.format("YYYY");
   const month = date.format("MM");
   const day = date.format("DD");
 
   // Update settings store with the selected date
-  settingsStore.initialDate = date.format('YYYY-MM-DD');
-  
+  settingsStore.initialDate = date.format("YYYY-MM-DD");
+
   // Navigate to the day view
   router.push({
-    name: 'calendar-day',
-    params: { year, month, day }
+    name: "calendar-day",
+    params: { year, month, day },
   });
 };
 
 const handleRangeSelect = ({ start, end, events }) => {
   if (!start || !end) return;
-  
-  settingsStore.initialDate = start.format('YYYY-MM-DD');
-  
+
+  settingsStore.initialDate = start.format("YYYY-MM-DD");
+
   // Navigate to the range view
   router.push({
-    name: 'calendar-range',
+    name: "calendar-range",
     params: {
-      range: `${start.format('YYYY-MM-DD')}/${end.format('YYYY-MM-DD')}`
-    }
+      range: `${start.format("YYYY-MM-DD")}/${end.format("YYYY-MM-DD")}`,
+    },
   });
 };
 
 const handleViewChange = ({ mode, date, start, end, events }) => {
   if (date) {
-    settingsStore.initialDate = date.format('YYYY-MM-DD');
+    settingsStore.initialDate = date.format("YYYY-MM-DD");
   } else if (start) {
-    settingsStore.initialDate = start.format('YYYY-MM-DD');
+    settingsStore.initialDate = start.format("YYYY-MM-DD");
   }
 };
 
@@ -505,24 +540,33 @@ const fetchCalendars = async () => {
 
 fetchCalendars();
 
-
 const handleOk = async () => {
   if (!newTagCalendar.value.name) {
-    message.error("Vui lòng nhập tên tag!");
+    message.error(t("validation.tagNameRequired"));
     return;
   }
 
   const randomColors = [
-    "#FF5733", "#33FF57", "#3357FF", "#F1C40F", "#8E44AD",
-    "#E74C3C", "#3498DB", "#2ECC71", "#9B59B6", "#1ABC9C",
+    "#FF5733",
+    "#33FF57",
+    "#3357FF",
+    "#F1C40F",
+    "#8E44AD",
+    "#E74C3C",
+    "#3498DB",
+    "#2ECC71",
+    "#9B59B6",
+    "#1ABC9C",
   ];
 
   if (!newTagCalendar.value.color) {
-    newTagCalendar.value.color = randomColors[Math.floor(Math.random() * randomColors.length)];
+    newTagCalendar.value.color =
+      randomColors[Math.floor(Math.random() * randomColors.length)];
   }
 
   try {
-    const response = await axios.post(`${dirApi}tags`,
+    const response = await axios.post(
+      `${dirApi}tags`,
       {
         name: newTagCalendar.value.name,
         description: newTagCalendar.value.description,
@@ -540,7 +584,7 @@ const handleOk = async () => {
       myCalendars.value.push(response.data.data);
       console.log("Tag đã được tạo:", response.data.data);
       updateFilteredEvents();
-      message.success(`Đã thêm tag: ${newTagCalendar.value.name}`);
+      message.success(t("success.tagAdded", { name: newTagCalendar.value.name }));
       isModalOpenAddTag.value = false;
 
       newTagCalendar.value = { name: "", color: "#1890ff", description: "" };
@@ -549,9 +593,9 @@ const handleOk = async () => {
     console.error("Lỗi khi thêm tag:", error); // Log lỗi chi tiết
     if (error.response) {
       if (error.response.status === 409) {
-        message.error("Tag này đã tồn tại!");
+        message.error(t("errors.tagExists"));
       } else {
-        message.error(`Lỗi khi thêm tag: ${error.response.data.message}`);
+        message.error(t("errors.failedToAddTag"));
       }
     } else {
       message.error("Không thể kết nối đến máy chủ!");
@@ -559,18 +603,15 @@ const handleOk = async () => {
   }
 };
 
-
 onBeforeUnmount(() => {
   echoStore.stopListening();
 });
-
 
 const viewDetails = (calendarId) => {
   // console.log("Xem chi tiết cho calendar ID:", calendarId);
 };
 
 const deleteCalendar = async (calendarId) => {
-
   try {
     const token = localStorage.getItem("access_token");
     const response = await axios.delete(`${dirApi}tags/${calendarId}`, {
@@ -580,11 +621,14 @@ const deleteCalendar = async (calendarId) => {
     console.log("Xóa tag", response.data);
 
     if (response.data.code === 200) {
-      myCalendars.value = myCalendars.value.filter(calendar => calendar.id !== calendarId);
-      sharedCalendars.value = sharedCalendars.value.filter(calendar => calendar.id !== calendarId);
+      myCalendars.value = myCalendars.value.filter(
+        (calendar) => calendar.id !== calendarId
+      );
+      sharedCalendars.value = sharedCalendars.value.filter(
+        (calendar) => calendar.id !== calendarId
+      );
 
-      message.success("Tag deleted successfully!");
-
+      message.success(t("success.tagDeleted"));
     } else {
       message.error(response.data.message || "Có lỗi xảy ra!");
     }
@@ -594,17 +638,16 @@ const deleteCalendar = async (calendarId) => {
   }
 };
 
-
 // Update
 const openUpdateCalendar = (calendarId) => {
-  const calendar = myCalendars.value.find(cal => cal.id === calendarId);
+  const calendar = myCalendars.value.find((cal) => cal.id === calendarId);
   if (calendar) {
     selectedTagCalendar.value = {
       id: calendar.id,
       name: calendar.name,
       color: calendar.color_code,
       description: calendar.description,
-      shared_user: calendar.shared_user ?? []
+      shared_user: calendar.shared_user ?? [],
     };
     isModalOpenUpdateTag.value = true;
   }
@@ -612,7 +655,9 @@ const openUpdateCalendar = (calendarId) => {
 
 const handleUpdateOk = async () => {
   try {
-    const oldTag = myCalendars.value.find(tag => tag.id === selectedTagCalendar.value.id);
+    const oldTag = myCalendars.value.find(
+      (tag) => tag.id === selectedTagCalendar.value.id
+    );
 
     if (!selectedTagCalendar.value.color && oldTag) {
       selectedTagCalendar.value.color = oldTag.color_code; // Đổi lại để đồng nhất key
@@ -622,7 +667,7 @@ const handleUpdateOk = async () => {
       `${dirApi}tags/${selectedTagCalendar.value.id}`,
       { ...selectedTagCalendar.value, color_code: selectedTagCalendar.value.color }, // Chuyển 'color' thành 'color_code'
       {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       }
     );
 
@@ -632,7 +677,7 @@ const handleUpdateOk = async () => {
       message.success("Cập nhật tag thành công!");
       isModalOpenUpdateTag.value = false;
 
-      myCalendars.value = myCalendars.value.map(tag =>
+      myCalendars.value = myCalendars.value.map((tag) =>
         tag.id === response.data.data.id
           ? response.data.data // Cập nhật theo API response
           : tag
@@ -644,7 +689,6 @@ const handleUpdateOk = async () => {
   }
 };
 
-
 // Lắng nghe sự kiện real-time
 onMounted(() => {
   // echoStore.initEcho();
@@ -654,17 +698,17 @@ onMounted(() => {
 
 const createEvent = () => {
   selectedEventAdd.value = {
-    type: 'event',
-    start: dayjs().format('YYYY-MM-DD HH:mm'),
-    end: dayjs().add(30, 'minutes').format('YYYY-MM-DD HH:mm'),
+    type: "event",
+    start: dayjs().format("YYYY-MM-DD HH:mm"),
+    end: dayjs().add(30, "minutes").format("YYYY-MM-DD HH:mm"),
     allDay: false,
   };
   isAddEventModalVisible.value = true;
 };
 
 const createTask = () => {
-  selectedEventAdd.value = { 
-    type: 'task' 
+  selectedEventAdd.value = {
+    type: "task",
   };
   isAddEventModalVisible.value = true;
 };
@@ -676,24 +720,24 @@ const handleEventModalSuccess = () => {
 
 const formatDateTime = (datetime) => {
   const { timeFormat, timeZone } = settingsStore;
-  
+
   // Đảm bảo moment sử dụng đúng múi giờ
   moment.tz.setDefault(timeZone);
-  
+
   // Chuyển đổi datetime từ UTC sang múi giờ local
   const eventTime = moment.utc(datetime).tz(timeZone);
-  
+
   let timeStr;
-  if (timeFormat === '12h') {
+  if (timeFormat === "12h") {
     // Định dạng 12h với AM/PM
-    timeStr = eventTime.format('hh:mm A');
+    timeStr = eventTime.format("hh:mm A");
   } else {
     // Định dạng 24h
-    timeStr = eventTime.format('HH:mm');
+    timeStr = eventTime.format("HH:mm");
   }
-  
-  const dateStr = eventTime.format('DD/MM/YYYY');
-  
+
+  const dateStr = eventTime.format("DD/MM/YYYY");
+
   // Kết hợp thời gian và ngày tháng
   return `${timeStr} - ${dateStr}`;
 };
@@ -701,54 +745,54 @@ const formatDateTime = (datetime) => {
 // Format time from now
 const formatTimeFromNow = (datetime) => {
   const { language, timeZone, timeFormat } = settingsStore;
-  
+
   // Log để debug
   // console.log("Input datetime (UTC):", datetime);
   // console.log("Current settings:", { language, timeZone, timeFormat });
-  
+
   moment.locale(language);
   moment.tz.setDefault(timeZone);
-  
+
   // Chuyển đổi datetime từ UTC sang múi giờ local
   const now = moment();
   const eventTime = moment.utc(datetime).tz(timeZone);
-  
+
   // console.log("Now in local timezone:", now.format());
   // console.log("Event time in local timezone:", eventTime.format());
-  
+
   // Tính toán khoảng cách thời gian
-  const diffMinutes = eventTime.diff(now, 'minutes');
+  const diffMinutes = eventTime.diff(now, "minutes");
   const diffHours = Math.floor(diffMinutes / 60);
   const diffDays = Math.floor(diffHours / 24);
-  
+
   // Kiểm tra các trường hợp đặc biệt
-  const isToday = eventTime.isSame(now, 'day');
-  const isTomorrow = eventTime.isSame(now.clone().add(1, 'day'), 'day');
+  const isToday = eventTime.isSame(now, "day");
+  const isTomorrow = eventTime.isSame(now.clone().add(1, "day"), "day");
   const isOngoing = diffMinutes <= 0 && diffMinutes > -60;
 
   const formatTime = (time) => {
-    if (timeFormat === '12h') {
-      return time.format('hh:mm A'); // 12h format với AM/PM
+    if (timeFormat === "12h") {
+      return time.format("hh:mm A"); // 12h format với AM/PM
     }
-    return time.format('HH:mm'); // 24h format
+    return time.format("HH:mm"); // 24h format
   };
 
   const formats = {
     vi: {
-      ongoing: 'Đang diễn ra',
+      ongoing: "Đang diễn ra",
       past: (unit, value) => `${Math.abs(value)} ${unit} trước`,
       future: (unit, value) => `${value} ${unit} nữa`,
       today: `Hôm nay ${formatTime(eventTime)}`,
       tomorrow: `Ngày mai ${formatTime(eventTime)}`,
-      default: eventTime.format('DD/MM/YYYY ') + formatTime(eventTime),
+      default: eventTime.format("DD/MM/YYYY ") + formatTime(eventTime),
     },
     en: {
-      ongoing: 'Ongoing',
+      ongoing: "Ongoing",
       past: (unit, value) => `${Math.abs(value)} ${unit} ago`,
       future: (unit, value) => `in ${value} ${unit}`,
       today: `Today at ${formatTime(eventTime)}`,
       tomorrow: `Tomorrow at ${formatTime(eventTime)}`,
-      default: eventTime.format('MM/DD/YYYY ') + formatTime(eventTime),
+      default: eventTime.format("MM/DD/YYYY ") + formatTime(eventTime),
     },
   };
 
@@ -784,19 +828,18 @@ const formatTimeFromNow = (datetime) => {
       result = t.default;
     }
   }
-  
+
   // console.log("Final result:", result);
   return result;
 };
 
-
 // Get color based on priority
 const getEventColor = (priority) => {
   const colors = {
-    high: 'red',
-    medium: 'orange',
-    low: 'blue',
-    default: 'gray'
+    high: "red",
+    medium: "orange",
+    low: "blue",
+    default: "gray",
   };
   return colors[priority?.toLowerCase()] || colors.default;
 };
@@ -813,9 +856,8 @@ const hasMoreTasks = computed(() => {
 
 // Thêm hàm xử lý click vào nút xem thêm
 const viewMoreEvents = () => {
-  router.push({ name: 'upcoming' });
+  router.push({ name: "upcoming" });
 };
-
 </script>
 
 <style scoped>
