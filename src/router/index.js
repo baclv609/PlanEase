@@ -25,6 +25,7 @@ const routes = [
   ...settingsRouter,
   ...support,
   ...notFound,
+  
 ];
 
 const router = createRouter({
