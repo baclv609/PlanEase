@@ -414,8 +414,8 @@ export function useCalendar(calendarRef) {
     select: (info) => {
       selectedEventAdd.value = {
         start: info.startStr,
-        end: info.view.type === 'dayGridMonth'
-          ? dayjs(info.endStr).subtract(1, 'day').format('YYYY-MM-DD')
+        end: info.view.type == 'dayGridMonth'
+          ? dayjs(info.endStr).format('YYYY-MM-DD')
           : info.endStr,
         allDay: info.allDay,
       };

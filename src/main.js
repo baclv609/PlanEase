@@ -3,6 +3,10 @@ import App from './App.vue';
 import { registerGlobalComponent } from '@/utils';
 import Antd, { message } from 'ant-design-vue';
 
+// Editor
+import PrimeVue from 'primevue/config';
+import Editor from 'primevue/editor';
+
 import 'ant-design-vue/dist/reset.css';
 import '@/assets/css/main.css';
 import router from '@/router';
@@ -15,6 +19,9 @@ import { createPinia } from 'pinia';
 import { useSettings } from './composables/useSettings';
 // import Echo from "@/plugins/echo";
 import { useEchoStore } from "@/stores/echoStore";
+
+// theme Editor
+import Aura from '@primeuix/themes/aura';
 
 const pinia = createPinia();
 
@@ -34,6 +41,11 @@ app.use(i18n);
 app.use(pinia);
 app.use(Antd);
 app.use(router);
+app.use(PrimeVue,{
+  theme: {
+      preset: Aura
+  }
+});
 app.config.globalProperties.$message = message;
 app.config.globalProperties.$axios = axios;
 
