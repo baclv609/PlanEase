@@ -24,12 +24,15 @@ const users = [
 
         },
     },
-    // {
-    //     path: '/users/:id/edit',
-    //     name: 'users-edit',
-    //     component: () => import('@/views/users/UsersEditView.vue'),
-    //     meta: { requiresAuth: true },
-    // },
+
+    {
+        path: '/dashboard/users/ban',
+        name: 'banned-users',
+        component: () => import('@/views/users/BannedUsersView.vue'),
+        meta: {
+            layout: 'dashboard',
+        }
+    },
 
 ]
 export default users
