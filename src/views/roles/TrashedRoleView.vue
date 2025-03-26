@@ -1,51 +1,82 @@
 <template>
-    <div class="force-delete-container">
-        <a-card title="Danh sách Role đã xóa" :bordered="false">
-            <template #extra>
-                <a-button type="primary" ghost @click="goBack">
-                    <template #icon><ArrowLeftOutlined /></template>
-                    Quay lại
-                </a-button>
-            </template>
+    <div class="trashed-roles-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <a-button class="back-button" type="primary" ghost @click="goBack">
+                <template #icon><ArrowLeftOutlined /></template>
+                Quay lại danh sách
+            </a-button>
+            <div class="header-title">
+                <DeleteOutlined class="header-icon" />
+                <span>Danh sách Role đã xóa</span>
+            </div>
+        </div>
 
-            <a-table :columns="columns" :data-source="dataSource.list" :loading="loading"
-                :pagination="pagination" @change="handleTableChange">
+        <!-- Main Content -->
+        <a-card :bordered="false" class="content-card">
+            <a-table 
+                :columns="columns" 
+                :data-source="dataSource.list" 
+                :loading="loading"
+                :pagination="pagination" 
+                @change="handleTableChange"
+                class="custom-table"
+            >
                 <template #bodyCell="{ column, record, index }">
                     <template v-if="column.key === 'index'">
-                        {{ index + 1 }}
+                        <span class="index-column">{{ index + 1 }}</span>
+                    </template>
+
+                    <template v-else-if="column.key === 'name'">
+                        <div class="role-name">
+                            <SafetyCertificateOutlined />
+                            <span>{{ record.name }}</span>
+                        </div>
                     </template>
 
                     <template v-else-if="column.key === 'created_at'">
-                        {{ formatDate(record.created_at) }}
+                        <a-tag color="blue">
+                            <CalendarOutlined />
+                            {{ formatDate(record.created_at) }}
+                        </a-tag>
                     </template>
 
                     <template v-else-if="column.key === 'deleted_at'">
-                        {{ formatDate(record.deleted_at) }}
-                    </template>
-
-                    <template v-else-if="column.dataIndex">
-                        {{ record[column.dataIndex] || 'N/A' }}
+                        <a-tag color="red">
+                            <ClockCircleOutlined />
+                            {{ formatDate(record.deleted_at) }}
+                        </a-tag>
                     </template>
 
                     <template v-if="column.key === 'action'">
-                        <a-space>
-                            <a-button type="primary" size="small" @click="handleRestore(record)">
-                                <template #icon><UndoOutlined /></template>
-                                Khôi phục
-                            </a-button>
-                            <a-popconfirm
-                                title="Bạn có chắc chắn muốn xóa vĩnh viễn?"
-                                ok-text="Đồng ý"
-                                cancel-text="Hủy"
-                                @confirm="handleForceDelete(record)"
-                            >
-                                <a-button type="danger" size="small">
-                                    <template #icon><DeleteOutlined /></template>
-                                    Xóa vĩnh viễn
+                        <div class="action-buttons">
+                            <a-tooltip title="Khôi phục">
+                                <a-button type="primary" shape="circle" @click="handleRestore(record)">
+                                    <template #icon><UndoOutlined /></template>
                                 </a-button>
-                            </a-popconfirm>
-                        </a-space>
+                            </a-tooltip>
+
+                            <a-tooltip title="Xóa vĩnh viễn">
+                                <a-popconfirm
+                                    title="Bạn có chắc chắn muốn xóa vĩnh viễn?"
+                                    ok-text="Đồng ý"
+                                    cancel-text="Hủy"
+                                    @confirm="handleForceDelete(record)"
+                                >
+                                    <a-button type="danger" shape="circle">
+                                        <template #icon><DeleteOutlined /></template>
+                                    </a-button>
+                                </a-popconfirm>
+                            </a-tooltip>
+                        </div>
                     </template>
+                </template>
+
+                <template #emptyText>
+                    <div class="empty-state">
+                        <InboxOutlined />
+                        <p>Không có role nào trong thùng rác</p>
+                    </div>
                 </template>
             </a-table>
         </a-card>
@@ -57,7 +88,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { message } from 'ant-design-vue';
-import { DeleteOutlined, UndoOutlined, ArrowLeftOutlined } from '@ant-design/icons-vue';
+import { DeleteOutlined, UndoOutlined, ArrowLeftOutlined, SafetyCertificateOutlined, CalendarOutlined, ClockCircleOutlined, InboxOutlined } from '@ant-design/icons-vue';
 import dayjs from 'dayjs';
 
 const router = useRouter();
@@ -74,27 +105,28 @@ const columns = [
     {
         title: 'STT',
         key: 'index',
-        width: '60px'
+        width: '80px'
     },
     {
         title: 'Tên Role',
-        dataIndex: 'name',
         key: 'name',
+        dataIndex: 'name',
     },
     {
         title: 'Ngày tạo',
         key: 'created_at',
-        width: '150px'
+        width: '180px'
     },
     {
         title: 'Ngày xóa',
         key: 'deleted_at',
-        width: '150px'
+        width: '180px'
     },
     {
         title: 'Thao tác',
         key: 'action',
-        width: '250px'
+        width: '150px',
+        align: 'center'
     },
 ];
 
@@ -151,16 +183,17 @@ const handleRestore = async (record) => {
                 Authorization: `Bearer ${localStorage.getItem('access_token')}`
             }
         });
-        // console.log('Restore response:', response.data); 
 
         if (response.data.code === 200) {
+            dataSource.value.list = dataSource.value.list.filter(role => role.id !== record.id);
+            pagination.value.total = dataSource.value.list.length;
+            
             message.success('Khôi phục role thành công');
-            fetchDeletedRoles();
         } else {
             message.error(response.data.message || 'Có lỗi xảy ra khi khôi phục role');
         }
     } catch (error) {
-        console.error('Lỗi khi khôi phục role:', error.response || error);
+        console.error('Lỗi khi khôi phục role:', error);
         message.error(error.response?.data?.message || 'Có lỗi xảy ra khi khôi phục role');
     }
 };
@@ -172,8 +205,11 @@ const handleForceDelete = async (record) => {
                 Authorization: `Bearer ${localStorage.getItem('access_token')}`
             }
         });
+        
+        dataSource.value.list = dataSource.value.list.filter(role => role.id !== record.id);
+        pagination.value.total = dataSource.value.list.length;
+        
         message.success('Xóa vĩnh viễn role thành công');
-        fetchDeletedRoles();
     } catch (error) {
         message.error('Có lỗi xảy ra khi xóa vĩnh viễn role');
     }
@@ -188,30 +224,124 @@ fetchDeletedRoles();
 </script>
 
 <style scoped>
-.force-delete-container {
+.trashed-roles-container {
     padding: 24px;
+    background: #f0f2f5;
+    min-height: 100vh;
 }
 
-:deep(.ant-card-head) {
-    border-bottom: 1px solid #f0f0f0;
-    margin-bottom: 16px;
-}
-
-:deep(.ant-card-head-title) {
-    font-size: 18px;
-    font-weight: 600;
-}
-
-:deep(.ant-table-thead > tr > th) {
-    background: #fafafa;
-}
-
-:deep(.ant-btn) {
+.header-section {
     display: flex;
     align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
 }
 
-.ant-space {
+.back-button {
+    border-radius: 8px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s;
+    
+    &:hover {
+        transform: translateX(-5px);
+    }
+}
+
+.header-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #ff4d4f;
+    display: flex;
+    align-items: center;
     gap: 8px;
+}
+
+.header-icon {
+    font-size: 28px;
+}
+
+.content-card {
+    border-radius: 12px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03),
+                0 1px 6px -1px rgba(0, 0, 0, 0.02),
+                0 2px 4px 0 rgba(0, 0, 0, 0.02);
+}
+
+.custom-table {
+    :deep(.ant-table) {
+        border-radius: 8px;
+    }
+
+    :deep(.ant-table-thead > tr > th) {
+        background: #fafafa;
+        font-weight: 600;
+        padding: 16px;
+    }
+
+    :deep(.ant-table-tbody > tr > td) {
+        padding: 16px;
+    }
+}
+
+.index-column {
+    font-weight: 500;
+    color: #8c8c8c;
+}
+
+.role-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1f1f1f;
+    font-weight: 500;
+
+    .anticon {
+        color: #1890ff;
+    }
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+:deep(.ant-btn-circle) {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:hover {
+        transform: translateY(-2px);
+        transition: all 0.3s;
+    }
+}
+
+:deep(.ant-tag) {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.empty-state {
+    padding: 32px;
+    text-align: center;
+    color: #8c8c8c;
+
+    .anticon {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+
+    p {
+        margin: 0;
+        font-size: 14px;
+    }
 }
 </style>

@@ -1,51 +1,118 @@
 <template>
   <div class="roles-container">
-    <a-card title="Quản lý Role" :bordered="false">
+    <!-- Dashboard Stats -->
+    <a-row :gutter="16" class="stats-row">
+      <a-col :span="8">
+        <a-card class="stat-card">
+          <template #cover>
+            <div class="stat-icon total-roles">
+              <TeamOutlined />
+            </div>
+          </template>
+          <a-statistic 
+            title="Tổng số Role" 
+            :value="pagination.total"
+            :value-style="{ color: '#1890ff' }"
+          />
+        </a-card>
+      </a-col>
+      <a-col :span="8">
+        <a-card class="stat-card">
+          <template #cover>
+            <div class="stat-icon active-roles">
+              <SafetyCertificateOutlined />
+            </div>
+          </template>
+          <a-statistic 
+            title="Role đang hoạt động" 
+            :value="activeRoles"
+            :value-style="{ color: '#52c41a' }"
+          />
+        </a-card>
+      </a-col>
+      <a-col :span="8">
+        <a-card class="stat-card" @click="handleTrashed">
+          <template #cover>
+            <div class="stat-icon deleted-roles">
+              <DeleteOutlined />
+            </div>
+          </template>
+          <a-statistic 
+            title="Role đã xóa" 
+            :value="deletedRoles"
+            :value-style="{ color: '#ff4d4f' }"
+          />
+        </a-card>
+      </a-col>
+    </a-row>
+
+    <!-- Main Content Card -->
+    <a-card :bordered="false" class="content-card">
+      <template #title>
+        <div class="card-title">
+          <SafetyCertificateOutlined /> Quản lý Role
+        </div>
+      </template>
+      
       <template #extra>
         <a-space>
-          <a-button type="default" class="trash-btn" @click="handleTrashed">
+          <a-button type="default" @click="handleTrashed" class="custom-button">
             <template #icon><DeleteOutlined /></template>
             Role đã xóa
           </a-button>
-          <a-button type="primary" @click="handleCreate">
+          <a-button type="primary" @click="handleCreate" class="custom-button">
             <template #icon><PlusOutlined /></template>
             Thêm Role Mới
           </a-button>
         </a-space>
       </template>
       
-      <a-table :columns="columns" :data-source="dataSource.list" :loading="loading" 
-        :pagination="pagination" @change="handleTableChange">
+      <a-table 
+        :columns="columns" 
+        :data-source="dataSource.list" 
+        :loading="loading"
+        :pagination="pagination" 
+        @change="handleTableChange"
+        class="custom-table"
+      >
         <template #bodyCell="{ column, record, index }">
           <template v-if="column.key === 'index'">
-            {{ index + 1 }}
+            <span class="index-column">{{ index + 1 }}</span>
           </template>
 
-          <template v-else-if="column.dataIndex">
-            {{ record[column.dataIndex] || 'N/A' }}
+          <template v-else-if="column.key === 'name'">
+            <div class="role-name">
+              <SafetyCertificateOutlined class="role-icon" />
+              <span>{{ record.name }}</span>
+            </div>
           </template>
 
           <template v-if="column.key === 'action'">
             <a-space>
-              <a-button type="default" size="small" @click="handleView(record)">
-                <template #icon><EyeOutlined /></template>
-                Chi tiết
-              </a-button>
-              <a-button type="primary" size="small" @click="handleEdit(record)">
-                <template #icon><EditOutlined /></template>
-                Sửa
-              </a-button>
-              <a-popconfirm
-                title="Bạn có chắc chắn muốn xóa role này?"
-                ok-text="Đồng ý"
-                cancel-text="Hủy"
-                @confirm="handleDelete(record)"
-              >
-                <a-button type="danger" size="small">
-                  <template #icon><DeleteOutlined /></template>
-                  Xóa
+              <a-tooltip title="Xem chi tiết">
+                <a-button type="primary" shape="circle" @click="handleView(record)">
+                  <template #icon><EyeOutlined /></template>
                 </a-button>
-              </a-popconfirm>
+              </a-tooltip>
+              
+              <a-tooltip title="Chỉnh sửa">
+                <a-button type="warning" shape="circle" @click="handleEdit(record)">
+                  <template #icon><EditOutlined /></template>
+                </a-button>
+              </a-tooltip>
+              
+              <a-tooltip title="Xóa">
+                <a-popconfirm
+                  title="Bạn có chắc chắn muốn xóa role này?"
+                  ok-text="Đồng ý"
+                  cancel-text="Hủy"
+                  @confirm="handleDelete(record)"
+                >
+                  <a-button type="danger" shape="circle">
+                    <template #icon><DeleteOutlined /></template>
+                  </a-button>
+                </a-popconfirm>
+              </a-tooltip>
             </a-space>
           </template>
         </template>
@@ -55,10 +122,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import axios from 'axios';
 import { message } from 'ant-design-vue';
-import { EditOutlined, DeleteOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons-vue';
+import { EditOutlined, DeleteOutlined, EyeOutlined, PlusOutlined, TeamOutlined, SafetyCertificateOutlined } from '@ant-design/icons-vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -145,8 +212,12 @@ const handleDelete = async (record) => {
     });
 
     if (response.data.code === 200) {
+      deletedRoles.value += 1;
+      pagination.value.total -= 1;
+      
+      dataSource.value.list = dataSource.value.list.filter(role => role.id !== record.id);
+      
       message.success('Xóa role thành công');
-      fetchRoles();
     } else {
       message.error(response.data.message || 'Có lỗi xảy ra khi xóa role');
     }
@@ -164,6 +235,26 @@ const handleCreate = () => {
   router.push({ name: 'role-create' });
 };
 
+const activeRoles = computed(() => dataSource.value.list.length);
+const deletedRoles = ref(0);
+
+const fetchDeletedRolesCount = async () => {
+  try {
+    const response = await axios.get(`${dirApi}admin/roles/trashed`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+    });
+    if (response.data && Array.isArray(response.data.data)) {
+      deletedRoles.value = response.data.data.length;
+    }
+  } catch (error) {
+    console.error('Lỗi khi lấy số role đã xóa:', error);
+  }
+};
+
+onMounted(() => {
+  fetchDeletedRolesCount();
+});
+
 watch(() => pagination.value.current, fetchRoles, { immediate: true });
 </script>
 
@@ -172,16 +263,110 @@ watch(() => pagination.value.current, fetchRoles, { immediate: true });
   padding: 24px;
 }
 
-.ant-space {
+.stats-row {
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: white;
+}
+
+.total-roles {
+  background: linear-gradient(120deg, #1890ff, #69c0ff);
+}
+
+.active-roles {
+  background: linear-gradient(120deg, #52c41a, #95de64);
+}
+
+.deleted-roles {
+  background: linear-gradient(120deg, #ff4d4f, #ff7875);
+}
+
+.content-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f1f1f;
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.trash-btn {
+.custom-button {
+  border-radius: 6px;
+  height: 38px;
   display: flex;
   align-items: center;
+  gap: 4px;
+  
+  &:hover {
+    transform: translateY(-2px);
+    transition: all 0.3s;
+  }
 }
 
-:deep(.anticon) {
-  vertical-align: middle;
+.custom-table {
+  :deep(.ant-table) {
+    border-radius: 8px;
+  }
+
+  :deep(.ant-table-thead > tr > th) {
+    background: #fafafa;
+    font-weight: 600;
+  }
+}
+
+.index-column {
+  font-weight: 500;
+  color: #8c8c8c;
+}
+
+.role-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  .role-icon {
+    color: #1890ff;
+  }
+}
+
+:deep(.ant-btn-circle) {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    transform: translateY(-2px);
+    transition: all 0.3s;
+  }
+}
+
+:deep(.ant-space) {
+  gap: 8px;
 }
 </style>
