@@ -34,8 +34,8 @@
                     <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                         <a-form-item label="Thời gian bắt đầu" name="start">
                             <DatePicker v-model:value="formState.start" 
-                                show-time
-                                :format="'YYYY-MM-DD HH:mm'"
+                                :show-time="!formState.allDay"
+                                :format="formState.allDay ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm'"
                                 class="w-full"
                                 :disabled-time="formState.allDay ? () => ({
                                     disabledHours: () => Array.from({ length: 24 }, (_, i) => i),
@@ -47,8 +47,8 @@
                         </a-form-item>
                         <a-form-item label="Thời gian kết thúc" name="end">
                             <DatePicker v-model:value="formState.end" 
-                                show-time
-                                :format="'YYYY-MM-DD HH:mm'"
+                                :show-time="!formState.allDay"
+                                :format="formState.allDay ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm'"
                                 class="w-full"
                                 :disabled-time="formState.allDay ? () => ({
                                     disabledHours: () => Array.from({ length: 24 }, (_, i) => i),
@@ -94,10 +94,31 @@
                     </div>
                 </div>
 
-                <a-form-item name="description" class="w-full">
-                    <a-textarea v-model:value="formState.description" placeholder="Nội dung" :rows="4" 
-                        class="rounded-lg" />
-                </a-form-item>
+                <Editor
+                    v-model="formState.description"
+                    editorStyle="min-height: 200px; max-height: 400px; overflow-y: auto; background-color: white;"
+                    class="w-full"
+                    :pt="{
+                        toolbar: {
+                        root: { class: 'bg-gray-50 p-2' }
+                        },
+                        content: {
+                        root: { class: 'bg-white' }
+                        }
+                    }"
+                    :toolbar="[
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                        [{ 'font': [] }],
+                        ['list-ordered', 'list-unordered', 'indent-left', 'indent-right'],
+                        ['align-left', 'align-center', 'align-right', 'align-justify'],
+                        ['text-color', 'background-color'],
+                        ['link', 'image', 'video'],
+                        ['code-block', 'blockquote'],
+                        ['script-sub', 'script-super'],
+                        ['clean']
+                    ]"
+                    />
 
                 <!-- Display attached files -->
                 <div v-if="formState.attachments && formState.attachments.length > 0" class="mt-4">
@@ -124,7 +145,7 @@
                     <span>Địa điểm</span>
                 </div>
                 <a-form-item name="location" class="w-full">
-                    <a-input placeholder="Địa điểm" class="bg-gray-50 rounded-lg" v-model:value="formState.location" />
+                    <a-input placeholder="Địa điểm" class="rounded-lg" v-model:value="formState.location" />
                 </a-form-item>
             </div>
 
@@ -192,62 +213,86 @@
             </div>
 
             <!-- Privacy Section -->
-            <div class="grid grid-cols-1 form-section gap-2 md:grid-cols-2" v-if="formState.type == 'event'">
-                <div>
-                    <div class="section-title">
-                        <LockOutlined class="text-gray-500 mr-2" />
-                        <span>Quyền riêng tư</span>
+            <div class="form-section flex flex-col gap-2">
+                <div class="grid grid-cols-1 gap-2 md:grid-cols-2" v-if="formState.type == 'event'">
+                    <div>
+                        <div class="section-title">
+                            <LockOutlined class="text-gray-500 mr-2" />
+                            <span>Quyền riêng tư</span>
+                        </div>
+                        <div class="flex gap-6 items-center">
+                            <a-checkbox v-model:checked="formState.is_private">Riêng tư</a-checkbox>
+                            <a-checkbox v-model:checked="formState.is_busy">Đánh dấu là bận</a-checkbox>
+                        </div>
                     </div>
-                    <div class="flex gap-6 items-center">
-                        <a-checkbox v-model:checked="formState.is_private">Riêng tư</a-checkbox>
-                        <a-checkbox v-model:checked="formState.is_busy">Đánh dấu là bận</a-checkbox>
+    
+                    <div>
+                        <!-- Notification Section -->
+                        <div class="section-title">
+                            <BellOutlined class="text-gray-500 mr-2" />
+                            <span>Thông báo</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center mb-0">
+                                <Checkbox v-model:checked="formState.is_reminder">Bật nhắc nhở</Checkbox>
+                                <div v-if="formState.is_reminder" @click="addReminder" class="cursor-pointer">
+                                    <a class="text-blue-600 hover:text-blue-800">Thêm thông báo nhắc</a>
+                                </div>
+                            </div>
+    
+                        </div>
                     </div>
+    
                 </div>
-
-                <div>
-                    <!-- Notification Section -->
-                    <div class="section-title">
-                        <BellOutlined class="text-gray-500 mr-2" />
-                        <span>Thông báo</span>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center">
-                            <Checkbox v-model:checked="formState.is_reminder">Bật nhắc nhở</Checkbox>
-                            <div v-if="formState.is_reminder" @click="addReminder" class="cursor-pointer">
-                                <a class="text-blue-600 hover:text-blue-800">Thêm thông báo nhắc</a>
-                            </div>
-                        </div>
-
-                        <div v-if="formState.is_reminder" class="space-y-3">
-                            <div v-for="(reminder, index) in formState.reminder" :key="index" 
-                                class="bg-gray-50 p-3 rounded-lg">
-                                <Row :gutter="16" align="middle">
-                                    <Col span="9" class="flex items-center">
-                                        <Select v-model:value="reminder.type" placeholder="Chọn loại nhắc nhở" class="w-full">
-                                            <Select.Option value="email">Email</Select.Option>
-                                            <Select.Option value="web">Web</Select.Option>
-                                        </Select>
-                                        <span class="ml-4">trước</span>
-                                    </Col>
-                                    <Col span="5">
-                                        <InputNumber v-model:value="reminder.time" min="1"
-                                            @blur="reminder.time = reminder.time || 1" placeholder="Thời gian"
-                                            class="w-full" />
-                                    </Col>
-                                    <Col span="6">
-                                        <Select v-model:value="reminder.unit" placeholder="Đơn vị" class="w-full">
-                                            <Select.Option value="minutes">Phút</Select.Option>
-                                            <Select.Option value="hours">Giờ</Select.Option>
-                                        </Select>
-                                    </Col>
-                                    <Col span="3">
-                                        <Button type="text" @click="removeReminder(index)" class="text-red-500 hover:text-red-700">
-                                            <DeleteOutlined class="text-lg" />
-                                        </Button>
-                                    </Col>
-                                </Row>
-                            </div>
-                        </div>
+                
+                <div v-if="formState.is_reminder" class="space-y-2">
+                    <div v-for="(reminder, index) in formState.reminder" :key="index" 
+                        class="bg-gray-50 p-2 rounded-lg">
+                        <Row :gutter="8" align="middle">
+                        <Col span="8" class="flex items-center">
+                            <Select 
+                                v-model:value="reminder.type" 
+                                placeholder="Loại nhắc nhở" 
+                                class="w-full text-sm"
+                                size="small"
+                            >
+                                <Select.Option value="email">Email</Select.Option>
+                                <Select.Option value="web">Web</Select.Option>
+                            </Select>
+                            <span class="ml-2 text-sm">trước</span>
+                        </Col>
+                        <Col span="6">
+                            <InputNumber 
+                                v-model:value="reminder.time" 
+                                min="1"
+                                size="small"
+                                @blur="reminder.time = reminder.time || 1" 
+                                placeholder="Thời gian"
+                                class="w-full text-sm" 
+                            />
+                        </Col>
+                        <Col span="7">
+                            <Select 
+                                v-model:value="reminder.unit" 
+                                placeholder="Đơn vị" 
+                                class="w-full text-sm"
+                                size="small"
+                                >
+                                <Select.Option value="minutes">Phút</Select.Option>
+                                <Select.Option value="hours">Giờ</Select.Option>
+                            </Select>
+                        </Col>
+                        <Col span="3">
+                            <Button 
+                                type="text" 
+                                size="small"
+                                @click="removeReminder(index)" 
+                                class="text-red-500 hover:!text-red-700 px-1"
+                                >
+                                <DeleteOutlined class="text-lg" />
+                            </Button>
+                        </Col>
+                        </Row>
                     </div>
                 </div>
             </div>
@@ -315,7 +360,7 @@
                                 </a-radio-group>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1">
                                 <div v-if="formState.rrule.endType === 'count'">
                                     <label class="text-gray-700 block font-medium mb-2">Giới hạn số lần lặp</label>
                                     <Input v-model:value="formState.rrule.count" type="number" min="1" placeholder="Nhập số lần lặp"
@@ -328,7 +373,7 @@
                                         class="w-full" />
                                 </div>
 
-                                <div>
+                                <!-- <div>
                                     <label class="text-gray-700 block font-medium mb-2">Loại trừ ngày</label>
                                     <DatePicker v-model:value="selectedDate" format="YYYY-MM-DD" class="w-full"
                                         @change="handleExcludeDate" />
@@ -338,7 +383,7 @@
                                             {{ dayjs(date).format('YYYY-MM-DD') }}
                                         </Tag>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -376,6 +421,7 @@ import timezone from 'dayjs/plugin/timezone';
 import { DateTime } from "luxon";
 import { eventRules, setFormState } from '@/validators/eventRules';
 import { recurringEventRules } from '@/validators/recurringEventRules';
+import Editor from 'primevue/editor';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -444,7 +490,7 @@ const handleClose = () => {
             freq: null,
             interval: 1,
             count: null,
-            until: dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+            until: null,
             byweekday: [],
             bymonthday: [],
             bymonth: [],
@@ -544,7 +590,7 @@ const updateFormStateFromProps = (event) => {
                 bysetpos: Array.isArray(event.info?.extendedProps?.bysetpos)
                     ? event.info.extendedProps.bysetpos
                     : [],
-                endType: event.info?.extendedProps?.until ? "until" 
+                endType: event.info?.extendedProps?.until && dayjs(event.info?.extendedProps?.until).year() < 3000? "until" 
                     : event.info?.extendedProps?.count ? "count" 
                     : ""
             } : {
@@ -758,24 +804,9 @@ watch(
   () => formState.value.allDay,
   (newValue) => {
     if (newValue) {
-      // Khi bật cả ngày
-      if (formState.value.start) {
-        formState.value.start = dayjs(formState.value.start).hour(0).minute(0).second(0);
-      }
-      if (formState.value.end) {
-        const startDate = dayjs(formState.value.start).hour(0).minute(0).second(0);
-        const endDate = dayjs(formState.value.end).hour(0).minute(0).second(0);
-        
-        if (endDate.isSame(startDate)) {
-          // Nếu cùng ngày, cộng thêm 1 ngày và set giờ về 00:00:00
-          formState.value.end = dayjs(startDate).add(1, 'day').hour(0).minute(0).second(0);
-        } else {
-          // Nếu khác ngày, chỉ set giờ về 00:00:00
-          formState.value.end = formState.value.end && dayjs(formState.value.end).hour() == 0 && dayjs(formState.value.end).minute() == 0 
-            ? dayjs(formState.value.end).hour(0).minute(0).second(0)
-            : dayjs(formState.value.end).add(1, 'day').hour(0).minute(0).second(0);
+        if(formState.value.end.isSame(formState.value.start)){
+            formState.value.end = formState.value.end.add(1, 'day');
         }
-      }
     } else {
       // Khi tắt cả ngày, set lại thời gian mặc định
       if (formState.value.start) {
@@ -1030,23 +1061,31 @@ const handleSubmit = async () => {
 
         // If validation passes, proceed with update
         if (originalIsRepeat.value === true) {
+            // Check if freq has changed
+            const originalFreq = props.event?.info?.extendedProps?.freq;
+            const newFreq = formState.value.rrule?.freq;
+            const hasFreqChanged = originalFreq !== newFreq;
+
             Modal.confirm({
                 title: "Cập nhật sự kiện lặp lại",
                 width: 500,
                 content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
-                    h("div", { class: "mb-3" }, [
-                        h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
-                            h("input", {
-                                type: "radio",
-                                name: "editOption",
-                                value: "EDIT_1",
-                                class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
-                                checked: editOption.value === "EDIT_1",
-                                onInput: (e) => {
-                                    editOption.value = e.target.value;
-                                },
-                            }),
-                            h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
+                    // Show "Update this event only" option only when freq hasn't changed
+                    ...(hasFreqChanged ? [] : [
+                        h("div", { class: "mb-3" }, [
+                            h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                                h("input", {
+                                    type: "radio",
+                                    name: "editOption",
+                                    value: "EDIT_1",
+                                    class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                                    checked: editOption.value === "EDIT_1",
+                                    onInput: (e) => {
+                                        editOption.value = e.target.value;
+                                    },
+                                }),
+                                h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
+                            ]),
                         ]),
                     ]),
                     h("div", { class: "mb-3" }, [
@@ -1134,12 +1173,13 @@ const updateEvent = async ({ code, date, id }) => {
             until: formState.value.rrule?.until
                 ? dayjs(formState.value.rrule?.until).format("YYYY-MM-DD HH:mm:ss")
                 : dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
-            byweekday: formState.value.rrule?.byweekday.length ? formState.value.rrule.byweekday : null,
-            bymonthday: formState.value.rrule?.bymonthday.length ? formState.value.rrule.bymonthday : null,
-            bymonth: formState.value.rrule?.bymonth.length ? formState.value.rrule.bymonth : null,
+            byweekday: formState.value.rrule?.byweekday.length && formState.value.rrule?.freq === "weekly" ? formState.value.rrule.byweekday : null,
+            bymonthday: formState.value.rrule?.bymonthday.length && formState.value.rrule?.freq === "monthly" ? formState.value.rrule.bymonthday : null,
+            bymonth: formState.value.rrule?.bymonth.length && formState.value.rrule?.freq === "yearly" ? formState.value.rrule.bymonth : null,
             tag_id: formState.value.tags || null,
             is_private: formState.value.is_private ? 1 : 0,
             // path: formState.value.attachments.map(att => att.id),
+            link: null,
         };
 
         console.log("data send",dataApi);

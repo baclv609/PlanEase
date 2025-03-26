@@ -39,10 +39,14 @@ import {
   SyncOutlined,
   UploadOutlined,
   LinkOutlined,
+  AlignLeftOutlined,
+  PaperClipOutlined,
+  LockOutlined,
 } from '@ant-design/icons-vue';
 import moment from "moment-timezone";
 import dayjs from "dayjs";
 import axios from "axios";
+import Editor from 'primevue/editor';
 
 const props = defineProps({
   isAddEventModalVisible: Boolean,
@@ -85,7 +89,7 @@ const formState = ref({
   sendMail: null,
   tag_id: null,
   role: 'viewer', // Thêm role mặc định là viewer
-  is_private: 0,
+  is_private: false,
   start: null,
   end: null,
   allDay: false,
@@ -317,12 +321,15 @@ watch(
   (newValue) => {
     if (newValue) {
       // Khi bật cả ngày
-      if (formState.value.start) {
-        formState.value.start = dayjs(formState.value.start).startOf('day');
-        formState.value.end = dayjs(formState.value.end).add(1, 'day').startOf('day');
+      formState.value.start = dayjs(formState.value.start).startOf('day');
+      // Chỉ set end date nếu chưa có hoặc nếu end date trước start date
+      if(formState.value.end.isSame(formState.value.start) || formState.value.end.isBefore(formState.value.start)) {
+        formState.value.end = dayjs(formState.value.start).add(1, 'day').startOf('day');
+      } else {
+        formState.value.end = dayjs(formState.value.end).startOf('day');
+      }
     }
   }
-}
 );
 
 const freqOptions = [
@@ -383,7 +390,7 @@ const handleSave = async () => {
       timezone_code: formState.value.timezone_code ? formState.value.timezone_code : null,
       type: formState.value.type ? formState.value.type : null,
       tag_id: formState.value.tag_id || null,
-      is_private: formState.value.is_private || 0,
+      is_private: formState.value.is_private ? 1 : 0,
 
       freq: formState.value.rrule?.freq ? formState.value.rrule?.freq : null,
       interval: formState.value.rrule?.interval ?? 1,
@@ -664,7 +671,7 @@ watch(
     :open="isAddEventModalVisible" 
     title="Thêm Sự Kiện Mới" 
     @close="handleCancel"
-    width="65%"
+    width="50%"
     class="event-drawer"
   >
     <template #extra>
@@ -673,349 +680,429 @@ watch(
     <Form layout="vertical" :rules="rules" :model="formState" ref="formRef">
       <div class="h-full flex flex-col">
         <div class="flex-1">
-          <Row :gutter="[16, 16]">
-            <Col :span="13">
-              <Card 
-                title="Thông tin chung" 
-                size="small" 
-                class="h-full"
-                :bordered="false"
-              >
-                <Form.Item label="Tiêu đề" name="title" class="mb-3">
-                  <Input v-model:value="formState.title" placeholder="Nhập tiêu đề sự kiện" class="rounded-md">
-                    <template #prefix>
-                      <EditOutlined class="text-gray-400" />
-                    </template>
-                  </Input>
-                </Form.Item>
-                <Form.Item label="Mô tả" name="description" class="mb-3">
-                  <Input.TextArea 
-                    v-model:value="formState.description" 
-                    placeholder="Nhập mô tả" 
-                    :rows="2" 
-                    class="rounded-md" 
-                  />
-                </Form.Item>
-                <div class="flex items-center gap-3 mb-3">
-                  <span class="text-sm text-gray-700">Tệp đính kèm</span>
-                  <Upload
-                    v-model:file-list="formState.attachments"
-                    :before-upload="() => false"
-                    multiple
-                    :max-count="5"
-                    class="flex-1"
+          <!-- Title Section -->
+          <div class="form-section">
+            <div class="section-title">
+              <EditOutlined class="text-gray-500 mr-2" />
+              <span>Tiêu đề</span>
+            </div>
+            <div class="flex items-center">
+              <Form.Item name="title" class="mb-0 flex-1">
+                <Input v-model:value="formState.title" placeholder="Nhập tiêu đề sự kiện" class="bg-gray-50 rounded-lg">
+
+                </Input>
+              </Form.Item>
+            </div>
+          </div>
+
+          <!-- Date and Time Section -->
+          <div class="form-section">
+            <div class="section-title">
+              <CalendarOutlined class="text-gray-500 mr-2" />
+              <span>Thời gian</span>
+            </div>
+            <div class="grid grid-cols-1 gap-3">
+              <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <Form.Item label="Thời gian bắt đầu" name="start" class="mb-0">
+                  <DatePicker 
+                    v-model:value="formState.start" 
+                    :show-time="!formState.is_all_day"
+                    class="w-full rounded-lg" 
+                    :format="formState.is_all_day ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm'"
+                    :disabled-time="formState.is_all_day ? () => ({ disabledHours: () => Array.from({ length: 24 }, (_, i) => i) }) : undefined"
+                    :allow-clear="false"
                   >
-                    <Button class="rounded-md">
-                      <UploadOutlined /> Tải lên
-                    </Button>
-                    <template #itemRender="{ file, actions }">
-                      <div class="flex items-center justify-between w-full">
-                        <span class="truncate">{{ file.name }}</span>
-                        <CloseCircleOutlined @click="actions.remove" class="text-gray-400 hover:text-red-500" />
-                      </div>
-                    </template>
-                  </Upload>
-                </div>
-                <Form.Item label="Địa điểm" name="location" class="mb-3">
-                  <Input v-model:value="formState.location" placeholder="Nhập địa điểm" class="rounded-md">
                     <template #prefix>
-                      <EnvironmentOutlined class="text-gray-400" />
+                      <CalendarOutlined class="text-gray-400" />
                     </template>
-                  </Input>
+                  </DatePicker>
                 </Form.Item>
-
-                <Form.Item label="Liên kết" name="link" class="mb-3">
-                  <Input v-model:value="formState.link" placeholder="Nhập URL" class="rounded-md">
+                <Form.Item label="Thời gian kết thúc" name="end" class="mb-0">
+                  <DatePicker 
+                    v-model:value="formState.end" 
+                    :show-time="!formState.is_all_day"
+                    class="w-full rounded-lg" 
+                    :format="formState.is_all_day ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm'"
+                    :disabled-time="formState.is_all_day ? () => ({ disabledHours: () => Array.from({ length: 24 }, (_, i) => i) }) : undefined"
+                    :allow-clear="false"
+                  >
                     <template #prefix>
-                      <LinkOutlined class="text-gray-400" />
+                      <CalendarOutlined class="text-gray-400" />
                     </template>
-                  </Input>
+                  </DatePicker>
                 </Form.Item>
+              </div>
+              <Form.Item label="Múi giờ" name="timezone" class="mb-0">
+                <a-select
+                  v-model:value="formState.timezone_code"
+                  show-search
+                  placeholder="Chọn múi giờ"
+                  :filter-option="filterOption"
+                  class="w-full rounded-lg"
+                >
+                  <template #prefix>
+                    <GlobalOutlined class="text-gray-400" />
+                  </template>
+                  <a-select-option v-for="timezone in timezones" :key="timezone" :value="timezone">
+                    {{ timezone }} - {{ getGmtOffset(timezone) }}
+                  </a-select-option>
+                </a-select>
+              </Form.Item>
+              <div class="flex items-center">
+                <Form.Item name="is_all_day" class="mb-0">
+                  <Checkbox v-model:checked="formState.is_all_day">Cả ngày</Checkbox>
+                </Form.Item>
+                <Form.Item name="is_repeat" class="mb-0 ml-6">
+                  <Checkbox v-model:checked="formState.is_repeat">Lặp lại</Checkbox>
+                </Form.Item>
+              </div>
+            </div>
+          </div>
 
-                <div class="grid grid-cols-3 gap-3 mb-3">
-                  <Form.Item label="Lịch trình" name="type" class="mb-0">
-                    <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="rounded-md">
-                      <Select.Option value="event">Sự kiện</Select.Option>
-                      <Select.Option value="task">Việc cần làm</Select.Option>
-                    </Select>
-                  </Form.Item>
+          <!-- Description Section -->
+          <div class="form-section">
+            <div class="flex justify-between items-center">
+              <div class="section-title">
+                <AlignLeftOutlined class="text-gray-500 mr-2" />
+                <span>Mô tả</span>
+              </div>
+              <div class="section-title">
+                <PaperClipOutlined class="text-gray-500 mr-2" />
+                <Upload
+                  v-model:file-list="formState.attachments"
+                  :before-upload="() => false"
+                  multiple
+                  :max-count="5"
+                  class="text-blue-600 cursor-pointer hover:text-blue-800"
+                >
+                  Thêm Tập Tin Đính Kèm
+                </Upload>
+              </div>
+            </div>
 
-                  <a-form-item label="Chọn màu" name="color_code" class="mb-0">
-                    <a-select v-model:value="formState.color_code" placeholder="Chọn màu">
-                        <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
-                            <div class="flex items-center">
-                                <div class="w-4 h-4 mr-2 rounded-full" :style="{ backgroundColor: color.value }"></div>
-                                <span>{{ color.label }}</span>
-                            </div>
-                        </a-select-option>
-                    </a-select>
-                  </a-form-item>
+            <Editor
+              v-model="formState.description"
+              editorStyle="min-height: 200px; max-height: 400px; overflow-y: auto; background-color: white;"
+              class="w-full"
+              :pt="{
+                toolbar: {
+                  root: { class: 'bg-gray-50 p-2' }
+                },
+                content: {
+                  root: { class: 'bg-white' }
+                }
+              }"
+              :toolbar="[
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                [{ 'font': [] }],
+                ['list-ordered', 'list-unordered', 'indent-left', 'indent-right'],
+                ['align-left', 'align-center', 'align-right', 'align-justify'],
+                ['text-color', 'background-color'],
+                ['link', 'image', 'video'],
+                ['code-block', 'blockquote'],
+                ['script-sub', 'script-super'],
+                ['clean']
+              ]"
+            />
 
-                  <Form.Item label="Gắn thẻ" name="tag" class="mb-0">
-                    <Select v-model:value="formState.tag_id" placeholder="Chọn loại" class="rounded-md">
-                      <Select.Option v-for="tag in tags" :key="tag.id" :value="tag.id">
-                        {{ tag.name }}
-                      </Select.Option>
-                    </Select>
-                  </Form.Item>
-                </div>
-                <div v-if="formState.type == 'event'">
-                  <Form.Item label="Khách mời" class="mb-2">
-                    <a-select
-                      v-model:value="formState.attendees"
-                      mode="multiple"
-                      label-in-value
-                      placeholder="Thêm khách mời"
-                      class="rounded-md"
-                      :filter-option="false"
-                      :not-found-content="state.fetching ? undefined : null"
-                      :options="state.data"
-                      @search="fetchUser"
-                    >
-                      <template #prefix>
-                        <TeamOutlined class="text-gray-400" />
-                      </template>
-                      <template v-if="state.fetching" #notFoundContent>
-                        <a-spin size="small" />
-                      </template>
-                    </a-select>
-                  </Form.Item>
-                  <div class="flex items-center gap-2">
-                    <span>Quyền khách mời:</span>
-                    <a-radio-group v-model:value="formState.role" class="flex gap-4">
-                      <a-radio value="viewer">Chỉ xem</a-radio>
-                      <a-radio value="editor">Được sửa</a-radio>
-                    </a-radio-group>
+            <!-- Display attached files -->
+            <div v-if="formState.attachments && formState.attachments.length > 0" class="mt-4">
+              <div class="text-sm font-medium text-gray-700 mb-2">Tập tin đính kèm:</div>
+              <div class="space-y-2">
+                <div v-for="(file, index) in formState.attachments" :key="index" 
+                  class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                  <div class="flex items-center">
+                    <PaperClipOutlined class="text-gray-500 mr-2" />
+                    <span class="text-sm text-gray-600">{{ file.name }}</span>
                   </div>
+                  <Button type="text" danger @click="removeAttachment(index)">
+                    <DeleteOutlined />
+                  </Button>
                 </div>
-              </Card>
-            </Col>
-            <Col :span="11">
-              <Card 
-                title="Thiết lập thời gian" 
-                size="small" 
-                class="h-full"
-                :bordered="false"
-              >
-                <div class="grid grid-cols-2 gap-3 mb-3">
-                  <Form.Item label="Thời gian bắt đầu" name="start" class="mb-0">
-                    <DatePicker 
-                      v-model:value="formState.start" 
-                      :show-time="!formState.is_all_day"
-                      class="w-full rounded-md" 
-                      format="YYYY-MM-DD HH:mm"
-                      :disabled-time="formState.is_all_day ? () => ({ disabledHours: () => Array.from({ length: 24 }, (_, i) => i) }) : undefined"
-                      :allow-clear="false"
-                    >
-                      <template #prefix>
-                        <CalendarOutlined class="text-gray-400" />
-                      </template>
-                    </DatePicker>
+              </div>
+            </div>
+          </div>
+
+          <!-- Location Section -->
+          <div class="form-section">
+            <div class="section-title">
+              <EnvironmentOutlined class="text-gray-500 mr-2" />
+              <span>Địa điểm</span>
+            </div>
+            <Form.Item name="location" class="mb-0">
+              <Input v-model:value="formState.location" placeholder="Nhập địa điểm" class="bg-gray-50 rounded-lg">
+              </Input>
+            </Form.Item>
+          </div>
+
+          <!-- Participants Section -->
+          <div class="form-section" v-if="formState.type == 'event'">
+            <div class="section-title">
+              <UserOutlined class="text-gray-500 mr-2" />
+              <span>Người tham gia</span>
+            </div>
+            <div class="space-y-4">
+              <Form.Item name="attendees" class="mb-0">
+                <a-select
+                  v-model:value="formState.attendees"
+                  mode="multiple"
+                  label-in-value
+                  placeholder="Thêm khách mời"
+                  class="w-full rounded-lg"
+                  :filter-option="false"
+                  :not-found-content="state.fetching ? undefined : null"
+                  :options="state.data"
+                  @search="fetchUser"
+                >
+                  <template #prefix>
+                    <TeamOutlined class="text-gray-400" />
+                  </template>
+                  <template v-if="state.fetching" #notFoundContent>
+                    <a-spin size="small" />
+                  </template>
+                </a-select>
+              </Form.Item>
+              <div class="flex gap-3">
+                <span>Quyền khách mời:</span>
+                <div class="flex gap-4 items-center">
+                  <a-radio-group v-model:value="formState.role" class="flex gap-4">
+                    <a-radio value="viewer">Chỉ xem</a-radio>
+                    <a-radio value="editor">Được sửa</a-radio>
+                  </a-radio-group>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Event Type Section -->
+          <div class="form-section">
+            <div class="section-title">
+              <TagOutlined class="text-gray-500 mr-2" />
+              <span>Loại sự kiện</span>
+            </div>
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <Form.Item name="type" class="mb-0">
+                <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="rounded-lg w-full">
+                  <Select.Option value="event">Sự kiện</Select.Option>
+                  <Select.Option value="task">Việc cần làm</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="color_code" class="mb-0">
+                <a-select v-model:value="formState.color_code" placeholder="Chọn màu" class="rounded-lg w-full">
+                  <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
+                    <div class="flex items-center">
+                      <div class="h-4 rounded-full w-4 mr-2" :style="{ backgroundColor: color.value }"></div>
+                      <span>{{ color.label }}</span>
+                    </div>
+                  </a-select-option>
+                </a-select>
+              </Form.Item>
+
+              <Form.Item name="tag" class="mb-0">
+                <Select v-model:value="formState.tag_id" placeholder="Chọn loại" class="rounded-lg w-full">
+                  <Select.Option v-for="tag in tags" :key="tag.id" :value="tag.id">
+                    {{ tag.name }}
+                  </Select.Option>
+                </Select>
+              </Form.Item>
+            </div>
+          </div>
+
+          <div class="form-section flex flex-col gap-2">
+            <!-- Privacy and Notification Section -->
+            <div class="grid grid-cols-1 gap-2 md:grid-cols-2" v-if="formState.type == 'event'">
+              <div>
+                <div class="section-title">
+                  <LockOutlined class="text-gray-500 mr-2" />
+                  <span>Quyền riêng tư</span>
+                </div>
+                <div class="flex gap-6 items-center">
+                  <Form.Item name="is_private" class="mb-0">
+                    <Checkbox v-model:checked="formState.is_private">Riêng tư</Checkbox>
                   </Form.Item>
-                  <Form.Item label="Thời gian kết thúc" name="end" class="mb-0">
-                    <DatePicker 
-                      v-model:value="formState.end" 
-                      :show-time="!formState.is_all_day"
-                      class="w-full rounded-md" 
-                      format="YYYY-MM-DD HH:mm"
-                      :disabled-time="formState.is_all_day ? () => ({ disabledHours: () => Array.from({ length: 24 }, (_, i) => i) }) : undefined"
-                      :allow-clear="false"
-                    >
-                      <template #prefix>
-                        <CalendarOutlined class="text-gray-400" />
-                      </template>
-                    </DatePicker>
+                  <Form.Item name="is_busy" class="mb-0">
+                    <Checkbox v-model:checked="formState.is_busy">Đánh dấu là bận</Checkbox>
                   </Form.Item>
                 </div>
-                <Form.Item label="Múi giờ" name="timezone" class="mb-3">
-                  <a-select
-                    v-model:value="formState.timezone_code"
-                    show-search
-                    placeholder="Chọn múi giờ"
-                    :filter-option="filterOption"
-                    class="w-full rounded-md"
-                  >
-                    <template #prefix>
-                      <GlobalOutlined class="text-gray-400" />
-                    </template>
-                    <a-select-option v-for="timezone in timezones" :key="timezone" :value="timezone">
-                      {{ timezone }} - {{ getGmtOffset(timezone) }}
-                    </a-select-option>
-                  </a-select>
-                </Form.Item>
-                <div class="grid grid-cols-4 gap-3 mb-3">
-                  <Form.Item label="Cả ngày" name="is_all_day" class="mb-0">
-                    <Switch v-model:checked="formState.is_all_day" />
-                  </Form.Item>
-                  <Form.Item label="Lặp lại" name="is_repeat" class="mb-0">
-                    <Switch v-model:checked="formState.is_repeat" />
-                  </Form.Item>
-                  <Form.Item label="Riêng tư" v-if="formState.type == 'event'" name="is_private" class="mb-0">
-                    <Switch v-model:checked="formState.is_private" />
-                  </Form.Item>
-                  <Form.Item v-if="formState.type == 'event'" label="Bận" name="is_busy" class="mb-0">
-                    <Switch v-model:checked="formState.is_busy" />
-                  </Form.Item>
+              </div>
+  
+              <div>
+                <div class="section-title">
+                  <BellOutlined class="text-gray-500 mr-2" />
+                  <span>Thông báo</span>
                 </div>
-                <div class="space-y-2">
-                  <div class="flex items-center gap-2" v-if="formState.type == 'event'">
+                <div class="space-y-4">
+                  <div class="flex justify-between items-center">
                     <Form.Item name="is_reminder" class="mb-0">
                       <Checkbox v-model:checked="formState.is_reminder">Bật nhắc nhở</Checkbox>
                     </Form.Item>
-                    <Button 
-                      type="dashed" 
-                      v-if="formState.is_reminder" 
-                      @click="addReminder" 
-                      class="rounded-md text-sm flex items-center"
-                    >
-                      <BellOutlined class="mr-1" />Thêm nhắc nhở
-                    </Button>
-                  </div>
-                  <div v-if="formState.is_reminder" class="space-y-2">
-                    <div v-for="(reminder, index) in formState.reminder" :key="index" class="flex items-center gap-2">
-                      <Select v-model:value="reminder.type" class="w-24 rounded-md">
-                        <Select.Option value="email">Email</Select.Option>
-                        <Select.Option value="web">Web</Select.Option>
-                      </Select>
-                      <span class="text-sm text-gray-500">trước</span>
-                      <InputNumber 
-                        v-model:value="reminder.time" 
-                        min="1" 
-                        class="w-16 rounded-md" 
-                        @blur="reminder.time = reminder.time || 1" 
-                      />
-                      <Select v-model:value="reminder.unit" class="w-24 rounded-md">
-                        <Select.Option value="minutes">Phút</Select.Option>
-                        <Select.Option value="hours">Giờ</Select.Option>
-                      </Select>
-                      <Button 
-                        type="text" 
-                        danger 
-                        @click="removeReminder(index)"
-                        class="flex items-center justify-center w-6 h-6 rounded-md hover:bg-red-50"
-                      >
-                        <DeleteOutlined class="text-red-500 text-lg" />
-                      </Button>
+                    <div v-if="formState.is_reminder" @click="addReminder" class="cursor-pointer">
+                      <a class="text-blue-600 hover:text-blue-800">Thêm thông báo nhắc</a>
                     </div>
                   </div>
                 </div>
-              </Card>
-            </Col>
-          </Row>
+              </div>
+            </div>
 
-          <template v-if="formState.is_repeat">
-            <Card 
-              title="Cài đặt lặp lại" 
-              size="small" 
-              class="mt-4"
-              :bordered="false"
-            >
-              <div class="grid grid-cols-2 gap-6">
-                <div class="space-y-3">
-                  <Form.Item label="Kiểu lặp lại" name="freq" class="mb-0">
-                    <Select v-model:value="formState.rrule.freq" :options="freqOptions" class="rounded-md">
-                      <template #prefix>
-                        <ReloadOutlined class="text-gray-400" />
-                      </template>
+            <div v-if="formState.is_reminder" class="space-y-2 w-full">
+              <div v-for="(reminder, index) in formState.reminder" :key="index" 
+                class="bg-gray-50 p-2 rounded-lg">
+                <Row :gutter="8" align="middle">
+                  <Col span="8" class="flex items-center">
+                    <Select 
+                      v-model:value="reminder.type" 
+                      placeholder="Loại nhắc nhở" 
+                      class="w-full text-sm"
+                      size="small"
+                    >
+                      <Select.Option value="email">Email</Select.Option>
+                      <Select.Option value="web">Web</Select.Option>
                     </Select>
-                  </Form.Item>
-
-                  <Form.Item label="Ngày trong tuần" v-if="formState.rrule.freq === 'weekly'" name="byweekday" class="mb-0">
-                    <Checkbox.Group v-model:value="formState.rrule.byweekday" :options="weekDays" class="grid grid-cols-4 gap-2" />
-                  </Form.Item>
-
-                  <Form.Item label="Lặp vào các ngày" v-if="formState.rrule.freq === 'monthly'" name="bymonthday" class="mb-0">
-                    <a-select
-                      v-model:value="formState.rrule.bymonthday"
-                      mode="multiple"
-                      placeholder="Chọn ngày"
-                      class="w-full rounded-md"
-                      :options="monthDays.map(day => ({ label: `Ngày ${day}`, value: day }))"
+                    <span class="ml-2 text-sm">trước</span>
+                  </Col>
+                  <Col span="6">
+                    <InputNumber 
+                      v-model:value="reminder.time" 
+                      min="1"
+                      size="small"
+                      @blur="reminder.time = reminder.time || 1" 
+                      placeholder="Thời gian"
+                      class="w-full text-sm" 
+                    />
+                  </Col>
+                  <Col span="7">
+                    <Select 
+                      v-model:value="reminder.unit" 
+                      placeholder="Đơn vị" 
+                      class="w-full text-sm"
+                      size="small"
                     >
-                      <template #prefix>
-                        <ScheduleOutlined class="text-gray-400" />
-                      </template>
-                    </a-select>
-                  </Form.Item>
+                      <Select.Option value="minutes">Phút</Select.Option>
+                      <Select.Option value="hours">Giờ</Select.Option>
+                    </Select>
+                  </Col>
+                  <Col span="3">
+                    <Button 
+                      type="text" 
+                      size="small"
+                      @click="removeReminder(index)" 
+                      class="text-red-500 hover:!text-red-700 px-1"
+                    >
+                      <DeleteOutlined class="text-lg" />
+                    </Button>
+                  </Col>
+                </Row>
+              </div>
+            </div>
+          </div>
 
-                  <Form.Item label="Khoảng cách lặp lại" name="interval" class="mb-0">
-                    <Input 
-                      v-model:value="formState.rrule.interval" 
+          <!-- URL Section -->
+          <div class="form-section">
+            <div class="section-title">
+              <LinkOutlined class="text-gray-500 mr-2" />
+              <span>Liên kết</span>
+            </div>
+            <Form.Item name="link" class="mb-0">
+              <Input v-model:value="formState.link" placeholder="Nhập URL" class="bg-gray-50 rounded-lg">
+              </Input>
+            </Form.Item>
+          </div>
+
+          <!-- Recurrence Section -->
+          <template v-if="formState.is_repeat">
+            <div class="form-section">
+              <div class="section-title">
+                <CalendarOutlined class="text-gray-500 mr-2" />
+                <span>Cài đặt lặp lại</span>
+              </div>
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="space-y-4">
+                  <div>
+                    <label class="text-gray-700 block font-medium mb-2">Kiểu lặp lại</label>
+                    <Select v-model:value="formState.rrule.freq" :options="freqOptions" class="w-full" />
+                  </div>
+
+                  <div v-if="formState.rrule.freq === 'weekly'">
+                    <label class="text-gray-700 block font-medium mb-2">Ngày trong tuần</label>
+                    <Checkbox.Group v-model:value="formState.rrule.byweekday" :options="weekDays" 
+                      class="grid grid-cols-4 gap-2" />
+                  </div>
+
+                  <div v-if="formState.rrule.freq === 'monthly'">
+                    <label class="text-gray-700 block font-medium mb-2">Lặp vào các ngày</label>
+                    <a-select v-model:value="formState.rrule.bymonthday" mode="multiple"
+                      placeholder="Chọn ngày" class="w-full"
+                      :options="monthDays.map(day => ({ label: `Ngày ${day}`, value: day }))" />
+                  </div>
+
+                  <div>
+                    <label class="text-gray-700 block font-medium mb-2">Khoảng cách lặp lại</label>
+                    <Input v-model:value="formState.rrule.interval" 
                       type="number" 
-                      min="1" 
-                      class="rounded-md"
-                      @blur="formState.rrule.interval = formState.rrule.interval || 1" 
-                    >
-                      <template #prefix>
-                        <SyncOutlined class="text-gray-400" />
-                      </template>
-                    </Input>
-                  </Form.Item>
+                      min="1"
+                      :max="999"
+                      @input="(e) => {
+                        const value = parseInt(e.target.value);
+                        if (value < 1) formState.rrule.interval = 1;
+                      }"
+                      @blur="!formState.rrule.interval || formState.rrule.interval < 1 ? formState.rrule.interval = 1 : formState.rrule.interval" 
+                      class="w-full" />
+                  </div>
                 </div>
 
-                <div class="space-y-3">
-                  <Form.Item label="Kết thúc" class="mb-0">
-                    <a-radio-group v-model:value="formState.rrule.endType" class="flex gap-4">
+                <div class="space-y-4">
+                  <div class="flex flex-col gap-2 mb-8">
+                    <label class="text-gray-700 font-medium">Kết thúc</label>
+                    <a-radio-group v-model:value="formState.rrule.endType" class="flex">
                       <a-radio value="">Không bao giờ</a-radio>
                       <a-radio value="until">Ngày cụ thể</a-radio>
                       <a-radio value="count">Số lần lặp</a-radio>
                     </a-radio-group>
-                  </Form.Item>
-
-                  <div class="grid grid-cols-2 gap-3">
-                    <Form.Item label="Loại trừ ngày" name="exclude_time" class="mb-0">
-                      <DatePicker
-                        v-model:value="selectedDate"
-                        format="YYYY-MM-DD"
-                        class="w-full rounded-md mb-2"
-                        @change="handleExcludeDate"
-                      >
-                        <template #prefix>
-                          <CalendarOutlined class="text-gray-400" />
-                        </template>
-                      </DatePicker>
-                      <div class="flex flex-wrap gap-1">
-                        <Tag
-                          v-for="(date, index) in formState.exclude_time"
-                          :key="index"
-                          closable
-                          @close="removeExcludeDate(index)"
-                          class="rounded-md"
-                        >
-                          {{ dayjs(date).format('YYYY-MM-DD') }}
-                        </Tag>
-                      </div>
-                    </Form.Item>
-
-                    <Form.Item label="Giới hạn số lần lặp" v-if="formState.rrule.endType === 'count'" class="mb-0">
-                      <Input v-model:value="formState.rrule.count" type="number" min="1" class="rounded-md">
-                        <template #prefix>
-                          <CheckSquareOutlined class="text-gray-400" />
-                        </template>
-                      </Input>
-                    </Form.Item>
-      
-                    <Form.Item label="Ngày kết thúc" v-if="formState.rrule.endType === 'until'" class="mb-0">
-                      <a-date-picker v-model:value="formState.rrule.until" placeholder="Chọn ngày" class="w-full rounded-md">
-                        <template #prefix>
-                          <CalendarOutlined class="text-gray-400" />
-                        </template>
-                      </a-date-picker>
-                    </Form.Item>
                   </div>
 
+                  <div class="grid grid-cols-1">
+                    <div v-if="formState.rrule.endType === 'count'">
+                      <label class="text-gray-700 block font-medium mb-2">Giới hạn số lần lặp</label>
+                      <Input v-model:value="formState.rrule.count" type="number" min="1" placeholder="Nhập số lần lặp"
+                        class="w-full" />
+                    </div>
+
+                    <div v-if="formState.rrule.endType === 'until'">
+                      <label class="text-gray-700 block font-medium mb-2">Ngày kết thúc</label>
+                      <a-date-picker v-model:value="formState.rrule.until" placeholder="Chọn ngày"
+                        class="w-full" />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </Card>    
+            </div>
           </template>
         </div>
-
       </div>
     </Form>
   </Drawer>
 </template>
 
 <style scoped>
+.form-section {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid #f3f4f6;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  color: #374151;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+
 .event-drawer :deep(.ant-drawer-content-wrapper) {
   max-width: 80%;
 }
@@ -1051,34 +1138,14 @@ watch(
   padding-right: 4px;
 }
 
-.event-drawer :deep(.ant-row) {
-  margin: 0 !important;
-  width: 100%;
-}
-
-.event-drawer :deep(.ant-col) {
-  padding: 0 8px !important;
-}
-
-.event-drawer :deep(.ant-card) {
-  margin-bottom: 16px;
-  border-radius: 6px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.event-drawer :deep(.ant-card-body) {
-  padding: 12px;
-}
-
-.event-drawer :deep(.ant-form-item) {
-  margin-bottom: 12px;
-  width: 100%;
+.form-section {
+  margin-bottom: .75rem;
 }
 
 .event-drawer :deep(.ant-input),
 .event-drawer :deep(.ant-select-selector),
 .event-drawer :deep(.ant-picker) {
-  border-radius: 4px !important;
+  border-radius: 0.5rem !important;
   height: 32px !important;
   border-color: #d9d9d9;
   width: 100%;
@@ -1092,17 +1159,17 @@ watch(
 
 .event-drawer :deep(.ant-input-textarea textarea) {
   height: 60px !important;
-  border-radius: 4px;
+  border-radius: 0.5rem;
 }
 
 .event-drawer :deep(.ant-btn) {
-  border-radius: 4px;
+  border-radius: 0.5rem;
   height: 32px;
   font-weight: 500;
 }
 
 .event-drawer :deep(.ant-tag) {
-  border-radius: 4px;
+  border-radius: 0.5rem;
   padding: 0 6px;
   height: 22px;
   line-height: 20px;
@@ -1134,7 +1201,7 @@ watch(
   font-size: 12px;
   background-color: #f5f5f5;
   border-color: #d9d9d9;
-  border-radius: 4px;
+  border-radius: 0.5rem;
   max-width: calc(100% - 8px);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1180,7 +1247,7 @@ watch(
 }
 
 .event-drawer :deep(.ant-input-affix-wrapper) {
-  border-radius: 4px !important;
+  border-radius: 0.5rem !important;
 }
 
 .event-drawer :deep(.ant-input-affix-wrapper .ant-input) {
