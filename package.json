@@ -29,6 +29,7 @@
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
     "fullcalendar": "^6.1.15",
+    "highcharts": "^12.1.2",
     "laravel-echo": "^2.0.2",
     "luxon": "^3.5.0",
     "moment": "^2.30.1",

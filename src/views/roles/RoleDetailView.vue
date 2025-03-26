@@ -1,42 +1,63 @@
 <template>
     <div class="page-container">
-        <a-button class="back-button" type="primary" ghost @click="goBack">
-            <template #icon>
-                <ArrowLeftOutlined />
-            </template>
-            Quay lại danh sách
-        </a-button>
+        <div class="header-section">
+            <a-button class="back-button" type="primary" ghost @click="goBack">
+                <template #icon><ArrowLeftOutlined /></template>
+                Quay lại danh sách
+            </a-button>
+            <div class="header-title">
+                <SafetyCertificateOutlined class="header-icon" />
+                <span>Chi tiết vai trò</span>
+            </div>
+        </div>
 
         <div class="role-detail">
-            <a-card :bordered="false" class="custom-card">
+            <a-card :bordered="false" class="custom-card info-card">
                 <template #title>
                     <div class="card-header">
-                        <h2>Chi tiết vai trò</h2>
+                        <InfoCircleOutlined />
+                        <span>Thông tin cơ bản</span>
                     </div>
                 </template>
 
                 <div v-if="role" class="role-info">
                     <div class="info-item">
-                        <div class="info-label">Tên vai trò</div>
-                        <div class="info-content">{{ role.name }}</div>
-                    </div>
-
-                    <a-divider />
-
-                    <div class="info-item">
-                        <div class="info-label">Ngày tạo</div>
-                        <div class="info-content">{{ formatDate(role.created_at) || 'Chưa có thông tin' }}</div>
-                    </div>
-
-                    <a-divider />
-
-                    <div class="info-item">
-                        <div class="info-label">Trạng thái</div>
+                        <div class="info-label">
+                            <UserOutlined />
+                            <span>Tên vai trò</span>
+                        </div>
                         <div class="info-content">
+                            <span class="role-name">{{ role.name }}</span>
+                        </div>
+                    </div>
 
-                            <a-tag :color="role.deleted_at ? 'pink' : 'green'">
-                                {{ role.deleted_at ? 'Không hoạt động' : 'Đang hoạt động' }}
+                    <a-divider />
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <CalendarOutlined />
+                            <span>Ngày tạo</span>
+                        </div>
+                        <div class="info-content">
+                            <a-tag color="blue">
+                                <ClockCircleOutlined />
+                                {{ formatDate(role.created_at) || 'Chưa có thông tin' }}
                             </a-tag>
+                        </div>
+                    </div>
+
+                    <a-divider />
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <CheckCircleOutlined />
+                            <span>Trạng thái</span>
+                        </div>
+                        <div class="info-content">
+                            <a-badge 
+                                :status="role.deleted_at ? 'error' : 'success'"
+                                :text="role.deleted_at ? 'Khóa' : 'Hoạt động'"
+                            />
                         </div>
                     </div>
                 </div>
@@ -52,9 +73,9 @@
 
 <script>
 import axios from 'axios'
-import { ArrowLeftOutlined } from '@ant-design/icons-vue';
+import { ArrowLeftOutlined, SafetyCertificateOutlined, InfoCircleOutlined, UserOutlined, CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined, PieChartOutlined, TeamOutlined } from '@ant-design/icons-vue';
 import { useRouter } from 'vue-router';
-import { Card as ACard, Spin as ASpin, Tag as ATag, Divider as ADivider } from 'ant-design-vue';
+import { Card as ACard, Spin as ASpin, Tag as ATag, Divider as ADivider, Row as ARow, Col as ACol, Statistic as AStatistic, Badge as ABadge } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
@@ -64,10 +85,22 @@ export default {
     name: 'RoleDetailView',
     components: {
         ArrowLeftOutlined,
+        SafetyCertificateOutlined,
+        InfoCircleOutlined,
+        UserOutlined,
+        CalendarOutlined,
+        ClockCircleOutlined,
+        CheckCircleOutlined,
+        PieChartOutlined,
+        TeamOutlined,
         ACard,
         ASpin,
         ATag,
-        ADivider
+        ADivider,
+        ARow,
+        ACol,
+        AStatistic,
+        ABadge
     },
     data() {
         return {
@@ -79,7 +112,7 @@ export default {
     },
     methods: {
         formatDate(date) {
-            return date ? dayjs(date).format('DD/MM/YYYY') : '';
+            return date ? dayjs(date).format('DD/MM/YYYY HH:mm') : '';
         },
         goBack() {
             this.$router.push('/dashboard/roles')
@@ -116,12 +149,36 @@ export default {
     min-height: 100vh;
 }
 
-.back-button {
-    margin-bottom: 20px;
-    border-radius: 6px;
-    height: 35px;
+.header-section {
     display: flex;
     align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
+.back-button {
+    border-radius: 8px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s;
+    
+    &:hover {
+        transform: translateX(-5px);
+    }
+}
+
+.header-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1890ff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-icon {
+    font-size: 28px;
 }
 
 .role-detail {
@@ -137,14 +194,12 @@ export default {
 }
 
 .card-header {
-    margin-bottom: 0;
-}
-
-.card-header h2 {
-    margin: 0;
-    color: #1890ff;
-    font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
     font-weight: 600;
+    color: #1f1f1f;
 }
 
 .role-info {
@@ -155,6 +210,7 @@ export default {
     display: flex;
     margin: 16px 0;
     align-items: center;
+    padding: 0 16px;
 }
 
 .info-label {
@@ -162,13 +218,20 @@ export default {
     color: #8c8c8c;
     font-weight: 500;
     font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .info-content {
     flex: 1;
-    color: #262626;
     font-size: 15px;
-    font-weight: 500;
+}
+
+.role-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1890ff;
 }
 
 .loading-state {
@@ -185,12 +248,28 @@ export default {
 }
 
 :deep(.ant-divider) {
-    margin: 12px 0;
+    margin: 16px 0;
 }
 
 :deep(.ant-tag) {
-    border-radius: 4px;
-    padding: 4px 8px;
+    border-radius: 6px;
+    padding: 4px 12px;
     font-size: 13px;
+}
+
+:deep(.ant-badge-status) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+:deep(.ant-badge-status-dot) {
+    width: 8px;
+    height: 8px;
+}
+
+:deep(.ant-badge-status-text) {
+    font-size: 14px;
+    font-weight: 500;
 }
 </style>

@@ -55,7 +55,9 @@
           v-model:value="searchText"
           placeholder="Tìm kiếm theo email..."
           @search="handleSearch"
+          :loading="loading"
           allow-clear
+          enter-button
         >
           <template #prefix>
             <SearchOutlined />
@@ -157,7 +159,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
   TeamOutlined,
@@ -200,22 +202,27 @@ const fetchUsers = async (params = {}) => {
         page: pagination.value.current,
         sort_field: params.sortField || 'id',
         sort_order: params.sortOrder || 'asc',
+        email: searchText.value || null,
       },
       headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
     });
 
-    if (!response.data || !Array.isArray(response.data.data)) {
-      console.error("API dữ liệu không hợp lệ:", response.data);
-      dataSource.value = { list: [], total: 0 };
-      pagination.value.total = 0;
-    } else {
+    if (response.data && response.data.data) {
       dataSource.value.list = response.data.data;
-      pagination.value.total = response.data.total || response.data.data.length;
+      if (response.data.total) {
+        pagination.value.total = response.data.total;
+      } else {
+        pagination.value.total = response.data.data.length;
+      }
     }
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);
-    dataSource.value = { list: [], total: 0 };
-    pagination.value.total = 0;
+    if (error.response?.status === 404) {
+      message.info('Không tìm thấy người dùng phù hợp');
+    } else {
+      message.error('Có lỗi xảy ra khi tải danh sách người dùng');
+    }
+    dataSource.value.list = [];
   } finally {
     loading.value = false;
   }
@@ -224,6 +231,7 @@ const fetchUsers = async (params = {}) => {
 const handleTableChange = (pag) => {
   pagination.value.current = pag.current;
   pagination.value.pageSize = pag.pageSize;
+  fetchUsers();
 };
 
 const handleView = (record) => {
@@ -295,10 +303,8 @@ const handleViewBanned = () => {
   router.push('/dashboard/users/ban');
 };
 
-watch(() => pagination.value.current, fetchUsers, { immediate: true });
-
 const activeUsers = computed(() => {
-  return dataSource.value.list.length;
+  return pagination.value.total || 0;
 });
 
 const bannedUsersCount = ref(0);
@@ -322,13 +328,6 @@ const fetchBannedUsersCount = async () => {
 const bannedUsers = computed(() => {
   return bannedUsersCount.value;
 });
-
-
-// Sửa lại watch để load cả 2 loại dữ liệu khi component mounted
-watch(() => pagination.value.current, () => {
-  fetchUsers();
-  fetchBannedUsersCount();
-}, { immediate: true });
 
 // Thêm các methods mới
 const getAvatarColor = (email) => {
@@ -354,8 +353,26 @@ const getRoleColor = (roleName) => {
 const searchText = ref('');
 
 const handleSearch = (value) => {
-  // Implement search logic
+  searchText.value = value;
+  pagination.value.current = 1;
+  fetchUsers();
 };
+
+// Thêm onMounted để load cả 2 API khi component được tạo
+onMounted(() => {
+  fetchUsers();
+  fetchBannedUsersCount();
+});
+
+// Thêm các watch riêng biệt
+watch(() => pagination.value.current, () => {
+  fetchUsers();
+});
+
+watch(searchText, (newVal) => {
+  pagination.value.current = 1;
+  fetchUsers();
+});
 </script>
 
 <style scoped>
@@ -485,5 +502,26 @@ const handleSearch = (value) => {
 
 :deep(.ant-badge-status-text) {
   font-weight: 500;
+}
+
+:deep(.ant-input-search) {
+  .ant-input-wrapper {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .ant-input {
+    &:hover, &:focus {
+      border-color: #1890ff;
+    }
+  }
+
+  .ant-input-search-button {
+    height: 40px;
+    &:hover, &:focus {
+      background-color: #1890ff;
+      border-color: #1890ff;
+    }
+  }
 }
 </style>
