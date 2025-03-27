@@ -202,7 +202,7 @@
                 </div>
 
                 <!-- Actions -->
-                <div class="event-actions mt-4 flex justify-end gap-2">
+                <!-- <div class="event-actions mt-4 flex justify-end gap-2">
                   <a-button 
                     v-if="item.canEdit"
                     type="link" 
@@ -221,7 +221,7 @@
                     <template #icon><EyeOutlined /></template>
                     {{ language === 'vi' ? 'Chi tiết' : 'Details' }}
                   </a-button>
-                </div>
+                </div> -->
               </div>
             </a-card>
           </a-list-item>
@@ -253,9 +253,12 @@ import {
   EyeOutlined,
   ReloadOutlined
 } from '@ant-design/icons-vue';
+import { useUpcomingTasksStore } from '@/stores/upcomingTasksStore'; // Import store
 
 const settingsStore = useSettingsStore();
 const { language, timeZone, timeFormat } = storeToRefs(settingsStore);
+
+const store = useUpcomingTasksStore(); // Khởi tạo store
 
 const loading = ref(false);
 const error = ref(null);
@@ -346,7 +349,7 @@ const formatDateTime = (datetime) => {
   const dateStr = eventTime.format('DD/MM/YYYY');
   return `${timeStr} - ${dateStr}`;
 };
-
+const isInitialDataLoaded = ref(false);
 // Format time from now
 const formatTimeFromNow = (datetime) => {
   if (!datetime) return '';
@@ -467,7 +470,7 @@ const formatReminders = (reminders) => {
   }).join(', ');
 };
 
-// Fetch upcoming tasks
+
 const fetchUpcomingTasks = async () => {
   loading.value = true;
   error.value = null;
@@ -575,12 +578,12 @@ watch(filters, () => {
 watch(
   [language, timeZone, timeFormat],
   async ([newLang, newZone, newFormat], [oldLang, oldZone, oldFormat]) => {
-    // Log changes
-    console.log('Settings changed:', {
-      language: { from: oldLang, to: newLang },
-      timezone: { from: oldZone, to: newZone },
-      timeFormat: { from: oldFormat, to: newFormat }
-    });
+
+    // console.log('Settings changed:', {
+    //   language: { from: oldLang, to: newLang },
+    //   timezone: { from: oldZone, to: newZone },
+    //   timeFormat: { from: oldFormat, to: newFormat }
+    // });
 
     // Update moment settings
     moment.locale(newLang);
@@ -588,13 +591,15 @@ watch(
 
     // Refresh data
     await fetchUpcomingTasks();
+    if (isInitialDataLoaded.value) {
+      await fetchUpcomingTasks();
+    }
 
-    // Show notification
-    message.success(
-      language.value === 'vi' 
-        ? 'Đã cập nhật cài đặt thành công' 
-        : 'Settings updated successfully'
-    );
+    // message.success(
+    //   language.value === 'vi' 
+    //     ? 'Đã cập nhật cài đặt thành công' 
+    //     : 'Settings updated successfully'
+    // );
   },
   { immediate: true }
 );
@@ -603,16 +608,16 @@ watch(
 let refreshInterval;
 
 onMounted(() => {
-  fetchUpcomingTasks();
-  // Refresh data every 5 minutes
-  refreshInterval = setInterval(fetchUpcomingTasks, 5 * 60 * 1000);
-});
-
-onUnmounted(() => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval);
+  if (store.upcomingTasks.length === 0) {
+    store.fetchUpcomingTasks(); // Chỉ gọi API nếu không có dữ liệu
   }
+  isInitialDataLoaded.value = true;
+  // refreshInterval = setInterval(fetchUpcomingTasks, 5 * 60 * 1000);
 });
+watch(() => store.upcomingTasks, () => {
+  isInitialDataLoaded.value = true;
+  upcomingTasks.value = store.upcomingTasks;
+}, { immediate: true });
 
 // Handle edit event
 const handleEditEvent = (event) => {
