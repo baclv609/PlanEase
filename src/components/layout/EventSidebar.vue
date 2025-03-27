@@ -279,6 +279,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import EventModal from "@/views/calendar/components/EventModal.vue";
 import moment from "moment-timezone";
 import { useI18n } from "vue-i18n";
+import { useUpcomingTasksStore } from '@/stores/upcomingTasksStore';
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem("access_token");
@@ -311,9 +312,11 @@ const showAllShared = ref(false);
 const isAddEventModalVisible = ref(false);
 const selectedEventAdd = ref(null);
 
-const upcomingTasks = ref([]);
-const loading = ref(false);
-const error = ref(null);
+const store = useUpcomingTasksStore();
+
+const loading = computed(() => store.loading);
+const error = computed(() => store.error);
+const upcomingTasks = computed(() => store.upcomingTasks);
 
 // Lấy thông tin khách mời
 const state = ref({
@@ -365,43 +368,7 @@ let refreshInterval;
 
 // 1.
 const fetchUpcomingTasks = async () => {
-  loading.value = true;
-  error.value = null;
-
-  try {
-    const response = await axios.get(`${dirApi}tasks/upComingTasks`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (response?.data?.code === 200) {
-      upcomingTasks.value = response.data.data || [];
-    } else {
-      throw new Error(response?.data?.message || t("errors.failedToLoadEvents"));
-    }
-  } catch (err) {
-    console.error("Error fetching upcoming tasks:", err);
-
-    if (err.response) {
-      if (err.response.status === 500) {
-        error.value = t("errors.serverError");
-      } else if (err.response.status === 401) {
-        error.value = t("errors.sessionExpired");
-      } else {
-        error.value = err.response.data?.message || t("errors.failedToLoadEvents");
-      }
-    } else if (err.request) {
-      error.value = t("errors.connectionError");
-    } else {
-      error.value = t("errors.generalError");
-    }
-
-    upcomingTasks.value = [];
-    message.error(error.value);
-  } finally {
-    loading.value = false;
-  }
+  await store.fetchUpcomingTasks();
 };
 
 // 2.
@@ -430,12 +397,12 @@ const formattedUpcomingTasks = computed(() => {
 
 // 4. Thêm interval refresh trong onMounted
 onMounted(() => {
-  fetchUpcomingTasks();
+  store.fetchUpcomingTasks();
   isInitialDataLoaded.value = true;
   
   // Refresh mỗi phút
   refreshInterval = setInterval(() => {
-    fetchUpcomingTasks();
+    store.fetchUpcomingTasks();
   }, 60000);
 });
 

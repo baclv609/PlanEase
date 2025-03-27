@@ -253,9 +253,12 @@ import {
   EyeOutlined,
   ReloadOutlined
 } from '@ant-design/icons-vue';
+import { useUpcomingTasksStore } from '@/stores/upcomingTasksStore'; // Import store
 
 const settingsStore = useSettingsStore();
 const { language, timeZone, timeFormat } = storeToRefs(settingsStore);
+
+const store = useUpcomingTasksStore(); // Khởi tạo store
 
 const loading = ref(false);
 const error = ref(null);
@@ -605,19 +608,16 @@ watch(
 let refreshInterval;
 
 onMounted(() => {
-  fetchUpcomingTasks();
-  // Refresh data every 5 minutes
-  isInitialDataLoaded.value = true;
-  refreshInterval = setInterval(fetchUpcomingTasks, 5 * 60 * 1000);
-});
-
-onUnmounted(() => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval);
-    refreshInterval = null;
-
+  if (store.upcomingTasks.length === 0) {
+    store.fetchUpcomingTasks(); // Chỉ gọi API nếu không có dữ liệu
   }
+  isInitialDataLoaded.value = true;
+  // refreshInterval = setInterval(fetchUpcomingTasks, 5 * 60 * 1000);
 });
+watch(() => store.upcomingTasks, () => {
+  isInitialDataLoaded.value = true;
+  upcomingTasks.value = store.upcomingTasks;
+}, { immediate: true });
 
 // Handle edit event
 const handleEditEvent = (event) => {
