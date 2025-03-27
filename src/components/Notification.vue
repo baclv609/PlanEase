@@ -1,6 +1,6 @@
 <template>
   <div v-if="isNotificationOpen" @click.self="closeModal"
-    class="fixed inset-0 flex items-start justify-end bg-[#227C9D]/20 z-[1050] transition-opacity duration-200">
+    class="fixed inset-0 flex items-start justify-end z-[1050] transition-opacity duration-200">
     <div class="mt-[75px] mr-[80px] bg-white rounded-lg shadow-2xl border border-[#17C3B2]/20 w-full max-w-md transform transition-transform duration-200 ease-out">
       <!-- Header -->
       <div class="flex items-center px-5 py-3 justify-between border-b border-[#17C3B2]/20">

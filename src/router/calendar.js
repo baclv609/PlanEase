@@ -88,7 +88,7 @@ const calendar = [
     component: () => import("@/views/testClender/EventForm.vue"),
   },
   {
-    path: "/trash",
+    path: "/calendar/trash",
     name: "trash",
     meta: { requiresAuth: true },
     component: () => import("@/views/calendar/TrashView.vue"),
