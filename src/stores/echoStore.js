@@ -25,7 +25,7 @@ export const useEchoStore = defineStore("echo", () => {
             },
         });
 
-        console.log("✅ Echo đã khởi tạo!");
+        // console.log("✅ Echo đã khởi tạo!");
     }
 
     function startListening() {
@@ -59,7 +59,7 @@ export const useEchoStore = defineStore("echo", () => {
             });
 
         isListening.value = true;
-        console.log(`🎧 Đã lắng nghe kênh App.Models.User.${user.id}`);
+        // console.log(`🎧 Đã lắng nghe kênh App.Models.User.${user.id}`);
     }
 
     function stopListening() {

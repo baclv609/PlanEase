@@ -360,6 +360,9 @@ const echoStore = useEchoStore();
 
 const settingsStore = useSettingsStore();
 
+const isInitialDataLoaded = ref(false);
+let refreshInterval;
+
 // 1.
 const fetchUpcomingTasks = async () => {
   loading.value = true;
@@ -405,16 +408,14 @@ const fetchUpcomingTasks = async () => {
 watch(
   () => [settingsStore.language, settingsStore.timeZone, settingsStore.timeFormat],
   async ([newLanguage, newTimezone, newTimeFormat]) => {
-    // console.log("Settings changed:", {
-    //   language: newLanguage,
-    //   timezone: newTimezone,
-    //   timeFormat: newTimeFormat
-    // });
 
     moment.locale(newLanguage);
     moment.tz.setDefault(newTimezone);
 
-    await fetchUpcomingTasks();
+    if (isInitialDataLoaded.value && 
+        (newLang !== oldLang || newZone !== oldZone || newFormat !== oldFormat)) {
+      await fetchUpcomingTasks();
+    }
   },
   { immediate: true }
 );
@@ -430,15 +431,15 @@ const formattedUpcomingTasks = computed(() => {
 // 4. Thêm interval refresh trong onMounted
 onMounted(() => {
   fetchUpcomingTasks();
-
+  isInitialDataLoaded.value = true;
+  
   // Refresh mỗi phút
-  // refreshInterval = setInterval(() => {
-  //   fetchUpcomingTasks();
-  // }, 60000);
+  refreshInterval = setInterval(() => {
+    fetchUpcomingTasks();
+  }, 60000);
 });
 
-// 5. Cleanup trong onUnmounted
-
+// 5. 
 // onUnmounted(() => {
 //   if (refreshInterval) {
 //     clearInterval(refreshInterval);
@@ -671,7 +672,7 @@ const handleUpdateOk = async () => {
       }
     );
 
-    console.log("✅ Phản hồi từ server:", response.data);
+    console.log("Phản hồi từ server:", response.data);
 
     if (response.data.success) {
       message.success("Cập nhật tag thành công!");
@@ -689,12 +690,6 @@ const handleUpdateOk = async () => {
   }
 };
 
-// Lắng nghe sự kiện real-time
-onMounted(() => {
-  // echoStore.initEcho();
-  // echoStore.startListening();
-  fetchUpcomingTasks();
-});
 
 const createEvent = () => {
   selectedEventAdd.value = {
@@ -738,7 +733,6 @@ const formatDateTime = (datetime) => {
 
   const dateStr = eventTime.format("DD/MM/YYYY");
 
-  // Kết hợp thời gian và ngày tháng
   return `${timeStr} - ${dateStr}`;
 };
 
@@ -746,7 +740,6 @@ const formatDateTime = (datetime) => {
 const formatTimeFromNow = (datetime) => {
   const { language, timeZone, timeFormat } = settingsStore;
 
-  // Log để debug
   // console.log("Input datetime (UTC):", datetime);
   // console.log("Current settings:", { language, timeZone, timeFormat });
 

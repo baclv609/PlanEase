@@ -346,7 +346,7 @@ const formatDateTime = (datetime) => {
   const dateStr = eventTime.format('DD/MM/YYYY');
   return `${timeStr} - ${dateStr}`;
 };
-
+const isInitialDataLoaded = ref(false);
 // Format time from now
 const formatTimeFromNow = (datetime) => {
   if (!datetime) return '';
@@ -467,7 +467,7 @@ const formatReminders = (reminders) => {
   }).join(', ');
 };
 
-// Fetch upcoming tasks
+
 const fetchUpcomingTasks = async () => {
   loading.value = true;
   error.value = null;
@@ -575,12 +575,12 @@ watch(filters, () => {
 watch(
   [language, timeZone, timeFormat],
   async ([newLang, newZone, newFormat], [oldLang, oldZone, oldFormat]) => {
-    // Log changes
-    console.log('Settings changed:', {
-      language: { from: oldLang, to: newLang },
-      timezone: { from: oldZone, to: newZone },
-      timeFormat: { from: oldFormat, to: newFormat }
-    });
+
+    // console.log('Settings changed:', {
+    //   language: { from: oldLang, to: newLang },
+    //   timezone: { from: oldZone, to: newZone },
+    //   timeFormat: { from: oldFormat, to: newFormat }
+    // });
 
     // Update moment settings
     moment.locale(newLang);
@@ -588,13 +588,15 @@ watch(
 
     // Refresh data
     await fetchUpcomingTasks();
+    if (isInitialDataLoaded.value) {
+      await fetchUpcomingTasks();
+    }
 
-    // Show notification
-    message.success(
-      language.value === 'vi' 
-        ? 'Đã cập nhật cài đặt thành công' 
-        : 'Settings updated successfully'
-    );
+    // message.success(
+    //   language.value === 'vi' 
+    //     ? 'Đã cập nhật cài đặt thành công' 
+    //     : 'Settings updated successfully'
+    // );
   },
   { immediate: true }
 );
@@ -605,12 +607,15 @@ let refreshInterval;
 onMounted(() => {
   fetchUpcomingTasks();
   // Refresh data every 5 minutes
+  isInitialDataLoaded.value = true;
   refreshInterval = setInterval(fetchUpcomingTasks, 5 * 60 * 1000);
 });
 
 onUnmounted(() => {
   if (refreshInterval) {
     clearInterval(refreshInterval);
+    refreshInterval = null;
+
   }
 });
 
