@@ -226,7 +226,7 @@ fetchDeletedRoles();
 <style scoped>
 .trashed-roles-container {
     padding: 24px;
-    background: #f0f2f5;
+    background: #f8fafc;
     min-height: 100vh;
 }
 
@@ -243,16 +243,20 @@ fetchDeletedRoles();
     display: flex;
     align-items: center;
     transition: all 0.3s;
+    border-color: #15C5B2;
+    color: #15C5B2;
     
     &:hover {
         transform: translateX(-5px);
+        border-color: #227CA0;
+        color: #227CA0;
     }
 }
 
 .header-title {
     font-size: 24px;
     font-weight: 600;
-    color: #ff4d4f;
+    color: #227CA0;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -260,28 +264,36 @@ fetchDeletedRoles();
 
 .header-icon {
     font-size: 28px;
+    color: #15C5B2;
 }
 
 .content-card {
-    border-radius: 12px;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03),
-                0 1px 6px -1px rgba(0, 0, 0, 0.02),
-                0 2px 4px 0 rgba(0, 0, 0, 0.02);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
 .custom-table {
     :deep(.ant-table) {
-        border-radius: 8px;
+        border-radius: 12px;
     }
 
     :deep(.ant-table-thead > tr > th) {
-        background: #fafafa;
+        background: #f8fafc;
         font-weight: 600;
         padding: 16px;
+        color: #227CA0;
+        
+        &:hover {
+            background: rgba(21, 197, 178, 0.1) !important;
+        }
     }
 
     :deep(.ant-table-tbody > tr > td) {
         padding: 16px;
+    }
+
+    :deep(.ant-table-tbody > tr:hover > td) {
+        background: rgba(21, 197, 178, 0.05);
     }
 }
 
@@ -294,11 +306,11 @@ fetchDeletedRoles();
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #1f1f1f;
+    color: #227CA0;
     font-weight: 500;
 
     .anticon {
-        color: #1890ff;
+        color: #15C5B2;
     }
 }
 
@@ -314,10 +326,24 @@ fetchDeletedRoles();
     display: flex;
     align-items: center;
     justify-content: center;
+    border: none;
     
-    &:hover {
-        transform: translateY(-2px);
-        transition: all 0.3s;
+    &[type="primary"] {
+        background: linear-gradient(135deg, #15C5B2, #227CA0);
+        
+        &:hover {
+            background: linear-gradient(135deg, #227CA0, #15C5B2);
+            transform: translateY(-2px);
+        }
+    }
+    
+    &[type="danger"] {
+        background: linear-gradient(135deg, #ff4d4f, #ff7875);
+        
+        &:hover {
+            background: linear-gradient(135deg, #ff7875, #ff4d4f);
+            transform: translateY(-2px);
+        }
     }
 }
 
@@ -326,7 +352,18 @@ fetchDeletedRoles();
     align-items: center;
     gap: 4px;
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: 6px;
+    border: none;
+    
+    &[color="blue"] {
+        background: linear-gradient(135deg, #15C5B2, #227CA0);
+        color: white;
+    }
+    
+    &[color="red"] {
+        background: linear-gradient(135deg, #ff4d4f, #ff7875);
+        color: white;
+    }
 }
 
 .empty-state {
@@ -337,11 +374,48 @@ fetchDeletedRoles();
     .anticon {
         font-size: 48px;
         margin-bottom: 16px;
+        color: #15C5B2;
     }
 
     p {
         margin: 0;
         font-size: 14px;
+        color: #227CA0;
+    }
+}
+
+/* Pagination styles */
+:deep(.ant-pagination-item-active) {
+    border-color: #15C5B2;
+    
+    a {
+        color: #15C5B2;
+    }
+}
+
+:deep(.ant-pagination-item:hover) {
+    border-color: #15C5B2;
+    
+    a {
+        color: #15C5B2;
+    }
+}
+
+:deep(.ant-pagination-prev:hover .ant-pagination-item-link),
+:deep(.ant-pagination-next:hover .ant-pagination-item-link) {
+    border-color: #15C5B2;
+    color: #15C5B2;
+}
+
+/* Popconfirm styles */
+:deep(.ant-popover-buttons) {
+    .ant-btn-primary {
+        background: linear-gradient(135deg, #15C5B2, #227CA0);
+        border: none;
+        
+        &:hover {
+            background: linear-gradient(135deg, #227CA0, #15C5B2);
+        }
     }
 }
 </style>

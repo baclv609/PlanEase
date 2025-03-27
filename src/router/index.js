@@ -14,15 +14,14 @@ import { message } from 'ant-design-vue';
 
 
 const routes = [
-  ...calendar,
+  ...dashboard,
   ...auth,
+  ...calendar,
   ...settingsRouter,
   ...users,
   ...roles,
-  ...dashboard,
   ...schedule,
   ...event,
-  ...settingsRouter,
   ...support,
   ...notFound,
 ];
@@ -32,53 +31,61 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach(async (to, _, next) => {
+router.beforeEach(async (to, from, next) => {
     NProgress.start();
     const isAuthenticated = Boolean(localStorage.getItem("access_token"));
-  
-    // Lấy thông tin user từ localStorage, nếu chưa có thì gán object rỗng
     const userData = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {};
-    const userRole = userData.role || ""; // Nếu không có role thì gán ""
-  
-    // Nếu đã đăng nhập và vào trang "/", chuyển hướng về "calendar"
-    if (isAuthenticated && to.path === "/") {
-      next({ name: "calendar" });
-      NProgress.done();
-      return;
+    const isAdmin = userData.role?.toLowerCase() === 'admin';
+
+    // console.log('Debug Navigation:', {
+    //     isAuthenticated,
+    //     isAdmin,
+    //     currentPath: to.path,
+    //     targetRoute: to.name
+    // });
+
+    // Nếu đã đăng nhập
+    if (isAuthenticated) {
+        // Nếu là admin
+        if (isAdmin) {
+            // Nếu đang ở trang đăng nhập hoặc trang chủ, chuyển đến dashboard
+            if (to.path === '/' || to.path === '/login' || to.path === '/register') {
+                console.log('Redirecting admin to dashboard');
+                next({ name: 'dashboard', replace: true });
+                NProgress.done();
+                return;
+            }
+        } else {
+            // Nếu không phải admin và cố truy cập dashboard
+            if (to.name === 'dashboard') {
+                message.error("Bạn không có quyền truy cập!");
+                next({ name: 'calendar', replace: true });
+                NProgress.done();
+                return;
+            }
+
+            // Nếu ở trang đăng nhập hoặc trang chủ, chuyển đến calendar
+            if (to.path === '/' || to.path === '/login' || to.path === '/register') {
+                next({ name: 'calendar', replace: true });
+                NProgress.done();
+                return;
+            }
+        }
+    } else {
+        // Nếu chưa đăng nhập và cố truy cập trang yêu cầu xác thực
+        if (to.meta.requiresAuth) {
+            message.warning("Bạn cần đăng nhập để truy cập!");
+            next({ name: 'login', replace: true });
+            NProgress.done();
+            return;
+        }
     }
-  
-    // Nếu đã đăng nhập và cố vào login/register -> Chuyển hướng về calendar
-    if (isAuthenticated && (to.name === "login" || to.name === "register")) {
-        message.info("Bạn đã đăng nhập!");
-      next({ name: "calendar" });
-      NProgress.done();
-      return;
-    }
-  
-    // Nếu trang yêu cầu đăng nhập mà chưa login -> Chuyển về login
-    if (to.meta.requiresAuth && !isAuthenticated) {
-        message.warning("Bạn cần đăng nhập để truy cập!");
-      next({ name: "login" });
-      NProgress.done();
-      return;
-    }
-  
-    // ⚡️ Phân quyền Dashboard: Chỉ admin mới được vào dashboard
-    if (to.name === "dashboard") {
-      if (!isAuthenticated) {
-        message.warning("Bạn cần đăng nhập để truy cập!");
-        next({ name: "login" }); // Nếu chưa login, chuyển về login
-      } else if (userRole !== "admin") {
-        message.error("Bạn không có quyền truy cập!");
-        next({ name: "not-found" }); // Nếu không phải admin, chặn truy cập
-      } else {
-        next(); // Nếu là admin, cho phép vào
-      }
-      NProgress.done();
-      return;
-    }
-  
+
+    // Cho phép điều hướng
     next();
     NProgress.done();
-  });
+});
+
+// console.log(JSON.parse(localStorage.getItem("user")));
+
 export default router;
