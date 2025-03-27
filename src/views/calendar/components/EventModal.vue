@@ -759,6 +759,77 @@ watch(
             </div>
           </div>
 
+          
+          <!-- Recurrence Section -->
+          <template v-if="formState.is_repeat">
+            <div class="form-section">
+              <div class="section-title">
+                <CalendarOutlined class="text-gray-500 mr-2" />
+                <span>Cài đặt lặp lại</span>
+              </div>
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="space-y-4">
+                  <div>
+                    <label class="text-gray-700 block font-medium mb-2">Kiểu lặp lại</label>
+                    <Select v-model:value="formState.rrule.freq" :options="freqOptions" class="w-full" />
+                  </div>
+
+                  <div v-if="formState.rrule.freq === 'weekly'">
+                    <label class="text-gray-700 block font-medium mb-2">Ngày trong tuần</label>
+                    <Checkbox.Group v-model:value="formState.rrule.byweekday" :options="weekDays" 
+                      class="grid grid-cols-4 gap-2" />
+                  </div>
+
+                  <div v-if="formState.rrule.freq === 'monthly'">
+                    <label class="text-gray-700 block font-medium mb-2">Lặp vào các ngày</label>
+                    <a-select v-model:value="formState.rrule.bymonthday" mode="multiple"
+                      placeholder="Chọn ngày" class="w-full"
+                      :options="monthDays.map(day => ({ label: `Ngày ${day}`, value: day }))" />
+                  </div>
+
+                  <div>
+                    <label class="text-gray-700 block font-medium mb-2">Khoảng cách lặp lại</label>
+                    <Input v-model:value="formState.rrule.interval" 
+                      type="number" 
+                      min="1"
+                      :max="999"
+                      @input="(e) => {
+                        const value = parseInt(e.target.value);
+                        if (value < 1) formState.rrule.interval = 1;
+                      }"
+                      @blur="!formState.rrule.interval || formState.rrule.interval < 1 ? formState.rrule.interval = 1 : formState.rrule.interval" 
+                      class="w-full" />
+                  </div>
+                </div>
+
+                <div class="space-y-4">
+                  <div class="flex flex-col gap-2 mb-8">
+                    <label class="text-gray-700 font-medium">Kết thúc</label>
+                    <a-radio-group v-model:value="formState.rrule.endType" class="flex">
+                      <a-radio value="">Không bao giờ</a-radio>
+                      <a-radio value="until">Ngày cụ thể</a-radio>
+                      <a-radio value="count">Số lần lặp</a-radio>
+                    </a-radio-group>
+                  </div>
+
+                  <div class="grid grid-cols-1">
+                    <div v-if="formState.rrule.endType === 'count'">
+                      <label class="text-gray-700 block font-medium mb-2">Giới hạn số lần lặp</label>
+                      <Input v-model:value="formState.rrule.count" type="number" min="1" placeholder="Nhập số lần lặp"
+                        class="w-full" />
+                    </div>
+
+                    <div v-if="formState.rrule.endType === 'until'">
+                      <label class="text-gray-700 block font-medium mb-2">Ngày kết thúc</label>
+                      <a-date-picker v-model:value="formState.rrule.until" placeholder="Chọn ngày"
+                        class="w-full" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+
           <!-- Description Section -->
           <div class="form-section">
             <div class="flex justify-between items-center">
@@ -1009,76 +1080,6 @@ watch(
               </Input>
             </Form.Item>
           </div>
-
-          <!-- Recurrence Section -->
-          <template v-if="formState.is_repeat">
-            <div class="form-section">
-              <div class="section-title">
-                <CalendarOutlined class="text-gray-500 mr-2" />
-                <span>Cài đặt lặp lại</span>
-              </div>
-              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div class="space-y-4">
-                  <div>
-                    <label class="text-gray-700 block font-medium mb-2">Kiểu lặp lại</label>
-                    <Select v-model:value="formState.rrule.freq" :options="freqOptions" class="w-full" />
-                  </div>
-
-                  <div v-if="formState.rrule.freq === 'weekly'">
-                    <label class="text-gray-700 block font-medium mb-2">Ngày trong tuần</label>
-                    <Checkbox.Group v-model:value="formState.rrule.byweekday" :options="weekDays" 
-                      class="grid grid-cols-4 gap-2" />
-                  </div>
-
-                  <div v-if="formState.rrule.freq === 'monthly'">
-                    <label class="text-gray-700 block font-medium mb-2">Lặp vào các ngày</label>
-                    <a-select v-model:value="formState.rrule.bymonthday" mode="multiple"
-                      placeholder="Chọn ngày" class="w-full"
-                      :options="monthDays.map(day => ({ label: `Ngày ${day}`, value: day }))" />
-                  </div>
-
-                  <div>
-                    <label class="text-gray-700 block font-medium mb-2">Khoảng cách lặp lại</label>
-                    <Input v-model:value="formState.rrule.interval" 
-                      type="number" 
-                      min="1"
-                      :max="999"
-                      @input="(e) => {
-                        const value = parseInt(e.target.value);
-                        if (value < 1) formState.rrule.interval = 1;
-                      }"
-                      @blur="!formState.rrule.interval || formState.rrule.interval < 1 ? formState.rrule.interval = 1 : formState.rrule.interval" 
-                      class="w-full" />
-                  </div>
-                </div>
-
-                <div class="space-y-4">
-                  <div class="flex flex-col gap-2 mb-8">
-                    <label class="text-gray-700 font-medium">Kết thúc</label>
-                    <a-radio-group v-model:value="formState.rrule.endType" class="flex">
-                      <a-radio value="">Không bao giờ</a-radio>
-                      <a-radio value="until">Ngày cụ thể</a-radio>
-                      <a-radio value="count">Số lần lặp</a-radio>
-                    </a-radio-group>
-                  </div>
-
-                  <div class="grid grid-cols-1">
-                    <div v-if="formState.rrule.endType === 'count'">
-                      <label class="text-gray-700 block font-medium mb-2">Giới hạn số lần lặp</label>
-                      <Input v-model:value="formState.rrule.count" type="number" min="1" placeholder="Nhập số lần lặp"
-                        class="w-full" />
-                    </div>
-
-                    <div v-if="formState.rrule.endType === 'until'">
-                      <label class="text-gray-700 block font-medium mb-2">Ngày kết thúc</label>
-                      <a-date-picker v-model:value="formState.rrule.until" placeholder="Chọn ngày"
-                        class="w-full" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </template>
         </div>
       </div>
     </Form>
