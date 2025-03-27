@@ -202,7 +202,7 @@
                 </div>
 
                 <!-- Actions -->
-                <div class="event-actions mt-4 flex justify-end gap-2">
+                <!-- <div class="event-actions mt-4 flex justify-end gap-2">
                   <a-button 
                     v-if="item.canEdit"
                     type="link" 
@@ -221,7 +221,7 @@
                     <template #icon><EyeOutlined /></template>
                     {{ language === 'vi' ? 'Chi tiết' : 'Details' }}
                   </a-button>
-                </div>
+                </div> -->
               </div>
             </a-card>
           </a-list-item>
