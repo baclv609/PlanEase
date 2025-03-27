@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
-
+import LogoIcon from "@/assets/images/logo.png";
 export const useEchoStore = defineStore("echo", () => {
     const echo = ref(null);
     const isListening = ref(false);
@@ -45,14 +45,14 @@ export const useEchoStore = defineStore("echo", () => {
                 if (Notification.permission === "granted") {
                     new Notification("🔔🔔 Nhắc nhở sự kiện", {
                         body: "Có một sự kiện sắp đến!",
-                        icon: ""
+                        icon: LogoIcon
                     });
                 } else if (Notification.permission !== "denied") {
                     const permission = await Notification.requestPermission();
                     if (permission === "granted") {
                         new Notification("🔔🔔 Nhắc nhở sự kiện", {
                             body: "Có một sự kiện sắp đến!",
-                            icon: ""
+                            icon: LogoIcon
                         });
                     }
                 }

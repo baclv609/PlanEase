@@ -22,7 +22,7 @@
 
         <!-- Trash -->
         <a-tooltip title="Thùng rác">
-          <a-button shape="circle" @click="router.push('/trash')" class="border border-[#15C5B2] !bg-white hover:!bg-orange-50 transition-colors">
+          <a-button shape="circle" @click="router.push('/calendar/trash')" class="border border-[#15C5B2] !bg-white hover:!bg-orange-50 transition-colors">
             <DeleteOutlined class="text-orange-500" />
           </a-button>
         </a-tooltip>

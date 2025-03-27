@@ -475,7 +475,7 @@ onMounted(() => {
       </div>
 
       <div class="view-toggle">
-        <a-select v-model:value="currentView" @change="changeView" style="width: 150px">
+        <a-select v-model:value="currentView" @change="changeView" style="width: 150px" class="custom-select !border-[#15C5B2] !rounded-md !focus:ring-2 !focus:ring-[#15C5B2]">
           <a-select-option value="timeGridDay">Ngày</a-select-option>
           <a-select-option value="timeGridWeek">Tuần</a-select-option>
           <a-select-option value="dayGridMonth">Tháng</a-select-option>
@@ -521,7 +521,6 @@ onMounted(() => {
 .calendar-wrapper {
   width: 100%;
   min-height: 600px;
-  background-color: #FEF9ED;
   padding: 16px;
   border-radius: 8px;
 }
@@ -581,5 +580,15 @@ onMounted(() => {
 
 :deep(.fc-col-header-cell-cushion) {
   color: black !important;
+}
+
+:deep(.custom-select .ant-select-selector) {
+  border: 1px solid #15C5B2 !important;
+  border-radius: 20px;
+  padding: 0px 20px;
+}
+
+:deep(.custom-select:hover .ant-select-selector) {
+  background-color: #FEF9EF !important;
 }
 </style>

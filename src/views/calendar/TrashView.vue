@@ -3,49 +3,72 @@
         <div class="flex justify-between items-center mb-6">
             <div class="flex items-center gap-3">
                 <h1 class="text-2xl font-bold text-[#227C9D]">Thùng rác</h1>
-                <a-tag color="blue">{{ filteredEvents.length }} sự kiện</a-tag>
             </div>
             <div class="flex items-center gap-4">
-                <a-select v-model:value="selectedTag" placeholder="Lọc theo lịch" style="width: 200px"
-                    :options="tags.map(tag => ({ value: tag.id, label: tag.name }))" allowClear class="custom-select" />
+                <a-button class="action-btn delete-btn" @click="restoreEvent(selectedEvents)" v-if="selectedEvents.length != 0">
+                    <UndoOutlined class="p-2 text-md" />
+                </a-button>
+                <a-button class="action-btn restore-btn" @click="deleteEvent(selectedEvents)" v-if="selectedEvents.length != 0">
+                    <DeleteOutlined class="p-2 text-md" />
+                </a-button>
+                <a-popconfirm 
+                    v-if="events.length > 0"
+                    title="Bạn có chắc chắn muốn xóa tất cả sự kiện trong thùng rác?" 
+                    ok-text="Có" 
+                    cancel-text="Không" 
+                    @confirm="deleteEvent([], true)"
+                    >
+                    <a-button class="bg-[#227C9D] hover:!text-white text-white font-medium">
+                        Làm trống thùng rác
+                    </a-button>
+                </a-popconfirm>
+
+                <!-- Khi không có sự kiện, render nút nhưng dưới dạng disabled -->
+                <a-button v-else disabled class="bg-[#227C9D] text-white font-medium opacity-50 cursor-not-allowed">
+                    Làm trống thùng rác
+                </a-button>
+                
+                <a-select 
+                    v-model:value="selectedTag" 
+                    placeholder="Lọc theo lịch" 
+                    style="width: 200px"
+                    :options="tags.map(tag => ({ value: tag.id, label: tag.name }))" 
+                    allowClear 
+                />
             </div>
         </div>
 
         <a-table :columns="columns" :data-source="filteredEvents"
             :row-selection="{ selectedRowKeys: selectedEvents, onChange: onSelectChange }" :pagination="false"
-            class="custom-table">
+            :row-key="record => record.id" class="custom-table">
             <template #bodyCell="{ column, record }">
                 <template v-if="column.key === 'action'">
                     <div class="flex gap-2">
 
-                        <a-button @click="restoreEvent(record.id)" class="action-btn restore-btn">
+                        <a-button @click="restoreEvent([record.id])" class="action-btn restore-btn">
                             <template #icon>
                                 <UndoOutlined />
                             </template>
                         </a-button>
 
-
-                        <a-popconfirm title="Bạn có chắc chắn muốn xóa vĩnh viễn sự kiện này?" ok-text="Có"
-                            cancel-text="Không" @confirm="deleteEvent(record.id)">
-                            <a-button class="action-btn delete-btn">
-                                <template #icon>
-                                    <DeleteOutlined />
-                                </template>
-                            </a-button>
-                        </a-popconfirm>
+                        <a-button class="action-btn delete-btn" @click="deleteEvent([record.id])">
+                            <template #icon>
+                                <DeleteOutlined />
+                            </template>
+                        </a-button>
 
                     </div>
                 </template>
                 <template v-else-if="column.key === 'date'">
-                    <div class="text-md font-medium text-[#227C9D]">{{ formatDate(record.startDate, false) }}</div>
+                    <div class="text-md font-medium text-[#227C9D]">{{ formatDate(record.start_time, false) }}</div>
                 </template>
                 <template v-else-if="column.key === 'time'">
                     <div class="flex flex-col gap-1">
                         <div class="text-md font-medium">
-                            {{ record.is_all_day ? 'Cả ngày' : formatDate(record.startDate, true) }}
+                            {{ record.is_all_day ? 'Cả ngày' : formatDate(record.start_time, true) }}
                         </div>
                         <div v-if="record.is_repeat"
-                            class="text-xs px-2 py-0.5 bg-[#FFF3E0] text-[#FF9800] rounded-full inline-block">
+                            class="text-xs inline-block">
                             Lặp lại
                         </div>
                     </div>
@@ -53,14 +76,11 @@
                 <template v-else-if="column.key === 'title'">
                     <div class="flex flex-col gap-1">
                         <div class="text-sm font-medium text-[#227C9D]">{{ record.title }}</div>
-                        <div v-if="record.description" class="text-xs text-gray-500 line-clamp-1">
-                            {{ record.description }}
-                        </div>
                     </div>
                 </template>
                 <template v-else-if="column.key === 'deletedAt'">
                     <div class="text-sm text-gray-500">
-                        {{ formatDate(record.deletedAt) }}
+                        {{ formatDate(record.deleted_at, false) }}
                     </div>
                 </template>
             </template>
@@ -91,16 +111,11 @@ dayjs.extend(timezone);
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem('access_token');
 
-const selectedTag = ref('')
-const selectedEvents = ref([])
-const loading = ref(false)
+const selectedTag = ref(null);
+const selectedEvents = ref([]);
+const loading = ref(false);
 
-const tags = ref([
-    { id: 1, name: 'Công việc' },
-    { id: 2, name: 'Cá nhân' },
-    { id: 3, name: 'Gia đình' },
-    { id: 4, name: 'Học tập' }
-])
+const tags = ref([]);
 
 const events = ref([]);
 
@@ -126,21 +141,34 @@ const getTrashEvents = async () => {
     }
 }
 
+const getTags = async () => {
+    const response = await axios.get(`${dirApi}tags`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    if (response.data.code == 200) {
+        tags.value = response.data.data;
+    }
+}
+
 onMounted(() => {
     getTrashEvents();
-})
+    getTags();
+});
 
 const filteredEvents = computed(() => {
-    if (!selectedTag.value) return events.value
-    return events.value.filter(event => event.tag?.id === selectedTag.value)
-})
+    if (!selectedTag.value) return events.value;
+    return events.value.filter(event => event.tag_id == selectedTag.value);
+});
 
 const formatDate = (date, isTime) => {
     if (!isTime) {
-        return dayjs(date).tz(userSettings.timezone).format('DD/MM/YYYY');
+        return dayjs(date).tz(userSettings.timezone).format(userSettings.dateFormat);
     }
 
-    return dayjs(date).tz(userSettings.timezone).format('HH:mm');
+    return userSettings.timeFormat == '24h' ? dayjs(date).tz(userSettings.timezone).format('HH:mm') : dayjs(date).tz(userSettings.timezone).format('hh:mm A');
 }
 
 const onSelectChange = (selectedRowKeys) => {
@@ -149,7 +177,7 @@ const onSelectChange = (selectedRowKeys) => {
 
 const restoreEvent = async (eventId) => {
     try {
-        const response = await axios.put(`${dirApi}tasks/restoreTasks/aaa`, { ids: [eventId] }, {
+        const response = await axios.put(`${dirApi}tasks/trash/restoreTask`, { ids: eventId }, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -157,7 +185,8 @@ const restoreEvent = async (eventId) => {
 
         if (response.data.code == 200) {
             message.success('Khôi phục sự kiện thành công');
-            getTrashEvents();
+            events.value = events.value.filter(event => !eventId.includes(event.id));
+            selectedEvents.value = [];
         } else {
             message.error('Không thể khôi phục sự kiện');
         }
@@ -167,10 +196,14 @@ const restoreEvent = async (eventId) => {
     }
 }
 
-const deleteEvent = async (eventId) => {
+const deleteEvent = async (eventId, deleteAll = false) => {
+    if (deleteAll) {
+        eventId = events.value.map(event => event.id);
+    }
+
     try {
-        const response = await axios.delete(`${dirApi}tasks/forceDestroy`, {
-            data: { ids: [eventId] },
+        const response = await axios.delete(`${dirApi}tasks/trash/forceDestroy`, {
+            data: { ids: eventId },
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -178,7 +211,8 @@ const deleteEvent = async (eventId) => {
 
         if (response.data.code == 200) {
             message.success('Xóa sự kiện thành công');
-            getTrashEvents();
+            events.value = events.value.filter(event => !eventId.includes(event.id));
+            selectedEvents.value = [];
         } else {
             message.error('Không thể xóa sự kiện');
         }
@@ -284,21 +318,6 @@ const columns = [
     color: white;
 }
 
-.custom-select :deep(.ant-select-selector) {
-    border-color: #e5e7eb;
-    border-radius: 8px;
-    padding: 4px 8px;
-}
-
-.custom-select :deep(.ant-select-selector:hover) {
-    border-color: #17C3B2;
-}
-
-.custom-select :deep(.ant-select-focused .ant-select-selector) {
-    border-color: #17C3B2;
-    box-shadow: 0 0 0 2px rgba(23, 195, 178, 0.1);
-}
-
 :deep(.ant-table-row-selection) {
     padding: 0 1rem;
 }
@@ -315,37 +334,5 @@ const columns = [
 :deep(.ant-checkbox-checked .ant-checkbox-inner) {
     background-color: #17C3B2;
     border-color: #17C3B2;
-}
-
-:deep(.ant-pagination-item-active) {
-    border-color: #17C3B2 !important;
-    background-color: #17C3B2 !important;
-}
-
-:deep(.ant-pagination-item-active a) {
-    color: white !important;
-}
-
-:deep(.ant-pagination-item:hover) {
-    border-color: #17C3B2 !important;
-}
-
-:deep(.ant-pagination-prev:hover .ant-pagination-item-link),
-:deep(.ant-pagination-next:hover .ant-pagination-item-link) {
-    border-color: #17C3B2 !important;
-    color: #17C3B2 !important;
-}
-
-:deep(.ant-tooltip) {
-    font-size: 12px;
-}
-
-:deep(.ant-tooltip-inner) {
-    padding: 4px 8px;
-    min-height: 24px;
-}
-
-:deep(.ant-tooltip-arrow) {
-    display: none;
 }
 </style>
