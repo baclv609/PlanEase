@@ -1,46 +1,73 @@
 <template>
     <div class="create-role-container">
-        <a-button class="back-button" type="primary" ghost @click="goBack">
-            <template #icon>
-                <ArrowLeftOutlined />
-            </template>
-            Quay lại danh sách
-        </a-button>
+        <div class="page-header">
+            <a-button class="back-button" type="primary" @click="goBack">
+                <template #icon>
+                    <ArrowLeftOutlined />
+                </template>
+                Quay lại danh sách
+            </a-button>
+            <h1 class="page-title">Thêm Role Mới</h1>
+        </div>
 
-        <a-card title="Thêm Role Mới" :bordered="false" class="form-card">
+        <a-card :bordered="false" class="form-card">
+            <template #extra>
+                <TagsOutlined class="card-icon" />
+            </template>
+
             <a-form
                 :model="formState"
                 name="createRole"
                 @finish="onFinish"
                 :rules="rules"
                 layout="vertical"
+                class="role-form"
             >
+                <div class="form-description">
+                    <InfoCircleOutlined />
+                    <span>Vui lòng nhập thông tin role mới bên dưới</span>
+                </div>
+
                 <a-form-item
                     label="Tên Role"
                     name="name"
+                    class="form-input"
                 >
                     <a-input 
                         v-model:value="formState.name"
                         placeholder="Nhập tên role"
                         :maxLength="255"
-                    />
+                        size="large"
+                    >
+                        <template #prefix>
+                            <UserOutlined class="input-icon" />
+                        </template>
+                    </a-input>
+                    <div class="input-description">
+                        Tên role không được vượt quá 255 ký tự
+                    </div>
                 </a-form-item>
 
-                <a-form-item>
-                    <a-space>
-                        <a-button 
-                            type="primary" 
-                            html-type="submit" 
-                            :loading="loading"
-                        >
-                            <template #icon><SaveOutlined /></template>
-                            Lưu
-                        </a-button>
-                        <a-button @click="goBack">
-                            Hủy
-                        </a-button>
-                    </a-space>
-                </a-form-item>
+                <div class="form-actions">
+                    <a-button 
+                        type="primary" 
+                        html-type="submit" 
+                        :loading="loading"
+                        size="large"
+                        class="submit-button"
+                    >
+                        <template #icon><SaveOutlined /></template>
+                        <span>Lưu Role</span>
+                    </a-button>
+                    <a-button 
+                        @click="goBack" 
+                        size="large"
+                        class="cancel-button"
+                    >
+                        <template #icon><CloseOutlined /></template>
+                        <span>Hủy</span>
+                    </a-button>
+                </div>
             </a-form>
         </a-card>
     </div>
@@ -51,7 +78,14 @@ import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { message } from 'ant-design-vue';
-import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons-vue';
+import { 
+    ArrowLeftOutlined, 
+    SaveOutlined, 
+    TagsOutlined,
+    UserOutlined,
+    InfoCircleOutlined,
+    CloseOutlined
+} from '@ant-design/icons-vue';
 
 const router = useRouter();
 const dirApi = import.meta.env.VITE_API_BASE_URL;
@@ -106,45 +140,134 @@ const goBack = () => {
 <style scoped>
 .create-role-container {
     padding: 24px;
-    background: #f0f2f5;
+    background: #f5f7fa;
     min-height: 100vh;
 }
 
+.page-header {
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1f1f1f;
+}
+
 .back-button {
-    margin-bottom: 20px;
-    border-radius: 6px;
-    height: 35px;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.back-button :deep(.anticon) {
+    font-size: 16px;
     display: flex;
     align-items: center;
 }
 
 .form-card {
-    max-width: 600px;
+    max-width: 700px;
     margin: 0 auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.card-icon {
+    font-size: 20px;
+    color: #1890ff;
+}
+
+.role-form {
+    padding: 20px 0;
+}
+
+.form-description {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #e6f7ff;
     border-radius: 8px;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03),
-                0 1px 6px -1px rgba(0, 0, 0, 0.02),
-                0 2px 4px 0 rgba(0, 0, 0, 0.02);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #0050b3;
+}
+
+.form-input {
+    margin-bottom: 24px;
+}
+
+.input-icon {
+    color: #bfbfbf;
+}
+
+.input-description {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #8c8c8c;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+}
+
+.submit-button,
+.cancel-button {
+    min-width: 120px;
+    height: 40px;
+    border-radius: 8px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.submit-button :deep(.anticon),
+.cancel-button :deep(.anticon) {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
 }
 
 :deep(.ant-form-item-label) {
     font-weight: 500;
+    font-size: 15px;
+}
+
+:deep(.ant-input-affix-wrapper) {
+    border-radius: 8px;
+    padding: 8px 12px;
 }
 
 :deep(.ant-input) {
-    border-radius: 6px;
+    font-size: 15px;
 }
 
-:deep(.ant-btn) {
-    border-radius: 6px;
-    height: 35px;
-    display: flex;
-    align-items: center;
+:deep(.ant-card-head) {
+    min-height: 60px;
+    border-bottom: 1px solid #f0f0f0;
 }
 
 :deep(.ant-card-head-title) {
     font-size: 18px;
     font-weight: 600;
-    color: #1890ff;
+    color: #1f1f1f;
+}
+
+:deep(.ant-form-item-explain-error) {
+    margin-top: 4px;
+    font-size: 13px;
 }
 </style>

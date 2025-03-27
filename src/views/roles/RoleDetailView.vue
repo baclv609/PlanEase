@@ -145,7 +145,7 @@ export default {
 <style scoped>
 .page-container {
     padding: 24px;
-    background: #f0f2f5;
+    background: #f8fafc;
     min-height: 100vh;
 }
 
@@ -162,16 +162,20 @@ export default {
     display: flex;
     align-items: center;
     transition: all 0.3s;
+    border-color: #15C5B2;
+    color: #15C5B2;
     
     &:hover {
         transform: translateX(-5px);
+        border-color: #227CA0;
+        color: #227CA0;
     }
 }
 
 .header-title {
     font-size: 24px;
     font-weight: 600;
-    color: #1890ff;
+    color: #227CA0;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -179,6 +183,7 @@ export default {
 
 .header-icon {
     font-size: 28px;
+    color: #15C5B2;
 }
 
 .role-detail {
@@ -187,10 +192,8 @@ export default {
 }
 
 .custom-card {
-    border-radius: 12px;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 
-                0 1px 6px -1px rgba(0, 0, 0, 0.02), 
-                0 2px 4px 0 rgba(0, 0, 0, 0.02);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
 .card-header {
@@ -199,7 +202,11 @@ export default {
     gap: 8px;
     font-size: 16px;
     font-weight: 600;
-    color: #1f1f1f;
+    color: #227CA0;
+    
+    .anticon {
+        color: #15C5B2;
+    }
 }
 
 .role-info {
@@ -221,6 +228,10 @@ export default {
     display: flex;
     align-items: center;
     gap: 8px;
+    
+    .anticon {
+        color: #15C5B2;
+    }
 }
 
 .info-content {
@@ -231,7 +242,7 @@ export default {
 .role-name {
     font-size: 16px;
     font-weight: 600;
-    color: #1890ff;
+    color: #227CA0;
 }
 
 .loading-state {
@@ -255,6 +266,9 @@ export default {
     border-radius: 6px;
     padding: 4px 12px;
     font-size: 13px;
+    background: linear-gradient(135deg, #15C5B2, #227CA0);
+    color: white;
+    border: none;
 }
 
 :deep(.ant-badge-status) {
@@ -268,8 +282,21 @@ export default {
     height: 8px;
 }
 
+:deep(.ant-badge-status-success) {
+    background: #15C5B2;
+}
+
+:deep(.ant-badge-status-error) {
+    background: #ff4d4f;
+}
+
 :deep(.ant-badge-status-text) {
     font-size: 14px;
     font-weight: 500;
+    color: #227CA0;
+}
+
+:deep(.ant-spin-dot i) {
+    background-color: #15C5B2;
 }
 </style>

@@ -1,5 +1,5 @@
 <script setup>
-import { createVNode, ref } from "vue";
+import { createVNode, ref, computed } from "vue";
 import { Modal, message } from "ant-design-vue";
 import {
   ExclamationCircleOutlined,
@@ -58,10 +58,21 @@ const handleLogout = async () => {
     message.error('Có lỗi xảy ra khi đăng xuất');
   }
 };
+
+// Thêm computed properties cho user info
+const userName = computed(() => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  return user.first_name || 'Admin';
+});
+
+const userAvatar = computed(() => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  return user.avatar || '';
+});
 </script>
 
 <template>
-  <a-layout class="!min-h-screen">
+  <a-layout class="dashboard-layout">
     <Sider :trigger="null" />
     <a-layout
       :style="
@@ -69,46 +80,58 @@ const handleLogout = async () => {
           ? {
               marginLeft: isCollapsed ? '80px' : '240px',
               transition: 'all 0.2s',
+              background: '#fff'
             }
-          : {}
+          : { background: '#fff' }
       "
     >
-      <a-layout-header class="!h-[60px]">
-        <div class="!flex !items-center !justify-between !h-[60px]">
-          <div class="!cursor-pointer px-1" @click="handleSider">
-            <template v-if="isCollapsed">
-              <MenuFoldOutlined si />
-            </template>
-            <template v-else>
-              <MenuUnfoldOutlined />
-            </template>
+      <a-layout-header class="header">
+        <div class="header-content">
+          <div class="header-left">
+            <a-button 
+              type="text" 
+              class="trigger-button" 
+              @click="handleSider"
+            >
+              <MenuUnfoldOutlined v-if="isCollapsed" />
+              <MenuFoldOutlined v-else />
+            </a-button>
           </div>
-          <div class="flex items-center gap-x-1 ml-auto">
+
+          <div class="header-right">
             <a-dropdown>
-              <div class="flex items-center cursor-pointer">
-                <a-avatar size="small" class="mr-1">
+              <div class="user-profile">
+                <a-avatar 
+                  :size="36"
+                  :src="userAvatar"
+                  class="user-avatar"
+                >
                   <template #icon>
                     <UserOutlined />
                   </template>
                 </a-avatar>
-
-                <span class="text-base"> admin </span>
+                <div class="user-info">
+                  <span class="user-name">{{ userName }}</span>
+                  <small class="user-role">Administrator</small>
+                </div>
               </div>
 
               <template #overlay>
-                <a-menu>
+                <a-menu class="profile-menu">
                   <a-menu-item @click="showProfile">
                     <template #icon>
                       <UserOutlined />
                     </template>
-                    Hồ sơ
+                    <span>Hồ sơ</span>
                   </a-menu-item>
 
-                  <a-menu-item @click="handleLogout">
+                  <a-menu-divider />
+
+                  <a-menu-item @click="handleLogout" danger>
                     <template #icon>
                       <LogoutOutlined />
                     </template>
-                    Đăng xuất
+                    <span>Đăng xuất</span>
                   </a-menu-item>
                 </a-menu>
               </template>
@@ -117,11 +140,15 @@ const handleLogout = async () => {
         </div>
       </a-layout-header>
 
-      <a-layout-content class="!p-4 lg:w-[95%] lg:m-auto">
+      <a-layout-content class="main-content">
         <slot />
       </a-layout-content>
-      <a-layout-footer class="!text-right !py-3 !px-4 !text-slate-800">
-        Powered by Prepedu interview - v1.0
+
+      <a-layout-footer class="footer">
+        <div class="footer-content">
+          <span class="copyright">© 2024 Prepedu Interview</span>
+          <span class="version">Version 1.0</span>
+        </div>
       </a-layout-footer>
     </a-layout>
 
@@ -130,10 +157,168 @@ const handleLogout = async () => {
 </template>
 
 <style scoped>
-:deep(.ant-layout-header) {
-  padding: 0 15px;
+.dashboard-layout {
+  min-height: 100vh;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-  z-index: 1;
+}
+
+/* Override màu nền mặc định của Ant Design */
+:deep(.ant-layout) {
+  background: #fff !important;
+}
+
+:deep(.ant-layout-content) {
+  background: #fff !important;
+}
+
+:deep(.ant-layout-footer) {
+  background: #fff !important;
+}
+
+.header {
+  padding: 0;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(255, 204, 119, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  height: 60px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.trigger-button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border-radius: 8px;
+  transition: all 0.3s;
+  color: #15C5B2;
+}
+
+.trigger-button:hover {
+  background: rgba(21, 197, 178, 0.1);
+  color: #227CA0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-profile {
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.user-profile:hover {
+  background: rgba(255, 204, 119, 0.1);
+}
+
+.user-avatar {
+  border: 2px solid #FFCC77;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #227CA0;
+}
+
+.user-role {
+  color: #15C5B2;
+  font-size: 12px;
+}
+
+.main-content {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 95%;
+  background: #fff;
+}
+
+.footer {
+  padding: 16px 24px;
+  background: transparent;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #15C5B2;
+  font-size: 14px;
+}
+
+/* Dropdown menu styles */
+:deep(.profile-menu) {
+  min-width: 200px;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid rgba(255, 204, 119, 0.2);
+}
+
+:deep(.ant-dropdown-menu-item) {
+  padding: 10px 16px;
+  border-radius: 4px;
+  color: #15C5B2;
+
+  &:hover {
+    background: rgba(21, 197, 178, 0.1) !important;
+    color: #227CA0 !important;
+  }
+
+  &-danger {
+    color: #ff4d4f !important;
+    
+    &:hover {
+      background: rgba(255, 77, 79, 0.1) !important;
+      color: #ff4d4f !important;
+    }
+  }
+}
+
+:deep(.ant-dropdown-menu-item-icon) {
+  font-size: 16px;
+}
+
+:deep(.ant-dropdown-menu-divider) {
+  background-color: rgba(255, 204, 119, 0.2);
+}
+
+@media (max-width: 768px) {
+  .user-info {
+    display: none;
+  }
+
+  .main-content {
+    padding: 16px;
+    width: 100%;
+  }
 }
 </style>

@@ -11,9 +11,13 @@
           </template>
           <a-statistic 
             title="Tổng số Role" 
-            :value="pagination.total"
+            :value="totalRoles"
             :value-style="{ color: '#1890ff' }"
-          />
+          >
+            <template #suffix>
+              <small style="font-size: 14px; margin-left: 8px;">role</small>
+            </template>
+          </a-statistic>
         </a-card>
       </a-col>
       <a-col :span="8">
@@ -27,7 +31,11 @@
             title="Role đang hoạt động" 
             :value="activeRoles"
             :value-style="{ color: '#52c41a' }"
-          />
+          >
+            <template #suffix>
+              <small style="font-size: 14px; margin-left: 8px;">đang hoạt động</small>
+            </template>
+          </a-statistic>
         </a-card>
       </a-col>
       <a-col :span="8">
@@ -41,7 +49,11 @@
             title="Role đã xóa" 
             :value="deletedRoles"
             :value-style="{ color: '#ff4d4f' }"
-          />
+          >
+            <template #suffix>
+              <small style="font-size: 14px; margin-left: 8px;">đã xóa</small>
+            </template>
+          </a-statistic>
         </a-card>
       </a-col>
     </a-row>
@@ -235,8 +247,17 @@ const handleCreate = () => {
   router.push({ name: 'role-create' });
 };
 
-const activeRoles = computed(() => dataSource.value.list.length);
+const activeRoles = computed(() => {
+  // Chỉ tính những role đang hoạt động
+  return dataSource.value.list.length;
+});
+
 const deletedRoles = ref(0);
+
+const totalRoles = computed(() => {
+  // Tổng số role = role đang hoạt động + role đã xóa
+  return activeRoles.value + deletedRoles.value;
+});
 
 const fetchDeletedRolesCount = async () => {
   try {
@@ -261,6 +282,7 @@ watch(() => pagination.value.current, fetchRoles, { immediate: true });
 <style scoped>
 .roles-container {
   padding: 24px;
+  background: #f8fafc;
 }
 
 .stats-row {
@@ -268,15 +290,16 @@ watch(() => pagination.value.current, fetchRoles, { immediate: true });
 }
 
 .stat-card {
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
   transition: all 0.3s;
   cursor: pointer;
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: none;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
 }
 
 .stat-icon {
@@ -288,53 +311,109 @@ watch(() => pagination.value.current, fetchRoles, { immediate: true });
   color: white;
 }
 
+/* Đồng bộ gradient cho các stat cards */
 .total-roles {
-  background: linear-gradient(120deg, #1890ff, #69c0ff);
+  background: linear-gradient(135deg, #15C5B2, #227CA0);
 }
 
 .active-roles {
-  background: linear-gradient(120deg, #52c41a, #95de64);
+  background: linear-gradient(135deg, #15C5B2, #227CA0);
 }
 
 .deleted-roles {
-  background: linear-gradient(120deg, #ff4d4f, #ff7875);
+  background: linear-gradient(135deg, #ff4d4f, #ff7875);
+}
+
+/* Đồng bộ màu cho statistics */
+:deep(.ant-statistic-title) {
+  color: #8c8c8c;
+}
+
+:deep(.ant-statistic-content-value) {
+  color: #227CA0 !important;
 }
 
 .content-card {
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
 .card-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
-  color: #1f1f1f;
+  color: #227CA0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .custom-button {
-  border-radius: 6px;
-  height: 38px;
+  border-radius: 8px;
+  height: 40px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  font-weight: 500;
+  transition: all 0.3s;
   
-  &:hover {
-    transform: translateY(-2px);
-    transition: all 0.3s;
+  &[type="primary"] {
+    background: #17C3B2;
+    border: none;
+    color: white;
+    
+    &:hover {
+      background: #227C9D;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(23, 195, 178, 0.2);
+    }
   }
+
+  &[type="default"] {
+    background: #FEF9EF;
+    border: 1px solid #FFD977;
+    color: #227C9D;
+    
+    &:hover {
+      background: #FFD977;
+      color: #227C9D;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 217, 119, 0.2);
+    }
+  }
+
+  .anticon {
+    font-size: 16px;
+  }
+}
+
+/* Thêm animation cho icon */
+.custom-button:hover .anticon {
+  transform: scale(1.1);
+  transition: transform 0.3s ease;
+}
+
+/* Thêm spacing cho button container */
+:deep(.ant-space) {
+  gap: 16px;
 }
 
 .custom-table {
   :deep(.ant-table) {
-    border-radius: 8px;
+    border-radius: 12px;
   }
 
   :deep(.ant-table-thead > tr > th) {
-    background: #fafafa;
+    background: #f8fafc;
     font-weight: 600;
+    color: #227CA0;
+    
+    &:hover {
+      background: rgba(21, 197, 178, 0.1) !important;
+    }
+  }
+
+  :deep(.ant-table-tbody > tr:hover > td) {
+    background: rgba(21, 197, 178, 0.05);
   }
 }
 
@@ -346,27 +425,83 @@ watch(() => pagination.value.current, fetchRoles, { immediate: true });
 .role-name {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   
   .role-icon {
-    color: #1890ff;
+    color: #15C5B2;
+    font-size: 16px;
   }
 }
 
+/* Đồng bộ style cho các action buttons */
 :deep(.ant-btn-circle) {
-  width: 35px;
-  height: 35px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
   
-  &:hover {
-    transform: translateY(-2px);
-    transition: all 0.3s;
+  &[type="primary"] {
+    background: linear-gradient(135deg, #15C5B2, #227CA0);
+    
+    &:hover {
+      background: linear-gradient(135deg, #227CA0, #15C5B2);
+      transform: translateY(-2px);
+    }
+  }
+  
+  &[type="warning"] {
+    background: linear-gradient(135deg, #FFCC77, #FFA940);
+    
+    &:hover {
+      background: linear-gradient(135deg, #FFA940, #FFCC77);
+      transform: translateY(-2px);
+    }
+  }
+  
+  &[type="danger"] {
+    background: linear-gradient(135deg, #ff4d4f, #ff7875);
+    
+    &:hover {
+      background: linear-gradient(135deg, #ff7875, #ff4d4f);
+      transform: translateY(-2px);
+    }
   }
 }
 
-:deep(.ant-space) {
-  gap: 8px;
+/* Đồng bộ style cho popconfirm */
+:deep(.ant-popover-buttons) {
+  .ant-btn-primary {
+    background: linear-gradient(135deg, #15C5B2, #227CA0);
+    border: none;
+    
+    &:hover {
+      background: linear-gradient(135deg, #227CA0, #15C5B2);
+    }
+  }
+}
+
+/* Đồng bộ style cho pagination */
+:deep(.ant-pagination-item-active) {
+  border-color: #15C5B2;
+  
+  a {
+    color: #15C5B2;
+  }
+}
+
+:deep(.ant-pagination-item:hover) {
+  border-color: #15C5B2;
+  
+  a {
+    color: #15C5B2;
+  }
+}
+
+:deep(.ant-pagination-prev:hover .ant-pagination-item-link),
+:deep(.ant-pagination-next:hover .ant-pagination-item-link) {
+  border-color: #15C5B2;
+  color: #15C5B2;
 }
 </style>

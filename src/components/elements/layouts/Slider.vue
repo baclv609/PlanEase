@@ -14,32 +14,29 @@ const { hasMobile } = useResize();
       :collapsed="isCollapsed"
       :trigger="null"
       collapsible
-      class="!overflow-auto !h-screen !fixed !left-0"
+      class="slider-layout !overflow-auto !h-screen !fixed !left-0"
     >
       <div class="flex flex-col justify-between h-screen">
         <div>
-          <div class="logo-wrapper mb-3 flex justify-center">
+          <div class="logo-wrapper">
             <img
               v-if="!isCollapsed"
               alt="Logo full"
-              src="@/assets/images/logo.svg"
-              class="w-[120px] max-h-[64px]"
+              src="@/assets/images/logo.png"
+              class="logo-full"
             />
             <img
               v-else
               alt="Logo"
-              src="@/assets/images/mini-logo.png"
-              class="w-[30px] max-h-[64px]"
+              src="@/assets/images/logo.png"
+              class="logo-mini"
             />
           </div>
           <Menu />
         </div>
 
-        <div class="mb-4 px-4 flex gap-2 items-center text-white">
-          <!--           <div>-->
-          <!--             <SettingOutlined class="!text-2xl"/>-->
-          <!--           </div>-->
-          <!--           <div class="flex items-center">Cấu hình</div>-->
+        <div class="footer-section">
+          <!-- Footer content -->
         </div>
       </div>
     </a-layout-sider>
@@ -52,13 +49,13 @@ const { hasMobile } = useResize();
         :open="isCollapsed"
         @close="() => actionCollapse(!isCollapsed)"
         :body-style="{ padding: 0 }"
-        class="slider-drawer theme-dark-drawer !bg-[#001628]"
+        class="slider-drawer"
       >
-        <div class="logo-wrapper mb-2 mt-2">
+        <div class="logo-wrapper mobile">
           <img
             alt="Logo full"
-            src="@/assets/images/logo.svg"
-            class="w-[120px] max-h-[64px] pl-4"
+            src="@/assets/images/logo.png"
+            class="logo-full"
           />
         </div>
         <Menu />
@@ -68,10 +65,109 @@ const { hasMobile } = useResize();
 </template>
 
 <style scoped>
+.slider-layout {
+  background: #FEF9EF !important;
+  border-right: 1px solid rgba(255, 203, 119, 0.2);
+}
+
 .logo-wrapper {
-  height: 64px;
+  height: 80px;
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  justify-content: center;
+  padding: 16px;
+  background: linear-gradient(60deg,
+    #FFCC77 0%,    
+    #15C5B2 50%,   
+    #227CA0 100%  
+  );
+  margin-bottom: 16px;
+}
+
+.logo-wrapper.mobile {
+  background: #FEF9EF;
+  border-bottom: 1px solid rgba(255, 203, 119, 0.2);
+}
+
+.logo-full {
+  width: 160px;
+  height: auto;
+  max-height: 48px;
+  object-fit: contain;
+}
+
+.logo-mini {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.footer-section {
+  margin-bottom: 16px;
+  padding: 0 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: #17C3B2;
+}
+
+:deep(.ant-layout-sider-children) {
+  background: #FEF9EF;
+}
+
+/* Drawer styles */
+.slider-drawer {
+  :deep(.ant-drawer-wrapper-body) {
+    background: #FEF9EF;
+  }
+
+  :deep(.ant-drawer-body) {
+    background: #FEF9EF;
+  }
+}
+
+/* Menu styles - these should be coordinated with Menu.vue */
+:deep(.ant-menu) {
+  background: #FEF9EF;
+  border-right: none;
+}
+
+:deep(.ant-menu-item) {
+  color: #17C3B2;
+  
+  &:hover {
+    background: rgba(23, 195, 178, 0.1);
+  }
+  
+  &.ant-menu-item-selected {
+    background: #FFCB77 !important;
+    color: #FEF9EF;
+  }
+}
+
+:deep(.ant-menu-submenu) {
+  color: #17C3B2;
+  
+  &-title:hover {
+    color: #FFCB77 !important;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FEF9EF;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #FFCB77;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #17C3B2;
 }
 </style>

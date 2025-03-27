@@ -10,46 +10,75 @@
     <a-card class="user-card" :bordered="false">
       <div class="user-header" v-if="user">
         <div class="avatar-section">
-          <a-avatar
-            :size="120"
-            :src="user.avatar || defaultAvatar"
-            :style="{ backgroundColor: getAvatarColor(user.email) }"
-          >
-            {{ getAvatarText(user.email) }}
-          </a-avatar>
-          <a-tag :color="user.deleted_at ? 'error' : 'success'" class="status-tag">
-            {{ user.deleted_at ? 'Đã khóa' : 'Hoạt động' }}
-          </a-tag>
+          <div class="avatar-wrapper">
+            <a-avatar
+              :size="140"
+              :src="user.avatar || defaultAvatar"
+              :style="{ backgroundColor: getAvatarColor(user.email) }"
+            >
+              {{ getAvatarText(user.email) }}
+            </a-avatar>
+            <div class="status-indicator">
+              <a-tag :color="user.deleted_at ? 'error' : 'success'" class="status-tag">
+                <span class="status-dot"></span>
+                {{ user.deleted_at ? 'Đã khóa' : 'Hoạt động' }}
+              </a-tag>
+            </div>
+          </div>
         </div>
         
         <div class="user-info">
-          <h2 class="user-name">
-            {{ user.first_name || 'N/A' }} {{ user.last_name || 'N/A' }}
-          </h2>
+          <div class="user-header-content">
+            <h2 class="user-name">
+              {{ user.first_name || 'N/A' }} {{ user.last_name || 'N/A' }}
+            </h2>
+            <div class="user-role">
+              <CrownOutlined /> Người dùng
+            </div>
+          </div>
+
           <div class="user-meta-grid">
             <div class="meta-item">
-              <MailOutlined class="meta-icon" />
-              <span class="meta-label">Email:</span>
-              <a :href="'mailto:' + user.email">{{ user.email }}</a>
+              <div class="meta-icon-wrapper">
+                <MailOutlined class="meta-icon" />
+              </div>
+              <div class="meta-content">
+                <span class="meta-label">Email</span>
+                <a :href="'mailto:' + user.email" class="meta-value">{{ user.email }}</a>
+              </div>
             </div>
             <div class="meta-item">
-              <PhoneOutlined class="meta-icon" />
-              <span class="meta-label">Phone:</span>
-              <span>{{ user.phone || 'N/A' }}</span>
+              <div class="meta-icon-wrapper">
+                <PhoneOutlined class="meta-icon" />
+              </div>
+              <div class="meta-content">
+                <span class="meta-label">Số điện thoại</span>
+                <span class="meta-value">{{ user.phone || 'Chưa cập nhật' }}</span>
+              </div>
             </div>
             <div class="meta-item">
-              <HomeOutlined class="meta-icon" />
-              <span class="meta-label">Address:</span>
-              <span>{{ user.address || 'N/A' }}</span>
+              <div class="meta-icon-wrapper">
+                <HomeOutlined class="meta-icon" />
+              </div>
+              <div class="meta-content">
+                <span class="meta-label">Địa chỉ</span>
+                <span class="meta-value">{{ user.address || 'Chưa cập nhật' }}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <a-divider />
+      <a-divider style="margin: 24px 0" />
 
       <a-tabs v-model:activeKey="activeTab" class="custom-tabs">
-        <a-tab-pane key="1" tab="Thông tin chi tiết">
+        <a-tab-pane key="1">
+          <template #tab>
+            <span class="tab-label">
+              <ProfileOutlined />
+              Thông tin chi tiết
+            </span>
+          </template>
           <a-form layout="vertical" v-if="user" class="detail-form">
             <a-row :gutter="16">
               <a-col :span="8">
@@ -104,7 +133,9 @@ import {
   ArrowLeftOutlined,
   MailOutlined,
   PhoneOutlined,
-  HomeOutlined
+  HomeOutlined,
+  CrownOutlined,
+  ProfileOutlined
 } from '@ant-design/icons-vue';
 import { message } from 'ant-design-vue';
 
@@ -161,100 +192,178 @@ const getAvatarText = (email) => {
 <style scoped>
 .user-detail-container {
   padding: 24px;
-  background: #f0f2f5;
+  background: #f8fafc;
   min-height: 100vh;
 }
 
 .back-button {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #15C5B2, #227CA0);
+  border: none;
+  
+  &:hover {
+    background: linear-gradient(135deg, #227CA0, #15C5B2);
+  }
 }
 
 .user-card {
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  background: white;
 }
 
 .user-header {
   display: flex;
-  gap: 32px;
-  padding: 16px 0;
+  gap: 40px;
+  padding: 24px 0;
 }
 
-.avatar-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+.avatar-wrapper {
+  position: relative;
+  padding: 8px;
+  background: linear-gradient(135deg, rgba(21, 197, 178, 0.1), rgba(34, 124, 160, 0.1));
+  border-radius: 50%;
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
 }
 
 .status-tag {
-  font-size: 12px;
-  padding: 2px 12px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.user-info {
-  flex-grow: 1;
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+}
+
+.user-header-content {
+  margin-bottom: 24px;
 }
 
 .user-name {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 600;
-  margin-bottom: 24px;
   color: #1f1f1f;
+  margin-bottom: 8px;
+}
+
+.user-role {
+  color: #15C5B2;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .user-meta-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.meta-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.meta-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #15C5B2, #227CA0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .meta-icon {
-  color: #1890ff;
-  font-size: 16px;
+  color: white;
+  font-size: 18px;
+}
+
+.meta-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .meta-label {
+  font-size: 12px;
   color: #8c8c8c;
-  font-weight: 500;
-  margin-right: 4px;
 }
 
-.custom-tabs {
-  margin-top: 24px;
+.meta-value {
+  font-size: 14px;
+  color: #1f1f1f;
+  font-weight: 500;
+}
+
+.tab-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .detail-form {
-  padding: 24px 0;
+  padding: 24px;
+  background: #f8fafc;
+  border-radius: 12px;
 }
 
-:deep(.ant-form-item-label) {
+:deep(.ant-form-item-label > label) {
   font-weight: 500;
+  color: #1f1f1f;
 }
 
 :deep(.ant-input[disabled]), 
 :deep(.ant-select-disabled .ant-select-selector) {
   color: #1f1f1f !important;
-  background: #f5f5f5 !important;
+  background: white !important;
+  border: 1px solid #e8e8e8;
   cursor: not-allowed;
   opacity: 0.8;
 }
 
-:deep(.ant-select-disabled .ant-select-selection-item) {
-  color: #1f1f1f !important;
+:deep(.ant-tabs-nav::before) {
+  border-bottom: none;
 }
 
-:deep(.ant-select-selector) {
-  border-radius: 6px !important;
+:deep(.ant-tabs-tab) {
+  padding: 12px 24px;
+  margin: 0 8px 0 0;
 }
 
-:deep(.ant-input) {
-  border-radius: 6px;
+:deep(.ant-tabs-tab-active) {
+  background: #f8fafc;
+  border-radius: 8px 8px 0 0;
 }
 </style>
