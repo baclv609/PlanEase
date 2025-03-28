@@ -1,6 +1,6 @@
 <template>
   <div class="profile-container">
-    <a-card>
+    <a-card class="user-container">
       <div class="user-info">
         <div class="flex flex-col gap-1 justify-center">
           <a-avatar
@@ -18,7 +18,7 @@
             v-model:file-list="fileList"
             action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
           >
-            <a-button>
+            <a-button class="gradient-primary-btn">
               <CloudUploadOutlined />
               {{ $t("profile.change_avatar") }}
             </a-button>
@@ -109,11 +109,11 @@
           </div>
         </a-form>
 
-        <div class="flex gap-2">
-          <a-button type="primary" @click="saveChanges" :loading="isLoading">{{
+        <div class="flex gap-2 form-actions">
+          <a-button class="gradient-primary-btn" @click="saveChanges" :loading="isLoading">{{
             $t("profile.save")
           }}</a-button>
-          <a-button type="primary" danger @click="handleLogout">{{
+          <a-button class="gradient-danger-btn" @click="handleLogout">{{
             $t("profile.logout")
           }}</a-button>
         </div>
@@ -156,12 +156,10 @@
           </a-form-item>
 
           <a-button
-            type="primary"
+            class="gradient-primary-btn w-50"
             :loading="isLoading"
             @click="changePassword"
-            class="w-50"
-            >{{ $t("profile.change_password") }}</a-button
-          >
+          >{{ $t("profile.change_password") }}</a-button>
         </a-form>
       </a-tab-pane>
 
@@ -342,48 +340,203 @@ onMounted(() => {
 </script>
 
 <style scoped>
+:deep(.user-container) {
+  background: linear-gradient(135deg, 
+    rgba(255, 204, 119, 0.1) 0%,
+    rgba(21, 197, 178, 0.1) 50%,
+    rgba(34, 124, 160, 0.1) 100%
+  ) !important;
+
+  border-radius: 15px;
+}
+
 .user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 32px;
+  padding: 32px;
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  
+}
+
+:deep(.ant-card) {
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
 }
 
 .user-details {
   flex: 1;
-  margin: 50px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .name-row {
   display: flex;
-  gap: 10px;
+  gap: 16px;
   align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(34, 124, 160, 0.1);
+}
+
+.name-row h2 {
+  color: #227CA0;
+  margin: 0;
+  font-size: 2.2rem;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
 }
 
 .contact-row {
-  display: flex;
-  gap: 25px;
-  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
 }
 
 .contact-row p {
   margin: 0;
-}
-
-/* Form chỉnh sửa */
-.input-row {
   display: flex;
-  gap: 15px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
 }
 
-.half-width {
-  width: 48%;
+.contact-row p:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.third-width {
-  width: 32%;
+.contact-row strong {
+  color: #227CA0;
 }
 
-a-button {
-  margin: 10px;
+.contact-row a {
+  color: #15C5B2;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.contact-row a:hover {
+  color: #227CA0;
+}
+
+:deep(.ant-tabs) {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+:deep(.ant-tabs-nav) {
+  margin-bottom: 24px;
+}
+
+:deep(.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn) {
+  color: #227CA0;
+}
+
+:deep(.ant-tabs-ink-bar) {
+  background: linear-gradient(70deg, #ffcc77, #15c5b2);
+}
+
+:deep(.ant-form-item-label > label) {
+  color: #227CA0;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+:deep(.ant-input),
+:deep(.ant-select-selector) {
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(34, 124, 160, 0.2);
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.error-input {
+  border-color: #ff4d4f !important;
+}
+
+.error-message {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.gradient-primary-btn {
+  background: linear-gradient(70deg, #ffcc77 0%, #15c5b2 50%, #227ca0 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 10px 24px;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(21, 197, 178, 0.2);
+}
+
+.gradient-primary-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.gradient-danger-btn {
+  background: linear-gradient(70deg, #fe6d73 0%, #ff9b85 50%, #ff4d6d 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 10px 24px;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(254, 109, 115, 0.2);
+}
+
+.gradient-danger-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+:deep(.ant-upload) {
+  margin-top: 16px;
+}
+
+:deep(.ant-upload .ant-btn) {
+  background: linear-gradient(70deg, #ffcc77, #15c5b2);
+  border: none;
+  color: white;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+:deep(.ant-upload .ant-btn:hover) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+:deep(.ant-avatar) {
+  border: 4px solid #fff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+:deep(.ant-avatar:hover) {
+  transform: scale(1.05);
 }
 </style>

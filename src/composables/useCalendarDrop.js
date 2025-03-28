@@ -60,9 +60,7 @@ export function useCalendarDrop() {
                             }),
                             h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
                         ]),
-                        h("p", { class: "text-gray-500 ml-9 text-sm" }, 
-                            "Chỉ thay đổi sự kiện này, các sự kiện khác trong chuỗi không thay đổi"
-                        ),
+                        
                     ]),
                     h("div", { class: "mb-3" }, [
                         h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
@@ -77,27 +75,8 @@ export function useCalendarDrop() {
                             }),
                             h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
                         ]),
-                        h("p", { class: "text-gray-500 ml-9 text-sm" }, 
-                            "Tạo sự kiện mới từ thời điểm này, các sự kiện trước đó không thay đổi"
-                        ),
+                        
                     ]),
-                    isAllDay ? h("div", { class: "mb-3" }, [
-                        h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
-                            h("input", {
-                                type: "radio",
-                                name: "editOption",
-                                value: "EDIT_A",
-                                class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
-                                onChange: (e) => {
-                                    editOption.value = e.target.value;
-                                },
-                            }),
-                            h("span", { class: "text-lg" }, "Cập nhật tất cả các sự kiện lặp lại thành cả ngày"),
-                        ]),
-                        h("p", { class: "text-gray-500 ml-9 text-sm" }, 
-                            "Cập nhật toàn bộ chuỗi sự kiện (cả trước và sau) thành sự kiện cả ngày"
-                        ),
-                    ]) : null,
                 ]),
                 okText: "Cập nhật",
                 cancelText: "Hủy",
@@ -115,10 +94,12 @@ export function useCalendarDrop() {
                         end_time: newEnd,
                         id: info.event.id,
                         timezone_code: userTimezone,
-                        is_all_day: isAllDay ? 1 : 0,
-                        
+                        is_all_day: isAllDay ? 1 : 0
                     };
     
+                    // Thêm log để debug payload
+                    console.log('Payload:', payload);
+
                     handleUpdate(payload, info);
                 },
                 onCancel() {
@@ -146,10 +127,20 @@ export function useCalendarDrop() {
         let newEnd = info.event.end ? dayjs(info.event.end).format("YYYY-MM-DD HH:mm:ss") : null;
     
         const isAllDay = info.event.allDay;
+        // Kiểm tra xem có phải sự kiện đầu tiên không
+        const isFirstEvent = !info.event.extendedProps.parent_id;
     
-        if (isAllDay) {
-            newEnd = dayjs(newStart).add(1, 'day').format("YYYY-MM-DD HH:mm:ss");
-        }
+        // Log để debug
+        console.log('Event Info:', {
+            oldStart,
+            oldEnd,
+            newStart,
+            newEnd,
+            isAllDay,
+            isFirstEvent,
+            parent_id: info.event.extendedProps.parent_id,
+            recurrence: info.event.extendedProps.recurrence
+        });
     
         if (info.event.extendedProps.recurrence === 1) {
             selectedEvent.value = {
@@ -160,39 +151,79 @@ export function useCalendarDrop() {
                 is_all_day: isAllDay ? 1 : 0
             };
     
+            // Tạo mảng options cho modal
+            const modalOptions = [
+                // Option 1: Luôn hiển thị
+                h("div", { class: "mb-3" }, [
+                    h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                        h("input", {
+                            type: "radio",
+                            name: "editOption",
+                            value: "EDIT_1",
+                            class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                            onChange: (e) => {
+                                editOption.value = e.target.value;
+                            },
+                        }),
+                        h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
+                    ]),
+                ]),
+                // Option 1B: Luôn hiển thị
+                h("div", { class: "mb-3" }, [
+                    h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                        h("input", {
+                            type: "radio",
+                            name: "editOption",
+                            value: "EDIT_1B",
+                            class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                            onChange: (e) => {
+                                editOption.value = e.target.value;
+                            },
+                        }),
+                        h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
+                    ]),
+                ]),
+                // Option A: Chỉ hiển thị khi KHÔNG phải sự kiện đầu tiên
+                h("div", { class: "mb-3" }, [
+                    h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                        h("input", {
+                            type: "radio",
+                            name: "editOption",
+                            value: "EDIT_A",
+                            class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                            onChange: (e) => {
+                                editOption.value = e.target.value;
+                            },
+                        }),
+                        h("span", { class: "text-lg" }, "Cập nhật giờ cho tất cả các sự kiện"),
+                    ]),
+                ])
+            ];
+    
+            // Option A: Chỉ hiển thị khi KHÔNG phải sự kiện đầu tiên
+            if (!isFirstEvent) {
+                modalOptions.push(
+                    h("div", { class: "mb-3" }, [
+                        h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+                            h("input", {
+                                type: "radio",
+                                name: "editOption",
+                                value: "EDIT_A",
+                                class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+                                onChange: (e) => {
+                                    editOption.value = e.target.value;
+                                },
+                            }),
+                            h("span", { class: "text-lg" }, "Cập nhật giờ cho tất cả các sự kiện (giữ nguyên ngày)"),
+                        ]),
+                    ])
+                );
+            }
+    
             Modal.confirm({
                 title: "Cập nhật thời gian sự kiện lặp lại",
                 width: 650,
-                content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
-                    h("div", { class: "mb-3" }, [
-                        h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
-                            h("input", {
-                                type: "radio",
-                                name: "editOption",
-                                value: "EDIT_1",
-                                class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
-                                onChange: (e) => {
-                                    editOption.value = e.target.value;
-                                },
-                            }),
-                            h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
-                        ]),
-                    ]),
-                    h("div", { class: "mb-3" }, [
-                        h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
-                            h("input", {
-                                type: "radio",
-                                name: "editOption",
-                                value: "EDIT_1B",
-                                class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
-                                onChange: (e) => {
-                                    editOption.value = e.target.value;
-                                },
-                            }),
-                            h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
-                        ]),
-                    ]),
-                ]),
+                content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, modalOptions),
                 okText: "Cập nhật",
                 cancelText: "Hủy",
                 onOk() {
@@ -212,6 +243,9 @@ export function useCalendarDrop() {
                         is_all_day: isAllDay ? 1 : 0
                     };
     
+                    // Thêm log để debug payload
+                    console.log('Payload:', payload);
+
                     handleUpdate(payload, info);
                 },
                 onCancel() {
@@ -240,6 +274,9 @@ export function useCalendarDrop() {
 
 const handleUpdate = async (payload, info) => {
     try {
+        // Thêm log để debug request
+        console.log('Request payload:', payload);
+
         const response = await axios.put(`${dirApi}tasks/${payload.id}/onDrag`, payload, {
             headers: {
                 "Content-Type": "application/json",
@@ -254,7 +291,7 @@ const handleUpdate = async (payload, info) => {
             info?.revert();
         }
     } catch (error) {
-        console.error('❌ Lỗi:', error.response ? error.response.data : error);
+        console.error('❌ Error details:', error.response?.data || error);
 
         if (error.response) {
             if (error.response.status === 401) {
