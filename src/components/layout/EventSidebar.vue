@@ -93,21 +93,47 @@
     <div class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-lg font-semibold">Lịch của tôi</h3>
-        <PlusOutlined @click="isModalOpenAddTag = true" class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]" />
+        <PlusOutlined
+          @click="isModalOpenAddTag = true"
+          class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]"
+        />
       </div>
 
-      <a-checkbox-group v-model:value="selectedCalendars" class="flex flex-col gap-2" @change="updateFilteredEvents">
+      <!-- Thêm loading state -->
+      <div v-if="isLoading" class="flex justify-center py-4">
+        <a-spin />
+      </div>
+
+      <!-- Hiển thị thông báo khi không có tags -->
+      <a-empty v-else-if="hasNoTags" description="Chưa có tags nào" />
+
+      <!-- Hiển thị danh sách tags -->
+      <a-checkbox-group
+        v-else
+        v-model:value="selectedCalendars"
+        class="flex flex-col gap-2"
+        @change="updateFilteredEvents"
+      >
         <!-- Lịch của tôi -->
         <div v-if="myCalendars.length">
           <h4 class="text-gray-500 text-sm font-semibold mb-2">📌 Lịch của tôi</h4>
 
-          <div v-for="calendar in displayedCalendars" :key="calendar.id"
+          <div
+            v-for="calendar in displayedCalendars"
+            :key="calendar.id"
             class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
-            :style="{ borderLeft: `4px solid ${calendar.color}` }">
-
+            :style="{ borderLeft: `4px solid ${calendar.color}` }"
+          >
             <div class="flex items-center">
               <span
-                :style="{ backgroundColor: calendar.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '8px' }"></span>
+                :style="{
+                  backgroundColor: calendar.color,
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  marginRight: '8px',
+                }"
+              ></span>
               <!-- Hình tròn nhỏ -->
               <a-checkbox :value="calendar.id" class="">
                 <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
@@ -115,18 +141,26 @@
             </div>
 
             <a-dropdown>
-              <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
+              <EllipsisOutlined
+                class="text-gray-500 text-lg cursor-pointer hover:text-black transition"
+              />
               <template #overlay>
                 <a-menu>
-                  <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
+                  <a-menu-item @click="displayOnly(calendar.id)"
+                    >Hiển thị duy nhất</a-menu-item
+                  >
                   <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
-                  <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item>
-                  <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
+                  <a-menu-item @click="openUpdateCalendar(calendar.id)"
+                    >Chỉnh sửa</a-menu-item
+                  >
+                  <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red"
+                    >Xóa</a-menu-item
+                  >
                 </a-menu>
               </template>
             </a-dropdown>
           </div>
-          <div v-if="myCalendars.length > 5" class="flex justify-center mt-2" >
+          <div v-if="myCalendars.length > 5" class="flex justify-center mt-2">
             <a-button type="text" @click="showAll = !showAll">
               <template v-if="showAll">
                 <CaretUpOutlined />
@@ -141,26 +175,43 @@
         <!-- Lịch được chia sẻ -->
         <div v-if="sharedCalendars.length" class="mt-4">
           <h4 class="text-gray-500 text-sm font-semibold mb-2">🔗 Lịch được chia sẻ</h4>
-          <div v-for="calendar in displayedSharedCalendars" :key="calendar.id"
+          <div
+            v-for="calendar in displayedSharedCalendars"
+            :key="calendar.id"
             class="flex bg-white border border-gray-200 justify-between p-2 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
-            :style="{ borderLeft: `5px solid ${calendar.color}` }">
-
+            :style="{ borderLeft: `5px solid ${calendar.color}` }"
+          >
             <div class="flex items-center">
               <span
-                :style="{ backgroundColor: calendar.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '8px' }"></span>
+                :style="{
+                  backgroundColor: calendar.color,
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  marginRight: '8px',
+                }"
+              ></span>
               <a-checkbox :value="calendar.id" class="ml-2">
                 <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
               </a-checkbox>
             </div>
 
             <a-dropdown>
-              <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
+              <EllipsisOutlined
+                class="text-gray-500 text-lg cursor-pointer hover:text-black transition"
+              />
               <template #overlay>
                 <a-menu>
-                  <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
+                  <a-menu-item @click="displayOnly(calendar.id)"
+                    >Hiển thị duy nhất</a-menu-item
+                  >
                   <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
-                  <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item> <a-menu-item
-                    @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
+                  <a-menu-item @click="openUpdateCalendar(calendar.id)"
+                    >Chỉnh sửa</a-menu-item
+                  >
+                  <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red"
+                    >Xóa</a-menu-item
+                  >
                 </a-menu>
               </template>
             </a-dropdown>
@@ -175,7 +226,6 @@
               </template>
             </a-button>
           </div>
-
         </div>
       </a-checkbox-group>
     </div>
@@ -360,6 +410,88 @@ const echoStore = useEchoStore();
 
 const settingsStore = useSettingsStore();
 
+// Thêm ref để theo dõi trạng thái loading
+const isLoading = ref(false);
+
+const fetchCalendars = async () => {
+  isLoading.value = true;
+  try {
+    const token = localStorage.getItem("access_token");
+
+    const [myTagsResponse, sharedTagsResponse] = await Promise.all([
+      axios.get(`${dirApi}tags`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+      axios.get(`${dirApi}tags/sharedTags`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    ]);
+
+    // Reset selectedCalendars trước khi thêm mới
+    selectedCalendars.value = [];
+
+    if (myTagsResponse.data.code === 200) {
+      myCalendars.value = myTagsResponse.data.data;
+      // Thêm ID của tất cả myCalendars vào selectedCalendars
+      const myCalendarIds = myTagsResponse.data.data.map((cal) => cal.id);
+      selectedCalendars.value.push(...myCalendarIds);
+    }
+
+    if (sharedTagsResponse.data.code === 200) {
+      sharedCalendars.value = sharedTagsResponse.data.data;
+      // Thêm ID của tất cả sharedCalendars vào selectedCalendars
+      const sharedCalendarIds = sharedTagsResponse.data.data.map((cal) => cal.id);
+      selectedCalendars.value.push(...sharedCalendarIds);
+    }
+
+    // Gọi updateFilteredEvents sau khi đã chọn tất cả calendars
+    updateFilteredEvents();
+
+    // Log để debug
+    console.log("My Calendars:", myCalendars.value);
+    console.log("Shared Calendars:", sharedCalendars.value);
+    console.log("Selected Calendars:", selectedCalendars.value);
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách tags:", error);
+    message.error("Lỗi kết nối đến server");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// Cập nhật onMounted
+onMounted(async () => {
+  await fetchCalendars();
+  fetchUpcomingTasks();
+});
+
+// Thêm watch để theo dõi sự thay đổi của myCalendars và sharedCalendars
+watch(
+  [myCalendars, sharedCalendars],
+  () => {
+    updateFilteredEvents();
+  },
+  { deep: true }
+);
+
+// Cập nhật hàm updateFilteredEvents
+const updateFilteredEvents = () => {
+  if (!events.value) return;
+
+  let filtered = [];
+  if (selectedCalendars.value.length > 0) {
+    filtered = events.value.filter((event) =>
+      selectedCalendars.value.includes(event.tag_id)
+    );
+  }
+  emit("update:events", filtered);
+};
+
+// Thêm computed property để kiểm tra nếu không có tags
+const hasNoTags = computed(() => {
+  return myCalendars.value.length === 0 && sharedCalendars.value.length === 0;
+});
+
 // 1.
 const fetchUpcomingTasks = async () => {
   loading.value = true;
@@ -484,12 +616,6 @@ const handleViewChange = ({ mode, date, start, end, events }) => {
   }
 };
 
-const updateFilteredEvents = () => {
-  filteredEvents.value = events.value.filter((event) =>
-    selectedCalendars.value.includes(event.calendarId)
-  );
-};
-
 const displayOnly = (calendarId) => {
   selectedCalendars.value = [calendarId];
 };
@@ -506,39 +632,6 @@ const displayedCalendars = computed(() => {
 const displayedSharedCalendars = computed(() => {
   return showAllShared.value ? sharedCalendars.value : sharedCalendars.value.slice(0, 5);
 });
-
-const fetchCalendars = async () => {
-  try {
-    const token = localStorage.getItem("access_token");
-
-    const myTagsResponse = axios.get(`${dirApi}tags`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    const sharedTagsResponse = axios.get(`${dirApi}tags/sharedTags`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    const [myTags, sharedTags] = await Promise.all([myTagsResponse, sharedTagsResponse]);
-
-    if (myTags.data.code === 200) {
-      myCalendars.value = myTags.data.data;
-    } else {
-      message.error("Không thể lấy danh sách tags của bạn");
-    }
-
-    if (sharedTags.data.code === 200) {
-      sharedCalendars.value = sharedTags.data.data;
-    } else {
-      message.error("Không thể lấy danh sách tags được chia sẻ");
-    }
-  } catch (error) {
-    console.error("Lỗi khi lấy danh sách tags:", error);
-    message.error("Lỗi kết nối đến server");
-  }
-};
-
-fetchCalendars();
 
 const handleOk = async () => {
   if (!newTagCalendar.value.name) {
