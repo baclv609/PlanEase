@@ -272,8 +272,20 @@ onMounted(() => {
 });
 
 // Cập nhật lại các hàm xử lý sự kiện
-const changeView = (view) => {
-  tempSettings.value.displayMode = view;
+const changeView = async (view) => {
+  try {
+    tempSettings.value.displayMode = view;
+    
+    Object.assign(settings, { displayMode: view });
+    
+    await settingsStore.saveToLocalStorage();
+    await settingsStore.updateFullCalendar();
+
+  } catch (error) {
+    console.error('Lỗi khi thay đổi chế độ xem:', error);
+    
+    tempSettings.value.displayMode = settings.displayMode;
+  }
 };
 
 const updateTimeFormat = (newValue) => {
@@ -424,6 +436,16 @@ watch(
   () => settings.titleFormat,
   (newFormat) => {
     selectedTitleFormat.value = JSON.stringify(newFormat);
+  }
+);
+
+// Cập nhật watch để theo dõi thay đổi displayMode
+watch(
+  () => settings.displayMode,
+  (newMode) => {
+    if (newMode && tempSettings.value.displayMode !== newMode) {
+      tempSettings.value.displayMode = newMode;
+    }
   }
 );
 </script>

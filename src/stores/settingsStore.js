@@ -223,18 +223,13 @@ export const useSettingsStore = defineStore("settings", {
       }
     },
 
-    // Update FullCalendar
     updateFullCalendar() {
-      if (this.calendarRef && this.calendarRef.getApi) {
-        try {
-          const api = this.calendarRef.getApi();
-          if (api) {
-            api.refetchEvents();
-          }
-        } catch (error) {
-          console.log("Calendar not ready yet, skipping update");
-          // Có thể thêm logic retry ở đây nếu cần
-        }
+      const calendar = document.querySelector('.fc')?.fullCalendar;
+      
+      if (calendar) {
+        calendar.changeView(this.displayMode);
+        
+        calendar.refetchEvents();
       }
     },
 
