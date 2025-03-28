@@ -6,16 +6,22 @@
         <h1 class="text-2xl font-bold">
           {{ language === 'vi' ? 'Sự kiện sắp tới' : 'Upcoming Events' }}
         </h1>
-      </div>
-
-      <!-- Filter Section -->
-      <div class="filters flex flex-wrap gap-4 items-center mt-4">
-        <a-input-search
+        <div class="flex flex-wrap gap-4 items-center">
+          <a-input-search
           v-model:value="filters.search"
           :placeholder="language === 'vi' ? 'Tìm kiếm sự kiện...' : 'Search events...'"
           @search="handleSearch"
           class="w-64"
         />
+        <a-button type="primary" @click="resetFilters">
+          {{ language === 'vi' ? 'Đặt lại' : 'Reset' }}
+        </a-button>
+        </div>
+      </div>
+
+      <!-- Filter Section -->
+      <div class="filters flex flex-wrap gap-4 items-center">
+       
         
         <!-- <a-select
           v-model:value="filters.priority"
@@ -48,9 +54,7 @@
           </a-select-option>
         </a-select> -->
 
-        <a-button type="primary" @click="resetFilters">
-          {{ language === 'vi' ? 'Đặt lại' : 'Reset' }}
-        </a-button>
+     
       </div>
     </div>
 
@@ -258,7 +262,7 @@ import { useUpcomingTasksStore } from '@/stores/upcomingTasksStore'; // Import s
 const settingsStore = useSettingsStore();
 const { language, timeZone, timeFormat } = storeToRefs(settingsStore);
 
-const store = useUpcomingTasksStore(); // Khởi tạo store
+const store = useUpcomingTasksStore(); 
 
 const loading = ref(false);
 const error = ref(null);
@@ -299,7 +303,6 @@ const eventColors = {
   }
 };
 
-// Helper functions for labels
 const getPriorityLabel = (priority) => {
   const labels = {
     vi: {
@@ -525,7 +528,6 @@ const filteredTasks = computed(() => {
   });
 });
 
-// Computed paginated tasks
 const paginatedTasks = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
   const end = start + pageSize.value;
@@ -535,7 +537,6 @@ const paginatedTasks = computed(() => {
   })).slice(start, end);
 });
 
-// Pagination configuration
 const pagination = computed(() => ({
   total: filteredTasks.value.length,
   current: currentPage.value,
@@ -564,12 +565,10 @@ const resetFilters = () => {
   currentPage.value = 1;
 };
 
-// Handle search
 const handleSearch = () => {
   currentPage.value = 1;
 };
 
-// Watch filters
 watch(filters, () => {
   currentPage.value = 1;
 }, { deep: true });
@@ -579,17 +578,9 @@ watch(
   [language, timeZone, timeFormat],
   async ([newLang, newZone, newFormat], [oldLang, oldZone, oldFormat]) => {
 
-    // console.log('Settings changed:', {
-    //   language: { from: oldLang, to: newLang },
-    //   timezone: { from: oldZone, to: newZone },
-    //   timeFormat: { from: oldFormat, to: newFormat }
-    // });
-
-    // Update moment settings
     moment.locale(newLang);
     moment.tz.setDefault(newZone);
 
-    // Refresh data
     await fetchUpcomingTasks();
     if (isInitialDataLoaded.value) {
       await fetchUpcomingTasks();
@@ -644,7 +635,7 @@ const handleViewDetails = (event) => {
 }
 
 .event-card {
-  padding: 16px;
+  padding: 0 16px !important;
   border-radius: 8px;
   background: #fff;
   transition: all 0.3s;

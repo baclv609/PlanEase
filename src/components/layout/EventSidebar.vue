@@ -366,25 +366,43 @@ const settingsStore = useSettingsStore();
 const isInitialDataLoaded = ref(false);
 let refreshInterval;
 
+// Thêm biến để theo dõi các giá trị trước đó
+const previousValues = ref({
+  language: settingsStore.language,
+  timeZone: settingsStore.timeZone,
+  timeFormat: settingsStore.timeFormat
+});
+
 // 1.
 const fetchUpcomingTasks = async () => {
   await store.fetchUpcomingTasks();
 };
 
-// 2.
 watch(
-  () => [settingsStore.language, settingsStore.timeZone, settingsStore.timeFormat],
-  async ([newLanguage, newTimezone, newTimeFormat]) => {
-
-    moment.locale(newLanguage);
-    moment.tz.setDefault(newTimezone);
-
-    if (isInitialDataLoaded.value && 
-        (newLang !== oldLang || newZone !== oldZone || newFormat !== oldFormat)) {
-      await fetchUpcomingTasks();
+  () => ({
+    language: settingsStore.language,
+    timeZone: settingsStore.timeZone,
+    timeFormat: settingsStore.timeFormat
+  }),
+  (newValues) => {
+    if (newValues.language) {
+      moment.locale(newValues.language);
     }
+    if (newValues.timeZone) {
+      moment.tz.setDefault(newValues.timeZone);
+    }
+
+    // Chỉ fetch lại dữ liệu nếu có sự thay đổi và đã load dữ liệu ban đầu
+    if (isInitialDataLoaded.value && 
+        (newValues.language !== previousValues.value.language || 
+         newValues.timeZone !== previousValues.value.timeZone || 
+         newValues.timeFormat !== previousValues.value.timeFormat)) {
+      fetchUpcomingTasks();
+    }
+
+    previousValues.value = { ...newValues };
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 );
 
 // 3. Định nghĩa computed property
