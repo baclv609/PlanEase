@@ -78,6 +78,19 @@ export function useCalendarEvents() {
             .toISO() 
         : null;
 
+      // Thêm xử lý múi giờ cho RRule
+      const rruleStart = event.start_time
+        ? DateTime.fromISO(event.start_time, { zone: 'utc' })
+            .setZone(selectedTimezone.value)
+            .toFormat('yyyy-MM-dd\'T\'HH:mm:ss')
+        : null;
+
+      const rruleEnd = event.rrule?.until
+        ? DateTime.fromISO(event.rrule.until, { zone: 'utc' })
+            .setZone(selectedTimezone.value)
+            .toFormat('yyyy-MM-dd\'T\'HH:mm:ss')
+        : null;
+
       const isEditable = event.user_id == user_id || 
         (event.attendees && event.attendees.some(attendee => 
           attendee.user_id == user_id && attendee.role == 'editor'
@@ -135,24 +148,28 @@ export function useCalendarEvents() {
           updated_at: event.updated_at || new Date().toISOString()
         },
         exdate: Array.isArray(event.exclude_time)
-            ? !event.is_all_day ? event.exclude_time.map((date) =>
-              DateTime.fromISO(date, { zone: 'utc' }) // Xác định UTC
-                  .setZone(selectedTimezone.value).toISO() // Chuyển về múi giờ setting
-            ) : event.exclude_time.map((date) =>
-              DateTime.fromISO(date, { zone: 'utc' })
-                  .setZone(selectedTimezone.value)
-                  .toFormat('yyyy-MM-dd') //allday chỉ lấy ngày
-            ) 
+            ? !event.is_all_day ? event.exclude_time.map((date) => {
+                // Xử lý thời gian không có múi giờ
+                const dateTime = DateTime.fromISO(date, { zone: 'utc' });
+                return dateTime
+                    .setZone(selectedTimezone.value)
+                    .toISO({ suppressMilliseconds: true, includeOffset: false });
+            }) : event.exclude_time.map((date) => {
+                // Xử lý thời gian cho sự kiện cả ngày
+                const dateTime = DateTime.fromISO(date, { zone: 'utc' });
+                return dateTime
+                    .setZone(selectedTimezone.value)
+                    .startOf('day')
+                    .toFormat('yyyy-MM-dd');
+            }) 
           : undefined,
         rrule:
           event.is_repeat && event.rrule
             ? {
-                dtstart: event.start_time
-                ? event.is_all_day ? start.split('T')[0] : start
-                : null,
+                dtstart: rruleStart,
                 freq: event.rrule.freq || 'daily',
                 interval: event.rrule.interval || 1,
-                until: event.rrule.until ? event.is_all_day ? event.rrule.until.split('T')[0] : event.rrule.until.replace(' ', 'T') : null, // chỉ lấy ngày nếu all day
+                until: rruleEnd,
                 count: event.rrule.count || null,
                 byweekday: event.rrule.byweekday || null,
                 bymonth: event.rrule.bymonth || null,
@@ -162,7 +179,8 @@ export function useCalendarEvents() {
                 byhour: event.rrule.byhour || null,
                 byminute: event.rrule.byminute || null,
                 bysecond: event.rrule.bysecond || null,
-                wkst: event.rrule.wkst || null,
+                wkst: event.rrule.wkst || 1,
+                tzid: selectedTimezone.value,
               }
             : null,
             allDayMaintainDuration: true, 
@@ -194,7 +212,7 @@ export function useCalendar(calendarRef) {
   const updateTransformedEvents = () => {
     transformedEvents.value = [...formattedEvents.value];
     transformedEvents.value.forEach((event) => calendarStore.addEventStore(event));
-    // console.log('transformedEvents', transformedEvents.value);
+    console.log('transformedEvents', transformedEvents.value);
   };
 
   onMounted(async () => {

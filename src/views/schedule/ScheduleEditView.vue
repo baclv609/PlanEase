@@ -853,6 +853,9 @@ watch(
             formState.value.rrule.until = null;
         } else if (newVal === "until") {
             formState.value.rrule.count = null;
+        } else if (newVal === "") { 
+            formState.value.rrule.count = null;
+            formState.value.rrule.until = null;
         }
     }
 );
@@ -1076,7 +1079,7 @@ const handleSubmit = async () => {
             if (hasStartChanged && !hasFreqChanged) {
                 Modal.confirm({
                     title: "Cập nhật sự kiện lặp lại",
-                    width: 500,
+                    width: 600,
                     content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
                         h("div", { class: "mb-3" }, [
                             h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
@@ -1121,11 +1124,11 @@ const handleSubmit = async () => {
                 // Automatically use EDIT_1B without showing modal
                 updateEvent({ code: "EDIT_1B", date: formState.value.start, id: formState.value.id });
             }
-            // Case 3: Only frequency changed
-            else if (hasFreqChanged) {
+            // Case 3: Recurrence settings changed
+            else if (hasRecurrenceChanges()) {
                 Modal.confirm({
                     title: "Cập nhật sự kiện lặp lại",
-                    width: 500,
+                    width: 600,
                     content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
                         h("div", { class: "mb-3" }, [
                             h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
@@ -1169,7 +1172,7 @@ const handleSubmit = async () => {
             else {
                 Modal.confirm({
                     title: "Cập nhật sự kiện lặp lại",
-                    width: 500,
+                    width: 600,
                     content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
                         h("div", { class: "mb-3" }, [
                             h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
@@ -1457,6 +1460,24 @@ watch(
     }
   }
 );
+
+// kiểm tra có sửa các thuộc tính lặp lại hay không
+const hasRecurrenceChanges = () => {
+    if (!props.event?.info?.extendedProps) return true;
+    
+    const originalProps = props.event.info.extendedProps;
+    const newProps = formState.value.rrule;
+    
+    return (
+        originalProps.freq !== newProps.freq ||
+        originalProps.interval !== newProps.interval ||
+        originalProps.count !== newProps.count ||
+        originalProps.until !== newProps.until ||
+        JSON.stringify(originalProps.byweekday) !== JSON.stringify(newProps.byweekday) ||
+        JSON.stringify(originalProps.bymonthday) !== JSON.stringify(newProps.bymonthday) ||
+        JSON.stringify(originalProps.bymonth) !== JSON.stringify(newProps.bymonth)
+    );
+};
 </script>
 
 <style scoped>
