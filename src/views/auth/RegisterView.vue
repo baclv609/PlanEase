@@ -66,7 +66,6 @@ const rules = {
     },
   ],
   phone: [
-    { required: true, message: "Please enter phone number!" },
     {
       pattern: /^0\d{9}$/,
       message: "Invalid phone number",
@@ -74,7 +73,6 @@ const rules = {
   ],
   gender: [{ required: true, message: "Please choose gender!" }],
   address: [
-    { required: true, message: "Please enter address!" },
     { max: 255, message: "Address cannot exceed 255 characters" },
   ],
 };
