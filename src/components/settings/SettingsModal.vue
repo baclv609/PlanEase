@@ -303,6 +303,7 @@ const handleSave = async () => {
 
     // Lưu settings hiện tại để có thể khôi phục nếu API fail
     const previousSettings = { ...settings };
+    const previousLocale = locale.value;
 
     // Tạm thời áp dụng settings mới cho API call
     Object.assign(settings, tempSettings.value);
@@ -313,7 +314,7 @@ const handleSave = async () => {
     if (success) {
       // Nếu API thành công
       // Update language if changed
-      if (settings.language !== locale.value) {
+      if (settings.language && settings.language !== previousLocale) {
         locale.value = settings.language;
       }
 
@@ -328,6 +329,10 @@ const handleSave = async () => {
       Object.assign(settings, previousSettings);
       // Khôi phục lại tempSettings
       tempSettings.value = { ...previousSettings };
+      // Khôi phục lại locale nếu cần
+      if (locale.value !== previousLocale) {
+        locale.value = previousLocale;
+      }
 
       message.error("Không thể lưu cài đặt, vui lòng thử lại");
     }
@@ -411,13 +416,10 @@ const logTimeZone = (value) => {
   console.log("🕒 Giờ UTC:", moment.tz(value).utcOffset() / 60);
 };
 
-// Khi component được mounted
 onMounted(() => {
-  // Khởi tạo tempSettings với giá trị từ store
   tempSettings.value = { ...settings };
 });
 
-// Watch sự thay đổi từ store để cập nhật select
 watch(
   () => settings.titleFormat,
   (newFormat) => {
