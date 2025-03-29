@@ -92,6 +92,7 @@ const calendarOptions = computed(() => ({
   displayEventTime: false,
   firstDay: settingsStore.firstDay,
   locale: settingsStore.language,
+  timeZone: 'local', // Add timezone setting
   buttonText: {
     today: 'Hôm nay'
   },
@@ -307,10 +308,40 @@ const handleEventClick = async (info) => {
 
 // Watch for changes in the main calendar's view
 watch(() => settingsStore.displayMode, (newMode) => {
-  if (calendarRef.value) {
-    calendarRef.value.getApi().changeView('dayGridMonth');
-  }
+  if (!calendarRef.value) return;
+  
+  const calendar = calendarRef.value.getApi();
+  
+  // Map main calendar view to mini calendar view
+  const viewMap = {
+    'timeGridDay': 'dayGridMonth',
+    'timeGridWeek': 'dayGridMonth',
+    'dayGridMonth': 'dayGridMonth',
+    'listWeek': 'dayGridMonth',
+    'timeGridThreeDay': 'dayGridMonth',
+    'multiMonthYear': 'dayGridMonth'
+  };
+
+  const miniCalendarView = viewMap[newMode] || 'dayGridMonth';
+  calendar.changeView(miniCalendarView);
 });
+
+// Watch for route changes to sync with main calendar
+watch(() => router.currentRoute.value, (newRoute) => {
+  if (!calendarRef.value) return;
+  
+  const calendar = calendarRef.value.getApi();
+  
+  if (newRoute.name === 'calendar-view') {
+    const { view, date } = newRoute.params;
+    if (date) {
+      const parsedDate = dayjs(date);
+      if (parsedDate.isValid()) {
+        calendar.gotoDate(parsedDate.toDate());
+      }
+    }
+  }
+}, { immediate: true });
 
 // Watch for changes in events
 watch(() => props.events, () => {

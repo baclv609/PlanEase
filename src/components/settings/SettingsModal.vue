@@ -175,7 +175,7 @@
       <a-button type="primary" :loading="isSaving" @click="handleSave">
         {{ isSaving ? "Đang lưu..." : "Lưu thay đổi" }}
       </a-button>
-      <a-button type="primary" danger @click="resetSettings">Reset</a-button>
+      <!-- <a-button type="primary" danger @click="resetSettings">Reset</a-button> -->
     </div>
   </a-modal>
 </template>

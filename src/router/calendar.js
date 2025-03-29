@@ -11,8 +11,7 @@ const calendar = [
   {
     path: "/calendar",
     name: "calendar",
-    meta: { requiresAuth: true },
-    component: () => import("@/views/calendar/index.vue"),
+    redirect: "/calendar/month",
     meta: {
       layout: "default",
       notAuthRequired: false,
@@ -20,8 +19,8 @@ const calendar = [
     },
   },
   {
-    path: "/calendar/day/:year/:month/:day",
-    name: "calendar-day",
+    path: "/calendar/:view/:date",
+    name: "calendar-view",
     component: () => import("@/views/calendar/index.vue"),
     props: true,
     meta: {
@@ -29,17 +28,14 @@ const calendar = [
       layout: "default",
       notAuthRequired: false,
     },
-  },
-  {
-    path: "/calendar/range/:range",
-    name: "calendar-range",
-    component: () => import("@/views/calendar/index.vue"),
-    props: true,
-    meta: {
-      requiresAuth: true,
-      layout: "default",
-      notAuthRequired: false,
-    },
+    beforeEnter: (to, from, next) => {
+      const validViews = ['day', 'week', 'month', 'agenda', 'schedule', 'year'];
+      if (!validViews.includes(to.params.view)) {
+        next('/calendar/month');
+      } else {
+        next();
+      }
+    }
   },
   {
     path: "/calendar/event/:id",
@@ -65,6 +61,7 @@ const calendar = [
   },
   {
     path: "/calendar/search",
+    name: "calendar-search",
     component: () => import("@/views/calendar/SearchView.vue"),
     props: true,
     meta: {
@@ -75,7 +72,7 @@ const calendar = [
   },
   {
     path: "/calendar/upcoming",
-    name: "upcoming",
+    name: "calendar-upcoming",
     component: () => import("@/views/calendar/upcoming/index.vue"),
     meta: {
       requiresAuth: true,
@@ -89,13 +86,12 @@ const calendar = [
   },
   {
     path: "/calendar/trash",
-    name: "trash",
-    meta: { requiresAuth: true },
+    name: "calendar-trash",
     component: () => import("@/views/calendar/TrashView.vue"),
     meta: {
+      requiresAuth: true,
       layout: "default",
       notAuthRequired: false,
-      requiresAuth: true,
     },
   },
 ];
