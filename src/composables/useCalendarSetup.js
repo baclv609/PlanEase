@@ -69,25 +69,25 @@ export function useCalendarEvents() {
     rawEvents.value.map((event) => {
       const start = event.start_time
         ? DateTime.fromISO(event.start_time, { zone: 'utc' })
-            .setZone(selectedTimezone.value)
+            .setZone(event.timezone_code || selectedTimezone.value)
             .toISO() 
         : null;
       const end = event.end_time
         ? DateTime.fromISO(event.end_time, { zone: 'utc' })
-            .setZone(selectedTimezone.value)
+            .setZone(event.timezone_code || selectedTimezone.value)
             .toISO() 
         : null;
 
       // Thêm xử lý múi giờ cho RRule
       const rruleStart = event.start_time
         ? DateTime.fromISO(event.start_time, { zone: 'utc' })
-            .setZone(selectedTimezone.value)
+            .setZone(event.timezone_code || selectedTimezone.value)
             .toFormat('yyyy-MM-dd\'T\'HH:mm:ss')
         : null;
 
       const rruleEnd = event.rrule?.until
         ? DateTime.fromISO(event.rrule.until, { zone: 'utc' })
-            .setZone(selectedTimezone.value)
+            .setZone(event.timezone_code || selectedTimezone.value)
             .toFormat('yyyy-MM-dd\'T\'HH:mm:ss')
         : null;
 
