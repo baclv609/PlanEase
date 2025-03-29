@@ -532,12 +532,24 @@ const updateFormStateFromProps = (event) => {
             }
         }
 
+        // Xử lý thời gian cho sự kiện lặp lại
+        let startTime, endTime;
+        if (event.recurrence === 1) {
+            // Nếu là sự kiện lặp lại, sử dụng thời gian của sự kiện hiện tại
+            startTime = event.start;
+            endTime = event.end;
+        } else {
+            // Nếu không phải sự kiện lặp lại, sử dụng thời gian từ server
+            startTime = event.start_time;
+            endTime = event.end_time;
+        }
+
         formState.value = {
             ...formState.value, // Giữ nguyên dữ liệu cũ
             id: event.id || null,
             title: event.title || "",
-            start: event.start_time ? dayjs(event.start_time).tz(event.info?.extendedProps?.timezone) : dayjs().tz(event.info?.extendedProps?.timezone),
-            end: event.end_time ? dayjs(event.end_time).tz(event.info?.extendedProps?.timezone) : dayjs().tz(event.info?.extendedProps?.timezone).add(1, 'hour'),
+            start: startTime ? dayjs(startTime).tz(event.info?.extendedProps?.timezone) : dayjs().tz(event.info?.extendedProps?.timezone),
+            end: endTime ? dayjs(endTime).tz(event.info?.extendedProps?.timezone) : dayjs().tz(event.info?.extendedProps?.timezone).add(1, 'hour'),
             allDay: event.is_all_day || false,
             user_id: event.user_id,
             type: event.type || "event",
