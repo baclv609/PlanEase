@@ -29,12 +29,23 @@ const calendar = [
       notAuthRequired: false,
     },
     beforeEnter: (to, from, next) => {
-      const validViews = ['day', 'week', 'month', 'agenda', 'schedule', 'year'];
+      const validViews = ['day', 'week', 'month', 'agenda', 'schedule', 'year', 'custom'];
       if (!validViews.includes(to.params.view)) {
         next('/calendar/month');
       } else {
         next();
       }
+    }
+  },
+  {
+    path: "/calendar/u/0/r/custom/:days/d/:year/:month/:day",
+    name: "calendar-custom",
+    component: () => import("@/views/calendar/index.vue"),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      layout: "default",
+      notAuthRequired: false,
     }
   },
   {

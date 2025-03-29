@@ -203,7 +203,7 @@ watch(() => route.path, debounce((newPath) => {
     
     // Handle different view types
     if (newPath.startsWith('/calendar/')) {
-      const { view, year, month, day } = route.params;
+      const { view, year, month, day, days } = route.params;
       
       if (view) {
         // Map view types to FullCalendar view types
@@ -213,7 +213,8 @@ watch(() => route.path, debounce((newPath) => {
           'month': 'dayGridMonth',
           'agenda': 'listYear',
           'schedule': 'timeGridThreeDay',
-          'year': 'multiMonthYear'
+          'year': 'multiMonthYear',
+          'custom': 'timeGridCustom'
         };
 
         const fullCalendarView = viewMap[view];
@@ -233,6 +234,23 @@ watch(() => route.path, debounce((newPath) => {
           const parsedDate = dayjs(dateStr);
           if (parsedDate.isValid()) {
             calendar.gotoDate(parsedDate.toDate());
+            
+            // Update view duration for custom view
+            if (fullCalendarView === 'timeGridCustom' && days) {
+              calendar.setOption('views', {
+                timeGridCustom: {
+                  type: 'timeGrid',
+                  duration: { days: parseInt(days) },
+                  slotDuration: '01:00:00',
+                  slotLabelFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: settingsStore.timeFormat === "12h"
+                  }
+                }
+              });
+            }
+            
             shouldUpdateDate = true;
           }
         }
@@ -285,6 +303,16 @@ const updateCurrentDate = (date) => {
       currentDate.value = `${weekStart.format('DD')} - ${weekEnd.format('DD')} tháng ${weekStart.format('M[,] YYYY')}`;
     } else {
       currentDate.value = `${weekStart.format('MMM D')} - ${weekEnd.format('MMM D, YYYY')}`;
+    }
+  } else if (viewType === 'timeGridCustom') {
+    const days = route.params.days || 7;
+    const startDate = dayjs(dateToFormat);
+    const endDate = startDate.add(days - 1, 'day');
+    
+    if (settingsStore.language === 'vi') {
+      currentDate.value = `${startDate.format('DD')} - ${endDate.format('DD')} tháng ${startDate.format('M[,] YYYY')}`;
+    } else {
+      currentDate.value = `${startDate.format('MMM D')} - ${endDate.format('MMM D, YYYY')}`;
     }
   } else {
     if (settingsStore.language === 'vi') {

@@ -408,6 +408,16 @@ export function useCalendar(calendarRef) {
         listDayFormat: { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' },
         listDaySideFormat: false,
         noEventsContent: 'Không có sự kiện nào'
+      },
+      timeGridCustom: {
+        type: 'timeGrid',
+        duration: { days: 7 }, // Default to 7 days, will be updated based on route params
+        slotDuration: '01:00:00',
+        slotLabelFormat: {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: settingsStore.timeFormat === "12h"
+        }
       }
     },
     eventTimeFormat: {
