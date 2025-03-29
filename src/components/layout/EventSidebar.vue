@@ -41,12 +41,12 @@
       <p>{{ t("calendar.dontMissEvents") }}</p>
 
       <!-- Loading state -->
-      <div v-if="loading" class="flex justify-center my-4">
+      <!-- <div v-if="loading" class="flex justify-center my-4">
         <a-spin />
-      </div>
+      </div> -->
 
       <!-- Error state -->
-      <a-empty v-else-if="error" :description="error" class="my-4">
+      <a-empty v-if="error" :description="error" class="my-4">
         <template #extra>
           <a-button type="primary" @click="fetchUpcomingTasks">
             {{ t("common.retry") }}

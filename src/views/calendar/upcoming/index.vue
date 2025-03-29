@@ -164,9 +164,13 @@
                     </div>
                     
                     <a-avatar-group :max-count="3">
-                      <a-tooltip v-for="attendee in item.attendees" :key="attendee.id" :title="attendee.name">
+                      <a-tooltip 
+                        v-for="attendee in item.attendees" 
+                        :key="attendee.user_id" 
+                        :title="`${attendee.first_name} ${attendee.last_name}`"
+                      >
                         <a-avatar :src="attendee.avatar">
-                          {{ attendee.name?.[0] }}
+                          {{ attendee.first_name?.[0] }}{{ attendee.last_name?.[0] }}
                         </a-avatar>
                       </a-tooltip>
                     </a-avatar-group>
