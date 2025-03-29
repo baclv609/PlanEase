@@ -817,9 +817,18 @@ watch(
   () => formState.value.allDay,
   (newValue) => {
     if (newValue) {
-        if(formState.value.end.isSame(formState.value.start)){
-            formState.value.end = formState.value.end.add(1, 'day');
+      // Khi chuyển sang cả ngày
+      if (formState.value.start && formState.value.end) {
+        // Kiểm tra nếu start và end cùng ngày
+        if (dayjs(formState.value.start).format('YYYY-MM-DD') === dayjs(formState.value.end).format('YYYY-MM-DD')) {
+          // Nếu cùng ngày, set end = start + 1 ngày
+          formState.value.end = dayjs(formState.value.start).add(1, 'day');
+        } else {
+          // Nếu khác ngày, chỉ cần set thời gian về đầu ngày và cuối ngày
+          formState.value.start = dayjs(formState.value.start).startOf('day');
+          formState.value.end = dayjs(formState.value.end).endOf('day');
         }
+      }
     } else {
       // Khi tắt cả ngày, set lại thời gian mặc định
       if (formState.value.start) {
@@ -830,7 +839,7 @@ watch(
       }
     }
   }
-)
+);
 
 const freqOptions = [
     { label: "Hàng ngày", value: "daily" },
@@ -859,7 +868,7 @@ const copyToClipboard = () => {
 };
 
 watch(
-    () => formState.value?.rrule?.endType,
+    () => formState.value.rrule?.endType,
     (newVal) => {
         if (newVal === "count") {
             formState.value.rrule.until = null;
