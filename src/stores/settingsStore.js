@@ -148,7 +148,7 @@ export const useSettingsStore = defineStore("settings", {
         const token = localStorage.getItem('access_token');
         
         const apiSettings = {
-          display_type: this.displayMode, // dayGridMonth, timeGridWeek, timeGridDay, listWeek
+          display_type: this.displayMode, // dayGridMonth, timeGridWeek, timeGridDay, listYear
           language: this.language, // vi, en
           timezone_code: this.timeZone, // Asia/Saigon
           first: this.firstDay, // 1: chủ nhật, 2: thứ hai, 3: thứ ba, 4: thứ tư, 5: thứ năm, 6: thứ sáu, 7: thứ bảy 

@@ -19,7 +19,7 @@ const calendar = [
     },
   },
   {
-    path: "/calendar/:view/:date",
+    path: "/calendar/:view/:year/:month/:day?",
     name: "calendar-view",
     component: () => import("@/views/calendar/index.vue"),
     props: true,

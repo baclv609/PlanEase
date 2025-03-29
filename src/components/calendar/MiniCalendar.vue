@@ -317,7 +317,7 @@ watch(() => settingsStore.displayMode, (newMode) => {
     'timeGridDay': 'dayGridMonth',
     'timeGridWeek': 'dayGridMonth',
     'dayGridMonth': 'dayGridMonth',
-    'listWeek': 'dayGridMonth',
+    'listYear': 'dayGridMonth',
     'timeGridThreeDay': 'dayGridMonth',
     'multiMonthYear': 'dayGridMonth'
   };
