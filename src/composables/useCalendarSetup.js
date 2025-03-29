@@ -122,7 +122,7 @@ export function useCalendarEvents() {
         borderColor: event.color_code || '#3788d8',
         location: event.location,
         editable: isEditable,
-        display: 'block',
+        display: 'auto',
         displayEventTime: true,
         displayEventEnd: true,
         extendedProps: {
