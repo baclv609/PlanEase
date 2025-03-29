@@ -127,6 +127,7 @@ export function useCalendarEvents() {
         displayEventEnd: true,
         extendedProps: {
           end_time: event.end_time,
+          start_time: event.start_time,
           recurrence: event.is_repeat ?? 0,
           is_reminder: event.is_reminder === 1,
           reminder: event.reminder || [],
@@ -336,6 +337,8 @@ export function useCalendar(calendarRef) {
       type: extendedProps.type || 'task',
       start: event.startStr || '',
       end: event.endStr || '',
+      start_time: extendedProps.start_time || null,
+      end_time: extendedProps.end_time || null,
       tag_id: extendedProps.tag_id || null,
       tag_name: extendedProps.tag_name || '',
       timezone: extendedProps.timezone || settingsStore.timeZone,

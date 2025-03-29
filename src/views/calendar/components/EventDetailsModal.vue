@@ -37,10 +37,14 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { attachTypeApi } from "ant-design-vue/es/message";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import "dayjs/locale/vi";
+import "dayjs/locale/en";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(customParseFormat);
 
 const userTimezone = JSON.parse(localStorage.getItem('userSettings')).timeZone;
 
@@ -304,7 +308,10 @@ const handleEditTask = () => {
 
 // Format định dạng ngày
 const formatDateTime = (isoString) => {
-  return dayjs(isoString).locale(JSON.parse(localStorage.getItem('userSettings')).language).format("dddd, [ngày] D [tháng] M [năm] YYYY, HH:mm");
+  return dayjs(isoString)
+        .tz(event.value.timezone || userTimezone)
+        .locale(JSON.parse(localStorage.getItem('userSettings')).language)
+        .format("dddd, [ngày] D [tháng] M [năm] YYYY, HH:mm");
 };
 
 const accept = async (uuid) => {
