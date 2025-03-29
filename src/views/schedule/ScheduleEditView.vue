@@ -536,8 +536,8 @@ const updateFormStateFromProps = (event) => {
             ...formState.value, // Giữ nguyên dữ liệu cũ
             id: event.id || null,
             title: event.title || "",
-            start: event.start ? dayjs(event.start) : dayjs(),
-            end: event.end ? dayjs(event.end) : dayjs().add(1, 'hour'),
+            start: event.start_time ? dayjs(event.start_time).tz(event.info?.extendedProps?.timezone) : dayjs().tz(event.info?.extendedProps?.timezone),
+            end: event.end_time ? dayjs(event.end_time).tz(event.info?.extendedProps?.timezone) : dayjs().tz(event.info?.extendedProps?.timezone).add(1, 'hour'),
             allDay: event.is_all_day || false,
             user_id: event.user_id,
             type: event.type || "event",
