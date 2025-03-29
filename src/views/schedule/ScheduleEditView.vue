@@ -1272,9 +1272,14 @@ const updateEvent = async ({ code, date, id }) => {
             freq: formState.value.rrule?.freq || null,
             interval: formState.value.rrule?.interval ?? 1,
             count: formState.value.rrule?.count ?? null,
-            until: formState.value.rrule?.until
-                ? dayjs(formState.value.rrule?.until).format("YYYY-MM-DD HH:mm:ss")
-                : dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+            until: formState.value.rrule?.endType === "until" 
+                ? (formState.value.rrule?.until && 
+                   dayjs(formState.value.rrule.until).format() !== dayjs(props.event?.info?.extendedProps?.until).format()
+                    ? dayjs(formState.value.rrule.until).format("YYYY-MM-DD HH:mm:ss")
+                    : null)
+                : formState.value.rrule?.endType === "" 
+                    ? dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss")
+                    : null,
             byweekday: formState.value.rrule?.byweekday.length && formState.value.rrule?.freq === "weekly" ? formState.value.rrule.byweekday : null,
             bymonthday: formState.value.rrule?.bymonthday.length && formState.value.rrule?.freq === "monthly" ? formState.value.rrule.bymonthday : null,
             bymonth: formState.value.rrule?.bymonth.length && formState.value.rrule?.freq === "yearly" ? formState.value.rrule.bymonth : null,
@@ -1463,20 +1468,24 @@ watch(
 
 // kiểm tra có sửa các thuộc tính lặp lại hay không
 const hasRecurrenceChanges = () => {
-    if (!props.event?.info?.extendedProps) return true;
     
     const originalProps = props.event.info.extendedProps;
     const newProps = formState.value.rrule;
     
-    return (
+    // Chỉ kiểm tra các thuộc tính liên quan đến lặp lại
+    const hasRecurrencePropertyChanged = 
         originalProps.freq !== newProps.freq ||
         originalProps.interval !== newProps.interval ||
         originalProps.count !== newProps.count ||
-        originalProps.until !== newProps.until ||
-        JSON.stringify(originalProps.byweekday) !== JSON.stringify(newProps.byweekday) ||
-        JSON.stringify(originalProps.bymonthday) !== JSON.stringify(newProps.bymonthday) ||
-        JSON.stringify(originalProps.bymonth) !== JSON.stringify(newProps.bymonth)
-    );
+        (originalProps.until && newProps.until && dayjs(originalProps.until).format() !== dayjs(newProps.until).format()) ||
+        (originalProps.byweekday?.length > 0 && newProps.byweekday?.length > 0 && 
+         JSON.stringify(originalProps.byweekday) !== JSON.stringify(newProps.byweekday)) ||
+        (originalProps.bymonthday?.length > 0 && newProps.bymonthday?.length > 0 && 
+         JSON.stringify(originalProps.bymonthday) !== JSON.stringify(newProps.bymonthday)) ||
+        (originalProps.bymonth?.length > 0 && newProps.bymonth?.length > 0 && 
+         JSON.stringify(originalProps.bymonth) !== JSON.stringify(newProps.bymonth));
+
+    return hasRecurrencePropertyChanged;
 };
 </script>
 
