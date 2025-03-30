@@ -72,7 +72,7 @@
             <template #icon><DeleteOutlined /></template>
             Role đã xóa
           </a-button>
-          <a-button type="primary" @click="handleCreate" class="custom-button">
+          <a-button class="custom-button gradient-primary" @click="handleCreate">
             <template #icon><PlusOutlined /></template>
             Thêm Role Mới
           </a-button>
@@ -102,29 +102,31 @@
           <template v-if="column.key === 'action'">
             <a-space>
               <a-tooltip title="Xem chi tiết">
-                <a-button type="primary" shape="circle" @click="handleView(record)">
+                <a-button shape="circle" @click="handleView(record)" class="view-button">
                   <template #icon><EyeOutlined /></template>
                 </a-button>
               </a-tooltip>
               
-              <a-tooltip title="Chỉnh sửa">
-                <a-button type="warning" shape="circle" @click="handleEdit(record)">
-                  <template #icon><EditOutlined /></template>
-                </a-button>
-              </a-tooltip>
-              
-              <a-tooltip title="Xóa">
-                <a-popconfirm
-                  title="Bạn có chắc chắn muốn xóa role này?"
-                  ok-text="Đồng ý"
-                  cancel-text="Hủy"
-                  @confirm="handleDelete(record)"
-                >
-                  <a-button type="danger" shape="circle">
-                    <template #icon><DeleteOutlined /></template>
+              <template v-if="!isAdminRole(record)">
+                <a-tooltip title="Chỉnh sửa">
+                  <a-button type="warning" shape="circle" @click="handleEdit(record)">
+                    <template #icon><EditOutlined /></template>
                   </a-button>
-                </a-popconfirm>
-              </a-tooltip>
+                </a-tooltip>
+                
+                <a-tooltip title="Xóa">
+                  <a-popconfirm
+                    title="Bạn có chắc chắn muốn xóa role này?"
+                    ok-text="Đồng ý"
+                    cancel-text="Hủy"
+                    @confirm="handleDelete(record)"
+                  >
+                    <a-button type="danger" shape="circle">
+                      <template #icon><DeleteOutlined /></template>
+                    </a-button>
+                  </a-popconfirm>
+                </a-tooltip>
+              </template>
             </a-space>
           </template>
         </template>
@@ -277,6 +279,10 @@ onMounted(() => {
 });
 
 watch(() => pagination.value.current, fetchRoles, { immediate: true });
+
+const isAdminRole = (record) => {
+  return record.name.toLowerCase() === 'admin';
+};
 </script>
 
 <style scoped>
@@ -321,7 +327,7 @@ watch(() => pagination.value.current, fetchRoles, { immediate: true });
 }
 
 .deleted-roles {
-  background: linear-gradient(135deg, #ff4d4f, #ff7875);
+  background: linear-gradient(135deg, #ff7eb3 0%, #ff758c 50%, #ff8c7f 100%);
 }
 
 /* Đồng bộ màu cho statistics */
@@ -356,15 +362,15 @@ watch(() => pagination.value.current, fetchRoles, { immediate: true });
   font-weight: 500;
   transition: all 0.3s;
   
-  &[type="primary"] {
-    background: #17C3B2;
+  &.gradient-primary {
+    background: linear-gradient(70deg, #ffcc77 0%, #15c5b2 50%, #227ca0 100%);
     border: none;
     color: white;
     
     &:hover {
-      background: #227C9D;
+      background: linear-gradient(70deg, #227ca0 0%, #15c5b2 50%, #ffcc77 100%);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(23, 195, 178, 0.2);
+      box-shadow: 0 4px 12px rgba(21, 197, 178, 0.2);
     }
   }
 
@@ -442,11 +448,12 @@ watch(() => pagination.value.current, fetchRoles, { immediate: true });
   justify-content: center;
   border: none;
   
-  &[type="primary"] {
-    background: linear-gradient(135deg, #15C5B2, #227CA0);
+  &.view-button {
+    background: linear-gradient(70deg, #ffcc77 0%, #15c5b2 50%, #227ca0 100%);
+    color: white;
     
     &:hover {
-      background: linear-gradient(135deg, #227CA0, #15C5B2);
+      background: linear-gradient(70deg, #227ca0 0%, #15c5b2 50%, #ffcc77 100%);
       transform: translateY(-2px);
     }
   }

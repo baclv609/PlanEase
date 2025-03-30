@@ -87,12 +87,12 @@
                 </a-form-item>
               </a-col>
               <a-col :span="8">
-                <a-form-item label="First Name">
+                <a-form-item label="Tên">
                   <a-input v-model:value="user.first_name" disabled />
                 </a-form-item>
               </a-col>
               <a-col :span="8">
-                <a-form-item label="Last Name">
+                <a-form-item label="Họ">
                   <a-input v-model:value="user.last_name" disabled />
                 </a-form-item>
               </a-col>
@@ -105,7 +105,7 @@
                 </a-form-item>
               </a-col>
               <a-col :span="8">
-                <a-form-item label="Gender">
+                <a-form-item label="Giới tính">
                   <a-select v-model:value="user.gender" disabled>
                     <a-select-option value="male">Nam</a-select-option>
                     <a-select-option value="female">Nữ</a-select-option>
@@ -113,10 +113,23 @@
                 </a-form-item>
               </a-col>
               <a-col :span="8">
-                <a-form-item label="Address">
+                <a-form-item label="Địa chỉ">
                   <a-input v-model:value="user.address" disabled />
                 </a-form-item>
               </a-col>
+
+              <a-col :span="8">
+                <a-form-item label="Ngày tạo">
+                  <a-input :value="formatDateTime(user.created_at)" disabled />
+                </a-form-item>
+              </a-col>
+
+              <a-col :span="8">
+                <a-form-item label="Ngày cập nhật">
+                  <a-input :value="formatDateTime(user.updated_at)" disabled />
+                </a-form-item>
+              </a-col>
+
             </a-row>
           </a-form>
         </a-tab-pane>
@@ -138,6 +151,7 @@ import {
   ProfileOutlined
 } from '@ant-design/icons-vue';
 import { message } from 'ant-design-vue';
+import dayjs from 'dayjs';
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 
@@ -186,6 +200,10 @@ const getAvatarColor = (email) => {
 
 const getAvatarText = (email) => {
   return email ? email.charAt(0).toUpperCase() : 'U';
+};
+
+const formatDateTime = (datetime) => {
+  return datetime ? dayjs(datetime).format('DD/MM/YYYY HH:mm:ss') : 'N/A';
 };
 </script>
 
