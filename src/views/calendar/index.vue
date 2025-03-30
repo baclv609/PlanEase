@@ -10,6 +10,7 @@ import { useRouter, useRoute } from "vue-router";
 import { format } from "date-fns";
 import dayjs from "dayjs";
 import 'dayjs/locale/vi';
+import timezone from 'dayjs/plugin/timezone';
 
 // Import antd-vue components
 import { Button, Segmented, Tooltip, Skeleton } from "ant-design-vue";
@@ -551,7 +552,42 @@ const currentDate = ref("");
 
 // Thiết lập locale cho dayjs (thêm vào đầu file sau phần import)
 dayjs.locale('vi');
+dayjs.extend(timezone);
 
+// Thêm watcher cho router để cập nhật currentDate khi route thay đổi
+watch(() => route.params, (newParams) => {
+  if (!calendarRef.value || isUpdatingProgrammatically.value) return;
+  
+  const { view, year, month, day } = newParams;
+  if (!year || !month) return;
+
+  const calendar = calendarRef.value.getApi();
+  let dateToFormat;
+
+  // Xử lý các trường hợp khác nhau của view
+  switch (view) {
+    case 'day':
+      dateToFormat = dayjs(`${year}-${month}-${day}`).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
+      break;
+    case 'week':
+      dateToFormat = dayjs(calendar.view.currentStart).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
+      break;
+    case 'month':
+      dateToFormat = dayjs(`${year}-${month}`).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
+      break;
+    case 'year':
+      dateToFormat = dayjs(`${year}`).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
+      break;
+    default:
+      dateToFormat = dayjs(`${year}-${month}`).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
+  }
+
+  if (dateToFormat.isValid()) {
+    updateCurrentDate(dateToFormat.toDate());
+  }
+}, { deep: true });
+
+// Cập nhật lại hàm updateCurrentDate
 const updateCurrentDate = (date) => {
   if (!calendarRef.value) return;
   
@@ -559,9 +595,9 @@ const updateCurrentDate = (date) => {
   let dateToFormat;
   
   if (date) {
-    dateToFormat = date;
+    dateToFormat = dayjs(date).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
   } else {
-    dateToFormat = calendar.getDate();
+    dateToFormat = dayjs(calendar.getDate()).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
   }
   
   const viewType = calendar.view.type;
@@ -571,13 +607,14 @@ const updateCurrentDate = (date) => {
   
   if (viewType === 'timeGridDay') {
     if (settingsStore.language === 'vi') {
-      currentDate.value = dayjs(dateToFormat).format('DD [tháng] M[,] YYYY');
+      currentDate.value = dateToFormat.format('DD [tháng] M[,] YYYY');
     } else {
-      currentDate.value = dayjs(dateToFormat).format('MMMM D, YYYY');
+      currentDate.value = dateToFormat.format('MMMM D, YYYY');
     }
   } else if (viewType === 'timeGridWeek') {
-    const weekStart = dayjs(dateToFormat).startOf('week');
-    const weekEnd = dayjs(dateToFormat).endOf('week');
+    // Lấy ngày bắt đầu và kết thúc của tuần từ calendar view
+    const weekStart = dayjs(calendar.view.currentStart);
+    const weekEnd = dayjs(calendar.view.currentEnd).subtract(1, 'day');
     
     if (settingsStore.language === 'vi') {
       currentDate.value = `${weekStart.format('DD')} - ${weekEnd.format('DD')} tháng ${weekStart.format('M[,] YYYY')}`;
@@ -586,7 +623,7 @@ const updateCurrentDate = (date) => {
     }
   } else if (viewType === 'timeGridCustom') {
     const days = route.params.days || 7;
-    const startDate = dayjs(dateToFormat);
+    const startDate = dateToFormat;
     const endDate = startDate.add(days - 1, 'day');
     
     if (settingsStore.language === 'vi') {
@@ -596,9 +633,9 @@ const updateCurrentDate = (date) => {
     }
   } else {
     if (settingsStore.language === 'vi') {
-      currentDate.value = `Tháng ${dayjs(dateToFormat).format('M[,] YYYY')}`;
+      currentDate.value = `Tháng ${dateToFormat.format('M[,] YYYY')}`;
     } else {
-      currentDate.value = dayjs(dateToFormat).format('MMMM YYYY');
+      currentDate.value = dateToFormat.format('MMMM YYYY');
     }
   }
 };

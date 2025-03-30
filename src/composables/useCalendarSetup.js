@@ -386,6 +386,7 @@ export function useCalendar(calendarRef) {
     locale: settingsStore.language,
     dayMaxEvents: true,
     timeZone: selectedTimezone.value,
+    now: dayjs().tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day').toDate(),
     firstDay: settingsStore.firstDay,
     initialDate: settingsStore.initialDate || dayjs().format('YYYY-MM-DD'),
     initialView: settingsStore.displayMode || 'dayGridMonth',
@@ -408,10 +409,9 @@ export function useCalendar(calendarRef) {
         dayMaxEvents: true,
         moreLinkContent: (args) => `+${args.num}`,
         dayCellClassNames: (arg) => {
-          if (dayjs(arg.date).isSame(dayjs(), 'day')) {
-            return ['fc-day-today'];
-          }
-          return [];
+          const today = dayjs().startOf('day');
+          const cellDate = dayjs(arg.date).startOf('day');
+          return today.isSame(cellDate) ? ['fc-day-today'] : [];
         }
       },
       listYear: {
