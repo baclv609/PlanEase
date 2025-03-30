@@ -126,6 +126,7 @@ export function useCalendarEvents() {
         displayEventTime: true,
         displayEventEnd: true,
         extendedProps: {
+          parent_id: event.parent_id || null,
           end_time: event.end_time,
           start_time: event.start_time,
           recurrence: event.is_repeat ?? 0,
@@ -326,11 +327,13 @@ export function useCalendar(calendarRef) {
   };
   
   const openEventDetailModal = (info) => {
+    console.log('openEventDetailModal', info.event);
     const event = info.event;
     const extendedProps = event.extendedProps || {};
     
     selectedEvent.value = {
       id: event.id,
+      parent_id: extendedProps.parent_id || null,
       title: event.title || '',
       uuid: extendedProps.uuid || null,
       user_id: extendedProps.user_id || null,

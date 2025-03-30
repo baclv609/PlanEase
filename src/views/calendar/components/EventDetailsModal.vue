@@ -106,12 +106,12 @@ watch(() => props.isEventDetailModalVisible, (newVal) => {
 watch(
   () => props.event, async (newVal) => {
     event.value = newVal;
-
     if(props.event != null && newVal && newVal.attendees?.length > 0){
+      console.log('Event:', newVal.parent_id ? newVal.parent_id : newVal.id);
       const currentUserAttendee = newVal.attendees.find(attendee => attendee.user_id == user.value.id);
 
       if((currentUserAttendee && currentUserAttendee.status == "yes") || user.value.id == newVal.user_id){
-        const data = await getMessagesByGroup(newVal.id);
+        const data = await getMessagesByGroup(newVal.parent_id ? newVal.parent_id : newVal.id);
 
         groupInfo.value = data;
         console.log('Group:' , groupInfo.value);
