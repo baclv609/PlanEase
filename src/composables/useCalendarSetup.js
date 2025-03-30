@@ -387,8 +387,8 @@ export function useCalendar(calendarRef) {
     dayMaxEvents: true,
     timeZone: selectedTimezone.value,
     firstDay: settingsStore.firstDay,
-    initialDate: settingsStore.initialDate,
-    initialView: settingsStore.displayMode,
+    initialDate: settingsStore.initialDate || dayjs().format('YYYY-MM-DD'),
+    initialView: settingsStore.displayMode || 'dayGridMonth',
     views: {
       multiMonthYear: {
         type: 'multiMonth',
@@ -400,6 +400,19 @@ export function useCalendar(calendarRef) {
         dayMaxEvents: true,
         moreLinkContent: (args) => `+${args.num}`,
         multiMonthTitleFormat: { month: 'long' }
+      },
+      dayGridMonth: {
+        type: 'dayGrid',
+        duration: { months: 1 },
+        titleFormat: { month: 'long', year: 'numeric' },
+        dayMaxEvents: true,
+        moreLinkContent: (args) => `+${args.num}`,
+        dayCellClassNames: (arg) => {
+          if (dayjs(arg.date).isSame(dayjs(), 'day')) {
+            return ['fc-day-today'];
+          }
+          return [];
+        }
       },
       listYear: {
         type: 'list',

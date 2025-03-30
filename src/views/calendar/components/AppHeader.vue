@@ -3,7 +3,7 @@
     <div class="container px-6 py-4 mx-auto">
       <div class="lg:flex lg:items-center lg:justify-between">
         <div class="flex items-center justify-between">
-          <RouterLink to="/" class="flex items-center">
+          <RouterLink to="/calendar" class="flex items-center" @click="handleLogoClick">
             <img :src="logo" class="w-auto h-6 sm:h-7" alt="Logo" />
           </RouterLink>
           <button @click="isOpen = !isOpen" type="button"
@@ -59,14 +59,47 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useSettingsStore } from '@/stores/settingsStore';
 import logo from "@/assets/images/logo.png";
-
+import dayjs from 'dayjs';
 
 const isOpen = ref(false);
 const isProfileMenuOpen = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
+const settingsStore = useSettingsStore();
 const user = authStore.user;
+
+const handleLogoClick = (event) => {
+  event.preventDefault();
+  
+  // Get current date
+  const today = dayjs();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const day = today.getDate();
+  
+  // Update settings store to month view
+  settingsStore.updateDisplayMode('dayGridMonth');
+  
+  // Navigate to calendar with month view
+  router.push({
+    name: 'calendar-view',
+    params: {
+      view: 'month',
+      year,
+      month,
+      day
+    }
+  }).then(() => {
+    // After navigation, update the calendar view
+    if (calendarRef.value) {
+      const calendar = calendarRef.value.getApi();
+      calendar.gotoDate(today.toDate());
+      updateCurrentDate(today.toDate());
+    }
+  });
+};
 
 const toggleProfileMenu = () => {
   isProfileMenuOpen.value = !isProfileMenuOpen.value;
