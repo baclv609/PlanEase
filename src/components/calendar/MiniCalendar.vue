@@ -71,39 +71,23 @@ const transformedEvents = computed(() => {
 // Handle date click
 const handleDateClick = async (info) => {
   try {
-    // Log để debug
-    console.log('Clicked date:', info.dateStr);
-    
-    // Chuyển đổi ngày click với timezone
     const clickedDate = dayjs(info.dateStr);
-    console.log('Processed clicked date:', {
-      year: clickedDate.format('YYYY'),
-      month: clickedDate.format('M'),
-      day: clickedDate.format('D'),
-      fullDate: clickedDate.format('YYYY-MM-DD')
-    });
-
-    // Cập nhật selectedDate
+    if (!clickedDate.isValid()) return;
+    
     selectedDate.value = clickedDate;
 
-    // Lấy view hiện tại từ route
-    const currentRoute = router.currentRoute.value;
-    const currentView = currentRoute.params.view || 'day'; // Mặc định là day view
-
-    // Tạo params cho route mới - đảm bảo không có padding với số 0
+    // Luôn chuyển đến chế độ xem ngày khi click
     const params = {
-      view: currentView,
+      view: 'day', // Luôn set view là 'day'
       year: clickedDate.format('YYYY'),
-      month: clickedDate.format('M'), // Sử dụng M thay vì MM để tránh padding
-      day: clickedDate.format('D')    // Sử dụng D thay vì DD để tránh padding
+      month: clickedDate.format('M'),
+      day: clickedDate.format('D')
     };
-
-    console.log('Router params:', params);
 
     // Emit sự kiện trước khi chuyển route
     emit('dateSelect', {
       date: clickedDate,
-      view: currentView
+      view: 'day'
     });
 
     // Cập nhật route
@@ -153,7 +137,6 @@ const handleRangeSelect = async (info) => {
       }
     });
 
-    // Emit range select event
     emit('rangeSelect', {
       start,
       end,
@@ -184,7 +167,7 @@ const calendarOptions = computed(() => ({
   fixedWeekCount: false,
   showNonCurrentDates: true,
   events: transformedEvents.value,
-  selectable: false, // Tắt selection để tránh xung đột
+  selectable: false, 
   dateClick: handleDateClick,
   eventDisplay: 'background',
   displayEventTime: false,
