@@ -138,7 +138,14 @@ const columns = [
 
 const dataSource = ref({ list: [], total: 0 });
 const loading = ref(false);
-const pagination = ref({ current: 1, pageSize: 10, total: 0 });
+const pagination = ref({ 
+  current: 1, 
+  pageSize: 10, 
+  total: 0,
+  showSizeChanger: true,
+  showQuickJumper: true,
+  showTotal: (total) => `Tổng số ${total} tài khoản bị khóa`
+});
 
 const hasData = computed(() => dataSource.value.list.length > 0);
 
@@ -157,15 +164,16 @@ const fetchBannedUsers = async () => {
       headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
     });
 
-    if (response.data && Array.isArray(response.data.data)) {
-      dataSource.value.list = response.data.data;
-      pagination.value.total = response.data.total || response.data.data.length;
+    if (response.data && response.data.data) {
+      dataSource.value.list = response.data.data.data;
+      pagination.value.total = response.data.data.total;
     } else {
       dataSource.value.list = [];
       pagination.value.total = 0;
     }
   } catch (error) {
     console.error('Lỗi khi tải danh sách tài khoản bị khóa:', error);
+    message.error('Có lỗi xảy ra khi tải danh sách tài khoản bị khóa');
     dataSource.value.list = [];
     pagination.value.total = 0;
   } finally {

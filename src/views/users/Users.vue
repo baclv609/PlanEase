@@ -200,7 +200,14 @@ const columns = [
 
 const dataSource = ref({ list: [], total: 0 });
 const loading = ref(false);
-const pagination = ref({ current: 1, pageSize: 10, total: 0 });
+const pagination = ref({ 
+  current: 1, 
+  pageSize: 10, 
+  total: 0,
+  showSizeChanger: true,
+  showQuickJumper: true,
+  showTotal: (total) => `Tổng số ${total} người dùng`
+});
 
 // Thêm các biến mới để lưu trữ tổng số liệu
 const totalActiveUsersCount = ref(0);
@@ -215,20 +222,18 @@ const fetchUsers = async (params = {}) => {
       params: {
         per_page: pagination.value.pageSize,
         page: pagination.value.current,
-        sort_field: params.sortField || 'id',
-        sort_order: params.sortOrder || 'asc',
         email: searchText.value || null,
       },
       headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
     });
 
     if (response.data && response.data.data) {
-      dataSource.value.list = response.data.data;
-      pagination.value.total = response.data.total || response.data.data.length;
+      dataSource.value.list = response.data.data.data;
+      pagination.value.total = response.data.data.total;
       
       // Chỉ cập nhật tổng số user active khi không có tìm kiếm
       if (!searchText.value) {
-        totalActiveUsersCount.value = response.data.total || response.data.data.length;
+        totalActiveUsersCount.value = response.data.data.total;
       }
     }
   } catch (error) {
@@ -239,6 +244,7 @@ const fetchUsers = async (params = {}) => {
       message.error('Có lỗi xảy ra khi tải danh sách người dùng');
     }
     dataSource.value.list = [];
+    pagination.value.total = 0;
   } finally {
     loading.value = false;
   }
@@ -375,11 +381,15 @@ const refreshData = async () => {
 const fetchBannedUsersCount = async () => {
   try {
     const response = await axios.get(`${dirApi}admin/users/ban`, {
+      params: {
+        per_page: 1, // Chỉ lấy 1 bản ghi vì chúng ta chỉ cần tổng số
+        page: 1
+      },
       headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
     });
 
-    if (response.data && Array.isArray(response.data.data)) {
-      totalBannedUsersCount.value = response.data.total || response.data.data.length;
+    if (response.data && response.data.data) {
+      totalBannedUsersCount.value = response.data.data.total;
     }
   } catch (error) {
     console.error('Lỗi khi lấy số lượng tài khoản bị khóa:', error);

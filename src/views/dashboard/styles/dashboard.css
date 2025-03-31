@@ -1,0 +1,170 @@
+.dashboard-container {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+
+.page-title {
+  margin-bottom: 24px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #227CA0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-title .subtitle {
+  font-size: 14px;
+  color: #8c8c8c;
+  font-weight: normal;
+  margin-left: 12px;
+}
+
+.filter-section {
+  margin-bottom: 24px;
+}
+
+.filter-section :deep(.ant-card) {
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.filter-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.left-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.period-select :deep(.ant-select-selector) {
+  border-radius: 8px !important;
+  border: 1px solid #d9d9d9;
+}
+
+.period-select :deep(.ant-select-selector:hover) {
+  border-color: #15c5b2;
+}
+
+.date-picker :deep(.ant-picker) {
+  border-radius: 8px;
+}
+
+.date-picker :deep(.ant-picker:hover) {
+  border-color: #15c5b2;
+}
+
+.filter-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 10rem;
+  transition: all 0.02s;
+  font-weight: 600;
+  cursor: pointer;
+  color: #227CA0;
+  z-index: 0;
+  box-shadow: 0 0px 7px -5px rgba(0, 0, 0, 0.5);
+  background: white;
+  font-size: 14px;
+}
+
+.filter-button:hover {
+  background: rgba(34, 124, 160, 0.1);
+  color: #227CA0;
+}
+
+.filter-button:active {
+  transform: scale(0.97);
+}
+
+.hoverEffect {
+  position: absolute;
+  bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.hoverEffect div {
+  background: linear-gradient(
+    90deg,
+    rgba(21, 197, 178, 1) 0%,
+    rgba(34, 124, 160, 1) 49%,
+    rgba(255, 204, 119, 1) 100%
+  );
+  border-radius: 40rem;
+  width: 10rem;
+  height: 10rem;
+  transition: 0.4s;
+  filter: blur(20px);
+  animation: effect infinite 3s linear;
+  opacity: 0.5;
+}
+
+.filter-button:hover .hoverEffect div {
+  width: 8rem;
+  height: 8rem;
+}
+
+@keyframes effect {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.chart-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.highcharts-figure {
+  min-width: 310px;
+  max-width: 100%;
+  margin: 1em auto;
+}
+
+#users-chart,
+#tasks-chart {
+  height: 400px;
+  width: 100%;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #227CA0;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.filter-icon {
+  font-size: 16px;
+} 
