@@ -25,11 +25,20 @@ import { AlignLeftOutlined,
          EditOutlined, 
          EnvironmentOutlined, 
          FileProtectOutlined, 
+         FrownOutlined, 
+         GlobalOutlined, 
+         HistoryOutlined, 
          MailOutlined, 
          QuestionOutlined, 
          SendOutlined, 
          ShareAltOutlined, 
-         UsergroupAddOutlined 
+         UsergroupAddOutlined,
+         FileOutlined, 
+         FileWordOutlined, 
+         FileExcelOutlined, 
+         FilePptOutlined, 
+         FileTextOutlined,
+         DownloadOutlined 
         } from "@ant-design/icons-vue";
 
 import { useEchoStore } from "@/stores/echoStore";
@@ -59,6 +68,7 @@ const event = ref({});
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem('access_token');
 const deleteOption = ref("");
+const leaveOption = ref("");
 const eventLink = ref('');
 const user = ref(JSON.parse(localStorage.getItem('user')));
 const activeTab = ref("infoEvent");
@@ -67,6 +77,8 @@ const replyingTo = ref(null);
 const echoStore = useEchoStore();
 
 const messages = ref([]);
+
+const files = ref([]);
 
 const transformMessages = (messages) => {
   return messages.map(msg => ({
@@ -107,17 +119,14 @@ watch(
   () => props.event, async (newVal) => {
     event.value = newVal;
     if(props.event != null && newVal && newVal.attendees?.length > 0){
-      console.log('Event:', newVal.parent_id ? newVal.parent_id : newVal.id);
       const currentUserAttendee = newVal.attendees.find(attendee => attendee.user_id == user.value.id);
 
       if((currentUserAttendee && currentUserAttendee.status == "yes") || user.value.id == newVal.user_id){
         const data = await getMessagesByGroup(newVal.parent_id ? newVal.parent_id : newVal.id);
 
         groupInfo.value = data;
-        console.log('Group:' , groupInfo.value);
         messages.value = transformMessages(groupInfo.value.messages);
 
-        console.log('tin nhan chuyen:' , messages.value);
         echoStore.echo.private(`task-group.${groupInfo.value.group.id}`)
         .listen(`Chat\\NewTaskGroupChatMessages`, (message) => {   
           
@@ -177,7 +186,7 @@ const deleteEvent = async ({code, date, id}) => {
 
 // Xử lý xóa sự kiện
 const handleDelete = () => {
-  if (event.value.recurrence && event.value.recurrence != 'none') {
+  if (event.value.recurrence && event.value.recurrence != 0) {
     
     Modal.confirm({
       title: "Xóa sự kiện lặp lại",
@@ -307,11 +316,18 @@ const handleEditTask = () => {
 };
 
 // Format định dạng ngày
-const formatDateTime = (isoString) => {
+const formatDateTime = (isoString, timezone) => {
   return dayjs(isoString)
-        .tz(event.value.timezone || userTimezone)
+        .tz(timezone)
         .locale(JSON.parse(localStorage.getItem('userSettings')).language)
-        .format("dddd, [ngày] D [tháng] M [năm] YYYY, HH:mm");
+        .format("dddd, D/M/YYYY");
+};
+
+const formatTimeInfo = (isoString, timezone) => {
+  return dayjs(isoString)
+        .tz(timezone)
+        .locale(JSON.parse(localStorage.getItem('userSettings')).language)
+        .format("HH:mm");
 };
 
 const accept = async (uuid) => {
@@ -364,6 +380,92 @@ const refuse = async (uuid) => {
   }
 }
 
+const leaveEvent = async (uuid) => {
+  if (event.value.recurrence && event.value.recurrence != 0) {
+    
+    Modal.confirm({
+      title: "Rời khỏi sự kiện",
+      width: 600,
+      content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
+        h("div", { class: "mb-3" }, [
+          h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+            h("input", {
+              type: "radio",
+              name: "leaveOption",
+              value: "EDIT_1",
+              class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+              onInput: (e) => {
+                leaveOption.value = e.target.value;
+              },
+            }),
+            h("span", { class: "text-lg" }, "Chỉ rời khỏi sự kiện này"),
+          ]),
+        ]),
+        h("div", { class: "mb-3" }, [
+          h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+            h("input", {
+              type: "radio",
+              name: "leaveOption",
+              value: "EDIT_1B",
+              class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+              onInput: (e) => {
+                leaveOption.value = e.target.value;
+              },
+            }),
+            h("span", { class: "text-lg" }, "Rời khỏi sự kiện này và những sự kiện tiếp theo"),
+          ]),
+        ]),
+        h("div", { class: "mb-3" }, [
+          h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+            h("input", {
+              type: "radio",
+              name: "leaveOption",
+              value: "EDIT_A",
+              class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+              onInput: (e) => {
+                leaveOption.value = e.target.value;
+              },
+            }),
+            h("span", { class: "text-lg" }, "Rời khỏi tất cả sự kiện"),
+          ]),
+        ]),
+      ]),
+      okText: "Rời đi",
+      cancelText: "Hủy",
+      onOk() {
+        handleLeaveEvent({code: leaveOption.value, id: event.value.id, date: event.value.start, timezone: event.value.timezone});
+      },
+    });
+
+  } else {
+    handleLeaveEvent({code: "EDIT_N", id: event.value.id, date: event.value.start, timezone: event.value.timezone});
+  }
+}
+
+const handleLeaveEvent = async ({code, id, date, timezone}) => {
+  console.log({code, id, date, timezone});
+  try {
+    const response = await axios.put(`${dirApi}tasks/${id}/attendeeLeaveTask`, {
+      code: code,
+      updated_date: date,
+      atteendee_id: user.value.id,
+      timezone_code: timezone,
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if(response.data.code == 200) {
+      message.success(response.data.message);
+      emit("delete", id);
+      handleClose();
+    }
+  } catch(error) {
+    console.log(error);
+  }
+}
+
 // chat
 const sendMessage = async () => {
   if (!newMessage.value.trim()) return;
@@ -406,6 +508,23 @@ const scrollToBottom = () => {
   });
 };
 
+const getAttachments = async () => {
+  if(files.value.length == 0) {
+    const response = await axios.get(`${dirApi}file-entry/${event.value.id}/files`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+  
+    try {
+      files.value = response.data.files;
+      console.log(files.value);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+}
+
 // Theo dõi thay đổi của messages và cuộn xuống cuối
 watch(messages, () => {
   scrollToBottom();
@@ -414,6 +533,10 @@ watch(messages, () => {
 watch(activeTab, (value) => {
   if(value == 'discuss') {
     scrollToBottom();
+  }
+
+  if(value == 'attachments') {
+    getAttachments();
   }
 });
 const getMessagesByGroup = async (taskId) => {
@@ -438,6 +561,25 @@ const dayMap = {
   FR: "T6",
   SA: "T7",
   SU: "CN"
+};
+
+// Kiểm tra xem file có phải là ảnh không
+const isImageFile = (mime) => {
+  return mime.startsWith('image/');
+};
+
+// Lấy phần mở rộng của file
+const getFileExtension = (filename) => {
+  return filename.split('.').pop();
+};
+
+// Format kích thước file
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 </script>
 
@@ -486,37 +628,114 @@ const dayMap = {
               <ClockCircleOutlined class="text-xl text-gray-500" />
             </div>
             <div>
-              <p class="text-gray-800 mb-0">{{ formatDateTime(event.start) }} {{ event.end ? formatDateTime(event.end) :
-                ''}}, {{ event.timezone }}</p>
-              <p class="text-gray-800 mb-0" v-if="event.recurrence && event.recurrence != 'none'">
-                <span v-if="event.info.extendedProps.freq === 'daily'">
-                  {{ event.info.extendedProps.interval <= 1 ? 'Hàng ngày' : `${event.info.extendedProps.interval} ngày một lần` }}
-                  {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
-                  {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
-                </span>
-                <span v-else-if="event.info.extendedProps.freq === 'weekly'">
-                  {{ event.info.extendedProps.interval <= 1 ? 'Hàng tuần' : `${event.info.extendedProps.interval} tuần một lần` }}
-                  {{ event.info.extendedProps.byweekday && event.info.extendedProps.byweekday.length > 0 ? `,vào ${event.info.extendedProps.byweekday.map(day => dayMap[day]).join(', ')}` : '' }}
-                  {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
-                  {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
-                </span>
-                <span v-else-if="event.info.extendedProps.freq === 'monthly'">
-                  {{ event.info.extendedProps.interval <= 1 ? 'Hàng tháng' : `${event.info.extendedProps.interval} tháng một lần` }}
-                  {{ event.info.extendedProps.bymonthday && event.info.extendedProps.bymonthday.length > 0 ? `,vào ngày ${event.info.extendedProps.bymonthday.join(', ')}` : '' }}
-                  {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
-                  {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
-                </span>
-                <span v-else-if="event.info.extendedProps.freq === 'yearly'">
-                  {{ event.info.extendedProps.interval <= 1 ? 'Hàng năm' : `${event.info.extendedProps.interval} năm một lần` }}
-                  {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
-                  {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
-                </span>
-              </p>
-              <p class="text-gray-800 mb-0" v-if="event.is_all_day">
-                Sự kiện cả ngày
-              </p>
+              <div class="flex items-center">
+                <p class="font-medium mb-0">Thời gian</p>
+              </div>
+              
+              <!-- Thời gian theo múi giờ sự kiện -->
+              <div class="border border-1 !border-gray-300 rounded-md p-4 shadow-sm">
+                <p class="text-sm text-gray-500 font-semibold mb-2">Thời gian sự kiện</p>
+                <div class="flex flex-col space-y-3">
+                  <div class="grid grid-cols-2 gap-2">
+                    <div class="flex items-center space-x-2">
+                      <CalendarOutlined class="text-gray-500" />
+                      <p class="text-gray-800 mb-0">
+                        {{ formatDateTime(event.start, event.timezone) }} - {{ event.end ? formatDateTime(event.end, event.timezone) : '' }}
+                      </p>
+                    </div>
+                    <div class="ml-10">
+                      <div class="flex items-center space-x-2" v-if="!event.is_all_day">
+                        <ClockCircleOutlined class="text-gray-500" />
+                        <p class="text-gray-800 mb-0">
+                          {{ formatTimeInfo(event.start, event.timezone) }} - {{ event.end ? formatTimeInfo(event.end, event.timezone) : '' }}
+                        </p>
+                      </div>
+                      <div class="flex items-center space-x-2 col-span-2" v-if="event.is_all_day">
+                        <ClockCircleOutlined class="text-gray-500" />
+                        <p class="text-gray-800 mb-0">Cả ngày</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <GlobalOutlined class="text-gray-500" />
+                    <p class="text-gray-800 mb-0">{{ event.timezone }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thời gian theo múi giờ người dùng -->
+              <div v-if="userTimezone != event.timezone" class="border-t border-gray-300">
+                <div class="border border-1 border-gray-300 rounded-md p-4 shadow-sm bg-gray-100">
+                  <p class="text-sm text-gray-500 font-semibold mb-2">Thời gian theo múi giờ của bạn</p>
+                  <div class="flex flex-col space-y-3">
+                    <div class="grid grid-cols-2 gap-2">
+                      <div class="flex items-center space-x-2">
+                        <CalendarOutlined class="text-gray-500" />
+                        <p class="text-gray-800 mb-0">
+                          {{ formatDateTime(event.start_time, userTimezone) }} - {{ event.end_time ? formatDateTime(event.end_time, userTimezone) : '' }}
+                        </p>
+                      </div>
+                      <div class="ml-10">
+                        <div class="flex items-center space-x-2" v-if="!event.is_all_day">
+                          <ClockCircleOutlined class="text-gray-500" />
+                          <p class="text-gray-800 mb-0">
+                            {{ formatTimeInfo(event.start_time, userTimezone) }} - {{ event.end_time ? formatTimeInfo(event.end_time, userTimezone) : '' }}
+                          </p>
+                        </div>
+                        <div class="flex items-center space-x-2 col-span-2" v-if="event.is_all_day">
+                          <ClockCircleOutlined class="text-gray-500" />
+                          <p class="text-gray-800 mb-0">Cả ngày</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <GlobalOutlined class="text-gray-500" />
+                      <p class="text-gray-800 mb-0">{{ userTimezone }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
+
+          <!-- Lặp lại -->
+          <div class="flex items-start mb-4" v-if="event.recurrence && event.recurrence != 0">
+            <div class="w-6 h-6 flex-shrink-0 mr-3">
+              <HistoryOutlined class="text-xl text-gray-500" />
+            </div>
+            <div>
+              <div class="flex items-center">
+                <p class="font-medium mb-0">Lặp lại</p>
+              </div>
+              
+              <p class="text-gray-800 mb-0" v-if="event.recurrence && event.recurrence != 'none'">
+                  <span v-if="event.info.extendedProps.freq === 'daily'">
+                    {{ event.info.extendedProps.interval <= 1 ? 'Hàng ngày' : `${event.info.extendedProps.interval} ngày một lần` }}
+                    {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
+                    {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
+                  </span>
+                  <span v-else-if="event.info.extendedProps.freq === 'weekly'">
+                    {{ event.info.extendedProps.interval <= 1 ? 'Hàng tuần' : `${event.info.extendedProps.interval} tuần một lần` }}
+                    {{ event.info.extendedProps.byweekday && event.info.extendedProps.byweekday.length > 0 ? `,vào ${event.info.extendedProps.byweekday.map(day => dayMap[day]).join(', ')}` : '' }}
+                    {{ evenat.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
+                    {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
+                  </span>
+                  <span v-else-if="event.info.extendedProps.freq === 'monthly'">
+                    {{ event.info.extendedProps.interval <= 1 ? 'Hàng tháng' : `${event.info.extendedProps.interval} tháng một lần` }}
+                    {{ event.info.extendedProps.bymonthday && event.info.extendedProps.bymonthday.length > 0 ? `,vào ngày ${event.info.extendedProps.bymonthday.join(', ')}` : '' }}
+                    {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
+                    {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
+                  </span>
+                  <span v-else-if="event.info.extendedProps.freq === 'yearly'">
+                    {{ event.info.extendedProps.interval <= 1 ? 'Hàng năm' : `${event.info.extendedProps.interval} năm một lần` }}
+                    {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
+                    {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
+                  </span>
+                </p>
+            </div>
+          </div>
+
 
           <div class="flex items-start mb-4" v-if="event.description">
             <div class="w-6 h-6 flex-shrink-0 mr-3">
@@ -526,7 +745,8 @@ const dayMap = {
               <div class="flex items-center">
                 <p class="font-medium mb-0">Mô tả</p>
               </div>
-                <p class="text-gray-800" v-html="event.description"></p>
+              
+              <p class="text-gray-800" v-html="event.description"></p>
             </div>
           </div>
 
@@ -666,7 +886,8 @@ const dayMap = {
           class="flex justify-center">
           <p class="text-yellow-500 mb-0">Bạn có muốn tham gia vào sự kiện này không</p>
         </div>
-        <div v-if="event.attendees && event.attendees.length > 0 && user.id != event.user_id"
+
+        <div v-if="event.attendees && event.attendees.length > 0 && user.id != event.user_id && event.attendees.some(attendee => attendee.user_id == user.id && attendee.status != 'yes')"
           class="flex justify-center p-4">
           <div class="flex items-center space-x-2">
             <button @click="accept(event.uuid)"
@@ -681,7 +902,60 @@ const dayMap = {
             </button>
           </div>
         </div>
+        <div v-else-if="event.attendees && event.attendees.length > 0 && user.id != event.user_id && event.attendees.some(attendee => attendee.user_id == user.id && attendee.status == 'yes')"
+          class="flex justify-center p-4">
+          <div class="flex items-center space-x-2">
+            <button @click="leaveEvent(event.id)"
+              class="px-3 py-1 rounded-md border-none bg-transparent cursor-pointer hover:bg-gray-100 font-semibold hover:text-blue-500 transition flex items-center ">
+              <FrownOutlined class="mr-1" />
+              Rời đi
+            </button>
+          </div>
+        </div>
+      </a-tab-pane>
 
+      <a-tab-pane key="attachments" tab="Tệp đính kèm">
+        <div class="p-4">
+          <div v-if="files?.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-for="(file, index) in files" :key="index" 
+              class="border rounded-lg p-4 flex flex-col">
+              <!-- Hiển thị icon cho file -->
+              <div class="mb-3 flex items-center justify-center h-48 bg-gray-50 rounded-lg">
+                <div class="text-center">
+                  <FileOutlined v-if="file.extension == 'pdf'" class="text-4xl text-red-500" />
+                  <FileWordOutlined v-else-if="['doc', 'docx'].includes(file.extension)" class="text-4xl text-blue-500" />
+                  <FileExcelOutlined v-else-if="['xls', 'xlsx'].includes(file.extension)" class="text-4xl text-green-500" />
+                  <FilePptOutlined v-else-if="['ppt', 'pptx'].includes(file.extension)" class="text-4xl text-orange-500" />
+                  <FileTextOutlined v-else class="text-4xl text-gray-500" />
+                  <div class="mt-2 text-sm text-gray-600">{{ file.extension.toUpperCase() }}</div>
+                </div>
+              </div>
+              <!-- Thông tin file -->
+              <div class="flex flex-col">
+                <div class="font-medium text-gray-900 truncate" :title="file.client_name">
+                  {{ file.client_name }}
+                </div>
+                <div class="text-sm text-gray-500">
+                  {{ formatFileSize(file.size) }}
+                </div>
+                <div class="text-xs text-gray-400 mt-1">
+                  {{ new Date(file.created_at).toLocaleDateString() }}
+                </div>
+              </div>
+              <!-- Nút tải xuống -->
+              <div class="mt-3">
+                <a :href="`${dirApi}s3/download/${file.file_name}`" target="_blank" download
+                  class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                  <DownloadOutlined class="mr-2" />
+                  Tải xuống
+                </a>
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-center text-gray-500 py-8">
+            Không có tệp đính kèm
+          </div>
+        </div>
       </a-tab-pane>
 
       <a-tab-pane v-if="event.type == 'event' && event.attendees.length > 0" key="discuss" tab="Thảo luận">
