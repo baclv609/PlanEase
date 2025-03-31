@@ -63,6 +63,7 @@ const token = localStorage.getItem('access_token');
 const timezones = moment.tz.names();
 const tags = ref([]);
 const isLoading = ref(false);
+const presignedUrls = ref([]);
 
 const colors = [
   { label: 'Xanh dương', value: '#1890ff' }, 
@@ -226,6 +227,8 @@ const resetForm = () => {
 
 const rules = {
   title: [
+    { required: true, message: "Tiêu đề không được để trống", trigger: "blur" },
+    { min: 3, max: 255, message: "Tiêu đề không được quá 255 ký tự", trigger: "blur" },
     { max: 255, message: "Tiêu đề không được quá 255 ký tự", trigger: "blur" }
   ],
   start: [
@@ -417,8 +420,48 @@ const handleSave = async () => {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
     });
-
+    
     if (res.data.code === 200) {
+
+      if(presignedUrls.value && presignedUrls.value.length > 0) {
+        await Promise.all(
+          presignedUrls.value.map(async (info) => {
+            // Upload file to S3
+            try {
+              await axios.put(info.url, info.file, {
+                headers: {
+                  "Content-Type": info.metadata.mime
+                },
+              });
+
+              // Save file information to database with required fields
+              await axios.post(
+                `${dirApi}file-entry/store/file`,
+                {
+                  files: [{
+                    file_name: info.metadata.file_name.split(".")[0],
+                    client_name: info.metadata.client_name,
+                    extension: info.metadata.extension,
+                    size: info.metadata.size,
+                    mime: info.metadata.mime,
+                    task_id: res.data.data.id
+                  }]
+                },
+                {
+                  headers: { 
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                  },
+                }
+              );
+            } catch (error) {
+              console.error("Error uploading file:", error);
+              message.error(`Upload file ${info.metadata.client_name} thất bại`);
+            }
+          })
+        );
+      }
+
       message.success(res.data.message || "Thêm sự kiện thành công");
       emit("save", dataApi);
       resetForm();
@@ -529,6 +572,7 @@ const removeReminder = (index) => {
 };
 const handleCancel = () => {
   formRef.value?.clearValidate();
+  presignedUrls.value = [];
   resetForm();
   emit("cancel");
 };
@@ -664,6 +708,43 @@ watch(
     }
   }
 );
+
+// handle before upload
+const handleBeforeUpload = async (fileList) => {
+  const formData = new FormData();
+  
+  // Chuyển đổi fileList thành mảng nếu cần
+  const files = Array.isArray(fileList) ? fileList : [fileList];
+  
+  // Thêm từng file vào formData
+  files.forEach((file) => {
+    formData.append("files[]", file);
+  });
+
+  
+  try {
+    const { data } = await axios.post(
+      `${dirApi}s3/upload`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log("Data:", data);
+    presignedUrls.value = data.presigned_urls;
+    console.log("Presigned URLs:", presignedUrls.value);
+
+    message.success('Upload file thành công');
+  } catch (error) {
+    console.error("Upload failed", error);
+    message.error('Upload file thất bại');
+  }
+
+  return false; // Ngăn component <Upload> tự xử lý upload
+};
 </script>
 
 <template>
@@ -841,7 +922,7 @@ watch(
                 <PaperClipOutlined class="text-gray-500 mr-2" />
                 <Upload
                   v-model:file-list="formState.attachments"
-                  :before-upload="() => false"
+                  :before-upload="handleBeforeUpload"
                   multiple
                   :max-count="5"
                   class="text-blue-600 cursor-pointer hover:text-blue-800"
