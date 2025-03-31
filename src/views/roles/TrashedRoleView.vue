@@ -98,7 +98,10 @@ const dataSource = ref({ list: [], total: 0 });
 const pagination = ref({
     current: 1,
     pageSize: 10,
-    total: 0
+    total: 0,
+    showSizeChanger: true,
+    showQuickJumper: true,
+    showTotal: (total) => `Tổng số ${total} role đã xóa`
 });
 
 const columns = [
@@ -147,24 +150,30 @@ const fetchDeletedRoles = async () => {
             }
         });
 
-        if (response.data && Array.isArray(response.data.data)) {
-            dataSource.value.list = response.data.data.map((role, index) => ({
+        if (response.data.code === 200) {
+            dataSource.value.list = response.data.data.data.map((role, index) => ({
                 id: role.id || index + 1,
                 ...role
             }));
-            pagination.value.total = response.data.total || response.data.data.length;
+            pagination.value.total = response.data.data.total;
 
             if (dataSource.value.list.length === 0) {
                 message.info('Không có role nào trong thùng rác');
             }
+        } else if (response.data.code === 404) {
+            message.info('Không có role nào trong thùng rác');
+            dataSource.value.list = [];
+            pagination.value.total = 0;
         }
     } catch (error) {
         console.error('Lỗi khi tải danh sách role đã xóa:', error);
-        if (error.response && error.response.status !== 404) {
-            message.error('Có lỗi xảy ra khi tải danh sách role đã xóa');
-        } else {
+        if (error.response && error.response.status === 404) {
             message.info('Không có role nào trong thùng rác');
+        } else {
+            message.error('Có lỗi xảy ra khi tải danh sách role đã xóa');
         }
+        dataSource.value.list = [];
+        pagination.value.total = 0;
     } finally {
         loading.value = false;
     }

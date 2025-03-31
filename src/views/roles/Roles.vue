@@ -149,7 +149,10 @@ const dataSource = ref({ list: [], total: 0 });
 const pagination = ref({
   current: 1,
   pageSize: 10,
-  total: 0
+  total: 0,
+  showSizeChanger: true,
+  showQuickJumper: true,
+  showTotal: (total) => `Tổng số ${total} role`
 });
 
 const columns = [
@@ -183,22 +186,25 @@ const fetchRoles = async (params = {}) => {
       }
     });
 
-    if (response.data && Array.isArray(response.data.data)) {
-      dataSource.value.list = response.data.data
+    if (response.data.code === 200) {
+      dataSource.value.list = response.data.data.data
         .filter(role => role.name.toLowerCase() !== 'super admin')
         .map((role, index) => ({
           id: role.id || index + 1,
           ...role
         }));
       
-      pagination.value.total = dataSource.value.list.length;
+      pagination.value.total = response.data.data.total;
     } else {
       console.error("API dữ liệu không hợp lệ:", response.data);
       dataSource.value = { list: [], total: 0 };
+      pagination.value.total = 0;
     }
   } catch (error) {
     console.error('Lỗi khi tải danh sách role:', error);
     message.error('Có lỗi xảy ra khi tải danh sách role');
+    dataSource.value = { list: [], total: 0 };
+    pagination.value.total = 0;
   } finally {
     loading.value = false;
   }
@@ -207,6 +213,7 @@ const fetchRoles = async (params = {}) => {
 const handleTableChange = (pag) => {
   pagination.value.current = pag.current;
   pagination.value.pageSize = pag.pageSize;
+  fetchRoles();
 };
 
 const handleView = (record) => {
@@ -264,13 +271,23 @@ const totalRoles = computed(() => {
 const fetchDeletedRolesCount = async () => {
   try {
     const response = await axios.get(`${dirApi}admin/roles/trashed`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+      params: {
+        per_page: 1,
+        page: 1
+      },
+      headers: { 
+        Authorization: `Bearer ${localStorage.getItem('access_token')}` 
+      }
     });
-    if (response.data && Array.isArray(response.data.data)) {
-      deletedRoles.value = response.data.data.length;
+
+    if (response.data.code === 200) {
+      deletedRoles.value = response.data.data.total;
+    } else if (response.data.code === 404) {
+      deletedRoles.value = 0;
     }
   } catch (error) {
     console.error('Lỗi khi lấy số role đã xóa:', error);
+    deletedRoles.value = 0;
   }
 };
 

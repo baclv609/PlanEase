@@ -22,6 +22,9 @@ import { useEchoStore } from "@/stores/echoStore";
 
 // theme Editor
 import Aura from '@primeuix/themes/aura';
+import Highcharts from 'highcharts';
+import HighchartsVue from 'highcharts-vue';
+
 
 const pinia = createPinia();
 
@@ -56,5 +59,7 @@ if (localStorage.getItem("access_token")) {
 }
 // Gọi useSettings() sau khi Pinia đã được đăng ký
 useSettings();
+
+app.use(HighchartsVue);
 
 app.mount('#app');
