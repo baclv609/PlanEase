@@ -143,9 +143,9 @@
                     <span>{{ item.location }}</span>
                   </div>
                   
-                  <div v-if="item.meetingUrl" class="flex items-center gap-2 text-gray-600 mt-1">
+                  <div v-if="item.link" class="flex items-center gap-2 text-gray-600 mt-1">
                     <VideoCameraOutlined />
-                    <a :href="item.meetingUrl" target="_blank">{{ getMeetingPlatform(item.meetingUrl) }}</a>
+                    <a :href="item.link" target="_blank">{{ getMeetingPlatform(item.link) }}</a>
                   </div>
                   
                   <div v-if="item.relatedUrl" class="flex items-center gap-2 text-gray-600 mt-1">
@@ -179,11 +179,14 @@
 
                 <!-- 4. Nhắc nhở -->
                 <div v-if="item.reminders?.length" class="event-reminders mb-4">
-                  <div class="flex items-center gap-2 text-gray-600">
-                    <BellOutlined />
-                    <span>
-                      {{ formatReminders(item.reminders) }}
-                    </span>
+                  <div class="flex items-start gap-2 text-gray-600">
+                    <BellOutlined class="mt-1" />
+                    <div class="flex flex-col gap-1">
+                      <span class="font-medium">{{ language === 'vi' ? 'Nhắc nhở:' : 'Reminders:' }}</span>
+                      <div v-for="(reminder, index) in item.reminders" :key="index" class="ml-4">
+                        {{ formatReminder(reminder) }}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -464,19 +467,29 @@ const getMeetingPlatform = (url) => {
   return language.value === 'vi' ? 'Liên kết họp' : 'Meeting link';
 };
 
-// Format reminders
-const formatReminders = (reminders) => {
-  if (!reminders?.length) return '';
+// Format reminder
+const formatReminder = (reminder) => {
+  const time = reminder.set_time;
+  let timeText;
   
-  return reminders.map(reminder => {
-    const time = reminder.minutes;
-    if (language.value === 'vi') {
-      return `${time} phút trước qua ${reminder.method === 'email' ? 'email' : 'thông báo'}`;
-    }
-    return `${time} minutes before via ${reminder.method}`;
-  }).join(', ');
-};
+  if (time < 60) {
+    timeText = language.value === 'vi' ? `${time} phút` : `${time} minutes`;
+  } else if (time < 1440) {
+    const hours = Math.floor(time / 60);
+    timeText = language.value === 'vi' ? `${hours} giờ` : `${hours} hours`;
+  } else {
+    const days = Math.floor(time / 1440);
+    timeText = language.value === 'vi' ? `${days} ngày` : `${days} days`;
+  }
 
+  const method = reminder.type === 'email' 
+    ? (language.value === 'vi' ? 'email' : 'email')
+    : (language.value === 'vi' ? 'thông báo' : 'notification');
+
+  return language.value === 'vi'
+    ? `${timeText} trước qua ${method}`
+    : `${timeText} before via ${method}`;
+};
 
 const fetchUpcomingTasks = async () => {
   loading.value = true;
@@ -494,12 +507,16 @@ const fetchUpcomingTasks = async () => {
     );
 
     if (response?.data?.code === 200) {
+      console.log('API Response:', response.data.data);
       // Process and format the data
-      upcomingTasks.value = (response.data.data || []).map(task => ({
-        ...task,
-        color: task.color || getEventColor(task.priority),
-        formattedTime: formatTimeFromNow(task.start_time)
-      }));
+      upcomingTasks.value = (response.data.data || []).map(task => {
+        console.log('Processing task:', task);
+        return {
+          ...task,
+          color: task.color || getEventColor(task.priority),
+          formattedTime: formatTimeFromNow(task.start_time)
+        };
+      });
     } else {
       throw new Error(response?.data?.message || 'Không thể tải danh sách sự kiện');
     }
