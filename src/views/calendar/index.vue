@@ -10,6 +10,7 @@ import { useRouter, useRoute } from "vue-router";
 import { format } from "date-fns";
 import dayjs from "dayjs";
 import 'dayjs/locale/vi';
+import timezone from 'dayjs/plugin/timezone';
 
 // Import antd-vue components
 import { Button, Segmented, Tooltip, Skeleton } from "ant-design-vue";
@@ -73,11 +74,99 @@ const {
 
 onMounted(() => {
   if (calendarRef.value) {
-    settingsStore.setCalendarRef(calendarRef.value); // Lưu vào store
-    updateCurrentDate();
-    calendarRef.value.getApi().changeView(currentView.value);
-  } else {
-    console.error("calendarRef is not available in onMounted");
+    const calendar = calendarRef.value.getApi();
+    settingsStore.setCalendarRef(calendarRef.value);
+    
+    const path = route.path;
+    if (path === '/calendar') {
+      // If just /calendar, set to current month and today's date
+      const today = dayjs();
+      
+      // Set flag to prevent route update
+      isUpdatingProgrammatically.value = true;
+      
+      // First update the calendar view
+      calendar.gotoDate(today.toDate());
+      
+      // Then update the URL
+      router.push({
+        name: 'calendar-view',
+        params: {
+          view: 'month',
+          year: today.format('YYYY'),
+          month: today.format('M'),
+          day: today.format('D')
+        }
+      }).finally(() => {
+        isUpdatingProgrammatically.value = false;
+      });
+      
+      // Update current date display
+      updateCurrentDate(today.toDate());
+    } else if (path.startsWith('/calendar/')) {
+      const { view, year, month, day, days } = route.params;
+      
+      if (view) {
+        // Map view types to FullCalendar view types
+        const viewMap = {
+          'day': 'timeGridDay',
+          'week': 'timeGridWeek',
+          'month': 'dayGridMonth',
+          'agenda': 'listYear',
+          'schedule': 'timeGridThreeDay',
+          'year': 'multiMonthYear',
+          'custom': 'timeGridCustom'
+        };
+
+        const fullCalendarView = viewMap[view];
+        if (fullCalendarView) {
+          // Update settings store
+          settingsStore.updateDisplayMode(fullCalendarView);
+          currentView.value = fullCalendarView;
+          
+          // Parse and set date
+          let dateStr;
+          if (day) {
+            dateStr = `${year}/${month}/${day}`;
+          } else {
+            dateStr = `${year}/${month}`;
+          }
+          
+          const parsedDate = dayjs(dateStr);
+          if (parsedDate.isValid()) {
+            // Set flag before updating
+            isUpdatingProgrammatically.value = true;
+            
+            // Update calendar view
+            calendar.gotoDate(parsedDate.toDate());
+            
+            // Update view duration for custom view
+            if (fullCalendarView === 'timeGridCustom' && days) {
+              calendar.setOption('views', {
+                timeGridCustom: {
+                  type: 'timeGrid',
+                  duration: { days: parseInt(days) },
+                  slotDuration: '01:00:00',
+                  slotLabelFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: settingsStore.timeFormat === "12h"
+                  }
+                }
+              });
+            }
+            
+            // Update current date display
+            updateCurrentDate(parsedDate.toDate());
+            
+            // Reset flag after a short delay
+            setTimeout(() => {
+              isUpdatingProgrammatically.value = false;
+            }, 100);
+          }
+        }
+      }
+    }
   }
 });
 
@@ -91,11 +180,9 @@ onMounted(() => {
     console.log("📡 Lắng nghe realtime trong CalendarView.vue");
 });
 
-// Add route watcher
 const router = useRouter();
 const route = useRoute();
 
-// Add debounce function
 const debounce = (fn, delay) => {
   let timeoutId;
   return (...args) => {
@@ -107,66 +194,275 @@ const debounce = (fn, delay) => {
 // Add flag to track programmatic updates
 const isUpdatingProgrammatically = ref(false);
 
-// Watch for route changes with debounce
-watch(() => route.path, debounce((newPath) => {
-  if (!calendarRef.value || isUpdatingProgrammatically.value) return;
+// Điều hướng lịch
+const goToPrev = () => {
+  if (!calendarRef.value) return;
+  const calendar = calendarRef.value.getApi();
   
-  try {
-    const calendar = calendarRef.value.getApi();
-    let shouldUpdateDate = false;
-    
-    if (newPath.startsWith('/calendar/day/')) {
-      const { year, month, day } = route.params;
-      const date = dayjs(`${year}-${month}-${day}`);
-      if (date.isValid()) {
-        // First change the view
-        if (currentView.value !== 'timeGridDay') {
-          settingsStore.updateDisplayMode('timeGridDay');
-          currentView.value = 'timeGridDay';
-        }
-        // Then update the date
-        calendar.gotoDate(date.toDate());
-        shouldUpdateDate = true;
-      }
-    } else if (newPath.startsWith('/calendar/range/')) {
-      const { range } = route.params;
-      if (range) {
-        const [start, end] = range.split('/');
-        const startDate = dayjs(start);
-        if (startDate.isValid()) {
-          // First change the view
-          if (currentView.value !== 'timeGridWeek') {
-            settingsStore.updateDisplayMode('timeGridWeek');
-            currentView.value = 'timeGridWeek';
-          }
-          // Then update the date
-          calendar.gotoDate(startDate.toDate());
-          shouldUpdateDate = true;
-        }
-      }
-    } else if (newPath === '/calendar') {
-      if (currentView.value !== 'dayGridMonth') {
-        settingsStore.updateDisplayMode('dayGridMonth');
-        currentView.value = 'dayGridMonth';
-      }
-      // Go to initial date if set
-      if (settingsStore.initialDate) {
-        const date = dayjs(settingsStore.initialDate);
-        if (date.isValid()) {
-          calendar.gotoDate(date.toDate());
-          shouldUpdateDate = true;
-        }
-      }
-    }
-    
-    // Only update current date if needed
-    if (shouldUpdateDate) {
-      updateCurrentDate();
-    }
-  } catch (error) {
-    console.error('Error handling route change:', error);
+  isUpdatingProgrammatically.value = true;
+
+  calendar.prev();
+
+  const currentDate = calendar.getDate();
+  
+  const viewType = calendar.view.type;
+  const viewMap = {
+    'timeGridDay': 'day',
+    'timeGridWeek': 'week',
+    'dayGridMonth': 'month',
+    'listYear': 'agenda',
+    'timeGridThreeDay': 'schedule',
+    'multiMonthYear': 'year',
+    'listYear': 'agenda'
+  };
+
+  const urlView = viewMap[viewType];
+  if (!urlView) return;
+
+  // Format date based on view type
+  const date = dayjs(currentDate);
+  let year, month, day;
+  
+  switch (urlView) {
+    case 'day':
+      year = date.format('YYYY');
+      month = date.format('M');
+      day = date.format('D');
+      break;
+    case 'week':
+      const weekStart = date.startOf('week');
+      year = weekStart.format('YYYY');
+      month = weekStart.format('M');
+      day = weekStart.format('D');
+      break;
+    case 'month':
+      year = date.format('YYYY');
+      month = date.format('M');
+      break;
+    case 'year':
+      year = date.format('YYYY');
+      break;
+    default:
+      year = date.format('YYYY');
+      month = date.format('M');
+      day = date.format('D');
   }
-}, 100), { immediate: true });
+
+  // Update URL with new format
+  const params = {
+    view: urlView,
+    year,
+    month
+  };
+  
+  if (day) {
+    params.day = day;
+  }
+  
+  router.push({
+    name: 'calendar-view',
+    params
+  }).finally(() => {
+    // Reset flag after a short delay
+    setTimeout(() => {
+      isUpdatingProgrammatically.value = false;
+    }, 100);
+  });
+  
+  // Update current date display
+  updateCurrentDate(currentDate);
+};
+
+const goToNext = () => {
+  if (!calendarRef.value) return;
+  const calendar = calendarRef.value.getApi();
+
+  isUpdatingProgrammatically.value = true;
+  
+   
+  // Update calendar view first
+  calendar.next();
+
+  // Get current view type and date before navigation
+  const viewType = calendar.view.type;
+  const currentDate = calendar.getDate();
+ 
+  
+  // Map view types to URL view types
+  const viewMap = {
+    'timeGridDay': 'day',
+    'timeGridWeek': 'week',
+    'dayGridMonth': 'month',
+    'listYear': 'agenda',
+    'timeGridThreeDay': 'schedule',
+    'multiMonthYear': 'year',
+    'listYear': 'agenda'
+  };
+
+  const urlView = viewMap[viewType];
+  if (!urlView) return;
+
+  // Format date based on view type
+  const date = dayjs(currentDate);
+  let year, month, day;
+  
+  switch (urlView) {
+    case 'day':
+      year = date.format('YYYY');
+      month = date.format('M');
+      day = date.format('D');
+      break;
+    case 'week':
+      // For week view, we need to get the start of the week from the calendar's current view
+      const weekStart = dayjs(calendar.view.currentStart);
+      year = weekStart.format('YYYY');
+      month = weekStart.format('M');
+      day = weekStart.format('D');
+      break;
+    case 'month':
+      year = date.format('YYYY');
+      month = date.format('M');
+      break;
+    case 'year':
+      year = date.format('YYYY');
+      break;
+    default:
+      year = date.format('YYYY');
+      month = date.format('M');
+      day = date.format('D');
+  }
+
+  // Update URL with new format
+  const params = {
+    view: urlView,
+    year,
+    month
+  };
+  
+  if (day) {
+    params.day = day;
+  }
+  
+  // Update URL and wait for it to complete
+  router.push({
+    name: 'calendar-view',
+    params
+  }).then(() => {
+    // Update current date display after URL is updated
+    updateCurrentDate(calendar.getDate());
+    
+    // Reset flag after everything is done
+    setTimeout(() => {
+      isUpdatingProgrammatically.value = false;
+    }, 100);
+  }).catch(error => {
+    console.error('Navigation error:', error);
+    isUpdatingProgrammatically.value = false;
+  });
+};
+
+const goToToday = () => {
+  if (!calendarRef.value) return;
+  const calendar = calendarRef.value.getApi();
+  
+  // Set flag before navigation
+  isUpdatingProgrammatically.value = true;
+  
+  // Get today's date
+  const today = dayjs();
+  
+  // Update calendar view
+  calendar.gotoDate(today.toDate());
+  
+  // Update URL with today's date
+  const params = {
+    view: 'month',
+    year: today.format('YYYY'),
+    month: today.format('M'),
+    day: today.format('D')
+  };
+  
+  router.push({
+    name: 'calendar-view',
+    params
+  }).finally(() => {
+    // Reset flag after a short delay
+    setTimeout(() => {
+      isUpdatingProgrammatically.value = false;
+    }, 100);
+  });
+  
+  // Update current date display
+  updateCurrentDate(today.toDate());
+};
+
+// Update updateURL function
+const updateURL = () => {
+  if (!calendarRef.value) return;
+  
+  const calendar = calendarRef.value.getApi();
+  const currentDate = calendar.getDate();
+  const viewType = calendar.view.type;
+  
+  // Map FullCalendar view types to URL view types
+  const viewMap = {
+    'timeGridDay': 'day',
+    'timeGridWeek': 'week',
+    'dayGridMonth': 'month',
+    'listYear': 'agenda',
+    'timeGridThreeDay': 'schedule',
+    'multiMonthYear': 'year',
+    'listYear': 'agenda'
+  };
+
+  const urlView = viewMap[viewType];
+  if (!urlView) return;
+
+  // Format date based on view type
+  const date = dayjs(currentDate);
+  let year, month, day;
+  
+  switch (urlView) {
+    case 'day':
+      year = date.format('YYYY');
+      month = date.format('M');
+      day = date.format('D');
+      break;
+    case 'week':
+      const weekStart = date.startOf('week');
+      year = weekStart.format('YYYY');
+      month = weekStart.format('M');
+      day = weekStart.format('D');
+      break;
+    case 'month':
+      year = date.format('YYYY');
+      month = date.format('M');
+      break;
+    case 'year':
+      year = date.format('YYYY');
+      break;
+    default:
+      year = date.format('YYYY');
+      month = date.format('M');
+      day = date.format('D');
+  }
+
+  // Update URL with new format
+  const params = {
+    view: urlView,
+    year,
+    month
+  };
+  
+  if (day) {
+    params.day = day;
+  }
+  
+  return router.push({
+    name: 'calendar-view',
+    params
+  });
+};
 
 // Update onDatesSet to handle URL changes with debounce
 const onDatesSet = debounce((info) => {
@@ -174,58 +470,77 @@ const onDatesSet = debounce((info) => {
   
   try {
     const viewType = info.view.type;
-    if (currentView.value !== viewType) {
-      settingsStore.updateDisplayMode(viewType);
-      currentView.value = viewType;
-    }
-    
-    // Update current date display
-    updateCurrentDate(info.view.currentStart);
-    
-    // Update URL based on current view
     const currentDate = info.view.currentStart;
+    
     if (!currentDate) return;
     
+    const viewMap = {
+      'timeGridDay': 'day',
+      'timeGridWeek': 'week',
+      'dayGridMonth': 'month',
+      'listYear': 'agenda',
+      'timeGridThreeDay': 'schedule',
+      'multiMonthYear': 'year',
+      'listYear': 'agenda'
+    };
+
+    const urlView = viewMap[viewType];
+    if (!urlView) return;
+
+    // Format date based on view type
     const date = dayjs(currentDate);
-    if (!date.isValid()) return;
+    let year, month, day;
     
-    // Prevent unnecessary route updates
-    if (viewType === 'timeGridDay' && route.name === 'calendar-day') {
-      const { year, month, day } = route.params;
-      const currentDateStr = date.format('YYYY-MM-DD');
-      if (`${year}-${month}-${day}` === currentDateStr) return;
+    switch (urlView) {
+      case 'day':
+        year = date.format('YYYY');
+        month = date.format('M');
+        day = date.format('D');
+        break;
+      case 'week':
+        const weekStart = date.startOf('week');
+        year = weekStart.format('YYYY');
+        month = weekStart.format('M');
+        day = weekStart.format('D');
+        break;
+      case 'month':
+        year = date.format('YYYY');
+        month = date.format('M');
+        break;
+      case 'year':
+        year = date.format('YYYY');
+        break;
+      default:
+        year = date.format('YYYY');
+        month = date.format('M');
+        day = date.format('D');
     }
     
     // Set flag before updating route
     isUpdatingProgrammatically.value = true;
     
-    if (viewType === 'timeGridDay') {
-      router.push({
-        name: 'calendar-day',
-        params: {
-          year: date.format('YYYY'),
-          month: date.format('MM'),
-          day: date.format('DD')
-        }
-      }).finally(() => {
-        isUpdatingProgrammatically.value = false;
-      });
-    } else if (viewType === 'timeGridWeek') {
-      const start = date.format('YYYY-MM-DD');
-      const end = date.add(6, 'day').format('YYYY-MM-DD');
-      router.push({
-        name: 'calendar-range',
-        params: {
-          range: `${start}/${end}`
-        }
-      }).finally(() => {
-        isUpdatingProgrammatically.value = false;
-      });
-    } else {
-      router.push({ name: 'calendar' }).finally(() => {
-        isUpdatingProgrammatically.value = false;
-      });
+    const params = {
+      view: urlView,
+      year,
+      month
+    };
+    
+    if (day) {
+      params.day = day;
     }
+    
+      router.push({
+      name: 'calendar-view',
+      params
+      }).finally(() => {
+      // Reset flag after a short delay to ensure calendar has updated
+      setTimeout(() => {
+        isUpdatingProgrammatically.value = false;
+      }, 100);
+    });
+
+    // Update current date display
+    updateCurrentDate(currentDate);
   } catch (error) {
     console.error('Error in onDatesSet:', error);
     isUpdatingProgrammatically.value = false;
@@ -237,7 +552,42 @@ const currentDate = ref("");
 
 // Thiết lập locale cho dayjs (thêm vào đầu file sau phần import)
 dayjs.locale('vi');
+dayjs.extend(timezone);
 
+// Thêm watcher cho router để cập nhật currentDate khi route thay đổi
+watch(() => route.params, (newParams) => {
+  if (!calendarRef.value || isUpdatingProgrammatically.value) return;
+  
+  const { view, year, month, day } = newParams;
+  if (!year || !month) return;
+
+  const calendar = calendarRef.value.getApi();
+  let dateToFormat;
+
+  // Xử lý các trường hợp khác nhau của view
+  switch (view) {
+    case 'day':
+      dateToFormat = dayjs(`${year}-${month}-${day}`).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
+      break;
+    case 'week':
+      dateToFormat = dayjs(calendar.view.currentStart).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
+      break;
+    case 'month':
+      dateToFormat = dayjs(`${year}-${month}`).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
+      break;
+    case 'year':
+      dateToFormat = dayjs(`${year}`).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
+      break;
+    default:
+      dateToFormat = dayjs(`${year}-${month}`).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
+  }
+
+  if (dateToFormat.isValid()) {
+    updateCurrentDate(dateToFormat.toDate());
+  }
+}, { deep: true });
+
+// Cập nhật lại hàm updateCurrentDate
 const updateCurrentDate = (date) => {
   if (!calendarRef.value) return;
   
@@ -245,9 +595,9 @@ const updateCurrentDate = (date) => {
   let dateToFormat;
   
   if (date) {
-    dateToFormat = date;
+    dateToFormat = dayjs(date).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
   } else {
-    dateToFormat = calendar.getDate();
+    dateToFormat = dayjs(calendar.getDate()).tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day');
   }
   
   const viewType = calendar.view.type;
@@ -257,24 +607,35 @@ const updateCurrentDate = (date) => {
   
   if (viewType === 'timeGridDay') {
     if (settingsStore.language === 'vi') {
-      currentDate.value = dayjs(dateToFormat).format('DD [tháng] M[,] YYYY');
+      currentDate.value = dateToFormat.format('DD [tháng] M[,] YYYY');
     } else {
-      currentDate.value = dayjs(dateToFormat).format('MMMM D, YYYY');
+      currentDate.value = dateToFormat.format('MMMM D, YYYY');
     }
   } else if (viewType === 'timeGridWeek') {
-    const weekStart = dayjs(dateToFormat).startOf('week');
-    const weekEnd = dayjs(dateToFormat).endOf('week');
+    // Lấy ngày bắt đầu và kết thúc của tuần từ calendar view
+    const weekStart = dayjs(calendar.view.currentStart);
+    const weekEnd = dayjs(calendar.view.currentEnd).subtract(1, 'day');
     
     if (settingsStore.language === 'vi') {
       currentDate.value = `${weekStart.format('DD')} - ${weekEnd.format('DD')} tháng ${weekStart.format('M[,] YYYY')}`;
     } else {
       currentDate.value = `${weekStart.format('MMM D')} - ${weekEnd.format('MMM D, YYYY')}`;
     }
+  } else if (viewType === 'timeGridCustom') {
+    const days = route.params.days || 7;
+    const startDate = dateToFormat;
+    const endDate = startDate.add(days - 1, 'day');
+    
+    if (settingsStore.language === 'vi') {
+      currentDate.value = `${startDate.format('DD')} - ${endDate.format('DD')} tháng ${startDate.format('M[,] YYYY')}`;
+    } else {
+      currentDate.value = `${startDate.format('MMM D')} - ${endDate.format('MMM D, YYYY')}`;
+    }
   } else {
     if (settingsStore.language === 'vi') {
-      currentDate.value = `Tháng ${dayjs(dateToFormat).format('M[,] YYYY')}`;
+      currentDate.value = `Tháng ${dateToFormat.format('M[,] YYYY')}`;
     } else {
-      currentDate.value = dayjs(dateToFormat).format('MMMM YYYY');
+      currentDate.value = dateToFormat.format('MMMM YYYY');
     }
   }
 };
@@ -286,7 +647,6 @@ watch(() => settingsStore.language, (newLanguage) => {
     const calendar = calendarRef.value.getApi();
     calendar.setOption('locale', newLanguage);
     
-    // Cập nhật hiển thị ngày tháng
     updateCurrentDate();
   }
 });
@@ -350,28 +710,6 @@ const handleCalendarUpdate = (updatedEvent) => {
   } catch (error) {
     console.error('Error updating calendar event:', error);
   }
-};  
-
-// Điều hướng lịch
-const goToPrev = () => {
-  if (!calendarRef.value) return;
-  const calendar = calendarRef.value.getApi();
-  calendar.prev();
-  updateCurrentDate();
-};
-
-const goToNext = () => {
-  if (!calendarRef.value) return;
-  const calendar = calendarRef.value.getApi();
-  calendar.next();
-  updateCurrentDate();
-};
-
-const goToToday = () => {
-  if (!calendarRef.value) return;
-  const calendar = calendarRef.value.getApi();
-  calendar.today();
-  updateCurrentDate();
 };
 
 const changeView = (view) => {
@@ -380,73 +718,167 @@ const changeView = (view) => {
   const calendar = calendarRef.value.getApi();
   const currentCalendarDate = calendar.getDate();
   
-  // Cập nhật view trong store và local state
-  currentView.value = view;
-  settingsStore.updateDisplayMode(view);
-  
-  // Cập nhật hiển thị ngày tháng theo chế độ xem mới
+  // Map FullCalendar view types to URL view types
+  const viewMap = {
+    'timeGridDay': 'day',
+    'timeGridWeek': 'week',
+    'dayGridMonth': 'month',
+    'listYear': 'agenda',
+    'timeGridThreeDay': 'schedule',
+    'multiMonthYear': 'year',
+    'listYear': 'agenda'
+  };
+
+  const urlView = viewMap[view];
+  if (!urlView) return;
+
+  // Format date based on view type
   const date = dayjs(currentCalendarDate);
-  if (view === 'timeGridDay') {
-    // Nếu chuyển sang xem ngày, cập nhật URL và currentDate
-    router.push({
-      name: 'calendar-day',
-      params: {
-        year: date.format('YYYY'),
-        month: date.format('MM'),
-        day: date.format('DD')
-      }
-    });
-  } else if (view === 'timeGridWeek') {
-    // Nếu chuyển sang xem tuần, cập nhật URL và currentDate
-    const start = date.format('YYYY-MM-DD');
-    const end = date.add(6, 'day').format('YYYY-MM-DD');
-    router.push({
-      name: 'calendar-range',
-      params: {
-        range: `${start}/${end}`
-      }
-    });
-  } else {
-    // Nếu chuyển sang xem tháng
-    router.push({ name: 'calendar' });
+  let year, month, day;
+  
+  switch (urlView) {
+    case 'day':
+      year = date.format('YYYY');
+      month = date.format('M');
+      day = date.format('D');
+      break;
+    case 'week':
+      const weekStart = date.startOf('week');
+      year = weekStart.format('YYYY');
+      month = weekStart.format('M');
+      day = weekStart.format('D');
+      break;
+    case 'month':
+      year = date.format('YYYY');
+      month = date.format('M');
+      break;
+    case 'year':
+      year = date.format('YYYY');
+      break;
+    default:
+      year = date.format('YYYY');
+      month = date.format('M');
+      day = date.format('D');
+  }
+
+  // Update settings store
+  settingsStore.updateDisplayMode(view);
+  currentView.value = view;
+
+  // Set flag before updating
+  isUpdatingProgrammatically.value = true;
+
+  // Update URL with new format
+  const params = {
+    view: urlView,
+    year,
+    month
+  };
+  
+  if (day) {
+    params.day = day;
   }
   
-  // Cập nhật hiển thị ngày tháng
-  updateCurrentDate(date);
+  router.push({
+    name: 'calendar-view',
+    params
+  }).then(() => {
+    // Update current date display after URL is updated
+    updateCurrentDate(date);
+    
+    // Reset flag after everything is done
+    setTimeout(() => {
+      isUpdatingProgrammatically.value = false;
+    }, 100);
+  }).catch(error => {
+    console.error('Navigation error:', error);
+    isUpdatingProgrammatically.value = false;
+  });
 };
 
-
-onMounted(() => {
-  if (calendarRef.value) {
+// Update watch for settingsStore.displayMode
+watch(() => settingsStore.displayMode, (newView) => {
+  if (!calendarRef.value || isUpdatingProgrammatically.value) return;
+  
+  try {
     const calendar = calendarRef.value.getApi();
-    settingsStore.setCalendarRef(calendarRef.value);
+    const currentDate = calendar.getDate();
     
-    // Set initial view based on route
-    const path = route.path;
-    if (path.startsWith('/calendar/day/')) {
-      const { year, month, day } = route.params;
-      const date = dayjs(`${year}-${month}-${day}`);
-      if (date.isValid()) {
-        settingsStore.updateDisplayMode('timeGridDay');
-        currentView.value = 'timeGridDay';
-        calendar.gotoDate(date.toDate());
-      }
-    } else if (path.startsWith('/calendar/range/')) {
-      const { range } = route.params;
-      if (range) {
-        const [start] = range.split('/');
-        const startDate = dayjs(start);
-        if (startDate.isValid()) {
-          settingsStore.updateDisplayMode('timeGridWeek');
-          currentView.value = 'timeGridWeek';
-          calendar.gotoDate(startDate.toDate());
-        }
-      }
+    // Map FullCalendar view types to URL view types
+    const viewMap = {
+      'timeGridDay': 'day',
+      'timeGridWeek': 'week',
+      'dayGridMonth': 'month',
+      'listYear': 'agenda',
+      'timeGridThreeDay': 'schedule',
+      'multiMonthYear': 'year',
+      'listYear': 'agenda'
+    };
+
+    const urlView = viewMap[newView];
+    if (!urlView) return;
+
+    // Format date based on view type
+    const date = dayjs(currentDate);
+    let year, month, day;
+    
+    switch (urlView) {
+      case 'day':
+        year = date.format('YYYY');
+        month = date.format('M');
+        day = date.format('D');
+        break;
+      case 'week':
+        const weekStart = date.startOf('week');
+        year = weekStart.format('YYYY');
+        month = weekStart.format('M');
+        day = weekStart.format('D');
+        break;
+      case 'month':
+        year = date.format('YYYY');
+        month = date.format('M');
+        break;
+      case 'year':
+        year = date.format('YYYY');
+        break;
+      default:
+        year = date.format('YYYY');
+        month = date.format('M');
+        day = date.format('D');
+    }
+
+    isUpdatingProgrammatically.value = true;
+    
+    const params = {
+      view: urlView,
+      year,
+      month
+    };
+    
+    if (day) {
+      params.day = day;
     }
     
-    updateCurrentDate();
+    router.push({
+      name: 'calendar-view',
+      params
+    }).finally(() => {
+      // Reset flag after a short delay
+      setTimeout(() => {
+        isUpdatingProgrammatically.value = false;
+      }, 100);
+    });
+
+    // Update current view
+    currentView.value = newView;
+    
+    // Update current date display
+    updateCurrentDate(currentDate);
+  } catch (error) {
+    console.error('Error handling settings change:', error);
+    isUpdatingProgrammatically.value = false;
   }
-});
+}, { immediate: true });
 </script>
 
 <template>

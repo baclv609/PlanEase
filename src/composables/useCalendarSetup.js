@@ -389,9 +389,10 @@ export function useCalendar(calendarRef) {
     locale: settingsStore.language,
     dayMaxEvents: true,
     timeZone: selectedTimezone.value,
+    now: dayjs().tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day').toDate(),
     firstDay: settingsStore.firstDay,
-    initialDate: settingsStore.initialDate,
-    initialView: settingsStore.displayMode,
+    initialDate: settingsStore.initialDate || dayjs().format('YYYY-MM-DD'),
+    initialView: settingsStore.displayMode || 'dayGridMonth',
     views: {
       multiMonthYear: {
         type: 'multiMonth',
@@ -404,6 +405,18 @@ export function useCalendar(calendarRef) {
         moreLinkContent: (args) => `+${args.num}`,
         multiMonthTitleFormat: { month: 'long' }
       },
+      dayGridMonth: {
+        type: 'dayGrid',
+        duration: { months: 1 },
+        titleFormat: { month: 'long', year: 'numeric' },
+        dayMaxEvents: true,
+        moreLinkContent: (args) => `+${args.num}`,
+        dayCellClassNames: (arg) => {
+          const today = dayjs().startOf('day');
+          const cellDate = dayjs(arg.date).startOf('day');
+          return today.isSame(cellDate) ? ['fc-day-today'] : [];
+        }
+      },
       listYear: {
         type: 'list',
         duration: { years: 1 },
@@ -411,6 +424,16 @@ export function useCalendar(calendarRef) {
         listDayFormat: { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' },
         listDaySideFormat: false,
         noEventsContent: 'Không có sự kiện nào'
+      },
+      timeGridCustom: {
+        type: 'timeGrid',
+        duration: { days: 7 }, // Default to 7 days, will be updated based on route params
+        slotDuration: '01:00:00',
+        slotLabelFormat: {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: settingsStore.timeFormat === "12h"
+        }
       }
     },
     eventTimeFormat: {

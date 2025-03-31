@@ -92,6 +92,7 @@ const calendarOptions = computed(() => ({
   displayEventTime: false,
   firstDay: settingsStore.firstDay,
   locale: settingsStore.language,
+  timeZone: 'local', // Add timezone setting
   buttonText: {
     today: 'Hôm nay'
   },
@@ -138,7 +139,7 @@ const handleDateClick = debounce(async (info) => {
     
     // Check if we're already on this date
     const currentRoute = router.currentRoute.value;
-    if (currentRoute.name === 'calendar-day') {
+    if (currentRoute.name === 'calendar-view') {
       const { year, month, day } = currentRoute.params;
       const currentDateStr = `${year}-${month}-${day}`;
       if (currentDateStr === date.format('YYYY-MM-DD')) {
@@ -149,14 +150,18 @@ const handleDateClick = debounce(async (info) => {
     
     // Update router with the selected date
     const year = date.format('YYYY');
-    const month = date.format('MM');
-    const day = date.format('DD');
+    const month = date.format('M');
+    const day = date.format('D');
     
-    // First update the router - use query for source
+    // Update router with new format
     await router.push({
-      name: 'calendar-day',
-      params: { year, month, day },
-      query: { source: 'dateClick' }
+      name: 'calendar-view',
+      params: { 
+        view: 'day',
+        year,
+        month,
+        day
+      }
     });
     
     // Then emit date selection event
@@ -188,42 +193,46 @@ const handleRangeSelect = debounce(async (info) => {
     // Set flag to prevent duplicate calls
     isRangeSelect.value = true;
     
-    // Check if we're already on this range
-    const currentRoute = router.currentRoute.value;
-    if (currentRoute.name === 'calendar-range') {
-      const { range } = currentRoute.params;
-      if (range) {
-        const [currentStart] = range.split('/');
-        if (currentStart === start.format('YYYY-MM-DD')) {
-          isRangeSelect.value = false;
-          return;
-        }
-      }
-    }
+    // Calculate number of days between start and end
+    const daysDiff = end.diff(start, 'day') + 1;
     
-    // Update router with the selected range - use query for source
+    // Update router with custom range format
+    const year = start.format('YYYY');
+    const month = start.format('M');
+    const day = start.format('D');
+    
     await router.push({
-      name: 'calendar-range',
-      params: { range: `${start.format('YYYY-MM-DD')}/${end.format('YYYY-MM-DD')}` },
-      query: { source: 'rangeSelect' }
+      name: 'calendar-custom',
+      params: { 
+        days: daysDiff,
+        year,
+        month,
+        day
+      }
     });
     
-    // Emit range selection event
+    // Emit range selection event with options
     emit('rangeSelect', {
       start,
       end,
+      days: daysDiff,
       events: props.events.filter(event => {
         const eventDate = dayjs(event.start_time);
         return eventDate.isAfter(start, 'day') && eventDate.isBefore(end, 'day');
-      })
+      }),
+      options: {
+        createEvent: true,
+        createTask: true,
+        viewEvents: true
+      }
     });
     
-    // Reset flag after navigation
+    // Reset flag after handling
     setTimeout(() => {
       isRangeSelect.value = false;
     }, 100);
   } catch (error) {
-    console.error('Navigation error:', error);
+    console.error('Range selection error:', error);
     isRangeSelect.value = false;
   }
 }, 100);
@@ -232,9 +241,8 @@ const handleRangeSelect = debounce(async (info) => {
 watch(() => router.currentRoute.value, (newRoute, oldRoute) => {
   if (!calendarRef.value) return;
   
-  // Skip if this is from a date or range click - check query instead of params
-  if (isDateClick.value || isRangeSelect.value || 
-      (newRoute.query.source === 'dateClick' || newRoute.query.source === 'rangeSelect')) {
+  // Skip if this is from a date or range click
+  if (isDateClick.value || isRangeSelect.value) {
     return;
   }
   
@@ -244,43 +252,29 @@ watch(() => router.currentRoute.value, (newRoute, oldRoute) => {
   const calendar = calendarRef.value.getApi();
   
   try {
-    if (newRoute.name === 'calendar-day') {
-      const { year, month, day } = newRoute.params;
-      if (year && month && day) {
-        const date = dayjs(`${year}-${month}-${day}`);
+    if (newRoute.name === 'calendar-view' || newRoute.name === 'calendar-custom') {
+      const { view, year, month, day, days } = newRoute.params;
+      if (year && month) {
+        let dateStr;
+        if (day) {
+          dateStr = `${year}-${month}-${day}`;
+        } else {
+          dateStr = `${year}-${month}`;
+        }
+        
+        const date = dayjs(dateStr);
         if (date.isValid()) {
           calendar.gotoDate(date.toDate());
           selectedDate.value = date;
           
           // Only emit if route change wasn't triggered by date click
           emit('viewChange', {
-            mode: 'day',
+            mode: newRoute.name === 'calendar-custom' ? 'custom' : view,
             date: date,
+            days: days,
             events: props.events.filter(event => 
               dayjs(event.start_time).format('YYYY-MM-DD') === date.format('YYYY-MM-DD')
             )
-          });
-        }
-      }
-    } else if (newRoute.name === 'calendar-range') {
-      const { range } = newRoute.params;
-      if (range) {
-        const [start, end] = range.split('/');
-        const startDate = dayjs(start);
-        const endDate = dayjs(end);
-        
-        if (startDate.isValid() && endDate.isValid()) {
-          calendar.gotoDate(startDate.toDate());
-          
-          // Emit view change event without API call
-          emit('viewChange', {
-            mode: 'range',
-            start: startDate,
-            end: endDate,
-            events: props.events.filter(event => {
-              const eventDate = dayjs(event.start_time);
-              return eventDate.isAfter(startDate, 'day') && eventDate.isBefore(endDate, 'day');
-            })
           });
         }
       }
@@ -307,10 +301,40 @@ const handleEventClick = async (info) => {
 
 // Watch for changes in the main calendar's view
 watch(() => settingsStore.displayMode, (newMode) => {
-  if (calendarRef.value) {
-    calendarRef.value.getApi().changeView('dayGridMonth');
-  }
+  if (!calendarRef.value) return;
+  
+  const calendar = calendarRef.value.getApi();
+  
+  // Map main calendar view to mini calendar view
+  const viewMap = {
+    'timeGridDay': 'dayGridMonth',
+    'timeGridWeek': 'dayGridMonth',
+    'dayGridMonth': 'dayGridMonth',
+    'listYear': 'dayGridMonth',
+    'timeGridThreeDay': 'dayGridMonth',
+    'multiMonthYear': 'dayGridMonth'
+  };
+
+  const miniCalendarView = viewMap[newMode] || 'dayGridMonth';
+  calendar.changeView(miniCalendarView);
 });
+
+// Watch for route changes to sync with main calendar
+watch(() => router.currentRoute.value, (newRoute) => {
+  if (!calendarRef.value) return;
+  
+  const calendar = calendarRef.value.getApi();
+  
+  if (newRoute.name === 'calendar-view') {
+    const { view, date } = newRoute.params;
+    if (date) {
+      const parsedDate = dayjs(date);
+      if (parsedDate.isValid()) {
+        calendar.gotoDate(parsedDate.toDate());
+      }
+    }
+  }
+}, { immediate: true });
 
 // Watch for changes in events
 watch(() => props.events, () => {

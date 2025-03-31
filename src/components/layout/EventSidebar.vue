@@ -435,30 +435,45 @@ const handleDateSelect = ({ date, events }) => {
   if (!date) return;
 
   const year = date.format("YYYY");
-  const month = date.format("MM");
-  const day = date.format("DD");
+  const month = date.format("M");
+  const day = date.format("D");
 
   // Update settings store with the selected date
   settingsStore.initialDate = date.format("YYYY-MM-DD");
 
   // Navigate to the day view
   router.push({
-    name: "calendar-day",
-    params: { year, month, day },
+    name: "calendar-view",
+    params: { 
+      view: 'day',
+      year,
+      month,
+      day
+    }
   });
 };
 
 const handleRangeSelect = ({ start, end, events }) => {
   if (!start || !end) return;
 
+  // Calculate number of days between start and end
+  const daysDiff = end.diff(start, 'day') + 1;
+  
+  const year = start.format("YYYY");
+  const month = start.format("M");
+  const day = start.format("D");
+
   settingsStore.initialDate = start.format("YYYY-MM-DD");
 
-  // Navigate to the range view
+  // Navigate to the custom range view
   router.push({
-    name: "calendar-range",
-    params: {
-      range: `${start.format("YYYY-MM-DD")}/${end.format("YYYY-MM-DD")}`,
-    },
+    name: "calendar-custom",
+    params: { 
+      days: daysDiff,
+      year,
+      month,
+      day
+    }
   });
 };
 
