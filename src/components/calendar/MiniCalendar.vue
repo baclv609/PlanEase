@@ -13,11 +13,18 @@ import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'vue-router';
 import { useCalendarStore } from '@/stores/calendarStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import axios from 'axios';
 
+// Extend dayjs
+dayjs.extend(timezone);
+dayjs.extend(utc);
+
+// Props và emits
 const props = defineProps({
   events: {
     type: Array,
@@ -27,6 +34,7 @@ const props = defineProps({
 
 const emit = defineEmits(['dateSelect', 'rangeSelect', 'viewChange', 'eventsLoaded']);
 
+// Setup stores và refs
 const router = useRouter();
 const calendarStore = useCalendarStore();
 const settingsStore = useSettingsStore();
@@ -37,24 +45,12 @@ const startDate = ref(null);
 const endDate = ref(null);
 const isLoading = ref(false);
 const selectedEvents = ref([]);
+const isDateClick = ref(false);
+const isRangeSelect = ref(false);
 
+// API setup
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem('access_token');
-
-// Add debounce function at the top of script
-const debounce = (fn, delay) => {
-  let timeoutId;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn.apply(this, args), delay);
-  };
-};
-
-// Add flag to track click source
-const isDateClick = ref(false);
-
-// Add flag to track selection type
-const isRangeSelect = ref(false);
 
 // Transform events for FullCalendar format
 const transformedEvents = computed(() => {
@@ -72,6 +68,107 @@ const transformedEvents = computed(() => {
   }));
 });
 
+// Handle date click
+const handleDateClick = async (info) => {
+  try {
+    // Log để debug
+    console.log('Clicked date:', info.dateStr);
+    
+    // Chuyển đổi ngày click với timezone
+    const clickedDate = dayjs(info.dateStr);
+    console.log('Processed clicked date:', {
+      year: clickedDate.format('YYYY'),
+      month: clickedDate.format('M'),
+      day: clickedDate.format('D'),
+      fullDate: clickedDate.format('YYYY-MM-DD')
+    });
+
+    // Cập nhật selectedDate
+    selectedDate.value = clickedDate;
+
+    // Lấy view hiện tại từ route
+    const currentRoute = router.currentRoute.value;
+    const currentView = currentRoute.params.view || 'day'; // Mặc định là day view
+
+    // Tạo params cho route mới - đảm bảo không có padding với số 0
+    const params = {
+      view: currentView,
+      year: clickedDate.format('YYYY'),
+      month: clickedDate.format('M'), // Sử dụng M thay vì MM để tránh padding
+      day: clickedDate.format('D')    // Sử dụng D thay vì DD để tránh padding
+    };
+
+    console.log('Router params:', params);
+
+    // Emit sự kiện trước khi chuyển route
+    emit('dateSelect', {
+      date: clickedDate,
+      view: currentView
+    });
+
+    // Cập nhật route
+    await router.push({
+      name: 'calendar-view',
+      params
+    });
+
+  } catch (error) {
+    console.error('Date click error:', error);
+  }
+};
+
+// Handle range select
+const handleRangeSelect = async (info) => {
+  try {
+    const start = dayjs(info.start).tz(settingsStore.timeZone || 'local');
+    const end = dayjs(info.end).tz(settingsStore.timeZone || 'local').subtract(1, 'day');
+    
+    if (!start.isValid() || !end.isValid()) return;
+    
+    // Lấy current view từ settings store
+    const currentView = settingsStore.displayMode;
+    const viewMap = {
+      'timeGridDay': 'day',
+      'timeGridWeek': 'week',
+      'dayGridMonth': 'month',
+      'listYear': 'agenda',
+      'timeGridThreeDay': 'schedule',
+      'multiMonthYear': 'year'
+    };
+
+    const urlView = viewMap[currentView] || 'day';
+    const daysDiff = end.diff(start, 'day') + 1;
+
+    // Cập nhật router với view và ngày bắt đầu
+    await router.push({
+      name: 'calendar-view',
+      params: {
+        view: urlView,
+        year: start.format('YYYY'),
+        month: start.format('M'),
+        day: start.format('D')
+      },
+      query: {
+        duration: daysDiff // Nếu cần truyền số ngày, dùng query thay vì params
+      }
+    });
+
+    // Emit range select event
+    emit('rangeSelect', {
+      start,
+      end,
+      days: daysDiff,
+      events: props.events.filter(event => {
+        const eventDate = dayjs(event.start_time).tz(settingsStore.timeZone || 'local');
+        return eventDate.isSameOrAfter(start, 'day') && eventDate.isSameOrBefore(end, 'day');
+      })
+    });
+
+  } catch (error) {
+    console.error('Range selection error:', error);
+  }
+};
+
 // Calendar options
 const calendarOptions = computed(() => ({
   plugins: [dayGridPlugin, interactionPlugin],
@@ -81,208 +178,61 @@ const calendarOptions = computed(() => ({
     center: 'title',
     right: 'next'
   },
-  dayMaxEvents: 2,
+  titleFormat: { year: 'numeric', month: 'long' },
+  dayMaxEvents: false,
   height: 'auto',
+  fixedWeekCount: false,
+  showNonCurrentDates: true,
   events: transformedEvents.value,
-  selectable: true, // Enable range selection
-  select: handleRangeSelect,
+  selectable: false, // Tắt selection để tránh xung đột
   dateClick: handleDateClick,
-  eventClick: handleEventClick,
-  eventDisplay: 'dot',
+  eventDisplay: 'background',
   displayEventTime: false,
   firstDay: settingsStore.firstDay,
   locale: settingsStore.language,
-  timeZone: 'local', // Add timezone setting
-  buttonText: {
-    today: 'Hôm nay'
-  },
-  dayHeaderFormat: { weekday: 'short' },
-  moreLinkContent: (args) => {
-    return `+${args.num} sự kiện`;
+  timeZone: settingsStore.timeZone || 'local',
+  dayCellDidMount: (arg) => {
+    const cellDate = dayjs(arg.date).tz(settingsStore.timeZone || 'local').startOf('day');
+    const today = dayjs().tz(settingsStore.timeZone || 'local').startOf('day');
+    
+    // Highlight today
+    if (today.isSame(cellDate, 'day')) {
+      arg.el.classList.add('fc-day-today');
+    }
+    
+    // Highlight selected date
+    if (selectedDate.value && cellDate.isSame(selectedDate.value, 'day')) {
+      arg.el.classList.add('fc-day-selected');
+    }
   }
 }));
 
 // Fetch events for a specific date
-const fetchEventsForDate = async (date) => {
-  try {
-    isLoading.value = true;
-    const response = await axios.get(`${dirApi}events`, {
-      params: {
-        date: date.format('YYYY-MM-DD'),
-        calendar_ids: calendarStore.selectedCalendars
-      },
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+// const fetchEventsForDate = async (date) => {
+//   try {
+//     isLoading.value = true;
+//     const response = await axios.get(`${dirApi}events`, {
+//       params: {
+//         date: date.format('YYYY-MM-DD'),
+//         calendar_ids: calendarStore.selectedCalendars
+//       },
+//       headers: {
+//         Authorization: `Bearer ${token}`
+//       }
+//     });
 
-    if (response.data.code === 200) {
-      selectedEvents.value = response.data.data;
-      emit('eventsLoaded', selectedEvents.value);
-    } else {
-      console.error('Error fetching events:', response.data.message);
-    }
-  } catch (error) {
-    console.error('Error fetching events:', error);
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-// Handle date click with debounce
-const handleDateClick = debounce(async (info) => {
-  try {
-    const date = dayjs(info.dateStr);
-    if (!date.isValid()) return;
-    
-    isDateClick.value = true;
-    
-    // Check if we're already on this date
-    const currentRoute = router.currentRoute.value;
-    if (currentRoute.name === 'calendar-view') {
-      const { year, month, day } = currentRoute.params;
-      const currentDateStr = `${year}-${month}-${day}`;
-      if (currentDateStr === date.format('YYYY-MM-DD')) {
-        isDateClick.value = false;
-        return; // Already on this date, no need to update
-      }
-    }
-    
-    // Update router with the selected date
-    const year = date.format('YYYY');
-    const month = date.format('M');
-    const day = date.format('D');
-    
-    // Update router with new format
-    await router.push({
-      name: 'calendar-view',
-      params: { 
-        view: 'day',
-        year,
-        month,
-        day
-      }
-    });
-    
-    // Then emit date selection event
-    emit('dateSelect', {
-      date,
-      events: props.events.filter(event => 
-        dayjs(event.start_time).format('YYYY-MM-DD') === date.format('YYYY-MM-DD')
-      )
-    });
-    
-    // Reset flag after navigation
-    setTimeout(() => {
-      isDateClick.value = false;
-    }, 100);
-  } catch (error) {
-    console.error('Navigation error:', error);
-    isDateClick.value = false;
-  }
-}, 100);
-
-// Handle range selection
-const handleRangeSelect = debounce(async (info) => {
-  try {
-    const start = dayjs(info.start);
-    const end = dayjs(info.end).subtract(1, 'day'); // Adjust end date
-    
-    if (!start.isValid() || !end.isValid()) return;
-    
-    // Set flag to prevent duplicate calls
-    isRangeSelect.value = true;
-    
-    // Calculate number of days between start and end
-    const daysDiff = end.diff(start, 'day') + 1;
-    
-    // Update router with custom range format
-    const year = start.format('YYYY');
-    const month = start.format('M');
-    const day = start.format('D');
-    
-    await router.push({
-      name: 'calendar-custom',
-      params: { 
-        days: daysDiff,
-        year,
-        month,
-        day
-      }
-    });
-    
-    // Emit range selection event with options
-    emit('rangeSelect', {
-      start,
-      end,
-      days: daysDiff,
-      events: props.events.filter(event => {
-        const eventDate = dayjs(event.start_time);
-        return eventDate.isAfter(start, 'day') && eventDate.isBefore(end, 'day');
-      }),
-      options: {
-        createEvent: true,
-        createTask: true,
-        viewEvents: true
-      }
-    });
-    
-    // Reset flag after handling
-    setTimeout(() => {
-      isRangeSelect.value = false;
-    }, 100);
-  } catch (error) {
-    console.error('Range selection error:', error);
-    isRangeSelect.value = false;
-  }
-}, 100);
-
-// Update route watcher to handle both date and range selection
-watch(() => router.currentRoute.value, (newRoute, oldRoute) => {
-  if (!calendarRef.value) return;
-  
-  // Skip if this is from a date or range click
-  if (isDateClick.value || isRangeSelect.value) {
-    return;
-  }
-  
-  // Prevent handling if it's the same route
-  if (oldRoute && newRoute.fullPath === oldRoute.fullPath) return;
-  
-  const calendar = calendarRef.value.getApi();
-  
-  try {
-    if (newRoute.name === 'calendar-view' || newRoute.name === 'calendar-custom') {
-      const { view, year, month, day, days } = newRoute.params;
-      if (year && month) {
-        let dateStr;
-        if (day) {
-          dateStr = `${year}-${month}-${day}`;
-        } else {
-          dateStr = `${year}-${month}`;
-        }
-        
-        const date = dayjs(dateStr);
-        if (date.isValid()) {
-          calendar.gotoDate(date.toDate());
-          selectedDate.value = date;
-          
-          // Only emit if route change wasn't triggered by date click
-          emit('viewChange', {
-            mode: newRoute.name === 'calendar-custom' ? 'custom' : view,
-            date: date,
-            days: days,
-            events: props.events.filter(event => 
-              dayjs(event.start_time).format('YYYY-MM-DD') === date.format('YYYY-MM-DD')
-            )
-          });
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error handling route change:', error);
-  }
-}, { immediate: false });
+//     if (response.data.code === 200) {
+//       selectedEvents.value = response.data.data;
+//       emit('eventsLoaded', selectedEvents.value);
+//     } else {
+//       console.error('Error fetching events:', response.data.message);
+//     }
+//   } catch (error) {
+//     console.error('Error fetching events:', error);
+//   } finally {
+//     isLoading.value = false;
+//   }
+// };
 
 // Handle event click
 const handleEventClick = async (info) => {
@@ -320,21 +270,43 @@ watch(() => settingsStore.displayMode, (newMode) => {
 });
 
 // Watch for route changes to sync with main calendar
-watch(() => router.currentRoute.value, (newRoute) => {
+watch(() => router.currentRoute.value, (newRoute, oldRoute) => {
   if (!calendarRef.value) return;
   
   const calendar = calendarRef.value.getApi();
   
   if (newRoute.name === 'calendar-view') {
-    const { view, date } = newRoute.params;
-    if (date) {
-      const parsedDate = dayjs(date);
-      if (parsedDate.isValid()) {
-        calendar.gotoDate(parsedDate.toDate());
+    const { year, month, day } = newRoute.params;
+    
+    if (year && month) {
+      let date;
+      if (day) {
+        date = dayjs(`${year}-${month}-${day}`).tz(settingsStore.timeZone || 'local');
+      } else {
+        date = dayjs(`${year}-${month}-01`).tz(settingsStore.timeZone || 'local');
+      }
+      
+      if (date.isValid()) {
+        // Cập nhật selectedDate
+        selectedDate.value = date;
+        
+        // Cập nhật view của calendar
+        calendar.gotoDate(date.toDate());
+        
+        // Force render lại để cập nhật highlighting
+        calendar.render();
       }
     }
   }
 }, { immediate: true });
+
+// Thêm watch cho selectedDate để cập nhật highlighting
+watch(selectedDate, (newDate) => {
+  if (!calendarRef.value || !newDate) return;
+  
+  const calendar = calendarRef.value.getApi();
+  calendar.render(); // Force render lại để cập nhật highlighting
+});
 
 // Watch for changes in events
 watch(() => props.events, () => {
@@ -482,23 +454,28 @@ onMounted(() => {
 }
 
 :deep(.fc-day-today) {
-  background-color: #FFCC77 !important;
+  background: #FFCC77 !important;
   border-radius: 50% !important;
-  padding: 0 !important;
 }
 
-:deep(.fc-day-today .fc-daygrid-day-frame) {
-  border-radius: 20% !important;
+:deep(.fc-day-selected) {
+  background: rgba(255, 255, 255, 0.2) !important;
 }
 
-:deep(.fc-day-today .fc-daygrid-day-number) {
-  color: white;
-  font-weight: 600;
+:deep(.fc-day) {
+  cursor: pointer;
+}
+
+:deep(.fc-day:hover) {
+  background: rgba(255, 255, 255, 0.1) !important;
 }
 
 :deep(.fc-highlight) {
-  background-color: #ffcd77c5 !important;
-  border-radius: 20px;
+  background: rgba(255, 204, 119, 0.3) !important;
+}
+
+:deep(.fc-selecting) {
+  background: rgba(255, 204, 119, 0.4) !important;
 }
 
 :deep(.fc-header-toolbar) {
