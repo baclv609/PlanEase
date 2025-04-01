@@ -93,10 +93,29 @@
     <div class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-lg font-semibold">Lịch của tôi</h3>
-        <PlusOutlined @click="isModalOpenAddTag = true" class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]" />
+        <div class="flex gap-2">
+          <EyeOutlined 
+            v-if="hiddenTags.length > 0"
+            @click="hiddenTags = []" 
+            class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]" 
+          />
+          <EyeInvisibleOutlined 
+            v-if="hiddenTags.length === 0"
+            @click="hiddenTags = myCalendars.map(cal => cal.id)" 
+            class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]" 
+          />
+          <PlusOutlined 
+            @click="isModalOpenAddTag = true" 
+            class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]" 
+          />
+        </div>
       </div>
 
-      <a-checkbox-group v-model:value="selectedCalendars" class="flex flex-col gap-2" @change="updateFilteredEvents">
+      <a-checkbox-group 
+        v-model:value="selectedCalendars" 
+        class="flex flex-col gap-2" 
+        @change="handleCalendarChange"
+      >
         <!-- Lịch của tôi -->
         <div v-if="myCalendars.length">
           <h4 class="text-gray-500 text-sm font-semibold mb-2">📌 Lịch của tôi</h4>
@@ -108,23 +127,34 @@
             <div class="flex items-center">
               <span
                 :style="{ backgroundColor: calendar.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '8px' }"></span>
-              <!-- Hình tròn nhỏ -->
               <a-checkbox :value="calendar.id" class="">
                 <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
               </a-checkbox>
             </div>
 
-            <a-dropdown>
-              <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
-                  <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
-                  <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item>
-                  <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
-                </a-menu>
-              </template>
-            </a-dropdown>
+            <div class="flex items-center gap-2">
+              <EyeOutlined 
+                v-if="hiddenTags.includes(calendar.id)"
+                @click="toggleTagVisibility(calendar.id)" 
+                class="text-gray-500 text-lg cursor-pointer hover:text-black transition" 
+              />
+              <EyeInvisibleOutlined 
+                v-else
+                @click="toggleTagVisibility(calendar.id)" 
+                class="text-gray-500 text-lg cursor-pointer hover:text-black transition" 
+              />
+              <a-dropdown>
+                <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
+                <template #overlay>
+                  <a-menu>
+                    <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
+                    <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
+                    <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item>
+                    <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown>
+            </div>
           </div>
           <div v-if="myCalendars.length > 5" class="flex justify-center mt-2" >
             <a-button type="text" @click="showAll = !showAll">
@@ -153,17 +183,29 @@
               </a-checkbox>
             </div>
 
-            <a-dropdown>
-              <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
-                  <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
-                  <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item> <a-menu-item
-                    @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
-                </a-menu>
-              </template>
-            </a-dropdown>
+            <div class="flex items-center gap-2">
+              <EyeOutlined 
+                v-if="hiddenTags.includes(calendar.id)"
+                @click="toggleTagVisibility(calendar.id)" 
+                class="text-gray-500 text-lg cursor-pointer hover:text-black transition" 
+              />
+              <EyeInvisibleOutlined 
+                v-else
+                @click="toggleTagVisibility(calendar.id)" 
+                class="text-gray-500 text-lg cursor-pointer hover:text-black transition" 
+              />
+              <a-dropdown>
+                <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
+                <template #overlay>
+                  <a-menu>
+                    <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
+                    <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
+                    <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item>
+                    <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown>
+            </div>
           </div>
           <div v-if="sharedCalendars.length > 5" class="flex justify-center mt-2">
             <a-button type="text" @click="showAllShared = !showAllShared">
@@ -265,6 +307,8 @@ import {
   CloseOutlined,
   CalendarOutlined,
   CheckSquareOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined,
 } from "@ant-design/icons-vue";
 
 import dayjs from "dayjs";
@@ -308,6 +352,7 @@ const events = ref([]);
 
 const showAll = ref(false);
 const showAllShared = ref(false);
+const hiddenTags = ref([]);
 
 const isAddEventModalVisible = ref(false);
 const selectedEventAdd = ref(null);
@@ -486,26 +531,53 @@ const handleViewChange = ({ mode, date, start, end, events }) => {
 };
 
 const updateFilteredEvents = () => {
-  filteredEvents.value = events.value.filter((event) =>
-    selectedCalendars.value.includes(event.calendarId)
-  );
+  // Nếu không có tag nào được chọn, hiển thị tất cả sự kiện không có tag_id
+  if (selectedCalendars.value.length === 0) {
+    filteredEvents.value = events.value.filter(event => event.tag_id === null);
+    return;
+  }
+
+  // Lọc sự kiện theo các tag được chọn hoặc không có tag_id
+  filteredEvents.value = events.value.filter(event => {
+    // Nếu sự kiện không có tag_id, hiển thị nó
+    if (event.tag_id === null) {
+      return true;
+    }
+    // Nếu sự kiện có tag_id, kiểm tra xem tag đó có được chọn không
+    return selectedCalendars.value.includes(event.tag_id);
+  });
+};
+
+const handleCalendarChange = (checkedValues) => {
+  selectedCalendars.value = checkedValues;
+  updateFilteredEvents();
 };
 
 const displayOnly = (calendarId) => {
   selectedCalendars.value = [calendarId];
+  updateFilteredEvents();
 };
 
-const openDrawerAdd = () => {
-  isModalOpenAddTag.value = true;
+const toggleTagVisibility = (tagId) => {
+  const index = hiddenTags.value.indexOf(tagId);
+  if (index === -1) {
+    hiddenTags.value.push(tagId);
+  } else {
+    hiddenTags.value.splice(index, 1);
+  }
 };
 
 // Giới hạn hiển thị
 const displayedCalendars = computed(() => {
-  return showAll.value ? myCalendars.value : myCalendars.value.slice(0, 5);
+  return showAll.value 
+    ? myCalendars.value.filter(calendar => !hiddenTags.value.includes(calendar.id))
+    : myCalendars.value.filter(calendar => !hiddenTags.value.includes(calendar.id)).slice(0, 5);
 });
 
 const displayedSharedCalendars = computed(() => {
-  return showAllShared.value ? sharedCalendars.value : sharedCalendars.value.slice(0, 5);
+  return showAllShared.value 
+    ? sharedCalendars.value.filter(calendar => !hiddenTags.value.includes(calendar.id))
+    : sharedCalendars.value.filter(calendar => !hiddenTags.value.includes(calendar.id)).slice(0, 5);
 });
 
 const fetchCalendars = async () => {
