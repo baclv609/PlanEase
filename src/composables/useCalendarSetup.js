@@ -210,12 +210,49 @@ export function useCalendar(calendarRef) {
   const calendarStore = useCalendarStore();
 
   const transformedEvents = ref([]);
+  
+// Hàm lọc sự kiện theo danh sách tag_id
+const filterEvents = (hiddenIds) => {
+  // Phải filter từ formattedEvents thay vì transformedEvents để có dữ liệu gốc
+  return formattedEvents.value.filter(event => {
+    // Kiểm tra nếu hiddenIds là mảng hợp lệ
+    if (!Array.isArray(hiddenIds)) {
+      return true;
+    }
 
-  const updateTransformedEvents = () => {
-    transformedEvents.value = [...formattedEvents.value];
-    transformedEvents.value.forEach((event) => calendarStore.addEventStore(event));
-    console.log('transformedEvents', transformedEvents.value);
-  };
+    // Ẩn sự kiện có tag_id là null nếu null nằm trong hiddenIds
+    if (hiddenIds.includes(null) && event.tag_id === null) {
+      return false;
+    }
+
+    // Ẩn sự kiện có tag_id nằm trong danh sách hiddenIds
+    if (hiddenIds.includes(event.tag_id)) {
+      return false; 
+    }
+
+    return true;
+  });
+};
+
+const updateTransformedEvents = () => {
+  // Gán kết quả filter vào transformedEvents
+  transformedEvents.value = filterEvents([ ]);
+  
+  
+  // Thêm các events đã lọc vào store
+  transformedEvents.value.forEach((event) => calendarStore.addEventStore(event));
+  
+  console.log('Filtered events:', transformedEvents.value);
+};
+
+  // const updateTransformedEvents = () => {
+  //   // Filter to only show events with tag_id 26, 29, 30 and hide null/other tag_ids
+  //   // transformedEvents.value = formattedEvents.value.filter(event => 
+  //   //   event.tag_id !== null && typeof event.tag_id === 'number'
+  //   // );
+  //   transformedEvents.value.forEach((event) => calendarStore.addEventStore(event));
+  //   console.log('Events showing only tags 26, 29, 30:', transformedEvents.value);
+  // };
 
   onMounted(async () => {
     await fetchEvents();
