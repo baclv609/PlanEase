@@ -154,13 +154,13 @@ export function useCalendarEvents() {
                 // Xử lý thời gian không có múi giờ
                 const dateTime = DateTime.fromISO(date, { zone: 'utc' });
                 return dateTime
-                    .setZone(selectedTimezone.value)
+                    .setZone(event.timezone_code || selectedTimezone.value)
                     .toISO({ suppressMilliseconds: true, includeOffset: false });
             }) : event.exclude_time.map((date) => {
                 // Xử lý thời gian cho sự kiện cả ngày
                 const dateTime = DateTime.fromISO(date, { zone: 'utc' });
                 return dateTime
-                    .setZone(selectedTimezone.value)
+                    .setZone(event.timezone_code || selectedTimezone.value)
                     .startOf('day')
                     .toFormat('yyyy-MM-dd');
             }) 
@@ -182,7 +182,7 @@ export function useCalendarEvents() {
                 byminute: event.rrule.byminute || null,
                 bysecond: event.rrule.bysecond || null,
                 wkst: event.rrule.wkst || 1,
-                tzid: selectedTimezone.value,
+                tzid: event.timezone_code || selectedTimezone.value,
               }
             : null,
             allDayMaintainDuration: true, 
@@ -327,7 +327,6 @@ export function useCalendar(calendarRef) {
   };
   
   const openEventDetailModal = (info) => {
-    console.log('openEventDetailModal', info.event);
     const event = info.event;
     const extendedProps = event.extendedProps || {};
     
