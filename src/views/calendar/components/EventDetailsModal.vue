@@ -623,19 +623,23 @@ const formatFileSize = (bytes) => {
           </div>
 
           <!-- Date and time -->
-          <div class="flex items-start mb-4">
-            <div class="w-6 h-6 flex-shrink-0 mr-3">
-              <ClockCircleOutlined class="text-xl text-gray-500" />
-            </div>
-            <div>
-              <div class="flex items-center">
+          <div class="flex flex-col mb-4">
+            <div class="flex">
+              <div class="w-6 h-6 flex-shrink-0 mr-3">
+                <ClockCircleOutlined class="text-xl text-gray-500" />
+              </div>
+  
+              <div class="">
                 <p class="font-medium mb-0">Thời gian</p>
               </div>
+            </div>
+
+            <div>
               
               <!-- Thời gian theo múi giờ sự kiện -->
-              <div class="border border-1 !border-gray-300 rounded-md p-4 shadow-sm">
-                <p class="text-sm text-gray-500 font-semibold mb-2">Thời gian sự kiện</p>
-                <div class="flex flex-col space-y-3">
+              <div class="border border-1 !border-gray-300 rounded-md shadow-sm p-2">
+                <p class="text-sm text-gray-500 font-semibold mb-2 ml-1">Thời gian sự kiện</p>
+                <div class="flex flex-col ml-3">
                   <div class="grid grid-cols-2 gap-2">
                     <div class="flex items-center space-x-2">
                       <CalendarOutlined class="text-gray-500" />
@@ -664,34 +668,34 @@ const formatFileSize = (bytes) => {
               </div>
 
               <!-- Thời gian theo múi giờ người dùng -->
-              <div v-if="userTimezone != event.timezone" class="border-t border-gray-300">
-                <div class="border border-1 border-gray-300 rounded-md p-4 shadow-sm bg-gray-100">
-                  <p class="text-sm text-gray-500 font-semibold mb-2">Thời gian theo múi giờ của bạn</p>
-                  <div class="flex flex-col space-y-3">
-                    <div class="grid grid-cols-2 gap-2">
-                      <div class="flex items-center space-x-2">
-                        <CalendarOutlined class="text-gray-500" />
+              <div v-if="userTimezone != event.timezone" class="border-gray-300 p-2 shadow-sm">
+                <p class="text-sm text-gray-500 font-semibold mb-2 ml-1">Thời gian theo múi giờ của bạn</p>
+                <div class="flex flex-col ml-3">
+                  <div class="grid grid-cols-2 gap-2">
+                    <div class="flex items-center space-x-2">
+                      <CalendarOutlined class="text-gray-500" />
+                      <p class="text-gray-800 mb-0">
+                        {{ dayjs(event.start).tz(event.timezone).tz(userTimezone).format("dddd, D/M/YYYY") }} - 
+                        {{ event.end ? dayjs(event.end).tz(event.timezone).tz(userTimezone).format("dddd, D/M/YYYY") : '' }}
+                      </p>
+                    </div>
+                    <div class="ml-10">
+                      <div class="flex items-center space-x-2" v-if="!event.is_all_day">
+                        <ClockCircleOutlined class="text-gray-500" />
                         <p class="text-gray-800 mb-0">
-                          {{ formatDateTime(event.start_time, userTimezone) }} - {{ event.end_time ? formatDateTime(event.end_time, userTimezone) : '' }}
+                          {{ dayjs(event.start).tz(event.timezone).tz(userTimezone).format("HH:mm") }} - 
+                          {{ event.end ? dayjs(event.end).tz(event.timezone).tz(userTimezone).format("HH:mm") : '' }}
                         </p>
                       </div>
-                      <div class="ml-10">
-                        <div class="flex items-center space-x-2" v-if="!event.is_all_day">
-                          <ClockCircleOutlined class="text-gray-500" />
-                          <p class="text-gray-800 mb-0">
-                            {{ formatTimeInfo(event.start_time, userTimezone) }} - {{ event.end_time ? formatTimeInfo(event.end_time, userTimezone) : '' }}
-                          </p>
-                        </div>
-                        <div class="flex items-center space-x-2 col-span-2" v-if="event.is_all_day">
-                          <ClockCircleOutlined class="text-gray-500" />
-                          <p class="text-gray-800 mb-0">Cả ngày</p>
-                        </div>
+                      <div class="flex items-center space-x-2 col-span-2" v-if="event.is_all_day">
+                        <ClockCircleOutlined class="text-gray-500" />
+                        <p class="text-gray-800 mb-0">Cả ngày</p>
                       </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                      <GlobalOutlined class="text-gray-500" />
-                      <p class="text-gray-800 mb-0">{{ userTimezone }}</p>
-                    </div>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <GlobalOutlined class="text-gray-500" />
+                    <p class="text-gray-800 mb-0">{{ userTimezone }}</p>
                   </div>
                 </div>
               </div>
@@ -700,39 +704,38 @@ const formatFileSize = (bytes) => {
           </div>
 
           <!-- Lặp lại -->
-          <div class="flex items-start mb-4" v-if="event.recurrence && event.recurrence != 0">
-            <div class="w-6 h-6 flex-shrink-0 mr-3">
-              <HistoryOutlined class="text-xl text-gray-500" />
-            </div>
-            <div>
+          <div class="flex flex-col mb-4" v-if="event.recurrence && event.recurrence != 0">
+            <div class="flex">
+              <div class="w-6 h-6 flex-shrink-0 mr-3">
+                <HistoryOutlined class="text-xl text-gray-500" />
+              </div>
               <div class="flex items-center">
                 <p class="font-medium mb-0">Lặp lại</p>
               </div>
-              
-              <p class="text-gray-800 mb-0" v-if="event.recurrence && event.recurrence != 'none'">
-                  <span v-if="event.info.extendedProps.freq === 'daily'">
-                    {{ event.info.extendedProps.interval <= 1 ? 'Hàng ngày' : `${event.info.extendedProps.interval} ngày một lần` }}
-                    {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
-                    {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
-                  </span>
-                  <span v-else-if="event.info.extendedProps.freq === 'weekly'">
-                    {{ event.info.extendedProps.interval <= 1 ? 'Hàng tuần' : `${event.info.extendedProps.interval} tuần một lần` }}
-                    {{ event.info.extendedProps.byweekday && event.info.extendedProps.byweekday.length > 0 ? `,vào ${event.info.extendedProps.byweekday.map(day => dayMap[day]).join(', ')}` : '' }}
-                    {{ evenat.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
-                    {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
-                  </span>
-                  <span v-else-if="event.info.extendedProps.freq === 'monthly'">
-                    {{ event.info.extendedProps.interval <= 1 ? 'Hàng tháng' : `${event.info.extendedProps.interval} tháng một lần` }}
-                    {{ event.info.extendedProps.bymonthday && event.info.extendedProps.bymonthday.length > 0 ? `,vào ngày ${event.info.extendedProps.bymonthday.join(', ')}` : '' }}
-                    {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
-                    {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
-                  </span>
-                  <span v-else-if="event.info.extendedProps.freq === 'yearly'">
-                    {{ event.info.extendedProps.interval <= 1 ? 'Hàng năm' : `${event.info.extendedProps.interval} năm một lần` }}
-                    {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
-                    {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
-                  </span>
-                </p>
+            </div>
+            <div class="ml-9">
+              <span v-if="event.info.extendedProps.freq === 'daily'">
+                {{ event.info.extendedProps.interval <= 1 ? 'Hàng ngày' : `${event.info.extendedProps.interval} ngày một lần` }}
+                {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
+                {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
+              </span>
+              <span v-else-if="event.info.extendedProps.freq === 'weekly'">
+                {{ event.info.extendedProps.interval <= 1 ? 'Hàng tuần' : `${event.info.extendedProps.interval} tuần một lần` }}
+                {{ event.info.extendedProps.byweekday && event.info.extendedProps.byweekday.length > 0 ? `,vào ${event.info.extendedProps.byweekday.map(day => dayMap[day]).join(', ')}` : '' }}
+                {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
+                {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
+              </span>
+              <span v-else-if="event.info.extendedProps.freq === 'monthly'">
+                {{ event.info.extendedProps.interval <= 1 ? 'Hàng tháng' : `${event.info.extendedProps.interval} tháng một lần` }}
+                {{ event.info.extendedProps.bymonthday && event.info.extendedProps.bymonthday.length > 0 ? `,vào ngày ${event.info.extendedProps.bymonthday.join(', ')}` : '' }}
+                {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
+                {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
+              </span>
+              <span v-else-if="event.info.extendedProps.freq === 'yearly'">
+                {{ event.info.extendedProps.interval <= 1 ? 'Hàng năm' : `${event.info.extendedProps.interval} năm một lần` }}
+                {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
+                {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
+              </span>
             </div>
           </div>
 

@@ -682,7 +682,7 @@ const handleCalendarUpdate = (updatedEvent) => {
     calendar.refetchEvents();
     
     // Gọi handleEventModalSuccess để cập nhật lại dữ liệu trong useCalendarSetup
-    handleEventUpdate();
+    handleEventModalSuccess();
   } catch (error) {
     console.error('Error updating calendar event:', error);
   }
