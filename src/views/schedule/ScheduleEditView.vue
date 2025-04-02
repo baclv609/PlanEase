@@ -24,6 +24,41 @@
                 </div>
             </div>
 
+            <!-- Event Type Section -->
+            <div class="form-section">
+                <div class="section-title">
+                    <TagOutlined class="text-gray-500 mr-2" />
+                    <span>Loại sự kiện</span>
+                </div>
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <a-form-item name="type">
+                        <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="rounded-lg w-full" disabled>
+                            <Select.Option value="event">Sự kiện</Select.Option>
+                            <Select.Option value="task">Việc cần làm</Select.Option>
+                        </Select>
+                    </a-form-item>
+                    <a-form-item name="color_code">
+                        <a-select v-model:value="formState.color_code" placeholder="Chọn màu" class="rounded-lg w-full">
+                            <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
+                                <div class="flex items-center">
+                                    <div class="h-4 rounded-full w-4 mr-2" :style="{ backgroundColor: color.value }"></div>
+                                    <span>{{ color.label }}</span>
+                                </div>
+                            </a-select-option>
+                        </a-select>
+                    </a-form-item>
+
+                    <!-- Calendar Section -->
+                    <a-form-item name="tags" class="w-full" v-if="formState.type == 'event'">
+                        <a-select v-model:value="formState.tags" class="bg-gray-50 rounded-lg w-full" placeholder="Chọn loại"
+                            :options="tags"
+                            :disabled="formState.user_id != user.id">
+                            > </a-select>
+                    </a-form-item>
+
+                </div>
+            </div>
+
             <!-- Date and Time Section -->
             <div class="form-section">
                 <div class="section-title">
@@ -59,7 +94,7 @@
                                 />
                         </a-form-item>
                     </div>
-                    <a-form-item label="Múi giờ" name="timezone_code">
+                    <a-form-item label="Múi giờ" name="timezone_code" v-if="formState.type == 'event'">
                         <a-select v-model:value="formState.timezone_code" show-search placeholder="Múi giờ"
                             :filter-option="filterOption" class="w-full">
                             <a-select-option v-for="timezone in timezones" :key="timezone" :value="timezone">
@@ -81,8 +116,8 @@
                         <CalendarOutlined class="text-gray-500 mr-2" />
                         <span>Cài đặt lặp lại</span>
                     </div>
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div class="space-y-4">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-7">
+                        <div class="space-y-4 col-span-3">
                             <div>
                                 <label class="text-gray-700 block font-medium mb-2">Kiểu lặp lại</label>
                                 <Select v-model:value="formState.rrule.freq" :options="freqOptions" class="w-full" />
@@ -116,7 +151,7 @@
                             </div>
                         </div>
 
-                        <div class="space-y-4">
+                        <div class="space-y-4 col-span-4">
                             <div class="flex flex-col gap-2 mb-8">
                                 <label class="text-gray-700 font-medium">Kết thúc</label>
                                 <a-radio-group v-model:value="formState.rrule.endType" class="flex">
@@ -164,7 +199,7 @@
                         <span>Mô tả</span>
                     </div>
     
-                    <div class="section-title">
+                    <div class="section-title" v-if="formState.type == 'event'">
                         <PaperClipOutlined class="text-gray-500 mr-2" />
                         <a-upload
                             :file-list="formState.attachments"
@@ -221,7 +256,7 @@
             </div>
 
             <!-- Location Section -->
-            <div class="form-section">
+            <div class="form-section" v-if="formState.type == 'event'">
                 <div class="section-title">
                     <EnvironmentOutlined class="text-gray-500 mr-2" />
                     <span>Địa điểm</span>
@@ -256,41 +291,6 @@
                             </a-radio-group>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Event Type Section -->
-            <div class="form-section">
-                <div class="section-title">
-                    <TagOutlined class="text-gray-500 mr-2" />
-                    <span>Loại sự kiện</span>
-                </div>
-                <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-                    <a-form-item name="type">
-                        <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="rounded-lg w-full" disabled>
-                            <Select.Option value="event">Sự kiện</Select.Option>
-                            <Select.Option value="task">Việc cần làm</Select.Option>
-                        </Select>
-                    </a-form-item>
-                    <a-form-item name="color_code">
-                        <a-select v-model:value="formState.color_code" placeholder="Chọn màu" class="rounded-lg w-full">
-                            <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
-                                <div class="flex items-center">
-                                    <div class="h-4 rounded-full w-4 mr-2" :style="{ backgroundColor: color.value }"></div>
-                                    <span>{{ color.label }}</span>
-                                </div>
-                            </a-select-option>
-                        </a-select>
-                    </a-form-item>
-
-                    <!-- Calendar Section -->
-                    <a-form-item name="tags" class="w-full">
-                        <a-select v-model:value="formState.tags" class="bg-gray-50 rounded-lg w-full" placeholder="Chọn loại"
-                            :options="tags"
-                            :disabled="formState.user_id != user.id">
-                            > </a-select>
-                    </a-form-item>
-
                 </div>
             </div>
 
@@ -380,7 +380,7 @@
             </div>
 
             <!-- URL Section -->
-            <div class="form-section">
+            <div class="form-section" v-if="formState.type == 'event'">
                 <div class="section-title">
                     <LinkOutlined class="text-gray-500 mr-2" />
                     <span>Liên kết</span>
@@ -700,6 +700,8 @@ const formState = ref({
 
 const rules = {
     title: [
+        { required: true, message: "Tiêu đề không được để trống", trigger: "blur" },
+        { min: 3, max: 255, message: "Tiêu đề quá ngắn", trigger: "blur" },
         { max: 255, message: "Tiêu đề quá dài", trigger: "blur" },
     ],
     time: [

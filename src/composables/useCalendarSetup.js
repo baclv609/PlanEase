@@ -69,25 +69,25 @@ export function useCalendarEvents() {
     rawEvents.value.map((event) => {
       const start = event.start_time
         ? DateTime.fromISO(event.start_time, { zone: 'utc' })
-            .setZone(event.timezone_code || selectedTimezone.value)
+            .setZone(selectedTimezone.value)
             .toISO() 
         : null;
       const end = event.end_time
         ? DateTime.fromISO(event.end_time, { zone: 'utc' })
-            .setZone(event.timezone_code || selectedTimezone.value)
+            .setZone(selectedTimezone.value)
             .toISO() 
         : null;
 
       // Thêm xử lý múi giờ cho RRule
       const rruleStart = event.start_time
         ? DateTime.fromISO(event.start_time, { zone: 'utc' })
-            .setZone(event.timezone_code || selectedTimezone.value)
+            .setZone(selectedTimezone.value)
             .toFormat('yyyy-MM-dd\'T\'HH:mm:ss')
         : null;
 
       const rruleEnd = event.rrule?.until
         ? DateTime.fromISO(event.rrule.until, { zone: 'utc' })
-            .setZone(event.timezone_code || selectedTimezone.value)
+            .setZone(selectedTimezone.value)
             .toFormat('yyyy-MM-dd\'T\'HH:mm:ss')
         : null;
 
@@ -105,6 +105,14 @@ export function useCalendarEvents() {
       const formattedStartTime = formatTime(start);
       const formattedEndTime = formatTime(end);
 
+      let classDone = '';
+      let eventTypeClass = '';
+      if(event.is_done == 1) {
+        classDone = 'task_done';
+      }
+      if(event.type == 'event') {
+        eventTypeClass = 'calendar-event border-l-4 border';
+      }
       return {
         id: event.id,
         title: event.title,
@@ -119,10 +127,12 @@ export function useCalendarEvents() {
         tag_name: event.tag_name,
         allDay: event.is_all_day === 1,
         backgroundColor: event.color_code || '#3788d8',
-        borderColor: event.color_code || '#3788d8',
+        tag_color_code: event.tag_color_code,
+        borderColor: event.tag_color_code || event.color_code,
         location: event.location,
         editable: isEditable,
-        display: 'auto',
+        display: event.type == 'task' ? 'list-item' : 'block',
+        classNames: [classDone, eventTypeClass],
         displayEventTime: true,
         displayEventEnd: true,
         extendedProps: {
@@ -154,13 +164,13 @@ export function useCalendarEvents() {
                 // Xử lý thời gian không có múi giờ
                 const dateTime = DateTime.fromISO(date, { zone: 'utc' });
                 return dateTime
-                    .setZone(event.timezone_code || selectedTimezone.value)
+                    .setZone(selectedTimezone.value)
                     .toISO({ suppressMilliseconds: true, includeOffset: false });
             }) : event.exclude_time.map((date) => {
                 // Xử lý thời gian cho sự kiện cả ngày
                 const dateTime = DateTime.fromISO(date, { zone: 'utc' });
                 return dateTime
-                    .setZone(event.timezone_code || selectedTimezone.value)
+                    .setZone(selectedTimezone.value)
                     .startOf('day')
                     .toFormat('yyyy-MM-dd');
             }) 
@@ -182,7 +192,7 @@ export function useCalendarEvents() {
                 byminute: event.rrule.byminute || null,
                 bysecond: event.rrule.bysecond || null,
                 wkst: event.rrule.wkst || 1,
-                tzid: event.timezone_code || selectedTimezone.value,
+                // tzid: event.timezone_code || selectedTimezone.value,
               }
             : null,
             allDayMaintainDuration: true, 
@@ -343,6 +353,7 @@ export function useCalendar(calendarRef) {
       end_time: extendedProps.end_time || null,
       tag_id: extendedProps.tag_id || null,
       tag_name: extendedProps.tag_name || '',
+      tag_color_code: extendedProps.tag_color_code || null,
       timezone: extendedProps.timezone || settingsStore.timeZone,
       color: event.backgroundColor || '#3788d8',
       is_all_day: event.allDay || false,

@@ -643,49 +643,50 @@ const openEditDrawer = (event) => {
 };
 
 const handleCalendarUpdate = (updatedEvent) => {
-  try {
-    if (!calendarRef.value) {
-      console.error('Calendar reference is not available');
-      return;
-    }
+  // try {
+  //   if (!calendarRef.value) {
+  //     console.error('Calendar reference is not available');
+  //     return;
+  //   }
 
-    const calendar = calendarRef.value.getApi();
+  //   const calendar = calendarRef.value.getApi();
     
-    // Tìm và cập nhật sự kiện trong calendar
-    const existingEvent = calendar.getEventById(updatedEvent.id);
-    if (existingEvent) {
-      // Cập nhật thông tin sự kiện
-      existingEvent.setProp('title', updatedEvent.title);
-      existingEvent.setStart(updatedEvent.start);
-      existingEvent.setEnd(updatedEvent.end);
-      existingEvent.setProp('color', updatedEvent.color);
-      existingEvent.setAllDay(updatedEvent.is_all_day);
+  //   // Tìm và cập nhật sự kiện trong calendar
+  //   const existingEvent = calendar.getEventById(updatedEvent.id);
+  //   if (existingEvent) {
+  //     // Cập nhật thông tin sự kiện
+  //     existingEvent.setProp('title', updatedEvent.title);
+  //     existingEvent.setStart(updatedEvent.start);
+  //     existingEvent.setEnd(updatedEvent.end);
+  //     existingEvent.setProp('color', updatedEvent.color);
+  //     existingEvent.setAllDay(updatedEvent.is_all_day);
       
-      // Cập nhật extendedProps
-      existingEvent.setExtendedProp('type', updatedEvent.type);
-      existingEvent.setExtendedProp('location', updatedEvent.location);
-      existingEvent.setExtendedProp('description', updatedEvent.description);
-      existingEvent.setExtendedProp('is_reminder', updatedEvent.is_reminder);
-      existingEvent.setExtendedProp('reminder', updatedEvent.reminder);
-      existingEvent.setExtendedProp('is_repeat', updatedEvent.is_repeat);
-      existingEvent.setExtendedProp('recurrence', updatedEvent.recurrence);
+  //     // Cập nhật extendedProps
+  //     existingEvent.setExtendedProp('type', updatedEvent.type);
+  //     existingEvent.setExtendedProp('location', updatedEvent.location);
+  //     existingEvent.setExtendedProp('description', updatedEvent.description);
+  //     existingEvent.setExtendedProp('is_reminder', updatedEvent.is_reminder);
+  //     existingEvent.setExtendedProp('reminder', updatedEvent.reminder);
+  //     existingEvent.setExtendedProp('is_repeat', updatedEvent.is_repeat);
+  //     existingEvent.setExtendedProp('recurrence', updatedEvent.recurrence);
       
-      // Cập nhật các thuộc tính RRULE nếu là sự kiện lặp lại
-      if (updatedEvent.is_repeat) {
-        Object.keys(updatedEvent.info.extendedProps).forEach(key => {
-          existingEvent.setExtendedProp(key, updatedEvent.info.extendedProps[key]);
-        });
-      }
-    }
+  //     // Cập nhật các thuộc tính RRULE nếu là sự kiện lặp lại
+  //     if (updatedEvent.is_repeat) {
+  //       Object.keys(updatedEvent.info.extendedProps).forEach(key => {
+  //         existingEvent.setExtendedProp(key, updatedEvent.info.extendedProps[key]);
+  //       });
+  //     }
+  //   }
     
-    // Refresh view để đảm bảo hiển thị đúng
-    calendar.refetchEvents();
+  //   // Refresh view để đảm bảo hiển thị đúng
+  //   calendar.refetchEvents();
     
-    // Gọi handleEventModalSuccess để cập nhật lại dữ liệu trong useCalendarSetup
-    handleEventModalSuccess();
-  } catch (error) {
-    console.error('Error updating calendar event:', error);
-  }
+  //   // Gọi handleEventModalSuccess để cập nhật lại dữ liệu trong useCalendarSetup
+    
+  // } catch (error) {
+  //   console.error('Error updating calendar event:', error);
+  // }
+  handleEventModalSuccess();
 };
 
 const changeView = (view) => {
@@ -997,4 +998,10 @@ onMounted(() => {
 :deep(.custom-select:hover .ant-select-selector) {
   background-color: #FEF9EF !important;
 }
+
+:deep(.task_done) {
+  opacity: 0.5 !important;
+  text-decoration: line-through !important;
+}
+
 </style>
