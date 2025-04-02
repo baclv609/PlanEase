@@ -227,9 +227,12 @@ const fetchUsers = async (params = {}) => {
       headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
     });
 
+    
+
     if (response.data && response.data.data) {
       dataSource.value.list = response.data.data.data;
       pagination.value.total = response.data.data.total;
+      
       
       // Chỉ cập nhật tổng số user active khi không có tìm kiếm
       if (!searchText.value) {

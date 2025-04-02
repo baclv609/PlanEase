@@ -15,21 +15,24 @@ const dirApi = import.meta.env.VITE_API_BASE_URL;
 const selectedEvent = ref(null);
 const editOption = ref("");
 
-const { initSettings, getUserTimezone } = useSettings();
 
-// Gọi initSettings để khởi tạo cài đặt
-initSettings();
-const userTimezone = getUserTimezone();
+
 
 export function useCalendarDrop() {
     const eventDrop = async (info) => {
-        let oldStart = dayjs(info.oldEvent.start).format("YYYY-MM-DD HH:mm:ss");
-        let oldEnd = info.oldEvent.end ? dayjs(info.oldEvent.end).format("YYYY-MM-DD HH:mm:ss") : null;
-        let newStart = dayjs(info.event.start).format("YYYY-MM-DD HH:mm:ss");
-        let newEnd = info.event.end ? dayjs(info.event.end).format("YYYY-MM-DD HH:mm:ss") : null;
+        const taskTimezone = info.event.extendedProps.timezone;
+        
+        // Chuyển đổi thời gian sang UTC trước khi lưu
+        let oldStart = dayjs(info.oldEvent.start).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss");
+        let oldEnd = info.oldEvent.end ? dayjs(info.oldEvent.end).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss") : null;
+        let newStart = dayjs(info.event.start).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss");
+        let newEnd = info.event.end ? dayjs(info.event.end).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss") : null;
     
         const isAllDay = info.event.allDay;
-    
+
+        console.log("Task timezone:", taskTimezone);
+        console.log("Converted times:", { oldStart, oldEnd, newStart, newEnd });
+        
         if (isAllDay) {
             newEnd = dayjs(newStart).add(1, 'day').format("YYYY-MM-DD HH:mm:ss");
         }
@@ -93,7 +96,7 @@ export function useCalendarDrop() {
                         start_time: newStart,
                         end_time: newEnd,
                         id: info.event.id,
-                        timezone_code: userTimezone,
+                        timezone_code: taskTimezone,
                         is_all_day: isAllDay ? 1 : 0
                     };
     
@@ -112,7 +115,7 @@ export function useCalendarDrop() {
                 start_time: newStart,
                 end_time: newEnd,
                 id: info.event.id,
-                timezone_code: userTimezone,
+                timezone_code: taskTimezone,
                 is_all_day: isAllDay ? 1 : 0
             };
     
@@ -121,26 +124,19 @@ export function useCalendarDrop() {
     };
 
     const eventResize = async (info) => {
-        let oldStart = dayjs(info.oldEvent.start).format("YYYY-MM-DD HH:mm:ss");
-        let oldEnd = info.oldEvent.end ? dayjs(info.oldEvent.end).format("YYYY-MM-DD HH:mm:ss") : null;
-        let newStart = dayjs(info.event.start).format("YYYY-MM-DD HH:mm:ss");
-        let newEnd = info.event.end ? dayjs(info.event.end).format("YYYY-MM-DD HH:mm:ss") : null;
+        const taskTimezone = info.event.extendedProps.timezone;
+        
+        // Chuyển đổi thời gian sang UTC trước khi lưu
+        let oldStart = dayjs(info.oldEvent.start).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss");
+        let oldEnd = info.oldEvent.end ? dayjs(info.oldEvent.end).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss") : null;
+        let newStart = dayjs(info.event.start).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss");
+        let newEnd = info.event.end ? dayjs(info.event.end).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss") : null;
     
         const isAllDay = info.event.allDay;
-        // Kiểm tra xem có phải sự kiện đầu tiên không
         const isFirstEvent = !info.event.extendedProps.parent_id;
-    
-        // Log để debug
-        console.log('Event Info:', {
-            oldStart,
-            oldEnd,
-            newStart,
-            newEnd,
-            isAllDay,
-            isFirstEvent,
-            parent_id: info.event.extendedProps.parent_id,
-            recurrence: info.event.extendedProps.recurrence
-        });
+
+        console.log("Task timezone:", taskTimezone);
+        console.log("Converted times:", { oldStart, oldEnd, newStart, newEnd });
     
         if (info.event.extendedProps.recurrence === 1) {
             selectedEvent.value = {
@@ -151,9 +147,7 @@ export function useCalendarDrop() {
                 is_all_day: isAllDay ? 1 : 0
             };
     
-            // Tạo mảng options cho modal
             const modalOptions = [
-                // Option 1: Luôn hiển thị
                 h("div", { class: "mb-3" }, [
                     h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
                         h("input", {
@@ -168,7 +162,6 @@ export function useCalendarDrop() {
                         h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
                     ]),
                 ]),
-                // Option 1B: Luôn hiển thị
                 h("div", { class: "mb-3" }, [
                     h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
                         h("input", {
@@ -183,7 +176,6 @@ export function useCalendarDrop() {
                         h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
                     ]),
                 ]),
-                // Option A: Chỉ hiển thị khi KHÔNG phải sự kiện đầu tiên
                 h("div", { class: "mb-3" }, [
                     h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
                         h("input", {
@@ -200,7 +192,6 @@ export function useCalendarDrop() {
                 ])
             ];
     
-            // Option A: Chỉ hiển thị khi KHÔNG phải sự kiện đầu tiên
             if (!isFirstEvent) {
                 modalOptions.push(
                     h("div", { class: "mb-3" }, [
@@ -239,11 +230,10 @@ export function useCalendarDrop() {
                         start_time: newStart,
                         end_time: newEnd,
                         id: info.event.id,
-                        timezone_code: userTimezone,
+                        timezone_code: taskTimezone,
                         is_all_day: isAllDay ? 1 : 0
                     };
     
-                    // Thêm log để debug payload
                     console.log('Payload:', payload);
 
                     handleUpdate(payload, info);
@@ -258,7 +248,7 @@ export function useCalendarDrop() {
                 start_time: newStart,
                 end_time: newEnd,
                 id: info.event.id,
-                timezone_code: userTimezone,
+                timezone_code: taskTimezone,
                 is_all_day: isAllDay ? 1 : 0
             };
     
