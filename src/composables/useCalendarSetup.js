@@ -236,8 +236,9 @@ const filterEvents = (hiddenIds) => {
 
 const updateTransformedEvents = () => {
   // Gán kết quả filter vào transformedEvents
-  transformedEvents.value = filterEvents([ ]);
-  
+  transformedEvents.value = filterEvents([]);
+
+  // transformedEvents.value =[...transformedEvents.value ];
   
   // Thêm các events đã lọc vào store
   transformedEvents.value.forEach((event) => calendarStore.addEventStore(event));
@@ -251,7 +252,6 @@ const updateTransformedEvents = () => {
   //   //   event.tag_id !== null && typeof event.tag_id === 'number'
   //   // );
   //   transformedEvents.value.forEach((event) => calendarStore.addEventStore(event));
-  //   console.log('Events showing only tags 26, 29, 30:', transformedEvents.value);
   // };
 
   onMounted(async () => {
