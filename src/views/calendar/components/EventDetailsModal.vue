@@ -118,6 +118,7 @@ watch(() => props.isEventDetailModalVisible, (newVal) => {
 watch(
   () => props.event, async (newVal) => {
     event.value = newVal;
+    // console.log(event.value);
     if(props.event != null && newVal && newVal.attendees?.length > 0){
       const currentUserAttendee = newVal.attendees.find(attendee => attendee.user_id == user.value.id);
 
@@ -581,6 +582,57 @@ const formatFileSize = (bytes) => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
+
+const completeTask = async (id) => {
+  let formData = {};
+  if(event.value.type === 'task' && event.value.recurrence == 0) {
+    formData = {
+      is_done: 1,
+      code: "EDIT_N",
+      updated_date: event.value.start,
+      timezone_code: event.value.timezone,
+      start_time: dayjs(event.value.start).format("YYYY-MM-DD HH:mm:ss"),
+      end_time: dayjs(event.value.end).format("YYYY-MM-DD HH:mm:ss"),
+      title: event.value.title,
+      description: event.value.description || '',
+      color_code: event.value.color,
+      type: 'task',
+    }
+  } else {
+    formData = {
+      is_done: 1,
+      code: "EDIT_1",
+      updated_date: dayjs(event.value.start).format("YYYY-MM-DD HH:mm:ss"),
+      timezone_code: event.value.timezone,
+      start_time: dayjs(event.value.start).format("YYYY-MM-DD HH:mm:ss"),
+      end_time: dayjs(event.value.end).format("YYYY-MM-DD HH:mm:ss"),
+      title: event.value.title,
+      description: event.value.description || '',
+      color_code: event.value.color,
+      type: 'task',
+      attendees: [],
+      location: '',
+      is_all_day: event.value.is_all_day,
+      is_private: event.value.is_private,
+      is_reminder: event.value.is_reminder,
+      reminder: [],
+      is_busy: event.value.is_busy ? 1 : 0,  
+      link: '',
+    }
+  }
+  console.log(formData);
+  const response = await axios.put(`${dirApi}tasks/${id}`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if(response.data.code == 200) {
+    message.success("Đã hoàn thành công việc");
+    emit("delete", id);
+    handleClose();
+  }
+}
 </script>
 
 <template>
@@ -600,7 +652,7 @@ const formatFileSize = (bytes) => {
         <DeleteOutlined class="text-xl" />
       </button>
       <button
-        v-if="(event.user_id == user.id && !event.is_private)"
+        v-if="(event.user_id == user.id && !event.is_private) && (event.type == 'event')"
         class="text-gray-800 px-[10px] py-2 border-none rounded-full cursor-pointer bg-transparent hover:bg-gray-100 transition"
         @click="showModalLink">
         <ShareAltOutlined class="text-xl" />
@@ -675,8 +727,8 @@ const formatFileSize = (bytes) => {
                     <div class="flex items-center space-x-2">
                       <CalendarOutlined class="text-gray-500" />
                       <p class="text-gray-800 mb-0">
-                        {{ dayjs(event.start).tz(event.timezone).tz(userTimezone).format("dddd, D/M/YYYY") }} - 
-                        {{ event.end ? dayjs(event.end).tz(event.timezone).tz(userTimezone).format("dddd, D/M/YYYY") : '' }}
+                        {{ dayjs(event.start).format("dddd, D/M/YYYY") }} - 
+                        {{ event.end ? dayjs(event.end).format("dddd, D/M/YYYY") : '' }}
                       </p>
                     </div>
                     <div class="ml-10">
@@ -855,7 +907,7 @@ const formatFileSize = (bytes) => {
       </div> -->
 
           <!-- Calendar -->
-          <div class="flex items-start">
+          <div class="flex items-start" v-if="event.type == 'event'">
             <div class="w-6 h-6 flex-shrink-0 mr-3">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
@@ -864,7 +916,10 @@ const formatFileSize = (bytes) => {
               </svg>
             </div>
             <div>
-              <p class="font-medium mb-0">Lịch</p>
+              <div class="flex items-center">
+                <p class="font-medium mb-0">Lịch</p>
+                <div v-if="event.tag_color_code" class="w-3 h-3 rounded-full ml-1" :style="{ backgroundColor: event.tag_color_code }"></div>
+              </div>
               <p class="text-sm text-gray-600">{{ event.tag_name || 'Không có' }}</p>
             </div>
           </div>
@@ -915,9 +970,14 @@ const formatFileSize = (bytes) => {
             </button>
           </div>
         </div>
+
+        <div v-if="event.type == 'task'" class="flex justify-end">
+          <p v-if="event.is_done == 0" class="text-gray-500 p-2 hover:bg-gray-100 rounded-lg text-sm font-semibold cursor-pointer hover:text-blue-500 transition" @click="completeTask(event.id)">Đánh dấu là đã hoàn thành</p>
+          <p v-else class="text-gray-500 p-2 text-sm font-semibold cursor-pointer hover:text-blue-500 transition text-end">Đã hoàn thành</p>
+        </div>
       </a-tab-pane>
 
-      <a-tab-pane key="attachments" tab="Tệp đính kèm">
+      <a-tab-pane key="attachments" tab="Tệp đính kèm" v-if="event.type == 'event'">
         <div class="p-4">
           <div v-if="files?.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div v-for="(file, index) in files" :key="index" 

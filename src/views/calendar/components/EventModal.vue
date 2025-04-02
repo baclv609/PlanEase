@@ -159,6 +159,7 @@ watch(
       formState.value.start = newVal.start ? dayjs(newVal.start) : null;
       formState.value.end = newVal.end ? dayjs(newVal.end) : null;
       formState.value.is_all_day = newVal.allDay;
+      formState.value.type = newVal.type || 'event';
     }
   },
   { immediate: true }
@@ -228,7 +229,7 @@ const resetForm = () => {
 const rules = {
   title: [
     { required: true, message: "Tiêu đề không được để trống", trigger: "blur" },
-    { min: 3, max: 255, message: "Tiêu đề không được quá 255 ký tự", trigger: "blur" },
+    { min: 3, max: 255, message: "Tiêu đề quá ngắn", trigger: "blur" },
     { max: 255, message: "Tiêu đề không được quá 255 ký tự", trigger: "blur" }
   ],
   start: [
@@ -371,7 +372,7 @@ const handleSave = async () => {
   isLoading.value = true;
   try {
     const dataApi = {
-      title: formState.value.title || 'Không có tiêu đề',
+      title: formState.value.title,
       start_time: formState.value.start
         ? formState.value.start.format("YYYY-MM-DD HH:mm:ss")
         : null,
@@ -745,6 +746,73 @@ const handleBeforeUpload = async (fileList) => {
 
   return false; // Ngăn component <Upload> tự xử lý upload
 };
+
+watch(
+  () => formState.value.type,
+  (newVal) => {
+    if (newVal === 'task' && formState.value.start && formState.value.end) {
+      const startDate = dayjs(formState.value.start);
+      const endDate = dayjs(formState.value.end);
+
+      if (formState.value.is_all_day) {
+        // Nếu là cả ngày, set thời gian bắt đầu là 0h và kết thúc là 0h ngày hôm sau
+        formState.value.start = startDate.startOf('day');
+        formState.value.end = endDate.add(1, 'day').startOf('day');
+      } else {
+        // Nếu không phải cả ngày, đảm bảo kết thúc trong cùng ngày
+        if (!endDate.isSame(startDate, 'day')) {
+          formState.value.end = startDate.endOf('day');
+        }
+      }
+    }
+
+    formState.value.attendees = [];
+    formState.value.is_busy = false;
+    formState.value.is_private = false;
+    formState.value.is_reminder = false;
+    formState.value.reminder = [];
+    formState.value.location = '';
+    formState.value.link = '';
+    formState.value.tag_id = null;
+    formState.value.sendMail = null;
+    formState.value.attachments = [];
+    presignedUrls.value = [];
+  }
+);
+
+watch(
+  () => formState.value.is_all_day,
+  (newVal) => {
+    if (formState.value.type === 'task' && formState.value.start) {
+      if (newVal) {
+        // Khi bật cả ngày
+        formState.value.start = dayjs(formState.value.start).startOf('day');
+        formState.value.end = dayjs(formState.value.start).add(1, 'day').startOf('day');
+      } else {
+        // Khi tắt cả ngày
+        const startDate = dayjs(formState.value.start);
+        formState.value.start = startDate;
+        formState.value.end = startDate.endOf('day');
+      }
+    }
+  }
+);
+
+watch(
+  () => formState.value.start,
+  (newVal) => {
+    if (formState.value.type === 'task' && newVal && formState.value.end) {
+      const startDate = dayjs(newVal);
+      const endDate = dayjs(formState.value.end);
+
+      if (formState.value.is_all_day) {
+        formState.value.end = startDate.add(1, 'day').startOf('day');
+      } else if (!endDate.isSame(startDate, 'day')) {
+        formState.value.end = startDate.endOf('day');
+      }
+    }
+  }
+);
 </script>
 
 <template>
@@ -772,6 +840,41 @@ const handleBeforeUpload = async (fileList) => {
                 <Input v-model:value="formState.title" placeholder="Nhập tiêu đề sự kiện" class="bg-gray-50 rounded-lg">
 
                 </Input>
+              </Form.Item>
+            </div>
+          </div>
+
+          <!-- Event Type Section -->
+          <div class="form-section">
+            <div class="section-title">
+              <TagOutlined class="text-gray-500 mr-2" />
+              <span>Loại sự kiện</span>
+            </div>
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <Form.Item name="type" class="mb-0">
+                <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="rounded-lg w-full">
+                  <Select.Option value="event">Sự kiện</Select.Option>
+                  <Select.Option value="task">Việc cần làm</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="color_code" class="mb-0">
+                <a-select v-model:value="formState.color_code" placeholder="Chọn màu" class="rounded-lg w-full">
+                  <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
+                    <div class="flex items-center">
+                      <div class="h-4 rounded-full w-4 mr-2" :style="{ backgroundColor: color.value }"></div>
+                      <span>{{ color.label }}</span>
+                    </div>
+                  </a-select-option>
+                </a-select>
+              </Form.Item>
+
+              <Form.Item name="tag" class="mb-0" v-if="formState.type == 'event'">
+                <Select v-model:value="formState.tag_id" placeholder="Chọn loại" class="rounded-lg w-full">
+                  <Select.Option v-for="tag in tags" :key="tag.id" :value="tag.id">
+                    {{ tag.name }}
+                  </Select.Option>
+                </Select>
               </Form.Item>
             </div>
           </div>
@@ -813,7 +916,7 @@ const handleBeforeUpload = async (fileList) => {
                   </DatePicker>
                 </Form.Item>
               </div>
-              <Form.Item label="Múi giờ" name="timezone" class="mb-0">
+              <Form.Item v-if="formState.type != 'task'" label="Múi giờ" name="timezone" class="mb-0">
                 <a-select
                   v-model:value="formState.timezone_code"
                   show-search
@@ -839,8 +942,7 @@ const handleBeforeUpload = async (fileList) => {
               </div>
             </div>
           </div>
-
-          
+    
           <!-- Recurrence Section -->
           <template v-if="formState.is_repeat">
             <div class="form-section">
@@ -848,8 +950,8 @@ const handleBeforeUpload = async (fileList) => {
                 <CalendarOutlined class="text-gray-500 mr-2" />
                 <span>Cài đặt lặp lại</span>
               </div>
-              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div class="space-y-4">
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-7">
+                <div class="space-y-4 col-span-3">
                   <div>
                     <label class="text-gray-700 block font-medium mb-2">Kiểu lặp lại</label>
                     <Select v-model:value="formState.rrule.freq" :options="freqOptions" class="w-full" />
@@ -883,7 +985,7 @@ const handleBeforeUpload = async (fileList) => {
                   </div>
                 </div>
 
-                <div class="space-y-4">
+                <div class="space-y-4 col-span-4">
                   <div class="flex flex-col gap-2 mb-8">
                     <label class="text-gray-700 font-medium">Kết thúc</label>
                     <a-radio-group v-model:value="formState.rrule.endType" class="flex">
@@ -918,7 +1020,7 @@ const handleBeforeUpload = async (fileList) => {
                 <AlignLeftOutlined class="text-gray-500 mr-2" />
                 <span>Mô tả</span>
               </div>
-              <div class="section-title">
+              <div class="section-title" v-if="formState.type == 'event'">
                 <PaperClipOutlined class="text-gray-500 mr-2" />
                 <Upload
                   v-model:file-list="formState.attachments"
@@ -977,7 +1079,7 @@ const handleBeforeUpload = async (fileList) => {
           </div>
 
           <!-- Location Section -->
-          <div class="form-section">
+          <div class="form-section" v-if="formState.type == 'event'">
             <div class="section-title">
               <EnvironmentOutlined class="text-gray-500 mr-2" />
               <span>Địa điểm</span>
@@ -1027,44 +1129,9 @@ const handleBeforeUpload = async (fileList) => {
             </div>
           </div>
 
-          <!-- Event Type Section -->
-          <div class="form-section">
-            <div class="section-title">
-              <TagOutlined class="text-gray-500 mr-2" />
-              <span>Loại sự kiện</span>
-            </div>
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <Form.Item name="type" class="mb-0">
-                <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="rounded-lg w-full">
-                  <Select.Option value="event">Sự kiện</Select.Option>
-                  <Select.Option value="task">Việc cần làm</Select.Option>
-                </Select>
-              </Form.Item>
-
-              <Form.Item name="color_code" class="mb-0">
-                <a-select v-model:value="formState.color_code" placeholder="Chọn màu" class="rounded-lg w-full">
-                  <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
-                    <div class="flex items-center">
-                      <div class="h-4 rounded-full w-4 mr-2" :style="{ backgroundColor: color.value }"></div>
-                      <span>{{ color.label }}</span>
-                    </div>
-                  </a-select-option>
-                </a-select>
-              </Form.Item>
-
-              <Form.Item name="tag" class="mb-0">
-                <Select v-model:value="formState.tag_id" placeholder="Chọn loại" class="rounded-lg w-full">
-                  <Select.Option v-for="tag in tags" :key="tag.id" :value="tag.id">
-                    {{ tag.name }}
-                  </Select.Option>
-                </Select>
-              </Form.Item>
-            </div>
-          </div>
-
-          <div class="form-section flex flex-col gap-2">
+          <div class="form-section flex flex-col gap-2"  v-if="formState.type == 'event'">
             <!-- Privacy and Notification Section -->
-            <div class="grid grid-cols-1 gap-2 md:grid-cols-2" v-if="formState.type == 'event'">
+            <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
               <div>
                 <div class="section-title">
                   <LockOutlined class="text-gray-500 mr-2" />
@@ -1151,7 +1218,7 @@ const handleBeforeUpload = async (fileList) => {
           </div>
 
           <!-- URL Section -->
-          <div class="form-section">
+          <div class="form-section"  v-if="formState.type == 'event'">
             <div class="section-title">
               <LinkOutlined class="text-gray-500 mr-2" />
               <span>Liên kết</span>

@@ -704,6 +704,9 @@ const createEvent = () => {
 const createTask = () => {
   selectedEventAdd.value = {
     type: "task",
+    start: dayjs().format("YYYY-MM-DD HH:mm"),
+    end: dayjs().add(30, "minutes").format("YYYY-MM-DD HH:mm"),
+    allDay: false,
   };
   isAddEventModalVisible.value = true;
 };
