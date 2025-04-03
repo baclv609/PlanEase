@@ -1094,8 +1094,12 @@ const handleSubmit = async () => {
             const hasFreqChanged = originalFreq !== newFreq;
 
             // Check if start time has changed - compare actual time values
-            const originalStart = dayjs(props.event?.start).tz(props.event?.info?.extendedProps?.timezone).format("YYYY-MM-DD HH:mm:ss");
-            const newStart = formState.value.start.tz(formState.value.timezone_code).format("YYYY-MM-DD HH:mm:ss");
+            const originalStart = dayjs(props.event?.start)
+                                    .tz(props.event?.info?.extendedProps?.timezone)
+                                    .format(props.event?.info?.allDay ? "YYYY-MM-DD 00:00:00" : "YYYY-MM-DD HH:mm:ss");
+            const newStart = formState.value.start
+                                    .tz(formState.value.timezone_code)
+                                    .format(props.event?.info?.allDay ? "YYYY-MM-DD 00:00:00" : "YYYY-MM-DD HH:mm:ss");
             const hasStartChanged = originalStart !== newStart;
 
             // Case 1: Only start time changed, frequency unchanged
