@@ -111,6 +111,11 @@
     "enter_description": "Nhập mô tả tag",
     "invitees": "Người được mời",
     "guests": "Khách mời",
+    "attendeeRole": "Quyền của người tham gia",
+    "roles": {
+      "viewer": "Chỉ xem",
+      "editor": "Được sửa"
+    },
     "error": {
       "fetch_tags": "Không thể lấy danh sách tag của bạn",
       "fetch_shared_tags": "Không thể lấy danh sách tag được chia sẻ",

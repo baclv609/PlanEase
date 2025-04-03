@@ -110,6 +110,11 @@
     "enter_description": "Enter tag description",
     "invitees": "Invitees",
     "guests": "Guests",
+    "attendeeRole": "Attendee Role",
+    "roles": {
+      "viewer": "View Only",
+      "editor": "Can Edit"
+    },
     "error": {
       "fetch_tags": "Cannot fetch your tags list",
       "fetch_shared_tags": "Cannot fetch shared tags list",
