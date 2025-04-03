@@ -565,11 +565,7 @@ const updateFormStateFromProps = (event) => {
             is_private: event.is_private,
             color_code: event.color || "#ff4d4f",
             is_reminder: Boolean(event.is_reminder),
-            reminder:Array.isArray(event.reminder) ? event.reminder.map(r => ({
-                type: r.type || "email",
-                time: r.set_time || 5,
-                unit: r.set_time >= 60 ? "hours" : "minutes"  // Tự động xác định đơn vị
-            })) : [],
+            reminder: parseReminders(event.reminder),
             is_repeat: event.recurrence === 1 ? Boolean(event.recurrence === 1) : false,
             exclude_time: Array.isArray(event.info?.extendedProps?.exclude_time) 
                 ? event.info.extendedProps.exclude_time 
@@ -908,6 +904,20 @@ const formatReminders = (reminders) => {
     return formattedReminders.filter((reminder, index, self) =>
         index === self.findIndex((r) => r.type === reminder.type && r.set_time === reminder.set_time)
     );
+};
+const parseReminders = (reminders) => {
+    if (!Array.isArray(reminders)) {
+        return [];
+    }
+
+    return reminders.map(reminder => {
+        const set_time = reminder.set_time || 5;
+        return {
+            type: reminder.type || "email",
+            time: set_time >= 60 ? Math.floor(set_time / 60) : set_time,
+            unit: set_time >= 60 ? "hours" : "minutes"
+        };
+    });
 };
 const handleDateChange = (dates) => {
     if (dates && dates.length === 2) {
