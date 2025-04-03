@@ -20,7 +20,8 @@ import { useCalendarStore } from '@/stores/calendarStore';
 import { useCalendarDrop } from '@/composables/useCalendarDrop';
 
 import tippy from 'tippy.js';
-import 'tippy.js/dist/tippy.css'; // Import CSS cho tooltip
+import 'tippy.js/dist/tippy.css'; 
+import { useHiddenTagsStore } from '@/stores/hiddenTagsStore';
 
 dayjs.extend(utc);
 
@@ -29,9 +30,9 @@ const selectedTimezone = computed(() => settingsStore.timeZone);
 const user_id = JSON.parse(localStorage.getItem('user')).id;
 const calendarRef = ref(null);
 
+
 // Kéo thả
 const { eventDrop, eventResize } = useCalendarDrop();
-
 
 function calculateDuration(start_time, end_time) {
   const start = new Date(start_time);
@@ -209,6 +210,10 @@ export function useCalendar(calendarRef) {
 
   const calendarStore = useCalendarStore();
 
+
+  const hiddenTagsStore = useHiddenTagsStore(); // Gọi store
+
+
   const transformedEvents = ref([]);
   
 // Hàm lọc sự kiện theo danh sách tag_id
@@ -235,24 +240,21 @@ const filterEvents = (hiddenIds) => {
 };
 
 const updateTransformedEvents = () => {
-  // Gán kết quả filter vào transformedEvents
-  transformedEvents.value = filterEvents([]);
+  // transformedEvents.value = filterEvents([]); // filterEvents([]) truyền vào tag muốn ân 
 
-  // transformedEvents.value =[...transformedEvents.value ];
+  transformedEvents.value = filterEvents(hiddenTagsStore.hiddenTags); // không muốn ẩn hiện thì comment 
+
+  // transformedEvents.value =[...transformedEvents.value ];  // giá trị mặc định k có ẩn hiện 
   
-  // Thêm các events đã lọc vào store
   transformedEvents.value.forEach((event) => calendarStore.addEventStore(event));
   
-  console.log('Filtered events:', transformedEvents.value);
 };
 
-  // const updateTransformedEvents = () => {
-  //   // Filter to only show events with tag_id 26, 29, 30 and hide null/other tag_ids
-  //   // transformedEvents.value = formattedEvents.value.filter(event => 
-  //   //   event.tag_id !== null && typeof event.tag_id === 'number'
-  //   // );
-  //   transformedEvents.value.forEach((event) => calendarStore.addEventStore(event));
-  // };
+// watch theo dõi ẩn hiện tag 
+watch(() => hiddenTagsStore.hiddenTags, (newHiddenTags) => {
+  // console.log("Hidden tags thay đổi:", newHiddenTags);
+  updateTransformedEvents(); // cập nhật lịch
+}, { deep: true });
 
   onMounted(async () => {
     await fetchEvents();

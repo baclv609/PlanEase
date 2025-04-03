@@ -276,11 +276,16 @@ import EventModal from "@/views/calendar/components/EventModal.vue";
 import moment from "moment-timezone";
 import { useI18n } from "vue-i18n";
 import { useUpcomingTasksStore } from '@/stores/upcomingTasksStore';
+import { useHiddenTagsStore } from "@/stores/hiddenTagsStore";
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem("access_token");
 
 const { t } = useI18n();
+
+const hiddenTagsStore = useHiddenTagsStore(); // Khởi tạo store
+
+
 
 const isModalOpenAddTag = ref(false);
 const isModalOpenUpdateTag = ref(false);
@@ -309,6 +314,7 @@ const isAddEventModalVisible = ref(false);
 const selectedEventAdd = ref(null);
 
 const store = useUpcomingTasksStore();
+const settingsStore = useSettingsStore();
 
 const loading = computed(() => store.loading);
 const error = computed(() => store.error);
@@ -357,8 +363,6 @@ const fetchUser = debounce(async (value) => {
 // Khởi tạo echo store
 const echoStore = useEchoStore();
 
-const settingsStore = useSettingsStore();
-
 const isInitialDataLoaded = ref(false);
 let refreshInterval;
 
@@ -368,6 +372,8 @@ const previousValues = ref({
   timeZone: settingsStore.timeZone,
   timeFormat: settingsStore.timeFormat
 });
+
+// const calendarTagsStore = useCalendarTagsStore();
 
 // 1.
 const fetchUpcomingTasks = async () => {
@@ -487,7 +493,8 @@ const updateFilteredEvents = () => {
     .filter(cal => !selectedCalendars.value.includes(cal.id))
     .map(cal => cal.id);
 
-  console.log("Các tag bị bỏ tích:", unselectedTags);
+    hiddenTagsStore.setHiddenTags(unselectedTags);
+    // console.log("Các tag bị bỏ tích:", unselectedTags);
 };
 
 watch(
@@ -862,10 +869,30 @@ const hasMoreTasks = computed(() => {
   return formattedUpcomingTasks.value.length > 3;
 });
 
-// Thêm hàm xử lý click vào nút xem thêm
 const viewMoreEvents = () => {
   router.push({ name: "upcoming" });
 };
+
+// Thêm hàm xử lý khi checkbox thay đổi
+const handleCheckboxChange = (checked, calendarId) => {
+  if (checked) {
+    // Nếu tag đang bị ẩn và được tích, hiển thị tất cả tags
+    const isHidden = !displayedCalendars.value.some(cal => cal.id === calendarId) || 
+                    !displayedSharedCalendars.value.some(cal => cal.id === calendarId);
+    
+    if (isHidden) {
+      if (myCalendars.value.some(cal => cal.id === calendarId)) {
+        showAll.value = true;
+      } else if (sharedCalendars.value.some(cal => cal.id === calendarId)) {
+        showAllShared.value = true;
+      }
+    }
+    // Xóa tag khỏi danh sách ẩn
+    // calendarTagsStore.removeHiddenTagId(calendarId);
+  }
+};
+
+
 </script>
 
 <style scoped>

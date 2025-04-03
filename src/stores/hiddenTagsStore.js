@@ -1,50 +1,17 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { defineStore } from "pinia";
+import { ref } from "vue";
 
-export const useHiddenTagsStore = defineStore('hiddenTags', () => {
-  // State
-  const hiddenTagIds = ref([]);
+export const useHiddenTagsStore = defineStore("hiddenTags", () => {
+  const hiddenTags = ref([]); 
 
-  // Actions
-  const addHiddenTag = (tagId) => {
-    if (!hiddenTagIds.value.includes(tagId)) {
-      hiddenTagIds.value.push(tagId);
-    }
-  };
-
-  const removeHiddenTag = (tagId) => {
-    hiddenTagIds.value = hiddenTagIds.value.filter(id => id !== tagId);
-  };
-
+  // Cập nhật danh sách tag bị ẩn
   const setHiddenTags = (tags) => {
-    hiddenTagIds.value = tags;
-  };
-
-  const clearHiddenTags = () => {
-    hiddenTagIds.value = [];
-  };
-
-  // Getters
-  const getHiddenTags = () => {
-    return hiddenTagIds.value;
-  };
-
-  const isTagHidden = (tagId) => {
-    return hiddenTagIds.value.includes(tagId);
+    hiddenTags.value = tags;
+    // console.log("Store cập nhật hiddenTags:", hiddenTags.value);
   };
 
   return {
-    // State
-    hiddenTagIds,
-    
-    // Actions
-    addHiddenTag,
-    removeHiddenTag,
+    hiddenTags,
     setHiddenTags,
-    clearHiddenTags,
-    
-    // Getters
-    getHiddenTags,
-    isTagHidden
   };
-}); 
+});
