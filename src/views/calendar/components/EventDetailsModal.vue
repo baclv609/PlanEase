@@ -629,7 +629,7 @@ const completeTask = async (id) => {
     formData = {
       is_done: 1,
       code: "EDIT_N",
-      updated_date: event.value.start,
+      updated_date: dayjs(event.value.start).format("YYYY-MM-DD HH:mm:ss"),
       timezone_code: event.value.timezone,
       start_time: dayjs(event.value.start).format("YYYY-MM-DD HH:mm:ss"),
       end_time: dayjs(event.value.end).format("YYYY-MM-DD HH:mm:ss"),
