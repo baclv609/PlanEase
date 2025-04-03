@@ -97,87 +97,83 @@
       </div>
 
       <a-checkbox-group v-model:value="selectedCalendars" class="flex flex-col gap-2" @change="updateFilteredEvents">
-        <!-- Lịch của tôi -->
-        <div v-if="myCalendars.length">
-          <h4 class="text-gray-500 text-sm font-semibold mb-2">📌 Lịch của tôi</h4>
+    <!-- Lịch của tôi -->
+    <div v-if="myCalendars.length">
+      <div v-for="calendar in displayedCalendars" :key="calendar.id"
+        class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
+        :style="{ borderLeft: `4px solid ${calendar.color}` }">
 
-          <div v-for="calendar in displayedCalendars" :key="calendar.id"
-            class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
-            :style="{ borderLeft: `4px solid ${calendar.color}` }">
-
-            <div class="flex items-center">
-              <span
-                :style="{ backgroundColor: calendar.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '8px' }"></span>
-              <!-- Hình tròn nhỏ -->
-              <a-checkbox :value="calendar.id" class="">
-                <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
-              </a-checkbox>
-            </div>
-
-            <a-dropdown>
-              <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
-                  <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
-                  <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item>
-                  <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
-                </a-menu>
-              </template>
-            </a-dropdown>
-          </div>
-          <div v-if="myCalendars.length > 5" class="flex justify-center mt-2" >
-            <a-button type="text" @click="showAll = !showAll">
-              <template v-if="showAll">
-                <CaretUpOutlined />
-              </template>
-              <template v-else>
-                <CaretDownOutlined />
-              </template>
-            </a-button>
-          </div>
+        <div class="flex items-center">
+          <span
+            :style="{ backgroundColor: calendar.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '8px' }"></span>
+          <a-checkbox :value="calendar.id" :checked="true" class="">
+            <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
+          </a-checkbox>
         </div>
 
-        <!-- Lịch được chia sẻ -->
-        <div v-if="sharedCalendars.length" class="mt-4">
-          <h4 class="text-gray-500 text-sm font-semibold mb-2">🔗 Lịch được chia sẻ</h4>
-          <div v-for="calendar in displayedSharedCalendars" :key="calendar.id"
-            class="flex bg-white border border-gray-200 justify-between p-2 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
-            :style="{ borderLeft: `5px solid ${calendar.color}` }">
+        <a-dropdown>
+          <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
+          <template #overlay>
+            <a-menu>
+              <!-- <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item> -->
+              <!-- <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item> -->
+              <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item>
+              <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
+            </a-menu>
+          </template>
+        </a-dropdown>
+      </div>
+      <div v-if="myCalendars.length > 5" class="flex justify-center mt-2">
+        <a-button type="text" @click="showAll = !showAll">
+          <template v-if="showAll">
+            <CaretUpOutlined />
+          </template>
+          <template v-else>
+            <CaretDownOutlined />
+          </template>
+        </a-button>
+      </div>
+    </div>
 
-            <div class="flex items-center">
-              <span
-                :style="{ backgroundColor: calendar.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '8px' }"></span>
-              <a-checkbox :value="calendar.id" class="ml-2">
-                <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
-              </a-checkbox>
-            </div>
+    <!-- Lịch được chia sẻ -->
+    <div v-if="sharedCalendars.length" class="mt-4">
+      <h4 class="text-gray-500 text-sm font-semibold mb-2">🔗 Lịch được chia sẻ</h4>
+      <div v-for="calendar in displayedSharedCalendars" :key="calendar.id"
+        class="flex bg-white border border-gray-200 justify-between p-2 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
+        :style="{ borderLeft: `5px solid ${calendar.color}` }">
 
-            <a-dropdown>
-              <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
-                  <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
-                  <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item> <a-menu-item
-                    @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
-                </a-menu>
-              </template>
-            </a-dropdown>
-          </div>
-          <div v-if="sharedCalendars.length > 5" class="flex justify-center mt-2">
-            <a-button type="text" @click="showAllShared = !showAllShared">
-              <template v-if="showAllShared">
-                <CaretUpOutlined />
-              </template>
-              <template v-else>
-                <CaretDownOutlined />
-              </template>
-            </a-button>
-          </div>
-
+        <div class="flex items-center">
+          <span
+            :style="{ backgroundColor: calendar.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '8px' }"></span>
+          <a-checkbox :value="calendar.id" :checked="true" class="ml-2">
+            <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
+          </a-checkbox>
         </div>
-      </a-checkbox-group>
+
+        <a-dropdown>
+          <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
+          <template #overlay>
+            <a-menu>
+              <!-- <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item> -->
+              <!-- <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item> -->
+              <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item>
+              <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
+            </a-menu>
+          </template>
+        </a-dropdown>
+      </div>
+      <div v-if="sharedCalendars.length > 5" class="flex justify-center mt-2">
+        <a-button type="text" @click="showAllShared = !showAllShared">
+          <template v-if="showAllShared">
+            <CaretUpOutlined />
+          </template>
+          <template v-else>
+            <CaretDownOutlined />
+          </template>
+        </a-button>
+      </div>
+    </div>
+  </a-checkbox-group>
     </div>
   </a-card>
 
@@ -280,11 +276,16 @@ import EventModal from "@/views/calendar/components/EventModal.vue";
 import moment from "moment-timezone";
 import { useI18n } from "vue-i18n";
 import { useUpcomingTasksStore } from '@/stores/upcomingTasksStore';
+import { useHiddenTagsStore } from "@/stores/hiddenTagsStore";
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem("access_token");
 
 const { t } = useI18n();
+
+const hiddenTagsStore = useHiddenTagsStore(); // Khởi tạo store
+
+
 
 const isModalOpenAddTag = ref(false);
 const isModalOpenUpdateTag = ref(false);
@@ -313,6 +314,7 @@ const isAddEventModalVisible = ref(false);
 const selectedEventAdd = ref(null);
 
 const store = useUpcomingTasksStore();
+const settingsStore = useSettingsStore();
 
 const loading = computed(() => store.loading);
 const error = computed(() => store.error);
@@ -361,8 +363,6 @@ const fetchUser = debounce(async (value) => {
 // Khởi tạo echo store
 const echoStore = useEchoStore();
 
-const settingsStore = useSettingsStore();
-
 const isInitialDataLoaded = ref(false);
 let refreshInterval;
 
@@ -372,6 +372,8 @@ const previousValues = ref({
   timeZone: settingsStore.timeZone,
   timeFormat: settingsStore.timeFormat
 });
+
+// const calendarTagsStore = useCalendarTagsStore();
 
 // 1.
 const fetchUpcomingTasks = async () => {
@@ -486,13 +488,35 @@ const handleViewChange = ({ mode, date, start, end, events }) => {
 };
 
 const updateFilteredEvents = () => {
-  filteredEvents.value = events.value.filter((event) =>
-    selectedCalendars.value.includes(event.calendarId)
-  );
+  // Lưu danh sách các tag bị bỏ tích
+  const unselectedTags = [...myCalendars.value, ...sharedCalendars.value]
+    .filter(cal => !selectedCalendars.value.includes(cal.id))
+    .map(cal => cal.id);
+
+    hiddenTagsStore.setHiddenTags(unselectedTags);
+    // console.log("Các tag bị bỏ tích:", unselectedTags);
 };
 
+watch(
+  [myCalendars, sharedCalendars],
+  ([newMyCalendars, newSharedCalendars]) => {
+    // Khi có dữ liệu mới, cập nhật selectedCalendars
+    const allCalendarIds = [...newMyCalendars, ...newSharedCalendars].map(cal => cal.id);
+    selectedCalendars.value = allCalendarIds;
+    updateFilteredEvents();
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  const allCalendarIds = [...myCalendars.value, ...sharedCalendars.value].map(cal => cal.id);
+  selectedCalendars.value = allCalendarIds;
+  updateFilteredEvents();
+});
 const displayOnly = (calendarId) => {
   selectedCalendars.value = [calendarId];
+  // console.log("selectedCalendars.value", selectedCalendars.value);
+  hiddenTagsStore.setHiddenTags(selectedCalendars.value);
 };
 
 const openDrawerAdd = () => {
@@ -850,10 +874,30 @@ const hasMoreTasks = computed(() => {
   return formattedUpcomingTasks.value.length > 3;
 });
 
-// Thêm hàm xử lý click vào nút xem thêm
 const viewMoreEvents = () => {
   router.push({ name: "upcoming" });
 };
+
+// Thêm hàm xử lý khi checkbox thay đổi
+const handleCheckboxChange = (checked, calendarId) => {
+  if (checked) {
+    // Nếu tag đang bị ẩn và được tích, hiển thị tất cả tags
+    const isHidden = !displayedCalendars.value.some(cal => cal.id === calendarId) || 
+                    !displayedSharedCalendars.value.some(cal => cal.id === calendarId);
+    
+    if (isHidden) {
+      if (myCalendars.value.some(cal => cal.id === calendarId)) {
+        showAll.value = true;
+      } else if (sharedCalendars.value.some(cal => cal.id === calendarId)) {
+        showAllShared.value = true;
+      }
+    }
+    // Xóa tag khỏi danh sách ẩn
+    // calendarTagsStore.removeHiddenTagId(calendarId);
+  }
+};
+
+
 </script>
 
 <style scoped>
