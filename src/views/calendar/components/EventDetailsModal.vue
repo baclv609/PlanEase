@@ -50,12 +50,17 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import "dayjs/locale/vi";
 import "dayjs/locale/en";
 
+import { useSettingsStore } from '@/stores/settingsStore';
+
+const settingsStore = useSettingsStore();
+
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(customParseFormat);
 
-const userTimezone = JSON.parse(localStorage.getItem('userSettings')).timeZone;
+const settingTimezone = computed(() => settingsStore.timeZone);
+const userTimezone = computed(() => settingTimezone.value);
 
 const props = defineProps({
   isEventDetailModalVisible: Boolean,
@@ -746,16 +751,16 @@ const completeTask = async (id) => {
                     <div class="flex items-center space-x-2">
                       <CalendarOutlined class="text-gray-500" />
                       <p class="text-gray-800 mb-0">
-                        {{ dayjs(event.start).format("dddd, D/M/YYYY") }} - 
-                        {{ event.end ? dayjs(event.end).format("dddd, D/M/YYYY") : '' }}
+                        {{ dayjs(event.start).tz(userTimezone).format("dddd, D/M/YYYY") }} - 
+                        {{ event.end ? dayjs(event.end).tz(userTimezone).format("dddd, D/M/YYYY") : '' }}
                       </p>
                     </div>
                     <div class="ml-10">
                       <div class="flex items-center space-x-2" v-if="!event.is_all_day">
                         <ClockCircleOutlined class="text-gray-500" />
                         <p class="text-gray-800 mb-0">
-                          {{ dayjs(event.start).format("HH:mm") }} - 
-                          {{ event.end ? dayjs(event.end).format("HH:mm") : '' }}
+                          {{ dayjs(event.start).tz(userTimezone).format("HH:mm") }} - 
+                          {{ event.end ? dayjs(event.end).tz(userTimezone).format("HH:mm") : '' }}
                         </p>
                       </div>
                       <div class="flex items-center space-x-2 col-span-2" v-if="event.is_all_day">
