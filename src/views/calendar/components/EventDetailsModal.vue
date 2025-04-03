@@ -440,7 +440,7 @@ const leaveEvent = async (uuid) => {
       okText: "Rời đi",
       cancelText: "Hủy",
       onOk() {
-        handleLeaveEvent({code: leaveOption.value, id: event.value.id, date: event.value.start, timezone: event.value.timezone});
+        handleLeaveEvent({code: leaveOption.value, id: event.value.id, start_time: event.value.start, end_time: event.value.end, date: event.value.start, timezone: event.value.timezone});
       },
     });
 
@@ -449,7 +449,7 @@ const leaveEvent = async (uuid) => {
   }
 }
 
-const handleLeaveEvent = async ({code, id, date, timezone}) => {
+const handleLeaveEvent = async ({code, id, start_time, end_time, date, timezone}) => {
   try {
     let formattedDate;
     
@@ -465,16 +465,32 @@ const handleLeaveEvent = async ({code, id, date, timezone}) => {
         : dayjs(date).format("YYYY-MM-DD HH:mm:ss");
     }
     
-    console.log({code: code,
-      updated_date: formattedDate,
-      atteendee_id: user.value.id,
-      timezone_code: timezone});
+    console.log(
+      {
+        code: code,
+        updated_date: formattedDate,
+        start_time: event.value.is_all_day 
+          ? dayjs(start_time).tz(timezone).format("YYYY-MM-DD 00:00:00")
+          : dayjs(start_time).tz(timezone).format("YYYY-MM-DD HH:mm:ss"),
+        end_time: event.value.is_all_day 
+          ? dayjs(end_time).tz(timezone).format("YYYY-MM-DD 00:00:00")
+          : dayjs(end_time).tz(timezone).format("YYYY-MM-DD HH:mm:ss"),
+        atteendee_id: user.value.id,
+        timezone_code: timezone
+      }
+    );
 
     const response = await axios.put(`${dirApi}tasks/${id}/attendeeLeaveTask`, {
       code: code,
       updated_date: formattedDate,
+      start_time: event.value.is_all_day 
+        ? dayjs(start_time).tz(timezone).format("YYYY-MM-DD 00:00:00")
+        : dayjs(start_time).tz(timezone).format("YYYY-MM-DD HH:mm:ss"),
+      end_time: event.value.is_all_day 
+        ? dayjs(end_time).tz(timezone).format("YYYY-MM-DD 00:00:00")
+        : dayjs(end_time).tz(timezone).format("YYYY-MM-DD HH:mm:ss"),
       atteendee_id: user.value.id,
-      timezone_code: timezone,
+      timezone_code: timezone
     }, {
       headers: {
         Authorization: `Bearer ${token}`
