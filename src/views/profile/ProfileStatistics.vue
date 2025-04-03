@@ -63,9 +63,11 @@ const disabledDate = (current) => {
 const handleDateChange = async () => {
     if (!dateRange.value) return
     const [startDate, endDate] = dateRange.value
+    const taskTimezone = 'Asia/Hebron' // Sử dụng timezone của task
     await fetchCompletionRate(
-        startDate.format('YYYY-MM-DD'),
-        endDate.format('YYYY-MM-DD')
+        startDate,
+        endDate,
+        taskTimezone
     )
     updateChart()
 }

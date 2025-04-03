@@ -21,7 +21,7 @@ import { useCalendarStore } from '@/stores/calendarStore';
 import { useCalendarDrop } from '@/composables/useCalendarDrop';
 
 import tippy from 'tippy.js';
-import 'tippy.js/dist/tippy.css'; 
+import 'tippy.js/dist/tippy.css';
 import { useHiddenTagsStore } from '@/stores/hiddenTagsStore';
 
 dayjs.extend(utc);
@@ -61,7 +61,7 @@ export function useCalendarEvents() {
         return;
       }
       rawEvents.value = response.data.data || [];
-      // console.log(rawEvents.value);
+      console.log(rawEvents.value);
     } catch (error) {
       console.error('Lỗi khi tải lịch trình:', error);
     }
@@ -71,30 +71,30 @@ export function useCalendarEvents() {
     rawEvents.value.map((event) => {
       const start = event.start_time
         ? DateTime.fromISO(event.start_time, { zone: 'utc' })
-            .setZone(selectedTimezone.value)
-            .toISO() 
+          .setZone(selectedTimezone.value)
+          .toISO()
         : null;
       const end = event.end_time
         ? DateTime.fromISO(event.end_time, { zone: 'utc' })
-            .setZone(selectedTimezone.value)
-            .toISO() 
+          .setZone(selectedTimezone.value)
+          .toISO()
         : null;
 
       // Thêm xử lý múi giờ cho RRule
       const rruleStart = event.start_time
         ? DateTime.fromISO(event.start_time, { zone: 'utc' })
-            .setZone(selectedTimezone.value)
-            .toFormat(event.is_all_day ? 'yyyy-MM-dd' : 'yyyy-MM-dd\'T\'HH:mm:ss') //nếu cả ngày thì giờ
+          .setZone(selectedTimezone.value)
+          .toFormat(event.is_all_day ? 'yyyy-MM-dd' : 'yyyy-MM-dd\'T\'HH:mm:ss') //nếu cả ngày thì giờ
         : null;
 
       const rruleEnd = event.rrule?.until
         ? DateTime.fromISO(event.rrule.until, { zone: 'utc' })
-            .setZone(selectedTimezone.value)
-            .toFormat('yyyy-MM-dd\'T\'HH:mm:ss')
+          .setZone(selectedTimezone.value)
+          .toFormat('yyyy-MM-dd\'T\'HH:mm:ss')
         : null;
 
-      const isEditable = event.user_id == user_id || 
-        (event.attendees && event.attendees.some(attendee => 
+      const isEditable = event.user_id == user_id ||
+        (event.attendees && event.attendees.some(attendee =>
           attendee.user_id == user_id && attendee.role == 'editor'
         ));
 
@@ -109,10 +109,10 @@ export function useCalendarEvents() {
 
       let classDone = '';
       let eventTypeClass = '';
-      if(event.is_done == 1) {
+      if (event.is_done == 1) {
         classDone = 'task_done';
       }
-      if(event.type == 'event') {
+      if (event.type == 'event') {
         eventTypeClass = 'calendar-event border-l-4 border';
       }
       return {
@@ -162,43 +162,43 @@ export function useCalendarEvents() {
           updated_at: event.updated_at || new Date().toISOString()
         },
         exdate: Array.isArray(event.exclude_time)
-            ? !event.is_all_day ? event.exclude_time.map((date) => {
-                // Xử lý thời gian không có múi giờ
-                const dateTime = DateTime.fromISO(date, { zone: 'utc' });
-                return dateTime
-                    .setZone(selectedTimezone.value)
-                    .toISO({ suppressMilliseconds: true, includeOffset: false });
-            }) : event.exclude_time.map((date) => {
-                // Xử lý thời gian cho sự kiện cả ngày
-                const dateTime = DateTime.fromISO(date, { zone: 'utc' });
-                return dateTime
-                    .setZone(selectedTimezone.value)
-                    .startOf('day')
-                    .toFormat('yyyy-MM-dd');
-            }) 
+          ? !event.is_all_day ? event.exclude_time.map((date) => {
+            // Xử lý thời gian không có múi giờ
+            const dateTime = DateTime.fromISO(date, { zone: 'utc' });
+            return dateTime
+              .setZone(selectedTimezone.value)
+              .toISO({ suppressMilliseconds: true, includeOffset: false });
+          }) : event.exclude_time.map((date) => {
+            // Xử lý thời gian cho sự kiện cả ngày
+            const dateTime = DateTime.fromISO(date, { zone: 'utc' });
+            return dateTime
+              .setZone(selectedTimezone.value)
+              .startOf('day')
+              .toFormat('yyyy-MM-dd');
+          })
           : undefined,
         rrule:
           event.is_repeat && event.rrule
             ? {
-                dtstart: rruleStart,
-                freq: event.rrule.freq || null,
-                interval: event.rrule.interval || 1,
-                until: rruleEnd,
-                count: event.rrule.count || null,
-                byweekday: event.rrule.byweekday || null,
-                bymonth: event.rrule.bymonth || null,
-                bymonthday: event.rrule.bymonthday || null,
-                byyearday: event.rrule.byyearday || null,
-                byweekno: event.rrule.byweekno || null,
-                byhour: event.rrule.byhour || null,
-                byminute: event.rrule.byminute || null,
-                bysecond: event.rrule.bysecond || null,
-                wkst: event.rrule.wkst || 1,
-                // tzid: event.timezone_code || selectedTimezone.value,
-              }
+              dtstart: rruleStart,
+              freq: event.rrule.freq || null,
+              interval: event.rrule.interval || 1,
+              until: rruleEnd,
+              count: event.rrule.count || null,
+              byweekday: event.rrule.byweekday || null,
+              bymonth: event.rrule.bymonth || null,
+              bymonthday: event.rrule.bymonthday || null,
+              byyearday: event.rrule.byyearday || null,
+              byweekno: event.rrule.byweekno || null,
+              byhour: event.rrule.byhour || null,
+              byminute: event.rrule.byminute || null,
+              bysecond: event.rrule.bysecond || null,
+              wkst: event.rrule.wkst || 1,
+              // tzid: event.timezone_code || selectedTimezone.value,
+            }
             : null,
-            allDayMaintainDuration: true, 
-            duration: event.is_repeat ? calculateDuration(event.start_time, event.end_time) : null,
+        allDayMaintainDuration: true,
+        duration: event.is_repeat ? calculateDuration(event.start_time, event.end_time) : null,
       };
     })
   );
@@ -226,46 +226,47 @@ export function useCalendar(calendarRef) {
 
 
   const transformedEvents = ref([]);
-  
-// Hàm lọc sự kiện theo danh sách tag_id
-const filterEvents = (hiddenIds) => {
-  // Phải filter từ formattedEvents thay vì transformedEvents để có dữ liệu gốc
-  return formattedEvents.value.filter(event => {
-    // Kiểm tra nếu hiddenIds là mảng hợp lệ
-    if (!Array.isArray(hiddenIds)) {
+
+  // Hàm lọc sự kiện theo danh sách tag_id
+  const filterEvents = (hiddenIds) => {
+    // Phải filter từ formattedEvents thay vì transformedEvents để có dữ liệu gốc
+    return formattedEvents.value.filter(event => {
+      // Kiểm tra nếu hiddenIds là mảng hợp lệ
+      if (!Array.isArray(hiddenIds)) {
+        return true;
+      }
+
+      // Ẩn sự kiện có tag_id là null nếu null nằm trong hiddenIds
+      if (hiddenIds.includes(null) && event.tag_id === null) {
+        return false;
+      }
+
+      // Ẩn sự kiện có tag_id nằm trong danh sách hiddenIds
+      if (hiddenIds.includes(event.tag_id)) {
+        return false;
+      }
+
       return true;
-    }
+    });
+  };
 
-    // Ẩn sự kiện có tag_id là null nếu null nằm trong hiddenIds
-    if (hiddenIds.includes(null) && event.tag_id === null) {
-      return false;
-    }
+  const updateTransformedEvents = () => {
+    // transformedEvents.value = filterEvents([]); // filterEvents([]) truyền vào tag muốn ân 
 
-    // Ẩn sự kiện có tag_id nằm trong danh sách hiddenIds
-    if (hiddenIds.includes(event.tag_id)) {
-      return false; 
-    }
+    transformedEvents.value = filterEvents(hiddenTagsStore.hiddenTags); // không muốn ẩn hiện thì comment 
+    console.log(transformedEvents.value);
 
-    return true;
-  });
-};
+    // transformedEvents.value =[...transformedEvents.value ];  // giá trị mặc định k có ẩn hiện 
 
-const updateTransformedEvents = () => {
-  // transformedEvents.value = filterEvents([]); // filterEvents([]) truyền vào tag muốn ân 
+    transformedEvents.value.forEach((event) => calendarStore.addEventStore(event));
 
-  transformedEvents.value = filterEvents(hiddenTagsStore.hiddenTags); // không muốn ẩn hiện thì comment 
+  };
 
-  // transformedEvents.value =[...transformedEvents.value ];  // giá trị mặc định k có ẩn hiện 
-  
-  transformedEvents.value.forEach((event) => calendarStore.addEventStore(event));
-  
-};
-
-// watch theo dõi ẩn hiện tag 
-watch(() => hiddenTagsStore.hiddenTags, (newHiddenTags) => {
-  // console.log("Hidden tags thay đổi:", newHiddenTags);
-  updateTransformedEvents(); // cập nhật lịch
-}, { deep: true });
+  // watch theo dõi ẩn hiện tag 
+  watch(() => hiddenTagsStore.hiddenTags, (newHiddenTags) => {
+    // console.log("Hidden tags thay đổi:", newHiddenTags);
+    updateTransformedEvents(); // cập nhật lịch
+  }, { deep: true });
 
   onMounted(async () => {
     await fetchEvents();
@@ -276,10 +277,10 @@ watch(() => hiddenTagsStore.hiddenTags, (newHiddenTags) => {
     // console.log(`Timezone đã thay đổi: ${newTimezone}`);
     updateTransformedEvents();
     if (calendarRef.value) {
-        const calendarApi = calendarRef.value.getApi();
-        calendarApi.setOption('timeZone', newTimezone);
-        calendarApi.refetchEvents(); // Cập nhật lại lịch
-      }
+      const calendarApi = calendarRef.value.getApi();
+      calendarApi.setOption('timeZone', newTimezone);
+      calendarApi.refetchEvents(); // Cập nhật lại lịch
+    }
   });
 
   watch(
@@ -293,7 +294,7 @@ watch(() => hiddenTagsStore.hiddenTags, (newHiddenTags) => {
       console.log("Calendar settings changed:", newSettings);
       if (calendarRef.value) {
         const calendarApi = calendarRef.value.getApi();
-        
+
         // Cập nhật các tùy chọn
         calendarApi.setOption('titleFormat', newSettings.titleFormat);
         calendarApi.setOption('dayHeaderFormat', newSettings.dayHeaderFormat);
@@ -302,11 +303,11 @@ watch(() => hiddenTagsStore.hiddenTags, (newHiddenTags) => {
           minute: "2-digit",
           hour12: newSettings.timeFormat === "12h"
         });
-        
+
         // Cập nhật lại view hiện tại
         const currentView = calendarApi.view.type;
         calendarApi.changeView(currentView);
-        
+
         // Cập nhật lại sự kiện
         calendarApi.refetchEvents();
       }
@@ -372,14 +373,14 @@ watch(() => hiddenTagsStore.hiddenTags, (newHiddenTags) => {
         allDay: info.allDay,
       };
     }
-    
+
     isAddEventModalVisible.value = true;
   };
-  
+
   const openEventDetailModal = (info) => {
     const event = info.event;
     const extendedProps = event.extendedProps || {};
-    
+
     selectedEvent.value = {
       id: event.id,
       parent_id: extendedProps.parent_id || null,
@@ -410,7 +411,7 @@ watch(() => hiddenTagsStore.hiddenTags, (newHiddenTags) => {
       created_at: extendedProps.created_at || new Date().toISOString(),
       updated_at: extendedProps.updated_at || new Date().toISOString()
     };
-    
+
     isEventDetailModalVisible.value = true;
   };
   const handleEventModalSuccess = async () => {
@@ -421,7 +422,7 @@ watch(() => hiddenTagsStore.hiddenTags, (newHiddenTags) => {
     // console.log("eventId", eventId);
     // // Xóa sự kiện từ transformedEvents
     // transformedEvents.value = transformedEvents.value.filter(event => event.id !== eventId);
-    
+
     // // Cập nhật lại lịch
     // if (calendarRef.value) {
     //   console.log('delete');
@@ -509,7 +510,7 @@ watch(() => hiddenTagsStore.hiddenTags, (newHiddenTags) => {
     dateClick: openAddEventModal,
     eventClick: openEventDetailModal,
     select: (info) => {
-      if(!info.allDay) {
+      if (!info.allDay) {
         selectedEventAdd.value = {
           start: dayjs(info.startStr).tz(selectedTimezone.value).format('YYYY-MM-DD HH:mm'),
           end: info.view.type == 'dayGridMonth'
@@ -544,7 +545,7 @@ watch(() => hiddenTagsStore.hiddenTags, (newHiddenTags) => {
       if (calendarRef.value && settingsStore.displayMode === 'multiMonthYear') {
         console.log('Updating year view settings:', newSettings);
         const calendarApi = calendarRef.value.getApi();
-        
+
         const viewOptions = {
           type: 'multiMonth',
           duration: { years: 1 },
