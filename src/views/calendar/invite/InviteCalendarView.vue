@@ -6,6 +6,11 @@
   import event from '@/router/event';
   import unknowUser from '@/assets/images/unknow_user.jpg';
   import dayjs from 'dayjs';
+  import utc from 'dayjs/plugin/utc';
+  import timezone from 'dayjs/plugin/timezone';
+
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
 
   const dirApi = import.meta.env.VITE_API_BASE_URL;
   const route = useRoute();
@@ -14,6 +19,7 @@
   const id = route.params.id;
   const eventDetails = ref(null);
   const attendees = ref([]);
+  const userSetting = JSON.parse(localStorage.getItem('userSettings'));
 
   onMounted(async () => {
     try {
@@ -31,6 +37,7 @@
 
       if(response.data.code == 200) {
         eventDetails.value = response.data.data;
+        console.log(eventDetails.value);
         attendees.value = response.data.data.attendees;
         // console.log(attendees);
       }
@@ -108,8 +115,19 @@
     <div class="space-y-6">
       <div class="text-gray-800">
         <!-- <div class="text-lg">thứ năm, 27 tháng 2 • 6:00-7:00CH</div> -->
-        <div class="text-lg">{{ dayjs(eventDetails.task.start_time).format('dddd, MMMM - D • h:mmA') }} - 
-          {{ dayjs(eventDetails.task.end_time).format('dddd, MMMM - D • h:mmA') }}</div>
+        <div class="text-lg">
+          <p class="text-gray-500 text-sm mb-0">Múi giờ sự kiện</p>
+          {{ dayjs.utc(eventDetails.task.start_time).tz(eventDetails.task.timezone_code).format('dddd, MMMM - D • HH:mm') }} - 
+          {{ dayjs.utc(eventDetails.task.end_time).tz(eventDetails.task.timezone_code).format('dddd, MMMM - D • HH:mm') }}
+          <span class="text-xs text-gray-500">{{ eventDetails.task.timezone_code }}</span>
+        </div>
+
+        <div class="text-lg mt-2" v-if="userSetting.timeZone != eventDetails.task.timezone_code">
+          <p class="text-gray-500 text-sm mb-0">Múi giờ của bạn</p>
+          {{ dayjs.utc(eventDetails.task.start_time).tz(userSetting.timeZone).format('dddd, MMMM - D • HH:mm') }} - 
+          {{ dayjs.utc(eventDetails.task.end_time).tz(userSetting.timeZone).format('dddd, MMMM - D • HH:mm') }}
+          <span class="text-xs text-gray-500">{{ userSetting.timeZone }}</span>
+        </div>
       </div>
 
       <div class="">
@@ -120,7 +138,7 @@
 
         <!-- Event Description -->
         <div v-if="eventDetails.task.description" class="text-sm text-gray-600">
-          Description: {{ eventDetails.task.description }}
+          Description: <p v-html="eventDetails.task.description"></p>
         </div>
 
         <div v-if="eventDetails.task.location" class="text-sm text-gray-600">

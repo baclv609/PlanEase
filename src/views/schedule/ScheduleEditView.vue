@@ -603,8 +603,8 @@ const updateFormStateFromProps = (event) => {
                 bysetpos: Array.isArray(event.info?.extendedProps?.bysetpos)
                     ? event.info.extendedProps.bysetpos
                     : [],
-                endType: event.info?.extendedProps?.until && dayjs(event.info?.extendedProps?.until).year() < 3000? "until" 
-                    : event.info?.extendedProps?.count ? "count" 
+                endType: event.info?.extendedProps?.count ? "count" 
+                    : event.info?.extendedProps?.until && dayjs(event.info?.extendedProps?.until).year() < 3000 ? "until" 
                     : ""
             } : {
                 freq: null,
@@ -1093,10 +1093,10 @@ const handleSubmit = async () => {
             const newFreq = formState.value.rrule?.freq;
             const hasFreqChanged = originalFreq !== newFreq;
 
-            // Check if start time has changed
-            const originalStart = dayjs(props.event?.start);
-            const newStart = formState.value.start;
-            const hasStartChanged = !originalStart.isSame(newStart);
+            // Check if start time has changed - compare actual time values
+            const originalStart = dayjs(props.event?.start).tz(props.event?.info?.extendedProps?.timezone).format("YYYY-MM-DD HH:mm:ss");
+            const newStart = formState.value.start.tz(formState.value.timezone_code).format("YYYY-MM-DD HH:mm:ss");
+            const hasStartChanged = originalStart !== newStart;
 
             // Case 1: Only start time changed, frequency unchanged
             if (hasStartChanged && !hasFreqChanged) {
@@ -1288,6 +1288,7 @@ const updateEvent = async ({ code, date, id }) => {
             is_all_day: formState.value.allDay ? 1 : 0,
             is_repeat: formState.value.is_repeat ? 1 : 0,
             parent_id: formState.value.parent_id || null,
+            is_done: 0,
             rrule: formState.value.rrule || null,
             exclude_time: formState.value.exclude_time || null,
             timezone_code: formState.value.timezone_code || null,
@@ -1295,14 +1296,14 @@ const updateEvent = async ({ code, date, id }) => {
             freq: formState.value.rrule?.freq || null,
             interval: formState.value.rrule?.interval ?? 1,
             count: formState.value.rrule?.count ?? null,
-            until: formState.value.rrule?.endType === "until" 
-                ? (formState.value.rrule?.until && 
-                   dayjs(formState.value.rrule.until).format() !== dayjs(props.event?.info?.extendedProps?.until).format()
-                    ? dayjs(formState.value.rrule.until).format("YYYY-MM-DD HH:mm:ss")
-                    : null)
-                : formState.value.rrule?.endType === "" 
-                    ? dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss")
-                    : null,
+            until: formState.value.rrule?.endType === "count" 
+                ? dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss")
+                : formState.value.rrule?.endType === "until" 
+                    ? (formState.value.rrule?.until && 
+                       dayjs(formState.value.rrule.until).format() !== dayjs(props.event?.info?.extendedProps?.until).format()
+                        ? dayjs(formState.value.rrule.until).format("YYYY-MM-DD 00:00:00")
+                        : dayjs(props.event?.info?.extendedProps?.until).format("YYYY-MM-DD 00:00:00"))
+                    : dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
             byweekday: formState.value.rrule?.byweekday.length && formState.value.rrule?.freq === "weekly" ? formState.value.rrule.byweekday : null,
             bymonthday: formState.value.rrule?.bymonthday.length && formState.value.rrule?.freq === "monthly" ? formState.value.rrule.bymonthday : null,
             bymonth: formState.value.rrule?.bymonth.length && formState.value.rrule?.freq === "yearly" ? formState.value.rrule.bymonth : null,

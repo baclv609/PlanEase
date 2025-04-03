@@ -47,6 +47,7 @@ import moment from "moment-timezone";
 import dayjs from "dayjs";
 import axios from "axios";
 import Editor from 'primevue/editor';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
   isAddEventModalVisible: Boolean,
@@ -65,20 +66,22 @@ const tags = ref([]);
 const isLoading = ref(false);
 const presignedUrls = ref([]);
 
+const { t } = useI18n();
+
 const colors = [
-  { label: 'Xanh dương', value: '#1890ff' }, 
-  { label: 'Đỏ', value: '#ff4d4f' }, 
-  { label: 'Xanh lá cây', value: '#52c41a' },
-  { label: 'Vàng', value: '#faad14' }, 
-  { label: 'Tím', value: '#722ed1' },
-  { label: 'Xám', value: '#bfbfbf' }, 
-  { label: 'Cam', value: '#fa541c' }, 
-  { label: 'Hồng', value: '#eb2f96' }, 
-  { label: 'Nâu', value: '#a97c50' }, 
-  { label: 'Xanh ngọc', value: '#13c2c2' }, 
-  { label: 'Xanh lục bảo', value: '#237804' }, 
-  { label: 'Xanh biển', value: '#003a8c' },
-  { label: 'Đen', value: '#000000' }
+  { label: 'blue', value: '#1890ff' }, 
+  { label: 'red', value: '#ff4d4f' }, 
+  { label: 'green', value: '#52c41a' },
+  { label: 'yellow', value: '#faad14' }, 
+  { label: 'purple', value: '#722ed1' },
+  { label: 'gray', value: '#bfbfbf' }, 
+  { label: 'orange', value: '#fa541c' }, 
+  { label: 'pink', value: '#eb2f96' }, 
+  { label: 'brown', value: '#a97c50' }, 
+  { label: 'cyan', value: '#13c2c2' }, 
+  { label: 'emerald', value: '#237804' }, 
+  { label: 'navy', value: '#003a8c' },
+  { label: 'black', value: '#000000' }
 ];
 
 const formState = ref({
@@ -818,13 +821,13 @@ watch(
 <template>
   <Drawer 
     :open="isAddEventModalVisible" 
-    title="Thêm Sự Kiện Mới" 
+    :title="t('eventModal.title')" 
     @close="handleCancel"
     width="50%"
     class="event-drawer"
   >
     <template #extra>
-      <Button type="primary" @click="handleSubmitAdd" class="rounded-md" :loading="isLoading">Lưu</Button>
+      <Button type="primary" @click="handleSubmitAdd" class="rounded-md" :loading="isLoading">{{ t('eventModal.save') }}</Button>
     </template>
     <Form layout="vertical" :rules="rules" :model="formState" ref="formRef">
       <div class="h-full flex flex-col">
@@ -833,12 +836,11 @@ watch(
           <div class="form-section">
             <div class="section-title">
               <EditOutlined class="text-gray-500 mr-2" />
-              <span>Tiêu đề</span>
+              <span>{{ t('eventModal.sections.title.label') }}</span>
             </div>
             <div class="flex items-center">
               <Form.Item name="title" class="mb-0 flex-1">
-                <Input v-model:value="formState.title" placeholder="Nhập tiêu đề sự kiện" class="bg-gray-50 rounded-lg">
-
+                <Input v-model:value="formState.title" :placeholder="t('eventModal.sections.title.placeholder')" class="bg-gray-50 rounded-lg">
                 </Input>
               </Form.Item>
             </div>
@@ -848,29 +850,29 @@ watch(
           <div class="form-section">
             <div class="section-title">
               <TagOutlined class="text-gray-500 mr-2" />
-              <span>Loại sự kiện</span>
+              <span>{{ t('eventModal.sections.eventType.label') }}</span>
             </div>
             <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
               <Form.Item name="type" class="mb-0">
-                <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="rounded-lg w-full">
-                  <Select.Option value="event">Sự kiện</Select.Option>
-                  <Select.Option value="task">Việc cần làm</Select.Option>
+                <Select v-model:value="formState.type" :placeholder="t('eventModal.sections.eventType.label')" class="rounded-lg w-full">
+                  <Select.Option value="event">{{ t('eventModal.sections.eventType.options.event') }}</Select.Option>
+                  <Select.Option value="task">{{ t('eventModal.sections.eventType.options.task') }}</Select.Option>
                 </Select>
               </Form.Item>
 
               <Form.Item name="color_code" class="mb-0">
-                <a-select v-model:value="formState.color_code" placeholder="Chọn màu" class="rounded-lg w-full">
+                <a-select v-model:value="formState.color_code" :placeholder="t('eventModal.sections.color.label')" class="rounded-lg w-full">
                   <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
                     <div class="flex items-center">
-                      <div class="h-4 rounded-full w-4 mr-2" :style="{ backgroundColor: color.value }"></div>
-                      <span>{{ color.label }}</span>
+                      <div class="h-4 w-4 rounded-full mr-2" :style="{ backgroundColor: color.value }"></div>
+                      <span>{{ t(`eventModal.sections.color.options.${color.label}`) }}</span>
                     </div>
                   </a-select-option>
                 </a-select>
               </Form.Item>
 
               <Form.Item name="tag" class="mb-0" v-if="formState.type == 'event'">
-                <Select v-model:value="formState.tag_id" placeholder="Chọn loại" class="rounded-lg w-full">
+                <Select v-model:value="formState.tag_id" :placeholder="t('eventModal.sections.eventType.label')" class="rounded-lg w-full">
                   <Select.Option v-for="tag in tags" :key="tag.id" :value="tag.id">
                     {{ tag.name }}
                   </Select.Option>
@@ -883,11 +885,11 @@ watch(
           <div class="form-section">
             <div class="section-title">
               <CalendarOutlined class="text-gray-500 mr-2" />
-              <span>Thời gian</span>
+              <span>{{ t('eventModal.sections.dateTime.label') }}</span>
             </div>
             <div class="grid grid-cols-1 gap-3">
               <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <Form.Item label="Thời gian bắt đầu" name="start" class="mb-0">
+                <Form.Item :label="t('eventModal.sections.dateTime.start')" name="start" class="mb-0">
                   <DatePicker 
                     v-model:value="formState.start" 
                     :show-time="!formState.is_all_day"
@@ -901,7 +903,7 @@ watch(
                     </template>
                   </DatePicker>
                 </Form.Item>
-                <Form.Item label="Thời gian kết thúc" name="end" class="mb-0">
+                <Form.Item :label="t('eventModal.sections.dateTime.end')" name="end" class="mb-0">
                   <DatePicker 
                     v-model:value="formState.end" 
                     :show-time="!formState.is_all_day"
@@ -916,11 +918,11 @@ watch(
                   </DatePicker>
                 </Form.Item>
               </div>
-              <Form.Item v-if="formState.type != 'task'" label="Múi giờ" name="timezone" class="mb-0">
+              <Form.Item v-if="formState.type != 'task'" :label="t('eventModal.sections.dateTime.timezone')" name="timezone" class="mb-0">
                 <a-select
                   v-model:value="formState.timezone_code"
                   show-search
-                  placeholder="Chọn múi giờ"
+                  :placeholder="t('eventModal.sections.dateTime.timezone')"
                   :filter-option="filterOption"
                   class="w-full rounded-lg"
                 >
@@ -934,10 +936,10 @@ watch(
               </Form.Item>
               <div class="flex items-center">
                 <Form.Item name="is_all_day" class="mb-0">
-                  <Checkbox v-model:checked="formState.is_all_day">Cả ngày</Checkbox>
+                  <Checkbox v-model:checked="formState.is_all_day">{{ t('eventModal.sections.dateTime.allDay') }}</Checkbox>
                 </Form.Item>
                 <Form.Item name="is_repeat" class="mb-0 ml-6">
-                  <Checkbox v-model:checked="formState.is_repeat">Lặp lại</Checkbox>
+                  <Checkbox v-model:checked="formState.is_repeat">{{ t('eventModal.sections.dateTime.repeat') }}</Checkbox>
                 </Form.Item>
               </div>
             </div>
@@ -948,30 +950,30 @@ watch(
             <div class="form-section">
               <div class="section-title">
                 <CalendarOutlined class="text-gray-500 mr-2" />
-                <span>Cài đặt lặp lại</span>
+                <span>{{ t('eventModal.sections.recurrence.label') }}</span>
               </div>
               <div class="grid grid-cols-1 gap-4 md:grid-cols-7">
                 <div class="space-y-4 col-span-3">
                   <div>
-                    <label class="text-gray-700 block font-medium mb-2">Kiểu lặp lại</label>
+                    <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.type') }}</label>
                     <Select v-model:value="formState.rrule.freq" :options="freqOptions" class="w-full" />
                   </div>
 
                   <div v-if="formState.rrule.freq === 'weekly'">
-                    <label class="text-gray-700 block font-medium mb-2">Ngày trong tuần</label>
+                    <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.weekDays.label') }}</label>
                     <Checkbox.Group v-model:value="formState.rrule.byweekday" :options="weekDays" 
                       class="grid grid-cols-4 gap-2" />
                   </div>
 
                   <div v-if="formState.rrule.freq === 'monthly'">
-                    <label class="text-gray-700 block font-medium mb-2">Lặp vào các ngày</label>
+                    <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.monthDays.label') }}</label>
                     <a-select v-model:value="formState.rrule.bymonthday" mode="multiple"
-                      placeholder="Chọn ngày" class="w-full"
-                      :options="monthDays.map(day => ({ label: `Ngày ${day}`, value: day }))" />
+                      :placeholder="t('eventModal.sections.recurrence.monthDays.placeholder')" class="w-full"
+                      :options="monthDays.map(day => ({ label: `${t('eventModal.sections.recurrence.monthDays.label')} ${day}`, value: day }))" />
                   </div>
 
                   <div>
-                    <label class="text-gray-700 block font-medium mb-2">Khoảng cách lặp lại</label>
+                    <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.interval.label') }}</label>
                     <Input v-model:value="formState.rrule.interval" 
                       type="number" 
                       min="1"
@@ -987,24 +989,24 @@ watch(
 
                 <div class="space-y-4 col-span-4">
                   <div class="flex flex-col gap-2 mb-8">
-                    <label class="text-gray-700 font-medium">Kết thúc</label>
+                    <label class="text-gray-700 font-medium">{{ t('eventModal.sections.recurrence.endType.label') }}</label>
                     <a-radio-group v-model:value="formState.rrule.endType" class="flex">
-                      <a-radio value="">Không bao giờ</a-radio>
-                      <a-radio value="until">Ngày cụ thể</a-radio>
-                      <a-radio value="count">Số lần lặp</a-radio>
+                      <a-radio value="">{{ t('eventModal.sections.recurrence.endType.never') }}</a-radio>
+                      <a-radio value="until">{{ t('eventModal.sections.recurrence.endType.until') }}</a-radio>
+                      <a-radio value="count">{{ t('eventModal.sections.recurrence.endType.count') }}</a-radio>
                     </a-radio-group>
                   </div>
 
                   <div class="grid grid-cols-1">
                     <div v-if="formState.rrule.endType === 'count'">
-                      <label class="text-gray-700 block font-medium mb-2">Giới hạn số lần lặp</label>
-                      <Input v-model:value="formState.rrule.count" type="number" min="1" placeholder="Nhập số lần lặp"
+                      <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.count.label') }}</label>
+                      <Input v-model:value="formState.rrule.count" type="number" min="1" :placeholder="t('eventModal.sections.recurrence.count.placeholder')"
                         class="w-full" />
                     </div>
 
                     <div v-if="formState.rrule.endType === 'until'">
-                      <label class="text-gray-700 block font-medium mb-2">Ngày kết thúc</label>
-                      <a-date-picker v-model:value="formState.rrule.until" placeholder="Chọn ngày"
+                      <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.until.label') }}</label>
+                      <a-date-picker v-model:value="formState.rrule.until" :placeholder="t('eventModal.sections.recurrence.until.placeholder')"
                         class="w-full" />
                     </div>
                   </div>
@@ -1018,7 +1020,7 @@ watch(
             <div class="flex justify-between items-center">
               <div class="section-title">
                 <AlignLeftOutlined class="text-gray-500 mr-2" />
-                <span>Mô tả</span>
+                <span>{{ t('eventModal.sections.description.label') }}</span>
               </div>
               <div class="section-title" v-if="formState.type == 'event'">
                 <PaperClipOutlined class="text-gray-500 mr-2" />
@@ -1029,7 +1031,7 @@ watch(
                   :max-count="5"
                   class="text-blue-600 cursor-pointer hover:text-blue-800"
                 >
-                  Thêm Tập Tin Đính Kèm
+                  {{ t('eventModal.sections.description.addAttachment') }}
                 </Upload>
               </div>
             </div>
@@ -1062,7 +1064,7 @@ watch(
 
             <!-- Display attached files -->
             <div v-if="formState.attachments && formState.attachments.length > 0" class="mt-4">
-              <div class="text-sm font-medium text-gray-700 mb-2">Tập tin đính kèm:</div>
+              <div class="text-sm font-medium text-gray-700 mb-2">{{ t('eventModal.sections.description.attachments') }}</div>
               <div class="space-y-2">
                 <div v-for="(file, index) in formState.attachments" :key="index" 
                   class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
@@ -1082,10 +1084,10 @@ watch(
           <div class="form-section" v-if="formState.type == 'event'">
             <div class="section-title">
               <EnvironmentOutlined class="text-gray-500 mr-2" />
-              <span>Địa điểm</span>
+              <span>{{ t('eventModal.sections.location.label') }}</span>
             </div>
             <Form.Item name="location" class="mb-0">
-              <Input v-model:value="formState.location" placeholder="Nhập địa điểm" class="bg-gray-50 rounded-lg">
+              <Input v-model:value="formState.location" :placeholder="t('eventModal.sections.location.placeholder')" class="bg-gray-50 rounded-lg">
               </Input>
             </Form.Item>
           </div>
@@ -1094,7 +1096,7 @@ watch(
           <div class="form-section" v-if="formState.type == 'event'">
             <div class="section-title">
               <UserOutlined class="text-gray-500 mr-2" />
-              <span>Người tham gia</span>
+              <span>{{ t('eventModal.sections.participants.label') }}</span>
             </div>
             <div class="space-y-4">
               <Form.Item name="attendees" class="mb-0">
@@ -1102,7 +1104,7 @@ watch(
                   v-model:value="formState.attendees"
                   mode="multiple"
                   label-in-value
-                  placeholder="Thêm khách mời"
+                  :placeholder="t('eventModal.sections.participants.placeholder')"
                   class="w-full rounded-lg"
                   :filter-option="false"
                   :not-found-content="state.fetching ? undefined : null"
@@ -1118,11 +1120,11 @@ watch(
                 </a-select>
               </Form.Item>
               <div class="flex gap-3">
-                <span>Quyền khách mời:</span>
+                <span>{{ t('eventModal.sections.participants.permissions.label') }}</span>
                 <div class="flex gap-4 items-center">
                   <a-radio-group v-model:value="formState.role" class="flex gap-4">
-                    <a-radio value="viewer">Chỉ xem</a-radio>
-                    <a-radio value="editor">Được sửa</a-radio>
+                    <a-radio value="viewer">{{ t('eventModal.sections.participants.permissions.viewer') }}</a-radio>
+                    <a-radio value="editor">{{ t('eventModal.sections.participants.permissions.editor') }}</a-radio>
                   </a-radio-group>
                 </div>
               </div>
@@ -1135,14 +1137,14 @@ watch(
               <div>
                 <div class="section-title">
                   <LockOutlined class="text-gray-500 mr-2" />
-                  <span>Quyền riêng tư</span>
+                  <span>{{ t('eventModal.sections.privacy.label') }}</span>
                 </div>
                 <div class="flex gap-6 items-center">
                   <Form.Item name="is_private" class="mb-0">
-                    <Checkbox v-model:checked="formState.is_private">Riêng tư</Checkbox>
+                    <Checkbox v-model:checked="formState.is_private">{{ t('eventModal.sections.privacy.private') }}</Checkbox>
                   </Form.Item>
                   <Form.Item name="is_busy" class="mb-0">
-                    <Checkbox v-model:checked="formState.is_busy">Đánh dấu là bận</Checkbox>
+                    <Checkbox v-model:checked="formState.is_busy">{{ t('eventModal.sections.privacy.busy') }}</Checkbox>
                   </Form.Item>
                 </div>
               </div>
@@ -1150,15 +1152,15 @@ watch(
               <div>
                 <div class="section-title">
                   <BellOutlined class="text-gray-500 mr-2" />
-                  <span>Thông báo</span>
+                  <span>{{ t('eventModal.sections.notifications.label') }}</span>
                 </div>
                 <div class="space-y-4">
                   <div class="flex justify-between items-center">
                     <Form.Item name="is_reminder" class="mb-0">
-                      <Checkbox v-model:checked="formState.is_reminder">Bật nhắc nhở</Checkbox>
+                      <Checkbox v-model:checked="formState.is_reminder">{{ t('eventModal.sections.notifications.enable') }}</Checkbox>
                     </Form.Item>
                     <div v-if="formState.is_reminder" @click="addReminder" class="cursor-pointer">
-                      <a class="text-blue-600 hover:text-blue-800">Thêm thông báo nhắc</a>
+                      <a class="text-blue-600 hover:text-blue-800">{{ t('eventModal.sections.notifications.add') }}</a>
                     </div>
                   </div>
                 </div>
@@ -1172,14 +1174,14 @@ watch(
                   <Col span="8" class="flex items-center">
                     <Select 
                       v-model:value="reminder.type" 
-                      placeholder="Loại nhắc nhở" 
+                      :placeholder="t('eventModal.sections.notifications.types.label')" 
                       class="w-full text-sm"
                       size="small"
                     >
-                      <Select.Option value="email">Email</Select.Option>
-                      <Select.Option value="web">Web</Select.Option>
+                      <Select.Option value="email">{{ t('eventModal.sections.notifications.types.email') }}</Select.Option>
+                      <Select.Option value="web">{{ t('eventModal.sections.notifications.types.web') }}</Select.Option>
                     </Select>
-                    <span class="ml-2 text-sm">trước</span>
+                    <span class="ml-2 text-sm">{{ t('eventModal.sections.notifications.before') }}</span>
                   </Col>
                   <Col span="6">
                     <InputNumber 
@@ -1187,19 +1189,19 @@ watch(
                       min="1"
                       size="small"
                       @blur="reminder.time = reminder.time || 1" 
-                      placeholder="Thời gian"
+                      :placeholder="t('eventModal.sections.notifications.time')"
                       class="w-full text-sm" 
                     />
                   </Col>
                   <Col span="7">
                     <Select 
                       v-model:value="reminder.unit" 
-                      placeholder="Đơn vị" 
+                      :placeholder="t('eventModal.sections.notifications.units.label')" 
                       class="w-full text-sm"
                       size="small"
                     >
-                      <Select.Option value="minutes">Phút</Select.Option>
-                      <Select.Option value="hours">Giờ</Select.Option>
+                      <Select.Option value="minutes">{{ t('eventModal.sections.notifications.units.minutes') }}</Select.Option>
+                      <Select.Option value="hours">{{ t('eventModal.sections.notifications.units.hours') }}</Select.Option>
                     </Select>
                   </Col>
                   <Col span="3">
@@ -1221,10 +1223,10 @@ watch(
           <div class="form-section"  v-if="formState.type == 'event'">
             <div class="section-title">
               <LinkOutlined class="text-gray-500 mr-2" />
-              <span>Liên kết</span>
+              <span>{{ t('eventModal.sections.link.label') }}</span>
             </div>
             <Form.Item name="link" class="mb-0">
-              <Input v-model:value="formState.link" placeholder="Nhập URL" class="bg-gray-50 rounded-lg">
+              <Input v-model:value="formState.link" :placeholder="t('eventModal.sections.link.placeholder')" class="bg-gray-50 rounded-lg">
               </Input>
             </Form.Item>
           </div>

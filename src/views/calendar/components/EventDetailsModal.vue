@@ -308,6 +308,7 @@ const handleClose = () => {
     console.log("Dừng lắng nghe realtime trong Chat ModalDetails", groupInfo.value.group.id);
     echoStore.echo.leave(`task-group.${groupInfo.value.group.id}`);
   }
+    files.value = [];
   emit("close", false);
 };
 
@@ -444,11 +445,29 @@ const leaveEvent = async (uuid) => {
 }
 
 const handleLeaveEvent = async ({code, id, date, timezone}) => {
-  console.log({code, id, date, timezone});
   try {
+    let formattedDate;
+    
+    // Nếu múi giờ sự kiện khác với múi giờ setting
+    if (timezone != userTimezone) {
+      const eventDate = dayjs(date).tz(userTimezone).tz(timezone);
+      formattedDate = event.value.is_all_day 
+        ? eventDate.format("YYYY-MM-DD 00:00:00")
+        : eventDate.format("YYYY-MM-DD HH:mm:ss");
+    } else {
+      formattedDate = event.value.is_all_day 
+        ? dayjs(date).format("YYYY-MM-DD 00:00:00")
+        : dayjs(date).format("YYYY-MM-DD HH:mm:ss");
+    }
+    
+    console.log({code: code,
+      updated_date: formattedDate,
+      atteendee_id: user.value.id,
+      timezone_code: timezone});
+
     const response = await axios.put(`${dirApi}tasks/${id}/attendeeLeaveTask`, {
       code: code,
-      updated_date: date,
+      updated_date: formattedDate,
       atteendee_id: user.value.id,
       timezone_code: timezone,
     }, {
@@ -735,8 +754,8 @@ const completeTask = async (id) => {
                       <div class="flex items-center space-x-2" v-if="!event.is_all_day">
                         <ClockCircleOutlined class="text-gray-500" />
                         <p class="text-gray-800 mb-0">
-                          {{ dayjs(event.start).tz(event.timezone).tz(userTimezone).format("HH:mm") }} - 
-                          {{ event.end ? dayjs(event.end).tz(event.timezone).tz(userTimezone).format("HH:mm") : '' }}
+                          {{ dayjs(event.start).format("HH:mm") }} - 
+                          {{ event.end ? dayjs(event.end).format("HH:mm") : '' }}
                         </p>
                       </div>
                       <div class="flex items-center space-x-2 col-span-2" v-if="event.is_all_day">
