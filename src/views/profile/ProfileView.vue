@@ -163,7 +163,9 @@
         </a-form>
       </a-tab-pane>
 
-      <a-tab-pane key="3" :tab="$t('profile.statistics')"> </a-tab-pane>
+      <a-tab-pane key="3" :tab="$t('profile.statistics')">
+        <ProfileStatistics />
+      </a-tab-pane>
     </a-tabs>
   </div>
 </template>
@@ -176,6 +178,7 @@ import { message } from "ant-design-vue";
 import { useEchoStore } from "@/stores/echoStore";
 import unknowUser from "@/assets/images/unknow_user.jpg";
 import { CloudUploadOutlined } from "@ant-design/icons-vue";
+import ProfileStatistics from "./ProfileStatistics.vue";
 
 const router = useRouter();
 const dirApi = import.meta.env.VITE_API_BASE_URL;
