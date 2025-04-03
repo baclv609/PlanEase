@@ -1,7 +1,7 @@
 <template>
   <a-modal
     :open="isModalOpen"
-    title="Cài đặt lịch trình"
+    :title="$t('settings.title')"
     width="650px"
     @ok="handleSave"
     @cancel="handleCancel"
@@ -11,34 +11,34 @@
       <!-- Tabs Menu - Left Side -->
       <a-tabs v-model:activeKey="activeTabKey" tab-position="left" style="width: 100%">
         <!-- Giao diện Tab -->
-        <a-tab-pane key="display" tab="Giao diện">
+        <a-tab-pane key="display" :tab="$t('settings.display')">
           <div class="tab-content">
-            <h3>Giao diện</h3>
+            <h3>{{ $t('settings.display') }}</h3>
             <a-form layout="vertical">
-              <a-form-item label="Chế độ hiển thị">
+              <a-form-item :label="$t('settings.displayMode')">
                 <a-select v-model:value="tempSettings.displayMode" @change="changeView">
-                  <a-select-option value="multiMonthYear">Năm (Lưới)</a-select-option>
-                  <a-select-option value="listYear">Ngày (Danh sách)</a-select-option>
-                  <a-select-option value="dayGridMonth">Tháng</a-select-option>
-                  <a-select-option value="timeGridWeek">Tuần</a-select-option>
-                  <a-select-option value="timeGridDay">Ngày</a-select-option>
+                  <a-select-option value="multiMonthYear">{{ $t('settings.multiMonthYear') }}</a-select-option>
+                  <a-select-option value="listYear">{{ $t('settings.listYear') }}</a-select-option>
+                  <a-select-option value="dayGridMonth">{{ $t('settings.dayGridMonth') }}</a-select-option>
+                  <a-select-option value="timeGridWeek">{{ $t('settings.timeGridWeek') }}</a-select-option>
+                  <a-select-option value="timeGridDay">{{ $t('settings.timeGridDay') }}</a-select-option>
                 </a-select>
               </a-form-item>
 
               <!-- Tùy chọn hiển thị cho chế độ xem năm dạng lưới -->
               <template v-if="tempSettings.displayMode === 'multiMonthYear'">
-                <a-form-item label="Số cột hiển thị">
+                <a-form-item :label="$t('settings.multiMonthMaxColumns')">
                   <a-select
                     v-model:value="tempSettings.multiMonthMaxColumns"
                     @change="updateMultiMonthSettings"
                   >
-                    <a-select-option :value="2">2 cột</a-select-option>
-                    <a-select-option :value="3">3 cột</a-select-option>
-                    <a-select-option :value="4">4 cột</a-select-option>
+                    <a-select-option :value="2">2 {{ $t('settings.columns') }}</a-select-option>
+                    <a-select-option :value="3">3 {{ $t('settings.columns') }}</a-select-option>
+                    <a-select-option :value="4">4 {{ $t('settings.columns') }}</a-select-option>
                   </a-select>
                 </a-form-item>
 
-                <a-form-item label="Hiển thị ngày ngoài tháng">
+                <a-form-item :label="$t('settings.showNonCurrentDates')">
                   <a-switch
                     v-model:checked="tempSettings.showNonCurrentDates"
                     @change="updateMultiMonthSettings"
@@ -46,7 +46,7 @@
                 </a-form-item>
               </template>
 
-              <a-form-item label="Hiển thị ngày nghỉ">
+              <a-form-item :label="$t('settings.showWeekNumbers')">
                 <a-switch v-model:checked="tempSettings.showWeekNumbers" />
               </a-form-item>
             </a-form>
@@ -54,30 +54,25 @@
         </a-tab-pane>
 
         <!-- Thời gian Tab -->
-        <a-tab-pane key="time" tab="Thời gian">
+        <a-tab-pane key="time" :tab="$t('settings.time')">
           <div class="tab-content">
-            <h3>Thời gian</h3>
+            <h3>{{ $t('settings.time') }}</h3>
             <a-form layout="vertical">
-              <a-form-item label="Múi giờ">
+              <a-form-item :label="$t('settings.timeZone')">
                 <a-select
                   v-model:value="tempSettings.timeZone"
                   show-search
-                  placeholder="Chọn múi giờ..."
+                  :placeholder="$t('settings.selectTimeZone')"
                   :options="timeZoneOptions"
                   :filter-option="filterTimeZones"
                   @change="logTimeZone"
                 />
               </a-form-item>
 
-              <a-form-item label="Định dạng giờ">
+              <a-form-item :label="$t('settings.timeFormat')">
                 <a-select v-model:value="selectedTimeFormat" @change="updateTimeFormat">
-                  <a-select-option
-                    v-for="option in timeFormatOptions"
-                    :key="option.label"
-                    :value="option.value"
-                  >
-                    {{ option.label }}
-                  </a-select-option>
+                  <a-select-option value="12h">{{ $t('settings.hour12') }}</a-select-option>
+                  <a-select-option value="24h">{{ $t('settings.hour24') }}</a-select-option>
                 </a-select>
               </a-form-item>
             </a-form>
@@ -85,23 +80,23 @@
         </a-tab-pane>
 
         <!-- Lịch Tab -->
-        <a-tab-pane key="calendar" tab="Lịch">
+        <a-tab-pane key="calendar" :tab="$t('settings.calendar')">
           <div class="tab-content">
-            <h3>Lịch</h3>
+            <h3>{{ $t('settings.calendar') }}</h3>
             <a-form layout="vertical">
-              <a-form-item label="Định dạng tiêu đề lịch">
+              <a-form-item :label="$t('settings.calendarTitleFormat')">
                 <a-select v-model:value="selectedTitleFormat" @change="updateTitleFormat">
                   <a-select-option
                     v-for="option in titleFormatOptions"
                     :key="option.label"
                     :value="JSON.stringify(option.value)"
                   >
-                    {{ option.label }}
+                    {{ $t(`settings.${option.translationKey}`) }}
                   </a-select-option>
                 </a-select>
               </a-form-item>
 
-              <a-form-item label="Định dạng ngày trong cột">
+              <a-form-item :label="$t('settings.dayHeaderFormat')">
                 <a-select
                   v-model:value="selectedDayHeaderFormat"
                   @change="updateColumnHeaderFormat"
@@ -111,16 +106,16 @@
                     :key="option.label"
                     :value="JSON.stringify(option.value)"
                   >
-                    {{ option.label }}
+                    {{ $t(`settings.${option.translationKey}`) }}
                   </a-select-option>
                 </a-select>
               </a-form-item>
 
-              <a-form-item label="Ngày bắt đầu tuần">
+              <a-form-item :label="$t('settings.weekStartDay')">
                 <a-select v-model:value="tempSettings.firstDay">
-                  <a-select-option :value="0">Chủ Nhật</a-select-option>
-                  <a-select-option :value="1">Thứ Hai</a-select-option>
-                  <a-select-option :value="6">Thứ Bảy</a-select-option>
+                  <a-select-option :value="0">{{ $t('settings.sunday') }}</a-select-option>
+                  <a-select-option :value="1">{{ $t('settings.monday') }}</a-select-option>
+                  <a-select-option :value="6">{{ $t('settings.saturday') }}</a-select-option>
                 </a-select>
               </a-form-item>
             </a-form>
@@ -128,25 +123,19 @@
         </a-tab-pane>
 
         <!-- Thông báo Tab -->
-        <a-tab-pane key="notification" tab="Thông báo">
+        <a-tab-pane key="notification" :tab="$t('settings.notification')">
           <div class="tab-content">
-            <h3>Thông báo</h3>
+            <h3>{{ $t('settings.notification') }}</h3>
             <a-form layout="vertical">
-              <a-form-item label="Loại thông báo">
+              <a-form-item :label="$t('settings.notificationType')">
                 <a-select
                   v-model:value="tempSettings.notificationType"
-                  placeholder="Chọn loại thông báo"
+                  :placeholder="$t('settings.notificationType')"
                 >
-                  <a-select-option value="both"
-                    >Hệ thống và cửa sổ thông báo trình duyệt</a-select-option
-                  >
-                  <a-select-option value="desktop"
-                    >Chỉ thông báo hệ thống</a-select-option
-                  >
-                  <a-select-option value="alerts"
-                    >Cửa sổ thông báo trình duyệt</a-select-option
-                  >
-                  <a-select-option value="off">Tắt thông báo</a-select-option>
+                  <a-select-option value="both">{{ $t('settings.notificationTypes.both') }}</a-select-option>
+                  <a-select-option value="desktop">{{ $t('settings.notificationTypes.desktop') }}</a-select-option>
+                  <a-select-option value="alerts">{{ $t('settings.notificationTypes.alerts') }}</a-select-option>
+                  <a-select-option value="off">{{ $t('settings.notificationTypes.off') }}</a-select-option>
                 </a-select>
               </a-form-item>
             </a-form>
@@ -158,10 +147,10 @@
           <div class="tab-content">
             <h3>{{ $t("language") }}</h3>
             <a-form layout="vertical">
-              <a-form-item label="Ngôn ngữ">
+              <a-form-item :label="$t('language')">
                 <a-select v-model:value="tempSettings.language" @change="changeLanguage">
-                  <a-select-option value="vi">Tiếng Việt</a-select-option>
-                  <a-select-option value="en">English</a-select-option>
+                  <a-select-option value="vi">{{ $t('vietnamese') }}</a-select-option>
+                  <a-select-option value="en">{{ $t('english') }}</a-select-option>
                 </a-select>
               </a-form-item>
             </a-form>
@@ -171,11 +160,10 @@
     </div>
 
     <div class="flex justify-end mt-4 gap-2">
-      <a-button @click="handleCancel">Hủy</a-button>
+      <a-button @click="handleCancel">{{ $t('settings.cancel') }}</a-button>
       <a-button type="primary" :loading="isSaving" @click="handleSave">
-        {{ isSaving ? "Đang lưu..." : "Lưu thay đổi" }}
+        {{ isSaving ? $t('settings.saving') : $t('settings.save') }}
       </a-button>
-      <!-- <a-button type="primary" danger @click="resetSettings">Reset</a-button> -->
     </div>
   </a-modal>
 </template>
@@ -187,7 +175,7 @@ import { useI18n } from "vue-i18n";
 import moment from "moment-timezone";
 import { message } from "ant-design-vue";
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 const props = defineProps({
   isModalOpen: Boolean,
 });
@@ -201,47 +189,52 @@ const activeTabKey = ref("display");
 
 const columnHeaderFormatOptions = [
   {
-    label: "Thứ viết tắt + Ngày (VD: T2, 24)",
-    value: { day: "numeric", weekday: "short",
-      omitCommas: true,
-    },
+    label: t('settings.shortDayDate'),
+    translationKey: 'shortDayDate',
+    value: { day: "numeric", weekday: "short", omitCommas: true },
   },
   {
-    label: "Thứ + Ngày (VD: Thứ Hai, 24)",
+    label: t('settings.longDayDate'),
+    translationKey: 'longDayDate',
     value: { weekday: "long", day: "numeric" },
   },
   {
-    label: "Chỉ thứ (VD: Thứ Hai)",
+    label: t('settings.dayOnly'),
+    translationKey: 'dayOnly',
     value: { weekday: "long" },
   },
   {
-    label: "Ngày + Tháng (VD: 24 Thg 2)",
+    label: t('settings.dateMonth'),
+    translationKey: 'dateMonth',
     value: { day: "numeric", month: "short" },
   },
 ];
 
 const titleFormatOptions = [
   {
-    label: "Tháng Năm (VD: Tháng 2 2025)",
+    label: t('settings.monthYear'),
+    translationKey: 'monthYear',
     value: { year: "numeric", month: "long" },
   },
   {
-    label: "Tháng viết tắt + Năm (VD: Feb 2025)",
+    label: t('settings.shortMonthYear'),
+    translationKey: 'shortMonthYear',
     value: { year: "numeric", month: "short" },
   },
   {
-    label: "Năm/Tháng số (VD: 2025/02)",
+    label: t('settings.numericMonthYear'),
+    translationKey: 'numericMonthYear',
     value: { year: "numeric", month: "2-digit" },
   },
 ];
 
 const timeFormatOptions = [
   {
-    label: "12 giờ (AM/PM)",
+    label: t('settings.hour12'),
     value: "12h",
   },
   {
-    label: "24 giờ",
+    label: t('settings.hour24'),
     value: "24h",
   },
 ];

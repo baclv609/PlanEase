@@ -883,11 +883,11 @@ onMounted(() => {
 
       <div class="view-toggle">
         <a-select v-model:value="currentView" @change="changeView" style="width: 150px" class="custom-select !border-[#15C5B2] !rounded-md !focus:ring-2 !focus:ring-[#15C5B2]">
-          <a-select-option value="timeGridDay">Ngày</a-select-option>
-          <a-select-option value="timeGridWeek">Tuần</a-select-option>
-          <a-select-option value="dayGridMonth">Tháng</a-select-option>
-          <a-select-option value="multiMonthYear">Năm</a-select-option>
-          <a-select-option value="listYear">Danh sách</a-select-option>
+          <a-select-option value="timeGridDay">{{ $t('calendar.views.day') }}</a-select-option>
+          <a-select-option value="timeGridWeek">{{ $t('calendar.views.week') }}</a-select-option>
+          <a-select-option value="dayGridMonth">{{ $t('calendar.views.month') }}</a-select-option>
+          <a-select-option value="multiMonthYear">{{ $t('calendar.views.year') }}</a-select-option>
+          <a-select-option value="listYear">{{ $t('calendar.views.list') }}</a-select-option>
         </a-select>
 
       </div>
