@@ -454,8 +454,8 @@ const handleLeaveEvent = async ({code, id, date, timezone}) => {
     let formattedDate;
     
     // Nếu múi giờ sự kiện khác với múi giờ setting
-    if (timezone != userTimezone) {
-      const eventDate = dayjs(date).tz(userTimezone).tz(timezone);
+    if (timezone != userTimezone.value) {
+      const eventDate = dayjs(date).tz(timezone); // Convert về đúng timezone sự kiện
       formattedDate = event.value.is_all_day 
         ? eventDate.format("YYYY-MM-DD 00:00:00")
         : eventDate.format("YYYY-MM-DD HH:mm:ss");
@@ -470,22 +470,22 @@ const handleLeaveEvent = async ({code, id, date, timezone}) => {
       atteendee_id: user.value.id,
       timezone_code: timezone});
 
-    const response = await axios.put(`${dirApi}tasks/${id}/attendeeLeaveTask`, {
-      code: code,
-      updated_date: formattedDate,
-      atteendee_id: user.value.id,
-      timezone_code: timezone,
-    }, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+    // const response = await axios.put(`${dirApi}tasks/${id}/attendeeLeaveTask`, {
+    //   code: code,
+    //   updated_date: formattedDate,
+    //   atteendee_id: user.value.id,
+    //   timezone_code: timezone,
+    // }, {
+    //   headers: {
+    //     Authorization: `Bearer ${token}`
+    //   }
+    // });
 
-    if(response.data.code == 200) {
-      message.success(response.data.message);
-      emit("delete", id);
-      handleClose();
-    }
+    // if(response.data.code == 200) {
+    //   message.success(response.data.message);
+    //   emit("delete", id);
+    //   handleClose();
+    // }
   } catch(error) {
     console.log(error);
   }
