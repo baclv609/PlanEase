@@ -470,22 +470,22 @@ const handleLeaveEvent = async ({code, id, date, timezone}) => {
       atteendee_id: user.value.id,
       timezone_code: timezone});
 
-    // const response = await axios.put(`${dirApi}tasks/${id}/attendeeLeaveTask`, {
-    //   code: code,
-    //   updated_date: formattedDate,
-    //   atteendee_id: user.value.id,
-    //   timezone_code: timezone,
-    // }, {
-    //   headers: {
-    //     Authorization: `Bearer ${token}`
-    //   }
-    // });
+    const response = await axios.put(`${dirApi}tasks/${id}/attendeeLeaveTask`, {
+      code: code,
+      updated_date: formattedDate,
+      atteendee_id: user.value.id,
+      timezone_code: timezone,
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
 
-    // if(response.data.code == 200) {
-    //   message.success(response.data.message);
-    //   emit("delete", id);
-    //   handleClose();
-    // }
+    if(response.data.code == 200) {
+      message.success(response.data.message);
+      emit("delete", id);
+      handleClose();
+    }
   } catch(error) {
     console.log(error);
   }
