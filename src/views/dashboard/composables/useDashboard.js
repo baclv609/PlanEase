@@ -7,6 +7,7 @@ import Highcharts from 'highcharts';
 import HighchartsVue from 'highcharts-vue';
 import UserRegistrationChart from '@/views/dashboard/UserRegistrationChart.vue';
 import TaskStatisticsChart from '@/views/dashboard/TaskStatisticsChart.vue';
+import TaskCountUsers from '@/views/dashboard/TaskCountUsers.vue';
 
 export function useDashboard() {
   const dirApi = import.meta.env.VITE_API_BASE_URL;

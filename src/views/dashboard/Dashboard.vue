@@ -40,6 +40,7 @@
     <div class="charts-grid">
       <UserRegistrationChart :stats="dailyStats" :date-range="dateRange" />
       <TaskStatisticsChart :stats="taskStats" :date-range="dateRange" />
+      <TaskCountUsers />
     </div>
   </div>
 </template>
@@ -49,6 +50,7 @@ import { onMounted } from 'vue';
 import { LineChartOutlined, FilterOutlined } from '@ant-design/icons-vue';
 import UserRegistrationChart from './UserRegistrationChart.vue';
 import TaskStatisticsChart from './TaskStatisticsChart.vue';
+import TaskCountUsers from './TaskCountUsers.vue';
 import { useDashboard } from './composables/useDashboard';
 import './styles/dashboard.css';
 
