@@ -115,7 +115,7 @@
           <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
           <template #overlay>
             <a-menu>
-              <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
+              <!-- <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item> -->
               <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
               <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item>
               <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
@@ -154,7 +154,7 @@
           <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
           <template #overlay>
             <a-menu>
-              <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
+              <!-- <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item> -->
               <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
               <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item>
               <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
@@ -515,6 +515,8 @@ onMounted(() => {
 });
 const displayOnly = (calendarId) => {
   selectedCalendars.value = [calendarId];
+  // console.log("selectedCalendars.value", selectedCalendars.value);
+  hiddenTagsStore.setHiddenTags(selectedCalendars.value);
 };
 
 const openDrawerAdd = () => {
