@@ -167,4 +167,32 @@
 
 .filter-icon {
   font-size: 16px;
+}
+
+/* Task Count Users Chart */
+.task-count-chart {
+  height: 400px;
+  width: 100%;
+}
+
+.task-count-chart .highcharts-figure {
+  min-width: 310px;
+  max-width: 100%;
+  margin: 1em auto;
+}
+
+.task-count-chart .chart-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #227CA0;
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.task-count-chart .chart-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  grid-column: 1 / -1;
 } 
