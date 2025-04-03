@@ -116,7 +116,7 @@
           <template #overlay>
             <a-menu>
               <!-- <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item> -->
-              <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
+              <!-- <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item> -->
               <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item>
               <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
             </a-menu>
@@ -155,7 +155,7 @@
           <template #overlay>
             <a-menu>
               <!-- <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item> -->
-              <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
+              <!-- <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item> -->
               <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item>
               <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
             </a-menu>
