@@ -83,7 +83,7 @@ export function useCalendarEvents() {
       const rruleStart = event.start_time
         ? DateTime.fromISO(event.start_time, { zone: 'utc' })
             .setZone(selectedTimezone.value)
-            .toFormat('yyyy-MM-dd\'T\'HH:mm:ss')
+            .toFormat(event.is_all_day ? 'yyyy-MM-dd' : 'yyyy-MM-dd\'T\'HH:mm:ss') //nếu cả ngày thì giờ
         : null;
 
       const rruleEnd = event.rrule?.until
@@ -180,7 +180,7 @@ export function useCalendarEvents() {
           event.is_repeat && event.rrule
             ? {
                 dtstart: rruleStart,
-                freq: event.rrule.freq || 'daily',
+                freq: event.rrule.freq || null,
                 interval: event.rrule.interval || 1,
                 until: rruleEnd,
                 count: event.rrule.count || null,

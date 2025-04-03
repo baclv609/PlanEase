@@ -388,7 +388,7 @@ const refuse = async (uuid) => {
 }
 
 const leaveEvent = async (uuid) => {
-  if (event.value.recurrence && event.value.recurrence != 0) {
+  if ((event.value.recurrence && event.value.recurrence != 0) || event.value.parent_id) {
     
     Modal.confirm({
       title: "Rời khỏi sự kiện",
@@ -445,7 +445,7 @@ const leaveEvent = async (uuid) => {
     });
 
   } else {
-    handleLeaveEvent({code: "EDIT_N", id: event.value.id, date: event.value.start, timezone: event.value.timezone});
+    handleLeaveEvent({code: "EDIT_N", id: event.value.id, start_time: event.value.start, end_time: event.value.end, date: event.value.start, timezone: event.value.timezone});
   }
 }
 
