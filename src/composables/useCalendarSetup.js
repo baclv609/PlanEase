@@ -7,6 +7,7 @@ import rrulePlugin from '@fullcalendar/rrule';
 import multiMonthPlugin from '@fullcalendar/multimonth';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { RRule } from 'rrule';
 
 import { defineStore } from 'pinia';
@@ -23,7 +24,7 @@ import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css'; // Import CSS cho tooltip
 
 dayjs.extend(utc);
-
+dayjs.extend(timezone);
 const settingsStore = useSettingsStore();
 const selectedTimezone = computed(() => settingsStore.timeZone);
 const user_id = JSON.parse(localStorage.getItem('user')).id;
@@ -469,13 +470,22 @@ export function useCalendar(calendarRef) {
     dateClick: openAddEventModal,
     eventClick: openEventDetailModal,
     select: (info) => {
-      selectedEventAdd.value = {
-        start: info.startStr,
-        end: info.view.type == 'dayGridMonth'
-          ? dayjs(info.endStr).format('YYYY-MM-DD')
-          : info.endStr,
-        allDay: info.allDay,
-      };
+      if(!info.allDay) {
+        selectedEventAdd.value = {
+          start: dayjs(info.startStr).tz(selectedTimezone.value).format('YYYY-MM-DD HH:mm'),
+          end: info.view.type == 'dayGridMonth'
+            ? dayjs(info.endStr).tz(selectedTimezone.value).format('YYYY-MM-DD HH:mm')
+            : dayjs(info.endStr).tz(selectedTimezone.value).format('YYYY-MM-DD HH:mm'),
+          allDay: info.allDay,
+        };
+      } else {
+        selectedEventAdd.value = {
+          start: info.startStr,
+          end: info.endStr,
+          allDay: info.allDay,
+        };
+      }
+
       isAddEventModalVisible.value = true;
     },
     loading: (isLoading) => {
