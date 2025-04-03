@@ -92,12 +92,11 @@
 
     <div class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
       <div class="flex justify-between items-center mb-3">
-        <h3 class="text-lg font-semibold">Lịch của tôi</h3>
+        <h3 class="text-lg font-semibold">{{ $t('calendar.calendarSection.title') }}</h3>
         <PlusOutlined @click="isModalOpenAddTag = true" class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]" />
       </div>
 
       <a-checkbox-group v-model:value="selectedCalendars" class="flex flex-col gap-2" @change="updateFilteredEvents">
-    <!-- Lịch của tôi -->
     <div v-if="myCalendars.length">
       <div v-for="calendar in displayedCalendars" :key="calendar.id"
         class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
@@ -115,10 +114,10 @@
           <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
           <template #overlay>
             <a-menu>
-              <!-- <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item> -->
+            <!-- <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item> -->
               <!-- <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item> -->
-              <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item>
-              <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
+              <a-menu-item @click="openUpdateCalendar(calendar.id)">{{ $t('calendar.calendarSection.edit') }}</a-menu-item>
+              <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">{{ $t('calendar.calendarSection.delete') }}</a-menu-item>
             </a-menu>
           </template>
         </a-dropdown>
@@ -126,10 +125,10 @@
       <div v-if="myCalendars.length > 5" class="flex justify-center mt-2">
         <a-button type="text" @click="showAll = !showAll">
           <template v-if="showAll">
-            <CaretUpOutlined />
+            <CaretUpOutlined /> {{ $t('calendar.calendarSection.showLess') }}
           </template>
           <template v-else>
-            <CaretDownOutlined />
+            <CaretDownOutlined /> {{ $t('calendar.calendarSection.showMore') }}
           </template>
         </a-button>
       </div>
@@ -137,7 +136,7 @@
 
     <!-- Lịch được chia sẻ -->
     <div v-if="sharedCalendars.length" class="mt-4">
-      <h4 class="text-gray-500 text-sm font-semibold mb-2">🔗 Lịch được chia sẻ</h4>
+      <h4 class="text-gray-500 text-sm font-semibold mb-2">{{ $t('calendar.sharedCalendars') }}</h4>
       <div v-for="calendar in displayedSharedCalendars" :key="calendar.id"
         class="flex bg-white border border-gray-200 justify-between p-2 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
         :style="{ borderLeft: `5px solid ${calendar.color}` }">
@@ -154,10 +153,10 @@
           <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
           <template #overlay>
             <a-menu>
-              <!-- <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item> -->
+            <!-- <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item> -->
               <!-- <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item> -->
-              <a-menu-item @click="openUpdateCalendar(calendar.id)">Chỉnh sửa</a-menu-item>
-              <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">Xóa</a-menu-item>
+              <a-menu-item @click="openUpdateCalendar(calendar.id)">{{ $t('calendar.calendarSection.edit') }}</a-menu-item>
+              <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red;">{{ $t('calendar.calendarSection.delete') }}</a-menu-item>
             </a-menu>
           </template>
         </a-dropdown>
@@ -165,10 +164,10 @@
       <div v-if="sharedCalendars.length > 5" class="flex justify-center mt-2">
         <a-button type="text" @click="showAllShared = !showAllShared">
           <template v-if="showAllShared">
-            <CaretUpOutlined />
+            <CaretUpOutlined /> {{ $t('calendar.calendarSection.showLess') }}
           </template>
           <template v-else>
-            <CaretDownOutlined />
+            <CaretDownOutlined /> {{ $t('calendar.calendarSection.showMore') }}
           </template>
         </a-button>
       </div>

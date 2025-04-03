@@ -157,7 +157,21 @@
     "colorHex": "Color (Hex Code)",
     "enterTagDescription": "Enter tag description",
     "updateTag": "Update Tag",
-    "addTag": "Add Tag"
+    "addTag": "Add Tag",
+    "views": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month",
+      "year": "Year",
+      "list": "List"
+    },
+    "calendarSection": {
+      "title": "My Calendar",
+      "edit": "Edit",
+      "delete": "Delete",
+      "showMore": "Show More",
+      "showLess": "Show Less"
+    }
   },
   "errors": {
     "serverError": "Server error, please try again later",
@@ -315,5 +329,78 @@
         "back": "Back"
       }
     }
+  },
+  "settings": {
+    "title": "Schedule Settings",
+    "display": "Display",
+    "time": "Time",
+    "calendar": "Calendar",
+    "notification": "Notification",
+    "displayMode": "Display Mode",
+    "multiMonthYear": "Year (Grid)",
+    "listYear": "Day (List)",
+    "dayGridMonth": "Month",
+    "timeGridWeek": "Week",
+    "timeGridDay": "Day",
+    "multiMonthMaxColumns": "Number of display columns",
+    "showNonCurrentDates": "Show dates outside current month",
+    "showWeekNumbers": "Show week numbers",
+    "timeZone": "Time Zone",
+    "selectTimeZone": "Select time zone...",
+    "timeFormat": "Time Format",
+    "hour12": "12-hour (AM/PM)",
+    "hour24": "24-hour",
+    "calendarTitleFormat": "Calendar Title Format",
+    "monthYear": "Month Year (e.g. February 2025)",
+    "shortMonthYear": "Short Month Year (e.g. Feb 2025)",
+    "numericMonthYear": "Numeric Month Year (e.g. 2025/02)",
+    "dayHeaderFormat": "Day Header Format",
+    "shortDayDate": "Short Day + Date (e.g. Mon, 24)",
+    "longDayDate": "Long Day + Date (e.g. Monday, 24)",
+    "dayOnly": "Day Only (e.g. Monday)",
+    "dateMonth": "Date + Month (e.g. 24 Feb)",
+    "weekStartDay": "Week Start Day",
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "saturday": "Saturday",
+    "notificationType": "Notification Type",
+    "notificationTypes": {
+      "both": "System and Browser Notifications",
+      "desktop": "System Notifications Only",
+      "alerts": "Browser Notifications Only",
+      "off": "Notifications Off"
+    },
+    "save": "Save Changes",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveSuccess": "Settings saved successfully",
+    "saveError": "Could not save settings, please try again"
+  },
+  "trash": {
+    "titleTrash": "Trash",
+    "emptyTrash": "Empty Trash",
+    "emptyTrashConfirm": "Are you sure you want to empty the trash?",
+    "emptyTrashConfirmOk": "Yes",
+    "emptyTrashConfirmCancel": "No",
+    "filterByCalendar": "Filter by calendar",
+    "date": "Date",
+    "time": "Time",
+    "title": "Title",
+    "deletedAt": "Deleted At",
+    "actions": "Actions",
+    "allDay": "All Day",
+    "recurring": "Recurring",
+    "restore": "Restore",
+    "delete": "Delete",
+    "restoreSuccess": "Event restored successfully",
+    "deleteSuccess": "Event deleted successfully",
+    "restoreError": "Could not restore event",
+    "deleteError": "Could not delete event",
+    "loadError": "Could not load trash data",
+    "connectionError": "Connection error occurred",
+    "noEvents": "No events in trash",
+    "selectEvents": "Select events to restore or delete",
+    "restoreSelected": "Restore Selected",
+    "deleteSelected": "Delete Selected"
   }
 }

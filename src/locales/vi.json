@@ -158,7 +158,21 @@
     "colorHex": "Màu sắc (Mã Hex)",
     "enterTagDescription": "Nhập mô tả tag",
     "updateTag": "Cập nhật Tag",
-    "addTag": "Thêm Tag"
+    "addTag": "Thêm Tag",
+    "views": {
+      "day": "Ngày",
+      "week": "Tuần",
+      "month": "Tháng",
+      "year": "Năm",
+      "list": "Danh sách"
+    },
+    "calendarSection": {
+      "title": "Lịch của tôi",
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa",
+      "showMore": "Xem thêm",
+      "showLess": "Thu gọn"
+    }
   },
   "errors": {
     "serverError": "Lỗi máy chủ, vui lòng thử lại sau",
@@ -316,5 +330,78 @@
         "back": "Quay lại"
       }
     }
+  },
+  "settings": {
+    "title": "Cài đặt lịch trình",
+    "display": "Giao diện",
+    "time": "Thời gian",
+    "calendar": "Lịch",
+    "notification": "Thông báo",
+    "displayMode": "Chế độ hiển thị",
+    "multiMonthYear": "Năm (Lưới)",
+    "listYear": "Ngày (Danh sách)",
+    "dayGridMonth": "Tháng",
+    "timeGridWeek": "Tuần",
+    "timeGridDay": "Ngày",
+    "multiMonthMaxColumns": "Số cột hiển thị",
+    "showNonCurrentDates": "Hiển thị ngày ngoài tháng",
+    "showWeekNumbers": "Hiển thị số tuần",
+    "timeZone": "Múi giờ",
+    "selectTimeZone": "Chọn múi giờ...",
+    "timeFormat": "Định dạng giờ",
+    "hour12": "12 giờ (AM/PM)",
+    "hour24": "24 giờ",
+    "calendarTitleFormat": "Định dạng tiêu đề lịch",
+    "monthYear": "Tháng Năm (VD: Tháng 2 2025)",
+    "shortMonthYear": "Tháng viết tắt + Năm (VD: Thg 2 2025)",
+    "numericMonthYear": "Năm/Tháng số (VD: 2025/02)",
+    "dayHeaderFormat": "Định dạng ngày trong cột",
+    "shortDayDate": "Thứ viết tắt + Ngày (VD: T2, 24)",
+    "longDayDate": "Thứ + Ngày (VD: Thứ Hai, 24)",
+    "dayOnly": "Chỉ thứ (VD: Thứ Hai)",
+    "dateMonth": "Ngày + Tháng (VD: 24 Thg 2)",
+    "weekStartDay": "Ngày bắt đầu tuần",
+    "sunday": "Chủ Nhật",
+    "monday": "Thứ Hai",
+    "saturday": "Thứ Bảy",
+    "notificationType": "Loại thông báo",
+    "notificationTypes": {
+      "both": "Hệ thống và cửa sổ thông báo trình duyệt",
+      "desktop": "Chỉ thông báo hệ thống",
+      "alerts": "Cửa sổ thông báo trình duyệt",
+      "off": "Tắt thông báo"
+    },
+    "save": "Lưu thay đổi",
+    "cancel": "Hủy",
+    "saving": "Đang lưu...",
+    "saveSuccess": "Cài đặt đã được lưu",
+    "saveError": "Không thể lưu cài đặt, vui lòng thử lại"
+  },
+  "trash": {
+    "titleTrash": "Thùng rác",
+    "emptyTrash": "Làm trống thùng rác",
+    "emptyTrashConfirm": "Bạn có chắc chắn muốn xóa tất cả sự kiện trong thùng rác?",
+    "emptyTrashConfirmOk": "Có",
+    "emptyTrashConfirmCancel": "Không",
+    "filterByCalendar": "Lọc theo lịch",
+    "date": "Ngày",
+    "time": "Giờ",
+    "title": "Tiêu đề",
+    "deletedAt": "Ngày xóa",
+    "actions": "Thao tác",
+    "allDay": "Cả ngày",
+    "recurring": "Lặp lại",
+    "restore": "Khôi phục",
+    "delete": "Xóa",
+    "restoreSuccess": "Đã khôi phục sự kiện thành công",
+    "deleteSuccess": "Đã xóa sự kiện thành công",
+    "restoreError": "Không thể khôi phục sự kiện",
+    "deleteError": "Không thể xóa sự kiện",
+    "loadError": "Không thể tải dữ liệu thùng rác",
+    "connectionError": "Đã xảy ra lỗi kết nối",
+    "noEvents": "Không có sự kiện trong thùng rác",
+    "selectEvents": "Chọn sự kiện để khôi phục hoặc xóa",
+    "restoreSelected": "Khôi phục đã chọn",
+    "deleteSelected": "Xóa đã chọn"
   }
 }
