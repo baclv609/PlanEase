@@ -1,5 +1,11 @@
 import { ref } from 'vue'
 import axios from 'axios'
+import dayjs from 'dayjs'
+import utc from "dayjs/plugin/utc"
+import timezone from "dayjs/plugin/timezone"
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 export function useProfile() {
     const completionRate = ref(0)
@@ -7,15 +13,31 @@ export function useProfile() {
     const error = ref(null)
     const dirApi = import.meta.env.VITE_API_BASE_URL;
 
-
-    const fetchCompletionRate = async (startDate = null, endDate = null) => {
+    const fetchCompletionRate = async (startDate = null, endDate = null, taskTimezone = 'Asia/Ho_Chi_Minh') => {
         try {
             loading.value = true
             error.value = null
 
             const params = {}
-            if (startDate) params.start_date = startDate
-            if (endDate) params.end_date = endDate
+            if (startDate && endDate) {
+                // Chuyển đổi thời gian từ local timezone sang task timezone
+                const localStartDate = dayjs(startDate)
+                const localEndDate = dayjs(endDate)
+                
+                // Lấy offset giữa local timezone và task timezone
+                const localOffset = dayjs().tz(dayjs.tz.guess()).utcOffset()
+                const taskOffset = dayjs().tz(taskTimezone).utcOffset()
+                const offsetDiff = taskOffset - localOffset
+                
+                // Điều chỉnh thời gian theo offset
+                params.start_date = localStartDate.add(offsetDiff, 'minute').format('YYYY-MM-DD')
+                params.end_date = localEndDate.add(offsetDiff, 'minute').format('YYYY-MM-DD')
+                
+                console.log('Local timezone:', dayjs.tz.guess())
+                console.log('Task timezone:', taskTimezone)
+                console.log('Original dates:', { startDate, endDate })
+                console.log('Adjusted dates:', params)
+            }
 
             const response = await axios.get(`${dirApi}stats/completion-rate`, { 
                 params,

@@ -23,10 +23,10 @@ export function useCalendarDrop() {
         const taskTimezone = info.event.extendedProps.timezone;
         
         // Chuyển đổi thời gian sang UTC trước khi lưu
-        let oldStart = dayjs(info.oldEvent.start).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss");
-        let oldEnd = info.oldEvent.end ? dayjs(info.oldEvent.end).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss") : null;
-        let newStart = dayjs(info.event.start).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss");
-        let newEnd = info.event.end ? dayjs(info.event.end).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss") : null;
+        let oldStart = dayjs(info.oldEvent.start).tz(taskTimezone).format("YYYY-MM-DD HH:mm:ss");
+        let oldEnd = info.oldEvent.end ? dayjs(info.oldEvent.end).tz(taskTimezone).format("YYYY-MM-DD HH:mm:ss") : null;
+        let newStart = dayjs(info.event.start).tz(taskTimezone).format("YYYY-MM-DD HH:mm:ss");
+        let newEnd = info.event.end ? dayjs(info.event.end).tz(taskTimezone).format("YYYY-MM-DD HH:mm:ss") : null;
     
         const isAllDay = info.event.allDay;
 
@@ -127,10 +127,10 @@ export function useCalendarDrop() {
         const taskTimezone = info.event.extendedProps.timezone;
         
         // Chuyển đổi thời gian sang UTC trước khi lưu
-        let oldStart = dayjs(info.oldEvent.start).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss");
-        let oldEnd = info.oldEvent.end ? dayjs(info.oldEvent.end).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss") : null;
-        let newStart = dayjs(info.event.start).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss");
-        let newEnd = info.event.end ? dayjs(info.event.end).tz(taskTimezone).utc().format("YYYY-MM-DD HH:mm:ss") : null;
+        let oldStart = dayjs(info.oldEvent.start).tz(taskTimezone).format("YYYY-MM-DD HH:mm:ss");
+        let oldEnd = info.oldEvent.end ? dayjs(info.oldEvent.end).tz(taskTimezone).format("YYYY-MM-DD HH:mm:ss") : null;
+        let newStart = dayjs(info.event.start).tz(taskTimezone).format("YYYY-MM-DD HH:mm:ss");
+        let newEnd = info.event.end ? dayjs(info.event.end).tz(taskTimezone).format("YYYY-MM-DD HH:mm:ss") : null;
     
         const isAllDay = info.event.allDay;
         const isFirstEvent = !info.event.extendedProps.parent_id;
