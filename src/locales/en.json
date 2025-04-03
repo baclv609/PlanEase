@@ -176,5 +176,144 @@
     "tagAdded": "Added tag: {name}",
     "tagDeleted": "Tag deleted successfully!",
     "tagUpdated": "Tag updated successfully!"
+  },
+  "eventModal": {
+    "title": "Add New Event",
+    "save": "Save",
+    "sections": {
+      "title": {
+        "label": "Title",
+        "placeholder": "Enter event title"
+      },
+      "eventType": {
+        "label": "Event Type",
+        "options": {
+          "event": "Event",
+          "task": "Task"
+        }
+      },
+      "color": {
+        "label": "Choose Color",
+        "options": {
+          "blue": "Blue",
+          "red": "Red",
+          "green": "Green",
+          "yellow": "Yellow",
+          "purple": "Purple",
+          "gray": "Gray",
+          "orange": "Orange",
+          "pink": "Pink",
+          "brown": "Brown",
+          "cyan": "Cyan",
+          "emerald": "Emerald",
+          "navy": "Navy",
+          "black": "Black"
+        }
+      },
+      "dateTime": {
+        "label": "Time",
+        "start": "Start Time",
+        "end": "End Time",
+        "timezone": "Timezone",
+        "allDay": "All Day",
+        "repeat": "Repeat"
+      },
+      "recurrence": {
+        "label": "Recurrence Settings",
+        "type": "Repeat Type",
+        "options": {
+          "daily": "Daily",
+          "weekly": "Weekly",
+          "monthly": "Monthly",
+          "yearly": "Yearly"
+        },
+        "weekDays": {
+          "label": "Days of Week",
+          "monday": "Mon",
+          "tuesday": "Tue",
+          "wednesday": "Wed",
+          "thursday": "Thu",
+          "friday": "Fri",
+          "saturday": "Sat",
+          "sunday": "Sun"
+        },
+        "monthDays": {
+          "label": "Repeat on Days",
+          "placeholder": "Select days"
+        },
+        "interval": {
+          "label": "Repeat Interval"
+        },
+        "endType": {
+          "label": "End",
+          "never": "Never",
+          "until": "Until Date",
+          "count": "After Occurrences"
+        },
+        "count": {
+          "label": "Number of Occurrences",
+          "placeholder": "Enter number of occurrences"
+        },
+        "until": {
+          "label": "End Date",
+          "placeholder": "Select end date"
+        }
+      },
+      "description": {
+        "label": "Description",
+        "addAttachment": "Add Attachment",
+        "attachments": "Attachments:"
+      },
+      "location": {
+        "label": "Location",
+        "placeholder": "Enter location"
+      },
+      "participants": {
+        "label": "Participants",
+        "placeholder": "Add guests",
+        "permissions": {
+          "label": "Guest Permissions:",
+          "viewer": "View Only",
+          "editor": "Can Edit"
+        }
+      },
+      "privacy": {
+        "label": "Privacy",
+        "private": "Private",
+        "busy": "Mark as Busy"
+      },
+      "notifications": {
+        "label": "Notifications",
+        "enable": "Enable Reminders",
+        "add": "Add Reminder",
+        "types": {
+          "label": "Notification Type",
+          "email": "Email",
+          "web": "Web"
+        },
+        "before": "before",
+        "time": "Time",
+        "units": {
+          "label": "Time Unit",
+          "minutes": "Minutes",
+          "hours": "Hours"
+        }
+      },
+      "link": {
+        "label": "Link",
+        "placeholder": "Enter URL"
+      }
+    },
+    "messages": {
+      "maxReminders": "Maximum 3 reminders allowed",
+      "maxHours": "Maximum reminder time is 24 hours",
+      "sendEmail": {
+        "title": "Send Email Notification?",
+        "content": "Would you like to send email notifications to participants?",
+        "send": "Send",
+        "dontSend": "Don't Send",
+        "back": "Back"
+      }
+    }
   }
 }

@@ -177,5 +177,144 @@
     "tagAdded": "Đã thêm tag: {name}",
     "tagDeleted": "Tag đã được xóa thành công!",
     "tagUpdated": "Cập nhật tag thành công!"
+  },
+  "eventModal": {
+    "title": "Thêm Sự Kiện Mới",
+    "save": "Lưu",
+    "sections": {
+      "title": {
+        "label": "Tiêu đề",
+        "placeholder": "Nhập tiêu đề sự kiện"
+      },
+      "eventType": {
+        "label": "Loại sự kiện",
+        "options": {
+          "event": "Sự kiện",
+          "task": "Việc cần làm"
+        }
+      },
+      "color": {
+        "label": "Chọn màu",
+        "options": {
+          "blue": "Xanh dương",
+          "red": "Đỏ",
+          "green": "Xanh lá cây",
+          "yellow": "Vàng",
+          "purple": "Tím",
+          "gray": "Xám",
+          "orange": "Cam",
+          "pink": "Hồng",
+          "brown": "Nâu",
+          "cyan": "Xanh ngọc",
+          "emerald": "Xanh lục bảo",
+          "navy": "Xanh biển",
+          "black": "Đen"
+        }
+      },
+      "dateTime": {
+        "label": "Thời gian",
+        "start": "Thời gian bắt đầu",
+        "end": "Thời gian kết thúc",
+        "timezone": "Múi giờ",
+        "allDay": "Cả ngày",
+        "repeat": "Lặp lại"
+      },
+      "recurrence": {
+        "label": "Cài đặt lặp lại",
+        "type": "Kiểu lặp lại",
+        "options": {
+          "daily": "Hàng ngày",
+          "weekly": "Hàng tuần",
+          "monthly": "Hàng tháng",
+          "yearly": "Hàng năm"
+        },
+        "weekDays": {
+          "label": "Ngày trong tuần",
+          "monday": "T2",
+          "tuesday": "T3",
+          "wednesday": "T4",
+          "thursday": "T5",
+          "friday": "T6",
+          "saturday": "T7",
+          "sunday": "CN"
+        },
+        "monthDays": {
+          "label": "Lặp vào các ngày",
+          "placeholder": "Chọn ngày"
+        },
+        "interval": {
+          "label": "Khoảng cách lặp lại"
+        },
+        "endType": {
+          "label": "Kết thúc",
+          "never": "Không bao giờ",
+          "until": "Ngày cụ thể",
+          "count": "Số lần lặp"
+        },
+        "count": {
+          "label": "Giới hạn số lần lặp",
+          "placeholder": "Nhập số lần lặp"
+        },
+        "until": {
+          "label": "Ngày kết thúc",
+          "placeholder": "Chọn ngày"
+        }
+      },
+      "description": {
+        "label": "Mô tả",
+        "addAttachment": "Thêm Tập Tin Đính Kèm",
+        "attachments": "Tập tin đính kèm:"
+      },
+      "location": {
+        "label": "Địa điểm",
+        "placeholder": "Nhập địa điểm"
+      },
+      "participants": {
+        "label": "Người tham gia",
+        "placeholder": "Thêm khách mời",
+        "permissions": {
+          "label": "Quyền khách mời:",
+          "viewer": "Chỉ xem",
+          "editor": "Được sửa"
+        }
+      },
+      "privacy": {
+        "label": "Quyền riêng tư",
+        "private": "Riêng tư",
+        "busy": "Đánh dấu là bận"
+      },
+      "notifications": {
+        "label": "Thông báo",
+        "enable": "Bật nhắc nhở",
+        "add": "Thêm thông báo nhắc",
+        "types": {
+          "label": "Loại thông báo",
+          "email": "Email",
+          "web": "Web"
+        },
+        "before": "trước",
+        "time": "Thời gian",
+        "units": {
+          "label": "Đơn vị thời gian",
+          "minutes": "Phút",
+          "hours": "Giờ"
+        }
+      },
+      "link": {
+        "label": "Liên kết",
+        "placeholder": "Nhập URL"
+      }
+    },
+    "messages": {
+      "maxReminders": "Chỉ được thêm tối đa 3 thông báo nhắc trước lịch",
+      "maxHours": "Chỉ được thông báo trước 24 giờ",
+      "sendEmail": {
+        "title": "Gửi email thông báo?",
+        "content": "Bạn có muốn gửi email thông báo cho những người tham gia không?",
+        "send": "Gửi",
+        "dontSend": "Không gửi",
+        "back": "Quay lại"
+      }
+    }
   }
 }
