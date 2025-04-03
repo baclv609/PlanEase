@@ -375,5 +375,32 @@
     "saving": "Saving...",
     "saveSuccess": "Settings saved successfully",
     "saveError": "Could not save settings, please try again"
+  },
+  "trash": {
+    "titleTrash": "Trash",
+    "emptyTrash": "Empty Trash",
+    "emptyTrashConfirm": "Are you sure you want to empty the trash?",
+    "emptyTrashConfirmOk": "Yes",
+    "emptyTrashConfirmCancel": "No",
+    "filterByCalendar": "Filter by calendar",
+    "date": "Date",
+    "time": "Time",
+    "title": "Title",
+    "deletedAt": "Deleted At",
+    "actions": "Actions",
+    "allDay": "All Day",
+    "recurring": "Recurring",
+    "restore": "Restore",
+    "delete": "Delete",
+    "restoreSuccess": "Event restored successfully",
+    "deleteSuccess": "Event deleted successfully",
+    "restoreError": "Could not restore event",
+    "deleteError": "Could not delete event",
+    "loadError": "Could not load trash data",
+    "connectionError": "Connection error occurred",
+    "noEvents": "No events in trash",
+    "selectEvents": "Select events to restore or delete",
+    "restoreSelected": "Restore Selected",
+    "deleteSelected": "Delete Selected"
   }
 }

@@ -2,35 +2,35 @@
     <div class="p-1 bg-white min-h-screen">
         <div class="flex justify-between items-center mb-6">
             <div class="flex items-center gap-3">
-                <h1 class="text-2xl font-bold text-[#227C9D]">Thùng rác</h1>
+                <h1 class="text-2xl font-bold text-[#227C9D]">{{ $t('trash.titleTrash') }}</h1>
             </div>
             <div class="flex items-center gap-4">
                 <a-button class="action-btn delete-btn" @click="restoreEvent(selectedEvents)" v-if="selectedEvents.length != 0">
-                    <UndoOutlined class="p-2 text-md" />
+                    <UndoOutlined class="p-2 text-md" /> {{ $t('trash.restoreSelected') }}
                 </a-button>
                 <a-button class="action-btn restore-btn" @click="deleteEvent(selectedEvents)" v-if="selectedEvents.length != 0">
-                    <DeleteOutlined class="p-2 text-md" />
+                    <DeleteOutlined class="p-2 text-md" /> {{ $t('trash.deleteSelected') }}
                 </a-button>
                 <a-popconfirm 
                     v-if="events.length > 0"
-                    title="Bạn có chắc chắn muốn xóa tất cả sự kiện trong thùng rác?" 
-                    ok-text="Có" 
-                    cancel-text="Không" 
+                    :title="$t('trash.emptyTrashConfirm')" 
+                    :ok-text="$t('trash.emptyTrashConfirmOk')" 
+                    :cancel-text="$t('trash.emptyTrashConfirmCancel')" 
                     @confirm="deleteEvent([], true)"
                     >
                     <a-button class="bg-[#227C9D] hover:!text-white text-white font-medium">
-                        Làm trống thùng rác
+                        {{ $t('trash.emptyTrash') }}
                     </a-button>
                 </a-popconfirm>
 
                 <!-- Khi không có sự kiện, render nút nhưng dưới dạng disabled -->
                 <a-button v-else disabled class="bg-[#227C9D] text-white font-medium opacity-50 cursor-not-allowed">
-                    Làm trống thùng rác
+                    {{ $t('trash.emptyTrash') }}
                 </a-button>
                 
                 <a-select 
                     v-model:value="selectedTag" 
-                    placeholder="Lọc theo lịch" 
+                    :placeholder="$t('trash.filterByCalendar')" 
                     style="width: 200px"
                     :options="tags.map(tag => ({ value: tag.id, label: tag.name }))" 
                     allowClear 
@@ -44,19 +44,19 @@
             <template #bodyCell="{ column, record }">
                 <template v-if="column.key === 'action'">
                     <div class="flex gap-2">
-
                         <a-button @click="restoreEvent([record.id])" class="action-btn restore-btn">
                             <template #icon>
                                 <UndoOutlined />
                             </template>
+                            {{ $t('trash.restore') }}
                         </a-button>
 
                         <a-button class="action-btn delete-btn" @click="deleteEvent([record.id])">
                             <template #icon>
                                 <DeleteOutlined />
                             </template>
+                            {{ $t('trash.delete') }}
                         </a-button>
-
                     </div>
                 </template>
                 <template v-else-if="column.key === 'date'">
@@ -65,11 +65,11 @@
                 <template v-else-if="column.key === 'time'">
                     <div class="flex flex-col gap-1">
                         <div class="text-md font-medium">
-                            {{ record.is_all_day ? 'Cả ngày' : formatDate(record.start_time, true) }}
+                            {{ record.is_all_day ? $t('trash.allDay') : formatDate(record.start_time, true) }}
                         </div>
                         <div v-if="record.is_repeat"
                             class="text-xs inline-block">
-                            Lặp lại
+                            {{ $t('trash.recurring') }}
                         </div>
                     </div>
                 </template>
@@ -99,6 +99,9 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { message } from 'ant-design-vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const userSettings = JSON.parse(localStorage.getItem('userSettings'));
 
@@ -131,11 +134,11 @@ const getTrashEvents = async () => {
         if (response.data.code == 200) {
             events.value = response.data.data;
         } else {
-            message.error('Không thể tải dữ liệu thùng rác');
+            message.error(i18n.t('trash.loadError'));
         }
     } catch (error) {
         console.error(error);
-        message.error('Đã xảy ra lỗi khi tải dữ liệu');
+        message.error(i18n.t('trash.connectionError'));
     } finally {
         loading.value = false;
     }
@@ -184,15 +187,15 @@ const restoreEvent = async (eventId) => {
         });
 
         if (response.data.code == 200) {
-            message.success('Khôi phục sự kiện thành công');
+            message.success(i18n.t('trash.restoreSuccess'));
             events.value = events.value.filter(event => !eventId.includes(event.id));
             selectedEvents.value = [];
         } else {
-            message.error('Không thể khôi phục sự kiện');
+            message.error(i18n.t('trash.restoreError'));
         }
     } catch (error) {
         console.error(error);
-        message.error('Đã xảy ra lỗi khi khôi phục sự kiện');
+        message.error(i18n.t('trash.restoreError'));
     }
 }
 
@@ -210,45 +213,45 @@ const deleteEvent = async (eventId, deleteAll = false) => {
         });
 
         if (response.data.code == 200) {
-            message.success('Xóa sự kiện thành công');
+            message.success(i18n.t('trash.deleteSuccess'));
             events.value = events.value.filter(event => !eventId.includes(event.id));
             selectedEvents.value = [];
         } else {
-            message.error('Không thể xóa sự kiện');
+            message.error(i18n.t('trash.deleteError'));
         }
     } catch (error) {
         console.error(error);
-        message.error('Đã xảy ra lỗi khi xóa sự kiện');
+        message.error(i18n.t('trash.deleteError'));
     }
 }
 
 const columns = [
     {
-        title: 'Ngày',
+        title: t('trash.date'),
         dataIndex: 'date',
         key: 'date',
         width: 100,
     },
     {
-        title: 'Giờ',
+        title: t('trash.time'),
         dataIndex: 'time',
         key: 'time',
         width: 100
     },
     {
-        title: 'Tiêu đề',
+        title: t('trash.title'),
         dataIndex: 'title',
         key: 'title',
         width: 400
     },
     {
-        title: 'Ngày xóa',
+        title: t('trash.deletedAt'),
         dataIndex: 'deletedAt',
         key: 'deletedAt',
         width: 100,
     },
     {
-        title: 'Thao tác',
+        title: t('trash.actions'),
         key: 'action',
         width: 100,
         fixed: 'right'

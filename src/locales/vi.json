@@ -376,5 +376,32 @@
     "saving": "Đang lưu...",
     "saveSuccess": "Cài đặt đã được lưu",
     "saveError": "Không thể lưu cài đặt, vui lòng thử lại"
+  },
+  "trash": {
+    "titleTrash": "Thùng rác",
+    "emptyTrash": "Làm trống thùng rác",
+    "emptyTrashConfirm": "Bạn có chắc chắn muốn xóa tất cả sự kiện trong thùng rác?",
+    "emptyTrashConfirmOk": "Có",
+    "emptyTrashConfirmCancel": "Không",
+    "filterByCalendar": "Lọc theo lịch",
+    "date": "Ngày",
+    "time": "Giờ",
+    "title": "Tiêu đề",
+    "deletedAt": "Ngày xóa",
+    "actions": "Thao tác",
+    "allDay": "Cả ngày",
+    "recurring": "Lặp lại",
+    "restore": "Khôi phục",
+    "delete": "Xóa",
+    "restoreSuccess": "Đã khôi phục sự kiện thành công",
+    "deleteSuccess": "Đã xóa sự kiện thành công",
+    "restoreError": "Không thể khôi phục sự kiện",
+    "deleteError": "Không thể xóa sự kiện",
+    "loadError": "Không thể tải dữ liệu thùng rác",
+    "connectionError": "Đã xảy ra lỗi kết nối",
+    "noEvents": "Không có sự kiện trong thùng rác",
+    "selectEvents": "Chọn sự kiện để khôi phục hoặc xóa",
+    "restoreSelected": "Khôi phục đã chọn",
+    "deleteSelected": "Xóa đã chọn"
   }
 }
