@@ -103,8 +103,8 @@ const transformMessages = (messages) => {
 
 // format thời gian tin nhắn
 const formatTime = (timestamp) => {
-  const time = dayjs.utc(timestamp).tz(userTimezone);
-  const now = dayjs().tz(userTimezone);
+  const time = dayjs.utc(timestamp).tz(userTimezone.value);
+  const now = dayjs().tz(userTimezone.value);
 
   if (time.isSame(now, "day")) {
     return time.format("HH:mm");
@@ -312,6 +312,7 @@ const handleClose = () => {
   if (groupInfo.value.group && groupInfo.value.group.id){
     console.log("Dừng lắng nghe realtime trong Chat ModalDetails", groupInfo.value.group.id);
     echoStore.echo.leave(`task-group.${groupInfo.value.group.id}`);
+    groupInfo.value = {};
   }
     files.value = [];
   emit("close", false);

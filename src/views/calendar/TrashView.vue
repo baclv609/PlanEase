@@ -134,11 +134,11 @@ const getTrashEvents = async () => {
         if (response.data.code == 200) {
             events.value = response.data.data;
         } else {
-            message.error(i18n.t('trash.loadError'));
+            message.error(t('trash.loadError'));
         }
     } catch (error) {
         console.error(error);
-        message.error(i18n.t('trash.connectionError'));
+        message.error(t('trash.connectionError'));
     } finally {
         loading.value = false;
     }
@@ -187,15 +187,15 @@ const restoreEvent = async (eventId) => {
         });
 
         if (response.data.code == 200) {
-            message.success(i18n.t('trash.restoreSuccess'));
+            message.success(t('trash.restoreSuccess'));
             events.value = events.value.filter(event => !eventId.includes(event.id));
             selectedEvents.value = [];
         } else {
-            message.error(i18n.t('trash.restoreError'));
+            message.error(t('trash.restoreError'));
         }
     } catch (error) {
         console.error(error);
-        message.error(i18n.t('trash.restoreError'));
+        message.error(t('trash.restoreError'));
     }
 }
 
@@ -213,15 +213,15 @@ const deleteEvent = async (eventId, deleteAll = false) => {
         });
 
         if (response.data.code == 200) {
-            message.success(i18n.t('trash.deleteSuccess'));
+            message.success(t('trash.deleteSuccess'));
             events.value = events.value.filter(event => !eventId.includes(event.id));
             selectedEvents.value = [];
         } else {
-            message.error(i18n.t('trash.deleteError'));
+            message.error(t('trash.deleteError'));
         }
     } catch (error) {
         console.error(error);
-        message.error(i18n.t('trash.deleteError'));
+        message.error(t('trash.deleteError'));
     }
 }
 
