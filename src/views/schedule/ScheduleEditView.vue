@@ -1525,6 +1525,16 @@ const hasRecurrenceChanges = () => {
 
     return hasRecurrencePropertyChanged;
 };
+
+// Thêm watch cho is_reminder để tự động thêm reminder mặc định
+watch(
+    () => formState.value.is_reminder,
+    (newVal) => {
+        if (newVal && (!formState.value.reminder || formState.value.reminder.length === 0)) {
+            formState.value.reminder = [{ type: "email", time: 5, unit: "minutes" }];
+        }
+    }
+);
 </script>
 
 <style scoped>

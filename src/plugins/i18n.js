@@ -3,7 +3,7 @@ import en from "@/locales/en.json";
 import vi from "@/locales/vi.json";
 
 // Lấy ngôn ngữ từ localStorage hoặc mặc định là 'en'
-const userLang = localStorage.getItem("user-language") || "en";
+const userLang = JSON.parse(localStorage.getItem("userSettings")).language || "en";
 
 const i18n = createI18n({
     legacy: false,
