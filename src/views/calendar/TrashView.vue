@@ -248,7 +248,7 @@ const columns = [
         title: t('trash.deletedAt'),
         dataIndex: 'deletedAt',
         key: 'deletedAt',
-        width: 100,
+        width: 200,
     },
     {
         title: t('trash.actions'),

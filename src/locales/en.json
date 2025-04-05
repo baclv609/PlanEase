@@ -204,6 +204,9 @@
         "label": "Title",
         "placeholder": "Enter event title"
       },
+      "pastTime": {
+        "message": "You are creating an event with a past time"
+      },
       "eventType": {
         "label": "Event Type",
         "options": {
@@ -240,7 +243,7 @@
       "recurrence": {
         "label": "Recurrence Settings",
         "type": "Repeat Type",
-        "options": {
+        "freq": {
           "daily": "Daily",
           "weekly": "Weekly",
           "monthly": "Monthly",
@@ -257,7 +260,7 @@
           "sunday": "Sun"
         },
         "monthDays": {
-          "label": "Repeat on Days",
+          "label": "Day",
           "placeholder": "Select days"
         },
         "interval": {

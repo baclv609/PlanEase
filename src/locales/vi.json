@@ -205,6 +205,9 @@
         "label": "Tiêu đề",
         "placeholder": "Nhập tiêu đề sự kiện"
       },
+      "pastTime": {
+        "message": "Bạn đang tạo sự kiện với thời gian trong quá khứ"
+      },
       "eventType": {
         "label": "Loại sự kiện",
         "options": {
@@ -241,7 +244,7 @@
       "recurrence": {
         "label": "Cài đặt lặp lại",
         "type": "Kiểu lặp lại",
-        "options": {
+        "freq": {
           "daily": "Hàng ngày",
           "weekly": "Hàng tuần",
           "monthly": "Hàng tháng",
@@ -258,7 +261,7 @@
           "sunday": "CN"
         },
         "monthDays": {
-          "label": "Lặp vào các ngày",
+          "label": "Ngày",
           "placeholder": "Chọn ngày"
         },
         "interval": {

@@ -61,7 +61,7 @@ export function useCalendarEvents() {
         return;
       }
       rawEvents.value = response.data.data || [];
-      console.log(rawEvents.value);
+      // console.log(rawEvents.value);
     } catch (error) {
       console.error('Lỗi khi tải lịch trình:', error);
     }
@@ -113,7 +113,7 @@ export function useCalendarEvents() {
         classDone = 'task_done';
       }
       if (event.type == 'event') {
-        eventTypeClass = 'calendar-event border-l-4 border';
+        eventTypeClass = 'calendar-event border border-l-4 p-[2px] font-semibold';
       }
       return {
         id: event.id,

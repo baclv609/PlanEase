@@ -16,7 +16,8 @@
           <a-upload
             class="m-auto"
             v-model:file-list="fileList"
-            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+            accept="image/*"
+            :before-upload="() => false"
           >
             <a-button class="gradient-primary-btn">
               <CloudUploadOutlined />
@@ -179,7 +180,9 @@ import { useEchoStore } from "@/stores/echoStore";
 import unknowUser from "@/assets/images/unknow_user.jpg";
 import { CloudUploadOutlined } from "@ant-design/icons-vue";
 import ProfileStatistics from "./ProfileStatistics.vue";
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const router = useRouter();
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const activeTab = ref("1");
@@ -206,7 +209,7 @@ const fileList = ref([]);
 const fetchUserProfile = async () => {
   try {
     if (!token) {
-      console.error("profile.error.token_not_found");
+      console.error(t("profile.error.token_not_found"));
       return;
     }
 
@@ -220,12 +223,12 @@ const fetchUserProfile = async () => {
       user.value = response.data.data;
     } else {
       console.error(
-        "profile.error.user_not_found",
+        t("profile.error.user_not_found"),
         { message: response.data.message }
       );
     }
   } catch (error) {
-    console.error("profile.error.fetch_error", { error });
+    console.error(t("profile.error.fetch_error"), { error });
   }
 };
 
@@ -239,37 +242,41 @@ const saveChanges = async () => {
 
     isLoading.value = true;
 
-    const updatedUser = {
-      first_name: user.value.first_name,
-      last_name: user.value.last_name,
-      gender: user.value.gender,
-      address: user.value.address,
-      phone: user.value.phone,
-    };
+    const formData = new FormData();
+    formData.append("first_name", user.value.first_name);
+    formData.append("last_name", user.value.last_name);
+    formData.append("gender", user.value.gender);
+    formData.append("address", user.value.address ?? "");
+    formData.append("phone", user.value.phone ?? "");
+    formData.append("_method", "PUT");
+    // Append file nếu có
+    if (fileList.value[0]) {
+      formData.append("avatar", fileList.value[0].originFileObj);
+    }
 
-    const response = await axios.put(`${dirApi}user/update-profile`, updatedUser, {
+    const response = await axios.post(`${dirApi}user/update-profile`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
     if (response.data.code === 200) {
-      message.success("profile.success.update_success");
+      message.success(t("profile.success.update_success"));
 
       Object.keys(errors).forEach((key) => (errors[key] = ""));
+      fileList.value = [];
 
       await fetchUserProfile();
-
       user.value = { ...response.data.data };
     } else {
-      message.error(response.data.message || "profile.error.update_failed");
+      message.error(t("profile.error.update_failed"));
     }
   } catch (err) {
     if (err.status == 422) {
-      message.warning("profile.error.invalid_input");
+      message.warning(t("profile.error.invalid_input"));
       Object.assign(errors, err.response.data.errors);
     } else {
-      message.error("profile.error.general_error");
+      message.error(t("profile.error.general_error"));
     }
   } finally {
     isLoading.value = false;
@@ -296,7 +303,7 @@ const changePassword = async () => {
     );
 
     if (response.data.code == 200) {
-      message.success("profile.success.password_changed");
+      message.success(t("profile.success.password_changed"));
 
       Object.keys(errors).forEach((key) => (errors[key] = ""));
 
@@ -304,12 +311,12 @@ const changePassword = async () => {
     }
   } catch (err) {
     if (err.status == 422) {
-      message.warning("profile.error.invalid_input");
+      message.warning(t("profile.error.invalid_input"));
       Object.assign(errors, err.response.data.errors);
     } else if (err.status == 400) {
-      message.warning("profile.error.password_incorrect");
+      message.warning(t("profile.error.password_incorrect"));
     } else {
-      message.error("profile.error.general_error");
+      message.error(t("profile.error.general_error"));
     }
   } finally {
     isLoading.value = false;
@@ -328,11 +335,11 @@ const handleLogout = () => {
       echoStore.stopListening();
       echoStore.destroyEcho();
 
-      message.success(response.data.message || "profile.success.logout_success");
+      message.success(response.data.message || t("profile.success.logout_success"));
       router.push({ name: "home" });
     })
     .catch(() => {
-      message.error("profile.error.general_error");
+      message.error(t("profile.error.general_error"));
     });
 };
 

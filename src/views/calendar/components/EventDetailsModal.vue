@@ -72,8 +72,8 @@ const isVisible = ref(props.isEventDetailModalVisible);
 const event = ref({});
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem('access_token');
-const deleteOption = ref("");
-const leaveOption = ref("");
+const deleteOption = ref("DEL_1");
+const leaveOption = ref("EDIT_1");
 const eventLink = ref('');
 const user = ref(JSON.parse(localStorage.getItem('user')));
 const activeTab = ref("infoEvent");
@@ -197,6 +197,7 @@ const handleDelete = () => {
     Modal.confirm({
       title: "Xóa sự kiện lặp lại",
       width: 500,
+      centered: true,
       content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
         h("div", { class: "mb-3" }, [
           h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
@@ -204,6 +205,7 @@ const handleDelete = () => {
               type: "radio",
               name: "deleteOption",
               value: "DEL_1",
+              checked: deleteOption.value == "DEL_1",
               class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
               onInput: (e) => {
                 deleteOption.value = e.target.value;
@@ -244,12 +246,30 @@ const handleDelete = () => {
       okText: "Xóa",
       cancelText: "Hủy",
       onOk() {
-        deleteEvent({ code: deleteOption.value, date: event.value.start, id: event.value.id });
+        Modal.confirm({
+          title: "Xác nhận xóa",
+          content: "Bạn có chắc chắn muốn xóa sự kiện này?",
+          okText: "Xóa",
+          cancelText: "Hủy",
+          centered: true,
+          onOk() {
+            deleteEvent({ code: deleteOption.value, date: event.value.start, id: event.value.id });
+          },
+        });
       },
     });
 
   } else {
-   deleteEvent({code: "DEL_N", date: event.value.start, id: event.value.id });
+    Modal.confirm({
+      title: "Xác nhận xóa",
+      content: "Bạn có chắc chắn muốn xóa sự kiện này?",
+      okText: "Xóa",
+      cancelText: "Hủy",
+      centered: true,
+      onOk() {
+        deleteEvent({code: "DEL_N", date: event.value.start, id: event.value.id });
+      },
+    });
   }
 }
 
@@ -309,6 +329,8 @@ const handleCancelDelete = () => {
 const handleClose = () => {
   isVisible.value = false;
   activeTab.value = 'infoEvent';
+  deleteOption.value = "DEL_1";
+  leaveOption.value = "EDIT_1";
   if (groupInfo.value.group && groupInfo.value.group.id){
     console.log("Dừng lắng nghe realtime trong Chat ModalDetails", groupInfo.value.group.id);
     echoStore.echo.leave(`task-group.${groupInfo.value.group.id}`);
@@ -441,12 +463,30 @@ const leaveEvent = async (uuid) => {
       okText: "Rời đi",
       cancelText: "Hủy",
       onOk() {
-        handleLeaveEvent({code: leaveOption.value, id: event.value.id, start_time: event.value.start, end_time: event.value.end, date: event.value.start, timezone: event.value.timezone});
+        Modal.confirm({
+          title: "Xác nhận rời khỏi",
+          content: "Bạn có chắc chắn muốn rời khỏi sự kiện này?",
+          okText: "Rời đi",
+          cancelText: "Hủy",
+          centered: true,
+          onOk() {
+            handleLeaveEvent({code: leaveOption.value, id: event.value.id, start_time: event.value.start, end_time: event.value.end, date: event.value.start, timezone: event.value.timezone});
+          },
+        });
       },
     });
 
   } else {
-    handleLeaveEvent({code: "EDIT_N", id: event.value.id, start_time: event.value.start, end_time: event.value.end, date: event.value.start, timezone: event.value.timezone});
+    Modal.confirm({
+      title: "Xác nhận rời khỏi",
+      content: "Bạn có chắc chắn muốn rời khỏi sự kiện này?",
+      okText: "Rời đi",
+      cancelText: "Hủy",
+      centered: true,
+      onOk() {
+        handleLeaveEvent({code: "EDIT_N", id: event.value.id, start_time: event.value.start, end_time: event.value.end, date: event.value.start, timezone: event.value.timezone});
+      },
+    });
   }
 }
 
@@ -673,6 +713,14 @@ const completeTask = async (id) => {
     emit("delete", id);
     handleClose();
   }
+}
+
+const downloadFile = (file_name) => {
+  axios.get(`${dirApi}s3/download/`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
 }
 </script>
 
@@ -1024,7 +1072,7 @@ const completeTask = async (id) => {
             <div v-for="(file, index) in files" :key="index" 
               class="border rounded-lg p-4 flex flex-col">
               <!-- Hiển thị icon cho file -->
-              <div class="mb-3 flex items-center justify-center h-48 bg-gray-50 rounded-lg">
+              <div class="mb-3 flex items-center justify-center h-48 bg-gray-50 rounded-lg" v-if="!['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(file.extension)">
                 <div class="text-center">
                   <FileOutlined v-if="file.extension == 'pdf'" class="text-4xl text-red-500" />
                   <FileWordOutlined v-else-if="['doc', 'docx'].includes(file.extension)" class="text-4xl text-blue-500" />
@@ -1033,6 +1081,9 @@ const completeTask = async (id) => {
                   <FileTextOutlined v-else class="text-4xl text-gray-500" />
                   <div class="mt-2 text-sm text-gray-600">{{ file.extension.toUpperCase() }}</div>
                 </div>
+              </div>
+              <div class="mb-3 flex items-center justify-center h-48 bg-gray-50 rounded-lg" v-else>
+                <img :src="file.url" alt="File" class="w-full h-full object-cover rounded-lg">
               </div>
               <!-- Thông tin file -->
               <div class="flex flex-col">
@@ -1048,7 +1099,7 @@ const completeTask = async (id) => {
               </div>
               <!-- Nút tải xuống -->
               <div class="mt-3">
-                <a :href="`${dirApi}s3/download/${file.file_name}`" target="_blank" download
+                <a @click.prevent="downloadFile(file.file_name)" target="_blank" download
                   class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
                   <DownloadOutlined class="mr-2" />
                   Tải xuống

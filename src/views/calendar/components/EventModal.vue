@@ -61,10 +61,12 @@ const emit = defineEmits(["save", 'cancel',"cancelAddEventModalVisible", 'AddEve
 const selectedDate = ref(null);
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem('access_token');
+const userSettings = JSON.parse(localStorage.getItem('userSettings'));
 const timezones = moment.tz.names();
 const tags = ref([]);
 const isLoading = ref(false);
 const presignedUrls = ref([]);
+const fileUploads = ref([]);
 
 const { t } = useI18n();
 
@@ -100,6 +102,7 @@ const formState = ref({
   type: "event",
   attachments: [], // Thêm trường attachments
   link: null,
+  isPastTime: false, // Thêm biến để theo dõi thời gian trong quá khứ
 
   // Màu sắc
   backgroundColor: colors[0].value,
@@ -201,6 +204,7 @@ const resetForm = () => {
     allDay: false,
     type: "event",
     attachments: [], // Thêm trường attachments
+    isPastTime: false,
 
     // Màu sắc
     backgroundColor: colors[0].value,
@@ -340,20 +344,20 @@ watch(
 );
 
 const freqOptions = [
-  { label: "Hàng ngày", value: "daily" },
-  { label: "Hàng tuần", value: "weekly" },
-  { label: "Hàng tháng", value: "monthly" },
-  { label: "Hàng năm", value: "yearly" },
+  { label: t('eventModal.sections.recurrence.freq.daily'), value: "daily" },
+  { label: t('eventModal.sections.recurrence.freq.weekly'), value: "weekly" },
+  { label: t('eventModal.sections.recurrence.freq.monthly'), value: "monthly" },
+  { label: t('eventModal.sections.recurrence.freq.yearly'), value: "yearly" },
 ];
 
 const weekDays = [
-  { label: "T2", value: "MO" },
-  { label: "T3", value: "TU" },
-  { label: "T4", value: "WE" },
-  { label: "T5", value: "TH" },
-  { label: "T6", value: "FR" },
-  { label: "T7", value: "SA" },
-  { label: "CN", value: "SU" },
+  { label: t('eventModal.sections.recurrence.weekDays.monday'), value: "MO" },
+  { label: t('eventModal.sections.recurrence.weekDays.tuesday'), value: "TU" },
+  { label: t('eventModal.sections.recurrence.weekDays.wednesday'), value: "WE" },
+  { label: t('eventModal.sections.recurrence.weekDays.thursday'), value: "TH" },
+  { label: t('eventModal.sections.recurrence.weekDays.friday'), value: "FR" },
+  { label: t('eventModal.sections.recurrence.weekDays.saturday'), value: "SA" },
+  { label: t('eventModal.sections.recurrence.weekDays.sunday'), value: "SU" },
 ];
 
 const monthDays = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -398,7 +402,7 @@ const handleSave = async () => {
       type: formState.value.type ? formState.value.type : null,
       tag_id: formState.value.tag_id || null,
       is_private: formState.value.is_private ? 1 : 0,
-
+      default_permission: formState.value.role || 'viewer',
       freq: formState.value.rrule?.freq ? formState.value.rrule?.freq : null,
       interval: formState.value.rrule?.interval ?? 1,
       count: formState.value.rrule?.count ?? null,
@@ -417,7 +421,7 @@ const handleSave = async () => {
     };
 
     // console.log(dataApi);
-
+    console.log(presignedUrls.value);
     const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}tasks`, dataApi, {
       headers: {
         "Content-Type": "application/json",
@@ -429,13 +433,13 @@ const handleSave = async () => {
 
       if(presignedUrls.value && presignedUrls.value.length > 0) {
         await Promise.all(
-          presignedUrls.value.map(async (info) => {
+          presignedUrls.value.map(async (info, index) => {
             // Upload file to S3
             try {
-              await axios.put(info.url, info.file, {
+              await axios.put(info.url, fileUploads.value[index], {
                 headers: {
                   "Content-Type": info.metadata.mime
-                },
+                }
               });
 
               // Save file information to database with required fields
@@ -443,7 +447,7 @@ const handleSave = async () => {
                 `${dirApi}file-entry/store/file`,
                 {
                   files: [{
-                    file_name: info.metadata.file_name.split(".")[0],
+                    file_name: info.metadata.file_name,
                     client_name: info.metadata.client_name,
                     extension: info.metadata.extension,
                     size: info.metadata.size,
@@ -454,7 +458,6 @@ const handleSave = async () => {
                 {
                   headers: { 
                     Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json"
                   },
                 }
               );
@@ -741,13 +744,24 @@ const handleBeforeUpload = async (fileList) => {
     presignedUrls.value = data.presigned_urls;
     console.log("Presigned URLs:", presignedUrls.value);
 
-    message.success('Upload file thành công');
   } catch (error) {
     console.error("Upload failed", error);
-    message.error('Upload file thất bại');
+    message.error("Upload file thất bại");
   }
 
-  return false; // Ngăn component <Upload> tự xử lý upload
+  return false; // Ngăn Upload tự động xử lý
+};
+
+// Hàm xóa file đính kèm
+const removeAttachment = (index) => {
+  // Xóa file khỏi danh sách attachments
+  formState.value.attachments.splice(index, 1);
+  
+  // Xóa presignedUrl tương ứng
+  if (presignedUrls.value && presignedUrls.value.length > index) {
+    presignedUrls.value.splice(index, 1);
+  }
+  console.log(presignedUrls.value);
 };
 
 watch(
@@ -814,6 +828,18 @@ watch(
         formState.value.end = startDate.endOf('day');
       }
     }
+
+    // Kiểm tra thời gian trong quá khứ
+    formState.value.isPastTime = newVal ? dayjs(newVal).isBefore(dayjs(), 'minute') : false;
+  }
+);
+
+watch(
+  () => formState.value.is_reminder,
+  (newVal) => {
+    if (newVal && (!formState.value.reminder || formState.value.reminder.length === 0)) {
+      formState.value.reminder = [{ type: "email", time: 5, unit: "minutes" }];
+    }
   }
 );
 </script>
@@ -832,6 +858,14 @@ watch(
     <Form layout="vertical" :rules="rules" :model="formState" ref="formRef">
       <div class="h-full flex flex-col">
         <div class="flex-1">
+          <!-- Warning message for past time -->
+          <div v-if="formState.isPastTime" class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div class="flex items-center text-yellow-800">
+              <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="#6b7280" width="18" height="18" class="mr-2"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>time-history</title> <g id="Layer_2" data-name="Layer 2"> <g id="invisible_box" data-name="invisible box"> <rect width="48" height="48" fill="none"></rect> </g> <g id="icons_Q2" data-name="icons Q2"> <path d="M46,24A22,22,0,0,1,4.3,33.7a2,2,0,0,1,.5-2.6,2,2,0,0,1,3,.7A18,18,0,1,0,10.6,12h5.3A2.1,2.1,0,0,1,18,13.7,2,2,0,0,1,16,16H6a2,2,0,0,1-2-2V4.1A2.1,2.1,0,0,1,5.7,2,2,2,0,0,1,8,4V8.9A22,22,0,0,1,46,24Z"></path> <path d="M34,32a1.7,1.7,0,0,1-1-.3L22,25.1V14a2,2,0,0,1,4,0v8.9l9,5.4a1.9,1.9,0,0,1,.7,2.7A1.9,1.9,0,0,1,34,32Z"></path> </g> </g> </g></svg>
+              <span>{{ t('eventModal.sections.pastTime.message') }}</span>
+            </div>
+          </div>
+
           <!-- Title Section -->
           <div class="form-section">
             <div class="section-title">
@@ -1028,6 +1062,7 @@ watch(
                   v-model:file-list="formState.attachments"
                   :before-upload="handleBeforeUpload"
                   multiple
+                  list-type="picture-card"
                   :max-count="5"
                   class="text-blue-600 cursor-pointer hover:text-blue-800"
                 >

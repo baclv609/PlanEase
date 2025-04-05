@@ -24,6 +24,9 @@
                 <a-menu-item @click="filterNotifications('read')">
                   <a class="text-[#227C9D] hover:text-[#17C3B2]">Hiển thị thông báo đã đọc</a>
                 </a-menu-item>
+                <a-menu-item @click="deleteAllNotification">
+                  <a class="text-[#227C9D] hover:text-[#17C3B2]">Xóa tất cả thông báo</a>
+                </a-menu-item>
               </a-menu>
             </template>
           </a-dropdown>
@@ -35,29 +38,42 @@
 
       <!-- Nội dung thông báo -->
       <div class="p-4 space-y-2 max-h-[calc(85vh-200px)] overflow-y-auto custom-scrollbar">
-        <div v-if="filterNotificationData && filterNotificationData.length > 0" v-for="notification in filterNotificationData" :key="notification.id" @click="read(notification)" 
-          class="flex cursor-pointer items-start gap-3 p-3 rounded-lg hover:bg-[#17C3B2]/5 transition-colors duration-200"
+        <div v-if="filterNotificationData && filterNotificationData.length > 0" v-for="notification in filterNotificationData" :key="notification.id" 
+          class="flex cursor-pointer items-start gap-3 p-3 rounded-lg hover:bg-[#17C3B2]/5 transition-colors duration-200 group"
           :class="notification.read_at == null ? 'bg-[#17C3B2]/10' : 'bg-[#FEF9E7]'">
           <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-[#FFC377]/20">
             <span class="text-xl">{{ icons[notification.data.code] || icons.default }}</span>
           </div>
-          <div class="flex-grow min-w-0">
+          <div class="flex-grow min-w-0" @click="read(notification)">
             <div class="flex items-start justify-between gap-2">
-              <a v-if="notification.data.link" @click="read(notification)" :href="notification.data.link" 
-                class="text-[#227C9D] hover:text-[#17C3B2] transition-colors duration-200" 
-                :class="notification.read_at == null ? 'font-medium' : 'font-normal'">
-                {{ notification.data.message }}
-              </a>
-              <p v-else class="text-[#227C9D] mb-0" 
-                :class="notification.read_at == null ? 'font-medium' : 'font-normal'">
+              <p class="text-[#227C9D] mb-0" 
+                :class="notification.read_at == null ? 'font-medium' : 'font-normal'"
+                >
                 {{ notification.data.message }}
               </p>
-              <span v-if="notification.read_at == null" class="flex-shrink-0">
-                <span class="relative flex h-2 w-2">
-                  <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FE6D73] opacity-75"></span>
-                  <span class="relative inline-flex h-2 w-2 rounded-full bg-[#FE6D73]"></span>
+              <div class="flex items-center gap-2">
+                <a-dropdown :trigger="['click']" class="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <a class="ant-dropdown-link bg-transparent cursor-pointer border-none p-1 rounded-full hover:bg-[#17C3B2]/10 transition-colors" @click.prevent>
+                    <MoreOutlined class="text-[#227C9D] text-lg hover:text-[#17C3B2]" />
+                  </a>
+                  <template #overlay>
+                    <a-menu class="shadow-lg rounded-md">
+                      <a-menu-item v-if="notification.read_at == null" @click="read(notification)">
+                        <a class="text-[#227C9D] hover:text-[#17C3B2]">Đánh dấu là đã đọc</a>
+                      </a-menu-item>
+                      <a-menu-item @click="deleteNotification(notification)" v-if="filterNotificationData.length > 0">
+                        <a class="text-[#227C9D] hover:text-[#17C3B2]">Xóa thông báo</a>
+                      </a-menu-item>
+                    </a-menu>
+                  </template>
+                </a-dropdown>
+                <span v-if="notification.read_at == null" class="flex-shrink-0">
+                  <span class="relative flex h-2 w-2">
+                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FE6D73] opacity-75"></span>
+                    <span class="relative inline-flex h-2 w-2 rounded-full bg-[#FE6D73]"></span>
+                  </span>
                 </span>
-              </span>
+              </div>
             </div>
             <span class="text-xs text-[#227C9D]/70 mt-1 block">
               {{ dayjs.utc(notification.created_at).tz(userTimezone.timeZone).fromNow() }}
@@ -145,6 +161,10 @@ const read = async (notification) => {
       if (index !== -1) {
         props.notifications[index].read_at = true;
       }
+
+      if(notification.data.link != '') {
+        window.location.href = notification.data.link;
+      }
     }
   }
 
@@ -169,6 +189,37 @@ const readAll = async () => {
 watch(unreadCount, (newCount) => {
   emit('updateUnreadCount', newCount);
 });
+
+const deleteNotification = async (notification) => {
+  try {
+    const response = await axios.delete(`${dirApi}notifications/${notification.id}/delete-one`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (response.status === 200) {
+      const index = props.notifications.findIndex(n => n.id === notification.id);
+      if (index !== -1) {
+        props.notifications.splice(index, 1);
+      }
+    }
+  } catch (error) {
+    console.error("Lỗi khi xóa thông báo:", error);
+  }
+}
+
+const deleteAllNotification = async () => {
+  const res = await axios.delete(`${dirApi}notifications/delete-all`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (res.status === 200) {
+    props.notifications.length = 0;
+  }
+}
 
 // Đóng modal
 const closeModal = () => {
