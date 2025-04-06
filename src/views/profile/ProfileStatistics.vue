@@ -1,227 +1,202 @@
 <template>
-    <div class="p-4">
-        <div class="mb-4">
-            <h2 class="text-xl font-bold mb-2">Thống kê tỷ lệ hoàn thành</h2>
-            <div class="filter-section">
-                <a-card :bordered="false">
-                    <template #default>
-                        <div class="filter-container">
-                            <div class="left-section">
-                                <a-range-picker 
-                                    v-model:value="dateRange" 
-                                    class="date-picker"
-                                    :disabled-date="disabledDate" 
-                                    format="DD-MM-YYYY"
-                                    @change="handleDateChange" 
-                                />
-                            </div>
-                            <div class="right-section">
-                                <button class="filter-button" @click="handleFilter">
-                                    <FilterOutlined class="filter-icon" />
-                                    Lọc dữ liệu
-                                    <div class="hoverEffect">
-                                        <div></div>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-                    </template>
-                </a-card>
-            </div>
-        </div>
+  <div class="statistics-container">
+    <div class="filter-section">
+      <a-select
+        v-model:value="filterType"
+        style="width: 120px"
+        @change="handleFilterChange"
+        class="filter-select"
+      >
+        <a-select-option value="week">Tuần</a-select-option>
+        <a-select-option value="month">Tháng</a-select-option>
+        <a-select-option value="custom">Tùy chọn</a-select-option>
+      </a-select>
 
-        <div v-if="loading" class="text-center py-4">
-            Đang tải dữ liệu...
-        </div>
-
-        <div v-else-if="error" class="text-red-500 py-4">
-            {{ error }}
-        </div>
-
-        <div v-else id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+      <a-range-picker
+        v-if="filterType === 'custom'"
+        v-model:value="dateRange"
+        :placeholder="['Từ ngày', 'Đến ngày']"
+        @change="handleDateChange"
+        class="date-picker"
+        :format="'DD/MM/YYYY'"
+        :value-format="'DD/MM/YYYY'"
+      />
+      <a-button 
+        v-if="filterType === 'custom'"
+        type="primary" 
+        @click="fetchData"
+        :loading="loading"
+        class="filter-btn"
+      >
+        <template #icon><FilterOutlined /></template>
+        Lọc
+      </a-button>
     </div>
+
+    <div class="statistics-grid">
+      <div class="statistics-item">
+        <CompletionRate :date-range="dateRange" />
+      </div>
+      <div class="statistics-item">
+        <BusiestDay :date-range="dateRange" />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import Highcharts from 'highcharts'
-import { useProfile } from './composables/useProfile'
-import { FilterOutlined } from '@ant-design/icons-vue'
-import dayjs from 'dayjs'
-import { Card, DatePicker } from 'ant-design-vue'
+import { ref, onMounted } from 'vue';
+import { FilterOutlined } from '@ant-design/icons-vue';
+import CompletionRate from './CompletionRate.vue';
+import BusiestDay from './BusiestDay.vue';
+import { useProfile } from './composables/useProfile';
+import dayjs from 'dayjs';
 
-const ACard = Card
-const { RangePicker: ARangePicker } = DatePicker
+const { loading, fetchCompletionRate, fetchBusiestDay } = useProfile();
+const dateRange = ref([]);
+const filterType = ref('week');
 
-const { completionRate, loading, error, fetchCompletionRate } = useProfile()
-const dateRange = ref(null)
+const handleFilterChange = (value) => {
+  if (value === 'week') {
+    filterByWeek();
+  } else if (value === 'month') {
+    filterByMonth();
+  } else {
+    dateRange.value = [];
+  }
+};
 
-const disabledDate = (current) => {
-    return current && current > dayjs().endOf('day')
-}
+const handleDateChange = (dates) => {
+  dateRange.value = dates;
+};
 
-const handleDateChange = async () => {
-    if (!dateRange.value) return
-    const [startDate, endDate] = dateRange.value
-    const taskTimezone = 'Asia/Hebron' // Sử dụng timezone của task
-    await fetchCompletionRate(
-        startDate,
-        endDate,
-        taskTimezone
-    )
-    updateChart()
-}
+const filterByWeek = () => {
+  const today = dayjs();
+  const startOfWeek = today.startOf('week');
+  const endOfWeek = today.endOf('week');
+  
+  dateRange.value = [
+    startOfWeek.format('DD/MM/YYYY'),
+    endOfWeek.format('DD/MM/YYYY')
+  ];
+  
+  fetchData();
+};
 
-const handleFilter = () => {
-    handleDateChange()
-}
+const filterByMonth = () => {
+  const today = dayjs();
+  const startOfMonth = today.startOf('month');
+  const endOfMonth = today.endOf('month');
+  
+  dateRange.value = [
+    startOfMonth.format('DD/MM/YYYY'),
+    endOfMonth.format('DD/MM/YYYY')
+  ];
+  
+  fetchData();
+};
 
-const updateChart = () => {
-    Highcharts.chart('container', {
-        chart: {
-            type: 'pie'
-        },
-        title: {
-            text: 'Tỷ lệ hoàn thành công việc'
-        },
-        plotOptions: {
-            pie: {
-                shadow: false,
-                center: ['50%', '50%']
-            }
-        },
-        tooltip: {
-            valueSuffix: '%'
-        },
-        series: [{
-            name: 'Tỷ lệ',
-            data: [
-                {
-                    name: 'Hoàn thành',
-                    y: completionRate.value,
-                    color: '#4CAF50'
-                },
-                {
-                    name: 'Chưa hoàn thành',
-                    y: 100 - completionRate.value,
-                    color: '#F44336'
-                }
-            ],
-            size: '80%',
-            dataLabels: {
-                format: '<b>{point.name}</b>: {point.y}%',
-                style: {
-                    fontWeight: 'normal'
-                }
-            }
-        }]
-    })
-}
+const fetchData = async () => {
+  if (dateRange.value && dateRange.value.length === 2) {
+    // Chuyển đổi từ DD/MM/YYYY sang YYYY-MM-DD
+    const startDate = dayjs(dateRange.value[0], 'DD/MM/YYYY').format('YYYY-MM-DD');
+    const endDate = dayjs(dateRange.value[1], 'DD/MM/YYYY').format('YYYY-MM-DD');
+    
+    await Promise.all([
+      fetchCompletionRate(startDate, endDate),
+      fetchBusiestDay(startDate, endDate)
+    ]);
+  }
+};
 
-onMounted(async () => {
-    await fetchCompletionRate()
-    updateChart()
-})
+// Gọi fetchData khi component được mount
+onMounted(() => {
+  filterByWeek();
+});
 </script>
 
 <style scoped>
+.statistics-container {
+  padding: 24px;
+}
+
 .filter-section {
-    margin-bottom: 24px;
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
 }
 
-.filter-section :deep(.ant-card) {
-    border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+.filter-select {
+  background: linear-gradient(70deg, #ffcc77, #15c5b2);
+  border: none;
+  border-radius: 8px;
 }
 
-.filter-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
+:deep(.ant-select-selector) {
+  background: transparent !important;
+  border: none !important;
 }
 
-.left-section {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+:deep(.ant-select-selection-item) {
+  color: white !important;
 }
 
-.date-picker :deep(.ant-picker) {
-    border-radius: 8px;
+:deep(.ant-select-arrow) {
+  color: white !important;
 }
 
-.date-picker :deep(.ant-picker:hover) {
-    border-color: #15c5b2;
+.date-picker {
+  width: 300px;
 }
 
-.filter-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border: 0;
-    position: relative;
-    overflow: hidden;
-    border-radius: 10rem;
-    transition: all 0.02s;
-    font-weight: 600;
-    cursor: pointer;
-    color: #227CA0;
-    z-index: 0;
-    box-shadow: 0 0px 7px -5px rgba(0, 0, 0, 0.5);
-    background: white;
-    font-size: 14px;
+.filter-btn {
+  background: linear-gradient(70deg, #ffcc77, #15c5b2);
+  border: none;
+  height: 40px;
+  padding: 0 24px;
 }
 
-.filter-button:hover {
-    background: rgba(34, 124, 160, 0.1);
-    color: #227CA0;
+.filter-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
-.filter-button:active {
-    transform: scale(0.97);
+.statistics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
 }
 
-.hoverEffect {
-    position: absolute;
-    bottom: 0;
-    top: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;
+.statistics-item {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  padding: 24px;
 }
 
-.hoverEffect div {
-    background: linear-gradient(90deg,
-            rgba(21, 197, 178, 1) 0%,
-            rgba(34, 124, 160, 1) 49%,
-            rgba(255, 204, 119, 1) 100%);
-    border-radius: 40rem;
-    width: 10rem;
-    height: 10rem;
-    transition: 0.4s;
-    filter: blur(20px);
-    animation: effect infinite 3s linear;
-    opacity: 0.5;
+.statistics-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
-.filter-button:hover .hoverEffect div {
-    width: 8rem;
-    height: 8rem;
-}
-
-@keyframes effect {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+@media (max-width: 1200px) {
+  .statistics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .filter-section {
+    flex-wrap: wrap;
+  }
+  
+  .filter-select {
+    width: 100% !important;
+  }
+  
+  .date-picker {
+    width: 100%;
+  }
 }
 </style>
