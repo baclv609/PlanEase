@@ -549,4 +549,27 @@ onMounted(() => {
 :deep(.ant-avatar:hover) {
   transform: scale(1.05);
 }
+
+.statistics-container {
+  padding: 24px;
+}
+
+.statistics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+  gap: 24px;
+}
+
+.statistics-item {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.statistics-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
 </style>
