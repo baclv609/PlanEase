@@ -133,7 +133,7 @@
               <template #overlay>
                 <a-menu>
                   <!-- <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item> -->
-                  <!-- <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item> -->
+                  <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
                   <a-menu-item @click="openUpdateCalendar(calendar.id)">{{
                     $t("calendar.calendarSection.edit")
                   }}</a-menu-item>
@@ -189,7 +189,7 @@
               <template #overlay>
                 <a-menu>
                   <!-- <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item> -->
-                  <!-- <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item> -->
+                  <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item>
                   <a-menu-item @click="openUpdateCalendar(calendar.id)">{{
                     $t("calendar.calendarSection.edit")
                   }}</a-menu-item>
@@ -320,6 +320,11 @@
     @save="handleEventModalSuccess"
     @cancel="isAddEventModalVisible = false"
   />
+  <TagDetailModal
+    :open="isTagDetailModalVisible"
+    :selectedCalendarId="selectedCalendarId"
+    @update:open="isTagDetailModalVisible = false"
+  />
 </template>
 
 <script setup>
@@ -349,6 +354,7 @@ import moment from "moment-timezone";
 import { useI18n } from "vue-i18n";
 import { useUpcomingTasksStore } from "@/stores/upcomingTasksStore";
 import { useHiddenTagsStore } from "@/stores/hiddenTagsStore";
+import TagDetailModal from "../modal/TagDetailModal.vue";
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem("access_token");
@@ -397,6 +403,11 @@ const settingsStore = useSettingsStore();
 const loading = computed(() => store.loading);
 const error = computed(() => store.error);
 const upcomingTasks = computed(() => store.upcomingTasks);
+
+const isTagDetailModalVisible = ref(false);
+const selectedTag = ref(null);
+
+const selectedCalendarId = ref(null);
 
 // Lấy thông tin khách mời
 const state = ref({
@@ -729,7 +740,24 @@ onBeforeUnmount(() => {
 });
 
 const viewDetails = (calendarId) => {
-  // console.log("Xem chi tiết cho calendar ID:", calendarId);
+  console.log("Xem chi tiết cho calendar ID:", calendarId);
+  isTagDetailModalVisible.value = true;
+
+  selectedCalendarId.value = calendarId;
+
+  // const calendar = myCalendars.value.find((cal) => cal.id === calendarId);
+
+  // if (calendar) { 
+  //   selectedCalendarName.value = calendar.name;
+  //   selectedCalendarColor.value = calendar.color_code;
+  //   selectedCalendarDescription.value = calendar.description;
+  // }
+
+  // const sharedUserIds = calendar.shared_user.map((user) => user.user_id);
+
+  // if (sharedUserIds.length > 0) {
+  //   selectedSharedUserIds.value = sharedUserIds;
+  // }
 };
 
 const deleteCalendar = async (calendarId) => {
