@@ -64,7 +64,6 @@
       </a-row>
     </div>
 
-    <!-- Search section được cải tiến -->
     <a-card class="filter-section" :bordered="false">
       <div class="filter-header">
         <div class="left-section">
@@ -227,12 +226,11 @@ const fetchUsers = async (params = {}) => {
       headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
     });
 
-    
-
     if (response.data && response.data.data) {
       dataSource.value.list = response.data.data.data;
       pagination.value.total = response.data.data.total;
       
+      // console.log('Danh sách người dùng:', response.data.data.data);
       
       // Chỉ cập nhật tổng số user active khi không có tìm kiếm
       if (!searchText.value) {

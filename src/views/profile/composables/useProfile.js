@@ -65,25 +65,15 @@ export function useProfile() {
         }
     }
 
-    const fetchBusiestDay = async (startDate = null, endDate = null, taskTimezone = 'Asia/Ho_Chi_Minh') => {
+    const fetchBusiestDay = async (startDate = null, endDate = null) => {
         try {
             loading.value = true
             error.value = null
 
             const params = {}
             if (startDate && endDate) {
-                // Chuyển đổi thời gian từ local timezone sang task timezone
-                const localStartDate = dayjs(startDate)
-                const localEndDate = dayjs(endDate)
-                
-                // Lấy offset giữa local timezone và task timezone
-                const localOffset = dayjs().tz(dayjs.tz.guess()).utcOffset()
-                const taskOffset = dayjs().tz(taskTimezone).utcOffset()
-                const offsetDiff = taskOffset - localOffset
-                
-                // Điều chỉnh thời gian theo offset
-                params.start_date = localStartDate.add(offsetDiff, 'minute').format('YYYY-MM-DD')
-                params.end_date = localEndDate.add(offsetDiff, 'minute').format('YYYY-MM-DD')
+                params.start_date = startDate
+                params.end_date = endDate
             }
 
             const response = await axios.get(`${dirApi}stats/busiest-day`, { 
@@ -99,11 +89,7 @@ export function useProfile() {
                 throw new Error(response.data.message || 'Có lỗi xảy ra khi tải dữ liệu')
             }
         } catch (err) {
-            console.error('Error details:', {
-                response: err.response?.data,
-                status: err.response?.status,
-                message: err.message
-            })
+            console.error('Error fetching busiest day:', err)
             error.value = err.response?.data?.message || err.message || 'Có lỗi xảy ra khi tải dữ liệu'
             busiestDays.value = []
         } finally {

@@ -4,7 +4,7 @@
       <div class="user-info">
         <div class="flex flex-col gap-1 justify-center">
           <a-avatar
-            :src="user.avatar || unknowUser"
+            :src="user.avatar"
             :style="{
               width: '120px',
               height: '120px',
@@ -177,7 +177,6 @@ import axios from "axios";
 import { useRouter } from "vue-router";
 import { message } from "ant-design-vue";
 import { useEchoStore } from "@/stores/echoStore";
-import unknowUser from "@/assets/images/unknow_user.jpg";
 import { CloudUploadOutlined } from "@ant-design/icons-vue";
 import ProfileStatistics from "./ProfileStatistics.vue";
 import { useI18n } from 'vue-i18n';
