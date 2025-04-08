@@ -1,24 +1,24 @@
 <template>
-    <a-drawer :open="visible" :rules="rules" title="Chi tiết sự kiện" placement="right" :width="drawerWidth"
+    <a-drawer :open="visible" :rules="rules" :title="t('eventModalEdit.title')" placement="right" :width="drawerWidth"
         @close="handleClose" @update:open="(val) => emit('update:visible', val)" :destroyOnClose="true"
         :maskClosable="false">
         <template #extra>
             <div class="flex gap-2">
-                <a-button type="primary" @click="handleSubmit" :loading="isLoading" class="px-6">Lưu</a-button>
+                <a-button type="primary" @click="handleSubmit" :loading="isLoading" class="px-6">{{ t('eventModal.save') }}</a-button>
             </div>
         </template>
-        <a-form ref="formRef" layout="vertical" :model="formState" :rules="formRules" @submit.prevent="handleSubmit" class="event-form">
+        <a-form ref="formRef" layout="vertical" :model="formState" :required-mark="false" :rules="formRules" @submit.prevent="handleSubmit" class="event-form">
             <!-- Title Section -->
             <div class="form-section">
                 <div class="section-title">
                     <EditOutlined class="text-gray-500 mr-2" />
-                    <span>Tiêu đề</span>
+                    <span>{{ t('eventModal.sections.title.label') }}</span><span class="text-red-500 ml-1">*</span>
                 </div>
                 <div class="flex items-center">
                     <div class="flex h-8 justify-center w-8 items-center mr-3">
                         <div :style="{ backgroundColor: formState.color_code, width: '12px', height: '12px', borderRadius: '50%' }"></div>
                     </div>
-                    <a-input placeholder="Add title"
+                    <a-input :placeholder="t('eventModal.sections.title.placeholder')"
                         class="bg-gray-50 rounded-lg w-full min-w-[200px]" 
                         v-model:value="formState.title" />
                 </div>
@@ -28,21 +28,27 @@
             <div class="form-section">
                 <div class="section-title">
                     <TagOutlined class="text-gray-500 mr-2" />
-                    <span>Loại sự kiện</span>
+                    <span>{{ t('eventModal.sections.eventType.label') }}</span>
                 </div>
                 <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
                     <a-form-item name="type">
+                        <template #label>
+                            {{ t('eventModal.sections.eventType.type') }}
+                        </template>
                         <Select v-model:value="formState.type" placeholder="Loại sự kiện" class="rounded-lg w-full" disabled>
-                            <Select.Option value="event">Sự kiện</Select.Option>
-                            <Select.Option value="task">Việc cần làm</Select.Option>
+                            <Select.Option value="event">{{ t('eventModal.sections.eventType.options.event') }}</Select.Option>
+                            <Select.Option value="task">{{ t('eventModal.sections.eventType.options.task') }}</Select.Option>
                         </Select>
                     </a-form-item>
                     <a-form-item name="color_code">
+                        <template #label>
+                            {{ t('eventModal.sections.color.label') }}
+                        </template>
                         <a-select v-model:value="formState.color_code" placeholder="Chọn màu" class="rounded-lg w-full">
                             <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
                                 <div class="flex items-center">
                                     <div class="h-4 rounded-full w-4 mr-2" :style="{ backgroundColor: color.value }"></div>
-                                    <span>{{ color.label }}</span>
+                                    <span>{{ t(`eventModal.sections.color.options.${color.label}`) }}</span>
                                 </div>
                             </a-select-option>
                         </a-select>
@@ -50,6 +56,9 @@
 
                     <!-- Calendar Section -->
                     <a-form-item name="tags" class="w-full" v-if="formState.type == 'event'">
+                        <template #label>
+                            {{ t('eventModal.sections.eventType.tag') }}
+                        </template>
                         <a-select v-model:value="formState.tags" class="bg-gray-50 rounded-lg w-full" placeholder="Chọn loại"
                             :options="tags"
                             :disabled="formState.user_id != user.id">
@@ -63,11 +72,14 @@
             <div class="form-section">
                 <div class="section-title">
                     <CalendarOutlined class="text-gray-500 mr-2" />
-                    <span>Thời gian</span>
+                    <span>{{ t('eventModal.sections.dateTime.label') }}</span>
                 </div>
                 <div class="grid grid-cols-1 gap-3">
                     <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                        <a-form-item label="Thời gian bắt đầu" name="start">
+                        <a-form-item name="start">
+                            <template #label>
+                                {{ t('eventModal.sections.dateTime.start') }}<span class="text-red-500 ml-1">*</span>
+                            </template>
                             <DatePicker v-model:value="formState.start" 
                                 :show-time="!formState.allDay"
                                 :format="formState.allDay ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm'"
@@ -80,7 +92,10 @@
                                 :allow-clear="false"
                                 />
                         </a-form-item>
-                        <a-form-item label="Thời gian kết thúc" name="end">
+                        <a-form-item name="end">
+                            <template #label>
+                                {{ t('eventModal.sections.dateTime.end') }}<span class="text-red-500 ml-1">*</span>
+                            </template>
                             <DatePicker v-model:value="formState.end" 
                                 :show-time="!formState.allDay"
                                 :format="formState.allDay ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm'"
@@ -94,7 +109,7 @@
                                 />
                         </a-form-item>
                     </div>
-                    <a-form-item label="Múi giờ" name="timezone_code" v-if="formState.type == 'event'">
+                    <a-form-item :label="t('eventModal.sections.dateTime.timezone')" name="timezone_code" v-if="formState.type == 'event'">
                         <a-select v-model:value="formState.timezone_code" show-search placeholder="Múi giờ"
                             :filter-option="filterOption" class="w-full">
                             <a-select-option v-for="timezone in timezones" :key="timezone" :value="timezone">
@@ -103,8 +118,8 @@
                         </a-select>
                     </a-form-item>
                     <div class="flex items-center">
-                        <a-checkbox v-model:checked="formState.allDay">Cả ngày</a-checkbox>
-                        <a-checkbox v-model:checked="formState.is_repeat" class="ml-6">Lặp lại</a-checkbox>
+                        <a-checkbox v-model:checked="formState.allDay">{{ t('eventModal.sections.dateTime.allDay') }}</a-checkbox>
+                        <a-checkbox v-model:checked="formState.is_repeat" class="ml-6">{{ t('eventModal.sections.dateTime.repeat') }}</a-checkbox>
                     </div>
                 </div>
             </div>
@@ -114,30 +129,30 @@
                 <div class="form-section">
                     <div class="section-title">
                         <CalendarOutlined class="text-gray-500 mr-2" />
-                        <span>Cài đặt lặp lại</span>
+                        <span>{{ t('eventModal.sections.recurrence.label') }}</span>
                     </div>
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-7">
                         <div class="space-y-4 col-span-3">
                             <div>
-                                <label class="text-gray-700 block font-medium mb-2">Kiểu lặp lại</label>
+                                <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.type') }}</label>
                                 <Select v-model:value="formState.rrule.freq" :options="freqOptions" class="w-full" />
                             </div>
 
                             <div v-if="formState.rrule.freq === 'weekly'">
-                                <label class="text-gray-700 block font-medium mb-2">Ngày trong tuần</label>
+                                <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.weekDays.label') }}</label>
                                 <Checkbox.Group v-model:value="formState.rrule.byweekday" :options="weekDays" 
                                     class="grid grid-cols-4 gap-2" />
                             </div>
 
                             <div v-if="formState.rrule.freq === 'monthly'">
-                                <label class="text-gray-700 block font-medium mb-2">Lặp vào các ngày</label>
+                                <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.monthDays.label') }}</label>
                                 <a-select v-model:value="formState.rrule.bymonthday" mode="multiple"
-                                    placeholder="Chọn ngày" class="w-full"
+                                    :placeholder="t('eventModal.sections.recurrence.monthDays.placeholder')" class="w-full"
                                     :options="monthDays.map(day => ({ label: `Ngày ${day}`, value: day }))" />
                             </div>
 
                             <div>
-                                <label class="text-gray-700 block font-medium mb-2">Khoảng cách lặp lại</label>
+                                <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.interval.label') }}</label>
                                 <Input v-model:value="formState.rrule.interval" 
                                     type="number" 
                                     min="1"
@@ -153,38 +168,26 @@
 
                         <div class="space-y-4 col-span-4">
                             <div class="flex flex-col gap-2 mb-8">
-                                <label class="text-gray-700 font-medium">Kết thúc</label>
+                                <label class="text-gray-700 font-medium">{{ t('eventModal.sections.recurrence.endType.label') }}</label>
                                 <a-radio-group v-model:value="formState.rrule.endType" class="flex">
-                                    <a-radio value="">Không bao giờ</a-radio>
-                                    <a-radio value="until">Ngày cụ thể</a-radio>
-                                    <a-radio value="count">Số lần lặp</a-radio>
+                                    <a-radio value="never">{{ t('eventModal.sections.recurrence.endType.never') }}</a-radio>
+                                    <a-radio value="until">{{ t('eventModal.sections.recurrence.endType.until') }}</a-radio>
+                                    <a-radio value="count">{{ t('eventModal.sections.recurrence.endType.count') }}</a-radio>
                                 </a-radio-group>
                             </div>
 
                             <div class="grid grid-cols-1">
                                 <div v-if="formState.rrule.endType === 'count'">
-                                    <label class="text-gray-700 block font-medium mb-2">Giới hạn số lần lặp</label>
-                                    <Input v-model:value="formState.rrule.count" type="number" min="1" placeholder="Nhập số lần lặp"
+                                    <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.count.label') }}</label>
+                                    <Input v-model:value="formState.rrule.count" type="number" min="1" :placeholder="t('eventModal.sections.recurrence.count.placeholder')"
                                         class="w-full" />
                                 </div>
 
                                 <div v-if="formState.rrule.endType === 'until'">
-                                    <label class="text-gray-700 block font-medium mb-2">Ngày kết thúc</label>
-                                    <a-date-picker v-model:value="formState.rrule.until" placeholder="Chọn ngày"
+                                    <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.until.label') }}</label>
+                                    <a-date-picker v-model:value="formState.rrule.until" :placeholder="t('eventModal.sections.recurrence.until.placeholder')"
                                         class="w-full" />
                                 </div>
-
-                                <!-- <div>
-                                    <label class="text-gray-700 block font-medium mb-2">Loại trừ ngày</label>
-                                    <DatePicker v-model:value="selectedDate" format="YYYY-MM-DD" class="w-full"
-                                        @change="handleExcludeDate" />
-                                    <div v-if="formState.exclude_time.length" class="flex flex-wrap gap-2 mt-2">
-                                        <Tag v-for="(date, index) in formState.exclude_time" :key="index" closable
-                                            @close="removeExcludeDate(index)" class="rounded-full">
-                                            {{ dayjs(date).format('YYYY-MM-DD') }}
-                                        </Tag>
-                                    </div>
-                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -196,18 +199,21 @@
                 <div class="flex justify-between items-center">
                     <div class="section-title">
                         <AlignLeftOutlined class="text-gray-500 mr-2" />
-                        <span>Mô tả</span>
+                        <span>{{ t('eventModal.sections.description.label') }}</span>
                     </div>
     
                     <div class="section-title" v-if="formState.type == 'event'">
-                        <PaperClipOutlined class="text-gray-500 mr-2" />
-                        <a-upload
-                            :file-list="formState.attachments"
-                            :show-upload-list="true"
+                        <Upload
+                            v-model:file-list="formState.attachments"
+                            :before-upload="() => false"
+                            multiple
+                            @change="handleBeforeUpload"
+                            list-type="picture-card"
+                            :max-count="5"
                             class="text-blue-600 cursor-pointer hover:text-blue-800"
                         >
-                            Thêm Tập Tin Đính Kèm
-                        </a-upload>
+                            {{ t('eventModal.sections.description.addAttachment') }}
+                        </Upload>
                     </div>
                 </div>
 
@@ -236,33 +242,16 @@
                         ['clean']
                     ]"
                     />
-
-                <!-- Display attached files -->
-                <div v-if="formState.attachments && formState.attachments.length > 0" class="mt-4">
-                    <div class="text-sm font-medium text-gray-700 mb-2">Tập tin đính kèm:</div>
-                    <div class="space-y-2">
-                        <div v-for="(file, index) in formState.attachments" :key="index" 
-                            class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                            <div class="flex items-center">
-                                <PaperClipOutlined class="text-gray-500 mr-2" />
-                                <span class="text-sm text-gray-600">{{ file.name }}</span>
-                            </div>
-                            <a-button type="text" danger @click="removeAttachment(index)">
-                                <DeleteOutlined />
-                            </a-button>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Location Section -->
             <div class="form-section" v-if="formState.type == 'event'">
                 <div class="section-title">
                     <EnvironmentOutlined class="text-gray-500 mr-2" />
-                    <span>Địa điểm</span>
+                    <span>{{ t('eventModal.sections.location.label') }}</span>
                 </div>
                 <a-form-item name="location" class="w-full">
-                    <a-input placeholder="Địa điểm" class="rounded-lg" v-model:value="formState.location" />
+                    <a-input :placeholder="t('eventModal.sections.location.placeholder')" class="rounded-lg" v-model:value="formState.location" />
                 </a-form-item>
             </div>
 
@@ -270,11 +259,13 @@
             <div class="form-section" v-if="formState.type == 'event'">
                 <div class="section-title">
                     <UserOutlined class="text-gray-500 mr-2" />
-                    <span>Người tham gia</span>
+                    <span>{{ t('eventModal.sections.participants.label') }}</span>
                 </div>
                 <div class="space-y-4">
                     <a-select v-model:value="formState.attendees" mode="multiple"
-                        label-in-value placeholder="Khách mời" class="w-full" :filter-option="false"
+                        label-in-value 
+                        :placeholder="t('eventModal.sections.participants.placeholder')" 
+                        class="w-full" :filter-option="false"
                         :not-found-content="state.fetching ? undefined : null" :options="state.data"
                         @search="fetchUser"
                         :disabled="formState.user_id != user.id">
@@ -283,11 +274,11 @@
                         </template>
                     </a-select>
                     <div class="flex gap-3" v-if="formState.user_id == user.id">
-                        <span>Quyền của khách:</span>
+                        <span>{{ t('eventModal.sections.participants.permissions.label') }}</span>
                         <div class="flex gap-4 items-center">
                             <a-radio-group v-model:value="formState.attendeeRole" class="flex gap-4">
-                                <a-radio value="viewer">Chỉ xem</a-radio>
-                                <a-radio value="editor">Được sửa</a-radio>
+                                <a-radio value="viewer">{{ t('eventModal.sections.participants.permissions.viewer') }}</a-radio>
+                                <a-radio value="editor">{{ t('eventModal.sections.participants.permissions.editor') }}</a-radio>
                             </a-radio-group>
                         </div>
                     </div>
@@ -300,11 +291,11 @@
                     <div>
                         <div class="section-title">
                             <LockOutlined class="text-gray-500 mr-2" />
-                            <span>Quyền riêng tư</span>
+                            <span>{{ t('eventModal.sections.privacy.label') }}</span>
                         </div>
                         <div class="flex gap-6 items-center">
-                            <a-checkbox v-model:checked="formState.is_private">Riêng tư</a-checkbox>
-                            <a-checkbox v-model:checked="formState.is_busy">Đánh dấu là bận</a-checkbox>
+                            <a-checkbox v-model:checked="formState.is_private">{{ t('eventModal.sections.privacy.private') }}</a-checkbox>
+                            <a-checkbox v-model:checked="formState.is_busy">{{ t('eventModal.sections.privacy.busy') }}</a-checkbox>
                         </div>
                     </div>
     
@@ -312,13 +303,13 @@
                         <!-- Notification Section -->
                         <div class="section-title">
                             <BellOutlined class="text-gray-500 mr-2" />
-                            <span>Thông báo</span>
+                            <span>{{ t('eventModal.sections.notifications.label') }}</span>
                         </div>
                         <div class="space-y-4">
                             <div class="flex justify-between items-center mb-0">
-                                <Checkbox v-model:checked="formState.is_reminder">Bật nhắc nhở</Checkbox>
+                                <Checkbox v-model:checked="formState.is_reminder">{{ t('eventModal.sections.notifications.enable') }}</Checkbox>
                                 <div v-if="formState.is_reminder" @click="addReminder" class="cursor-pointer">
-                                    <a class="text-blue-600 hover:text-blue-800">Thêm thông báo nhắc</a>
+                                    <a class="text-blue-600 hover:text-blue-800">{{ t('eventModal.sections.notifications.add') }}</a>
                                 </div>
                             </div>
     
@@ -341,7 +332,7 @@
                                 <Select.Option value="email">Email</Select.Option>
                                 <Select.Option value="web">Web</Select.Option>
                             </Select>
-                            <span class="ml-2 text-sm">trước</span>
+                            <span class="ml-2 text-sm">{{ t('eventModal.sections.notifications.before') }}</span>
                         </Col>
                         <Col span="6">
                             <InputNumber 
@@ -360,8 +351,8 @@
                                 class="w-full text-sm"
                                 size="small"
                                 >
-                                <Select.Option value="minutes">Phút</Select.Option>
-                                <Select.Option value="hours">Giờ</Select.Option>
+                                <Select.Option value="minutes">{{ t('eventModal.sections.notifications.units.minutes') }}</Select.Option>
+                                <Select.Option value="hours">{{ t('eventModal.sections.notifications.units.hours') }}</Select.Option>
                             </Select>
                         </Col>
                         <Col span="3">
@@ -383,10 +374,10 @@
             <div class="form-section" v-if="formState.type == 'event'">
                 <div class="section-title">
                     <LinkOutlined class="text-gray-500 mr-2" />
-                    <span>Liên kết</span>
+                    <span>{{ t('eventModal.sections.link.label') }}</span>
                 </div>
                 <a-form-item name="url" class="w-full">
-                    <a-input placeholder="Nhập url" class="bg-gray-50 rounded-lg" v-model:value="formState.url" />
+                    <a-input :placeholder="t('eventModal.sections.link.placeholder')" class="bg-gray-50 rounded-lg" v-model:value="formState.url" />
                 </a-form-item>
             </div>
 
@@ -423,21 +414,13 @@ import { DateTime } from "luxon";
 import { eventRules, setFormState } from '@/validators/eventRules';
 import { recurringEventRules } from '@/validators/recurringEventRules';
 import Editor from 'primevue/editor';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const editorOptions = {
-    modules: {
-        toolbar: [
-            ['bold', 'italic', 'underline', 'strike'], // In đậm, nghiêng, gạch chân, gạch ngang
-            [{ list: 'ordered' }, { list: 'bullet' }], // Danh sách đánh số, gạch đầu dòng
-            ['link', 'image'], // Chèn link, ảnh
-            [{ align: [] }], // Căn chỉnh văn bản
-        ],
-    },
-    placeholder: 'Nhập nội dung...',
-};
 const drawerWidth = ref('100%');
 const props = defineProps({
     visible: Boolean,
@@ -696,16 +679,16 @@ const formState = ref({
 
 const rules = {
     title: [
-        { required: true, message: "Tiêu đề không được để trống", trigger: "blur" },
-        { min: 3, max: 255, message: "Tiêu đề quá ngắn", trigger: "blur" },
-        { max: 255, message: "Tiêu đề quá dài", trigger: "blur" },
+        { required: true, message: t('validation.title.required'), trigger: "blur" },
+        { min: 3, max: 255, message: t('validation.title.min'), trigger: "blur" },
+        { max: 255, message: t('validation.title.max'), trigger: "blur" },
     ],
     time: [
-        { required: true, message: "Vui lòng chọn thời gian", trigger: "change" },
+        { required: true, message: t('validation.time.required'), trigger: "change" },
         {
             validator: (_, value) => {
-                if (!value || value.length !== 2) return Promise.reject("Thời gian không hợp lệ");
-                if (dayjs(value[0]).isAfter(value[1])) return Promise.reject("Thời gian bắt đầu không thể sau thời gian kết thúc");
+                if (!value || value.length !== 2) return Promise.reject(t('validation.time.invalid'));
+                if (dayjs(value[0]).isAfter(value[1])) return Promise.reject(t('validation.time.start_after_end'));
                 return Promise.resolve();
             },
             trigger: "change",
@@ -714,7 +697,7 @@ const rules = {
     attendees: [
         {
             validator: (_, value) => {
-                if (value.length > 10) return Promise.reject("Không thể thêm quá 10 khách mời");
+                if (value.length > 10) return Promise.reject(t('validation.attendees.max'));
                 return Promise.resolve();
             },
             trigger: "change",
@@ -723,7 +706,7 @@ const rules = {
     reminder: [
         {
             validator: (_, value) => {
-                if (value.length > 3) return Promise.reject("Chỉ có thể thêm tối đa 3 nhắc nhở");
+                if (value.length > 3) return Promise.reject(t('validation.reminder.max'));
                 return Promise.resolve();
             },
             trigger: "change",
@@ -731,17 +714,17 @@ const rules = {
     ],
     rrule: {
         freq: [
-            { required: true, message: "Vui lòng chọn kiểu lặp lại.", trigger: "change" },
+            { required: true, message: t('validation.rrule.freq'), trigger: "change" },
         ],
         interval: [
-            { required: true, message: "Khoảng cách lặp lại không được để trống.", trigger: "change" },
-            { type: 'number', min: 1, message: "Khoảng cách lặp lại phải lớn hơn 0.", trigger: "change" },
+            { required: true, message: t('validation.rrule.interval.required'), trigger: "change" },
+            { type: 'number', min: 1, message: t('validation.rrule.interval.min'), trigger: "change" },
         ],
         until: [
             {
                 validator: (_, value) => {
                     if (formState.value.is_repeat && !value) {
-                        return Promise.reject("Ngày kết thúc không được để trống khi lặp lại.");
+                        return Promise.reject(t('validation.rrule.until'));
                     }
                     return Promise.resolve();
                 },
@@ -752,7 +735,7 @@ const rules = {
             {
                 validator: (_, value) => {
                     if (formState.value.rrule.freq === 'weekly' && (!value || value.length === 0)) {
-                        return Promise.reject("Vui lòng chọn ít nhất một ngày trong tuần.");
+                        return Promise.reject(t('validation.rrule.byweekday'));
                     }
                     return Promise.resolve();
                 },
@@ -763,7 +746,7 @@ const rules = {
             {
                 validator: (_, value) => {
                     if (formState.value.rrule.freq === 'monthly' && (!value || value.length === 0)) {
-                        return Promise.reject("Vui lòng chọn ít nhất một ngày trong tháng.");
+                        return Promise.reject(t('validation.rrule.bymonthday'));
                     }
                     return Promise.resolve();
                 },
@@ -887,7 +870,7 @@ const addReminder = () => {
     if (formState.value.reminder.length < 3) {
         formState.value.reminder.push({ type: "email", time: 5, unit: "minutes" });
     } else {
-        message.warning('Chỉ được thêm tối đa 3 thông báo nhắc trước lịch');
+        message.warning(t('eventModal.warning.maxReminders'));
     }
 };
 const formatReminders = (reminders) => {
@@ -935,19 +918,19 @@ const removeReminder = (index) => {
     }
 };
 const colors = [
-    { label: 'Xanh dương', value: '#1890ff' }, 
-    { label: 'Đỏ', value: '#ff4d4f' }, 
-    { label: 'Xanh lá cây', value: '#52c41a' },
-    { label: 'Vàng', value: '#faad14' }, 
-    { label: 'Tím', value: '#722ed1' },
-    { label: 'Xám', value: '#bfbfbf' }, 
-    { label: 'Cam', value: '#fa541c' }, 
-    { label: 'Hồng', value: '#eb2f96' }, 
-    { label: 'Nâu', value: '#a97c50' }, 
-    { label: 'Xanh ngọc', value: '#13c2c2' }, 
-    { label: 'Xanh lục bảo', value: '#237804' }, 
-    { label: 'Xanh biển', value: '#003a8c' },
-    { label: 'Đen', value: '#000000' }
+  { label: 'blue', value: '#1890ff' }, 
+  { label: 'red', value: '#ff4d4f' }, 
+  { label: 'green', value: '#52c41a' },
+  { label: 'yellow', value: '#faad14' }, 
+  { label: 'purple', value: '#722ed1' },
+  { label: 'gray', value: '#bfbfbf' }, 
+  { label: 'orange', value: '#fa541c' }, 
+  { label: 'pink', value: '#eb2f96' }, 
+  { label: 'brown', value: '#a97c50' }, 
+  { label: 'cyan', value: '#13c2c2' }, 
+  { label: 'emerald', value: '#237804' }, 
+  { label: 'navy', value: '#003a8c' },
+  { label: 'black', value: '#000000' }
 ];
 
 const selectColor = (color) => {
@@ -960,7 +943,7 @@ watch(
     (newReminders) => {
         newReminders.forEach((reminder) => {
             if (reminder.unit === "hours" && reminder.time > 24) {
-                message.info('Chỉ được thông báo trước 24 giờ');
+                message.info(t('eventModal.warning.maxHours'));
                 reminder.time = 24; // Giới hạn tối đa 24 giờ
             }
             if (reminder.unit === "minutes" && reminder.time > 60) {
@@ -1115,7 +1098,7 @@ const handleSubmit = async () => {
             // Case 1: Only start time changed, frequency unchanged
             if (hasStartChanged && !hasFreqChanged) {
                 Modal.confirm({
-                    title: "Cập nhật sự kiện lặp lại",
+                    title: t('options.recurrence.edit.title'),
                     width: 600,
                     content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
                         h("div", { class: "mb-3" }, [
@@ -1130,7 +1113,7 @@ const handleSubmit = async () => {
                                         editOption.value = e.target.value;
                                     },
                                 }),
-                                h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
+                                h("span", { class: "text-lg" }, t('options.recurrence.edit.one')),
                             ]),
                         ]),
                         h("div", { class: "mb-3" }, [
@@ -1145,12 +1128,12 @@ const handleSubmit = async () => {
                                         editOption.value = e.target.value;
                                     },
                                 }),
-                                h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
+                                h("span", { class: "text-lg" }, t('options.recurrence.edit.follow')),
                             ]),
                         ]),
                     ]),
-                    okText: "Cập nhật",
-                    cancelText: "Hủy",
+                    okText: t('options.recurrence.edit.update'),
+                    cancelText: t('options.recurrence.edit.cancel'),
                     onOk() {
                         updateEvent({ code: editOption.value, date: formState.value.start, id: formState.value.id });
                     },
@@ -1164,7 +1147,7 @@ const handleSubmit = async () => {
             // Case 3: Recurrence settings changed
             else if (hasRecurrenceChanges()) {
                 Modal.confirm({
-                    title: "Cập nhật sự kiện lặp lại",
+                    title: t('options.recurrence.edit.title'),
                     width: 600,
                     content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
                         h("div", { class: "mb-3" }, [
@@ -1179,7 +1162,7 @@ const handleSubmit = async () => {
                                         editOption.value = e.target.value;
                                     },
                                 }),
-                                h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
+                                h("span", { class: "text-lg" }, t('options.recurrence.edit.follow')),
                             ]),
                         ]),
                         h("div", { class: "mb-3" }, [
@@ -1194,12 +1177,12 @@ const handleSubmit = async () => {
                                         editOption.value = e.target.value;
                                     },
                                 }),
-                                h("span", { class: "text-lg" }, "Cập nhật tất cả sự kiện"),
+                                h("span", { class: "text-lg" }, t('options.recurrence.edit.all')),
                             ]),
                         ]),
                     ]),
-                    okText: "Cập nhật",
-                    cancelText: "Hủy",
+                    okText: t('options.recurrence.edit.update'),
+                    cancelText: t('options.recurrence.edit.cancel'),
                     onOk() {
                         updateEvent({ code: editOption.value, date: formState.value.start, id: formState.value.id });
                     },
@@ -1208,7 +1191,7 @@ const handleSubmit = async () => {
             // Case 4: No changes to frequency or start time
             else {
                 Modal.confirm({
-                    title: "Cập nhật sự kiện lặp lại",
+                    title: t('options.recurrence.edit.title'),
                     width: 600,
                     content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
                         h("div", { class: "mb-3" }, [
@@ -1223,7 +1206,7 @@ const handleSubmit = async () => {
                                         editOption.value = e.target.value;
                                     },
                                 }),
-                                h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
+                                h("span", { class: "text-lg" }, t('options.recurrence.edit.one')),
                             ]),
                         ]),
                         h("div", { class: "mb-3" }, [
@@ -1238,7 +1221,7 @@ const handleSubmit = async () => {
                                         editOption.value = e.target.value;
                                     },
                                 }),
-                                h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
+                                h("span", { class: "text-lg" }, t('options.recurrence.edit.follow')),
                             ]),
                         ]),
                         h("div", { class: "mb-3" }, [
@@ -1253,12 +1236,12 @@ const handleSubmit = async () => {
                                         editOption.value = e.target.value;
                                     },
                                 }),
-                                h("span", { class: "text-lg" }, "Cập nhật tất cả sự kiện"),
+                                h("span", { class: "text-lg" }, t('options.recurrence.edit.all')),
                             ]),
                         ]),
                     ]),
-                    okText: "Cập nhật",
-                    cancelText: "Hủy",
+                    okText: t('options.recurrence.edit.update'),
+                    cancelText: t('options.recurrence.edit.cancel'),
                     onOk() {
                         updateEvent({ code: editOption.value, date: formState.value.start, id: formState.value.id });
                     },
@@ -1337,8 +1320,44 @@ const updateEvent = async ({ code, date, id }) => {
         });
 
         if (res.data.code === 200) {
-            message.success(res.data.message || "Cập nhật sự kiện thành công");
+            message.success(t('eventModalEdit.message.success'));
             
+            await Promise.all(
+                presignedUrls.value.map(async (info, index) => {
+                    // Upload file to S3
+                    try {
+                    await axios.put(info.url, fileUploads.value[index], {
+                        headers: {
+                        "Content-Type": info.metadata.mime
+                        }
+                    });
+
+                    // Save file information to database with required fields
+                    await axios.post(
+                        `${dirApi}file-entry/store/file`,
+                        {
+                        files: [{
+                            file_name: info.metadata.file_name,
+                            client_name: info.metadata.client_name,
+                            extension: info.metadata.extension,
+                            size: info.metadata.size,
+                            mime: info.metadata.mime,
+                            task_id: res.data.data.id
+                        }]
+                        },
+                        {
+                        headers: { 
+                            Authorization: `Bearer ${token}`,
+                        },
+                        }
+                    );
+                    } catch (error) {
+                    console.error("Error uploading file:", error);
+                    message.error(`Upload file ${info.metadata.client_name} thất bại`);
+                    }
+                })
+            );
+
             // Emit event với dữ liệu đã cập nhật
             const updatedEventData = {
                 id: id,
@@ -1411,11 +1430,11 @@ const updateEvent = async ({ code, date, id }) => {
             };
             emit('update:visible', false);
         } else {
-            message.error(res.data.message || "Cập nhật sự kiện không thành công.");
+            message.warning(t('eventModalEdit.message.error'));
         }
     } catch (error) {
         console.error("Lỗi khi cập nhật sự kiện:", error);
-        message.error("Đã xảy ra lỗi. Vui lòng thử lại.");
+        message.error(t('eventModalEdit.message.error'));
     } finally {
         isLoading.value = false;
     }
@@ -1467,6 +1486,18 @@ watch(
         const startDay = dayjs(formState.value.start).day();
         const weekdays = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
         formState.value.rrule.byweekday = [weekdays[startDay]];
+      }
+    } else if (newVal === 'monthly') {
+      // Nếu đang sửa sự kiện và có dữ liệu bymonthday, giữ nguyên selection
+      if (props.event?.recurrence === 1 && 
+          props.event?.info?.extendedProps?.freq === 'monthly' &&
+          props.event?.info?.extendedProps?.bymonthday?.length > 0 &&
+          oldVal === null) {
+        formState.value.rrule.bymonthday = props.event.info.extendedProps.bymonthday;
+      } else if (!formState.value.rrule.bymonthday || formState.value.rrule.bymonthday.length === 0) {
+        // Nếu không có selection hoặc đổi từ loại khác sang monthly
+        const startDay = dayjs(formState.value.start).date();
+        formState.value.rrule.bymonthday = [startDay];
       }
     }
   }
@@ -1535,6 +1566,80 @@ watch(
         }
     }
 );
+
+const presignedUrls = ref([]);
+const fileUploads = ref([]);
+
+// handle before upload
+const handleBeforeUpload = async (info) => {
+  const files = info.fileList.map(file => file.originFileObj).filter(Boolean);
+  const formData = new FormData();
+
+  // Thay đổi cách append file vào FormData
+  files.forEach((file, index) => {
+    formData.append(`files[${index}]`, file); // Thêm index vào tên field
+  });
+
+  console.log('Files to upload:', files);
+  console.log('FormData entries:');
+  for (let pair of formData.entries()) {
+    console.log(pair[0], pair[1]);
+  }
+
+  try {
+    const { data } = await axios.post(
+      `${dirApi}s3/upload`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+        // Thêm timeout và maxContentLength
+        timeout: 30000, // 30 giây
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+      }
+    );
+
+    console.log('API Response:', data);
+
+    if (data.presigned_urls && data.presigned_urls.length > 0) {
+      presignedUrls.value = data.presigned_urls;
+      console.log('Presigned URLs:', data.presigned_urls);
+      
+      // Reset fileUploads trước khi thêm file mới
+      fileUploads.value = [];
+      files.forEach(file => {
+        fileUploads.value.push(file);
+      });
+      console.log('File uploads:', fileUploads.value);
+    } else {
+      console.log('No presigned URLs received');
+    }
+
+  } catch (error) {
+    console.error("Upload failed", error);
+    // Reset các biến khi upload thất bại
+    presignedUrls.value = [];
+    fileUploads.value = [];
+  }
+
+  return false; // Ngăn Upload tự động xử lý
+};
+
+// Hàm xóa file đính kèm
+const removeAttachment = (index) => {
+  fileUploads.value.splice(index, 1);
+  
+  // Xóa presignedUrl tương ứng
+  if (presignedUrls.value && presignedUrls.value.length > index) {
+    presignedUrls.value.splice(index, 1);
+  }
+
+  console.log('File Uploads:', fileUploads.value);
+  console.log('Presigned URLs:', presignedUrls.value);
+};
 </script>
 
 <style scoped>
@@ -1661,5 +1766,24 @@ watch(
     :deep(.ant-checkbox-group) {
         grid-template-columns: repeat(2, 1fr);
     }
+}
+
+/* Giảm size của thumbnail upload */
+:deep(.ant-upload-list-picture-card .ant-upload-list-item-container) {
+  width: 70px !important;
+  height: 70px !important;
+}
+:deep(.ant-upload-list-picture-card .ant-upload-list-item) {
+  width: 70px !important;
+  height: 70px !important;
+  font-size: 12px !important;
+  margin: 0 !important;
+}
+
+:deep(.ant-upload-picture-card-wrapper .ant-upload-select) {
+  width: 70px !important;
+  height: 70px !important;
+  font-size: 12px !important;
+  margin: 0 !important;
 }
 </style>

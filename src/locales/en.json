@@ -189,7 +189,33 @@
     "failedToDeleteTag": "Failed to delete tag. Please try again."
   },
   "validation": {
-    "tagNameRequired": "Please enter tag name!"
+    "tagNameRequired": "Please enter tag name!",
+    "title": {
+      "required": "Title is required",
+      "min": "Title is too short",
+      "max": "Title is too long"
+    },
+    "time": {
+      "required": "Please select time",
+      "invalid": "Invalid time range",
+      "start_after_end": "Start time cannot be after end time"
+    },
+    "attendees": {
+      "max": "Cannot add more than 10 attendees"
+    },
+    "reminder": {
+      "max": "You can add up to 3 reminders only"
+    },
+    "rrule": {
+      "freq": "Please select a repeat type.",
+      "interval": {
+        "required": "Repeat interval is required.",
+        "min": "Repeat interval must be greater than 0."
+      },
+      "until": "End date is required when repeating.",
+      "byweekday": "Please select at least one weekday.",
+      "bymonthday": "Please select at least one day of the month."
+    }
   },
   "success": {
     "tagAdded": "Added tag: {name}",
@@ -197,8 +223,12 @@
     "tagUpdated": "Tag updated successfully!"
   },
   "eventModal": {
-    "title": "Add New Event",
+    "title": "Add New",
     "save": "Save",
+    "message": {
+      "success": "Add new successfully",
+      "error": "An error occurred"
+    },
     "sections": {
       "title": {
         "label": "Title",
@@ -209,6 +239,8 @@
       },
       "eventType": {
         "label": "Event Type",
+        "type": "Type",
+        "tag": "Calendar",
         "options": {
           "event": "Event",
           "task": "Task"
@@ -319,6 +351,10 @@
           "label": "Time Unit",
           "minutes": "Minutes",
           "hours": "Hours"
+        },
+        "warning": {
+          "max": "You can add up to 3 reminders only",
+          "maxHours": "You can only set a reminder 24 hours before the event"
         }
       },
       "link": {
@@ -336,6 +372,13 @@
         "dontSend": "Don't Send",
         "back": "Back"
       }
+    }
+  },
+  "eventModalEdit": {
+    "title": "Edit",
+    "message": {
+      "success": "Update successfully",
+      "error": "An error occurred"
     }
   },
   "settings": {
@@ -410,5 +453,144 @@
     "selectEvents": "Select events to restore or delete",
     "restoreSelected": "Restore Selected",
     "deleteSelected": "Delete Selected"
+  },
+  "options": {
+    "sendMail": {
+      "title": "Send Email Notification?",
+      "content": "Would you like to send email notifications to participants?",
+      "send": "Send",
+      "dontSend": "Don't Send",
+      "back": "Back"
+    },
+    "recurrence": {
+      "edit": {
+        "title": "Edit Recurring Event",
+        "one": "Edit this event only",
+        "follow": "Edit this event and all following events",
+        "all": "Edit all events",
+        "update": "Update",
+        "cancel": "Cancel"
+      },
+      "delete": {
+        "title": "Delete Recurring Event",
+        "one": "Delete this event only",
+        "follow": "Delete this event and all following events",
+        "all": "Delete all events",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "confirm": "Confirm Delete",
+        "confirm_content": "Are you sure you want to delete this event?",
+        "confirm_ok": "Yes",
+        "confirm_cancel": "No"
+      },
+      "participants": {
+        "leave": {
+          "title": "Leave Event",
+          "content": "Are you sure you want to leave this event?",
+          "one": "Leave this event only",
+          "follow": "Leave this event and all following events",
+          "all": "Leave all events",
+          "confirm": "Confirm Leave",
+          "confirm_content": "Are you sure you want to leave this event?",
+          "delete": "Leave",
+          "cancel": "Cancel"
+        }
+      }
+
+    }
+
+  },
+  "share": {
+    "link": {
+      "title": "Share Event",
+      "content": "Share this event link with others. They will be able to view the event and respond.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyError": "Cannot copy",
+      "copySuccess": "Copied link",
+      "copyLink": "Copy link"
+    }
+  },
+  "EventDetailsModal": {
+    "tab": {
+      "general": "General Information",
+      "attachments": "Attachments",
+      "discussion": "Discussion"
+    },
+    "general": {
+      "time": "Time",
+      "timeEvent": "Event Time",
+      "timeAllDay": "All Day",
+      "timeSetting": "Current time in your timezone",
+      "location": "Location",
+      "agree": "Agree",
+      "pending": "Pending",
+      "participants": "Participants",
+      "privacy": "Privacy",
+      "description": "Description",
+      "link": "Link",
+      "reminder": "Reminder",
+      "before": "Before",
+      "hour": "hour",
+      "minute": "minute",
+      "calendar": "Calendar",
+      "private": "Private",
+      "youAreParticipating": "You have participated in this event",
+      "wantToParticipate": "Do you want to participate in this event?",
+      "accept": "Participate in successful event",
+      "refuse": "Refuse to participate in the event",
+      "yes": "Yes",
+      "no": "No",
+      "leave": "Leave",
+      "recurrence": {
+        "title": "Recurrence",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "on": "on",
+        "count": "{count} times",
+        "until": "Until {date}",
+        "everyNDays": "{n} days",
+        "everyNWeeks": "{n} weeks",
+        "everyNMonths": "{n} months",
+        "everyNYears": "{n} years",
+        "days": {
+          "monday": "Monday",
+          "tuesday": "Tuesday",
+          "wednesday": "Wednesday",
+          "thursday": "Thursday",
+          "friday": "Friday",
+          "saturday": "Saturday",
+          "sunday": "Sunday"
+        }
+      }
+    },
+    "attachments": {
+      "title": "Attachments",
+      "add": "Add Attachment",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "confirm": "Confirm Delete",
+      "noAttachments": "No attachments",
+      "download": "Download",
+      "loading": "Loading...",
+      "deleteFile": "Delete Attachment",
+      "deleteFileContent": "Are you sure you want to delete this attachment?",
+      "deleteFileSuccess": "Attachment deleted successfully",
+      "deleteFileError": "An error occurred when deleting the attachment"
+    },
+    "discussion": {
+      "noMessages": "No messages yet. Start the conversation!",
+      "send": "Send",
+      "placeholder": "Enter message...",
+      "replyingTo": "Replying to: "
+    },
+    "task": {
+      "completeSuccess": "Task completed successfully",
+      "complete": "Completed",
+      "markAsDone": "Mark as Done",
+      "completeError": "An error occurred"
+    }
   }
 }

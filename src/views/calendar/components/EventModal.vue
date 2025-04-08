@@ -141,6 +141,10 @@ const getAllTagByUser = async () => {
 
     if(res.data.code == 200) {
       tags.value = res.data.data;
+      // Set default first tag if available
+      if (tags.value.length > 0) {
+        formState.value.tag_id = tags.value[0].id;
+      }
     }
   } catch (error) {
     console.log('Loi lay tags', error);
@@ -235,16 +239,16 @@ const resetForm = () => {
 
 const rules = {
   title: [
-    { required: true, message: "Tiêu đề không được để trống", trigger: "blur" },
-    { min: 3, max: 255, message: "Tiêu đề quá ngắn", trigger: "blur" },
-    { max: 255, message: "Tiêu đề không được quá 255 ký tự", trigger: "blur" }
+    { required: true, message: t('validation.title.required'), trigger: "blur" },
+    { min: 3, max: 255, message: t('validation.title.min'), trigger: "blur" },
+    { max: 255, message: t('validation.title.max'), trigger: "blur" }
   ],
   start: [
-    { required: true, message: "Vui lòng nhập thời gian bắt đầu", trigger: "change" },
+    { required: true, message: t('validation.time.required'), trigger: "change" },
     {
       validator: (_, value) => {
         if (!value) {
-          return Promise.reject("Vui lòng chọn ngày bắt đầu");
+          return Promise.reject(t('validation.time.required'));
         }
         return Promise.resolve();
       },
@@ -252,23 +256,23 @@ const rules = {
     }
   ],
   end: [
-    { required: true, message: "Vui lòng nhập thời gian kết thúc", trigger: "change" },
+    { required: true, message: t('validation.time.required'), trigger: "change" },
     {
       validator: (_, value) => {
         if (!value) {
-          return Promise.reject("Vui lòng chọn ngày kết thúc");
+          return Promise.reject(t('validation.time.required'));
         }
         if (formState.value.is_all_day) {
           // Nếu là cả ngày, kiểm tra ngày kết thúc phải sau ngày bắt đầu ít nhất 1 ngày
           const startDate = dayjs(formState.value.start).startOf('day');
           const endDate = dayjs(value).startOf('day');
           if (endDate.isBefore(startDate) || endDate.isSame(startDate)) {
-            return Promise.reject("Ngày kết thúc phải sau ngày bắt đầu");
+            return Promise.reject(t('validation.time.start_after_end'));
           }
         } else {
           // Nếu không phải cả ngày, kiểm tra thời gian kết thúc phải sau thời gian bắt đầu
-          if (dayjs(value).isBefore(dayjs(formState.value.start))) {
-            return Promise.reject("Thời gian kết thúc không hợp lệ");
+          if (formState.value.type === 'event' && dayjs(value).isBefore(dayjs(formState.value.start))) {
+            return Promise.reject(t('validation.time.invalid'));
           }
         }
         return Promise.resolve();
@@ -281,7 +285,7 @@ const rules = {
       validator: () => {
         if (formState.value.is_repeat && formState.value.rrule?.freq === "WEEKLY") {
           if (formState.value.rrule.byweekday.length === 0) {
-            return Promise.reject("Chọn ít nhất một ngày trong tuần.");
+            return Promise.reject(t('validation.rrule.byweekday'));
           }
         }
         return Promise.resolve();
@@ -463,13 +467,12 @@ const handleSave = async () => {
               );
             } catch (error) {
               console.error("Error uploading file:", error);
-              message.error(`Upload file ${info.metadata.client_name} thất bại`);
             }
           })
         );
       }
 
-      message.success(res.data.message || "Thêm sự kiện thành công");
+      message.success(t('eventModal.message.success'));
       emit("save", dataApi);
       resetForm();
       emit("cancel");
@@ -490,9 +493,9 @@ const handleSubmitAdd = async () => {
     
     if (formState.value.attendees.length > 0) {
       Modal.confirm({
-        title: "Gửi email thông báo?",
-        content: "Bạn có muốn gửi email thông báo cho những người tham gia không?",
-        okText: "Gửi",
+        title: t('options.sendMail.title'),
+        content: t('options.sendMail.content'),
+        okText: t('options.sendMail.send'),
         width: 600,
         onCancel() {
           Modal.destroyAll()
@@ -504,7 +507,7 @@ const handleSubmitAdd = async () => {
               {
                 class: "text-gray-500 hover:text-gray-700 border-0 px-4 py-2 cursor-pointer font-semibold rounded-lg transition duration-200 text-sm",
                 onClick: () => Modal.destroyAll(),
-              },"Quay lại"),
+              },t('options.sendMail.back')),
 
             // Nút "Không gửi"
             h(
@@ -517,7 +520,7 @@ const handleSubmitAdd = async () => {
                   handleSave();
                 },
               },
-              "Không gửi"
+              t('options.sendMail.dontSend')
             ),
 
             // Nút "Gửi"
@@ -531,7 +534,7 @@ const handleSubmitAdd = async () => {
                   handleSave();
                 },
               },
-              "Gửi"
+              t('options.sendMail.send')
             ),
           ]),
       });
@@ -552,7 +555,7 @@ const addReminder = () => {
   if (formState.value.reminder.length < 3) {
     formState.value.reminder.push({ type: "email", time: 5, unit: "minutes" });
   } else {
-    message.warning('Chỉ được thêm tối đa 3 thông báo nhắc trước lịch');
+    message.warning(t('eventModal.sections.reminder.max'));
   }
 };
 const formatReminders = (reminders) => {
@@ -657,7 +660,7 @@ watch(
   (newReminders) => {
     newReminders.forEach((reminder) => {
       if (reminder.unit === "hours" && reminder.time > 24) {
-        message.info('Chỉ được thông báo trước 24 giờ');
+        message.warning(t('eventModal.sections.reminder.warning.maxHours'));
         reminder.time = 24; // Giới hạn tối đa 24 giờ
       }
       if (reminder.unit === "minutes" && reminder.time > 60) {
@@ -717,18 +720,15 @@ watch(
 );
 
 // handle before upload
-const handleBeforeUpload = async (fileList) => {
+const handleBeforeUpload = async (info) => {
+  const files = info.fileList.map(file => file.originFileObj).filter(Boolean);
   const formData = new FormData();
-  
-  // Chuyển đổi fileList thành mảng nếu cần
-  const files = Array.isArray(fileList) ? fileList : [fileList];
-  
-  // Thêm từng file vào formData
-  files.forEach((file) => {
-    formData.append("files[]", file);
+
+  // Thay đổi cách append file vào FormData
+  files.forEach((file, index) => {
+    formData.append(`files[${index}]`, file); // Thêm index vào tên field
   });
 
-  
   try {
     const { data } = await axios.post(
       `${dirApi}s3/upload`,
@@ -738,15 +738,34 @@ const handleBeforeUpload = async (fileList) => {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
+        // Thêm timeout và maxContentLength
+        timeout: 30000, // 30 giây
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
       }
     );
-    console.log("Data:", data);
-    presignedUrls.value = data.presigned_urls;
-    console.log("Presigned URLs:", presignedUrls.value);
+
+    console.log('API Response:', data);
+
+    if (data.presigned_urls && data.presigned_urls.length > 0) {
+      presignedUrls.value = data.presigned_urls;
+      console.log('Presigned URLs:', data.presigned_urls);
+      
+      // Reset fileUploads trước khi thêm file mới
+      fileUploads.value = [];
+      files.forEach(file => {
+        fileUploads.value.push(file);
+      });
+      console.log('File uploads:', fileUploads.value);
+    } else {
+      console.log('No presigned URLs received');
+    }
 
   } catch (error) {
     console.error("Upload failed", error);
-    message.error("Upload file thất bại");
+    // Reset các biến khi upload thất bại
+    presignedUrls.value = [];
+    fileUploads.value = [];
   }
 
   return false; // Ngăn Upload tự động xử lý
@@ -754,85 +773,70 @@ const handleBeforeUpload = async (fileList) => {
 
 // Hàm xóa file đính kèm
 const removeAttachment = (index) => {
-  // Xóa file khỏi danh sách attachments
-  formState.value.attachments.splice(index, 1);
+  fileUploads.value.splice(index, 1);
   
   // Xóa presignedUrl tương ứng
   if (presignedUrls.value && presignedUrls.value.length > index) {
     presignedUrls.value.splice(index, 1);
   }
-  console.log(presignedUrls.value);
+
+  console.log('File Uploads:', fileUploads.value);
+  console.log('Presigned URLs:', presignedUrls.value);
 };
 
 watch(
-  () => formState.value.type,
-  (newVal) => {
-    if (newVal === 'task' && formState.value.start && formState.value.end) {
-      const startDate = dayjs(formState.value.start);
-      const endDate = dayjs(formState.value.end);
+  [
+    () => formState.value.type,
+    () => formState.value.start,
+    () => formState.value.end,
+    () => formState.value.is_all_day
+  ],
+  ([newType, newStart, newEnd, isAllDay]) => {
+    const startDate = newStart ? dayjs(newStart) : null;
+    const endDate = newEnd ? dayjs(newEnd) : null;
 
-      if (formState.value.is_all_day) {
-        // Nếu là cả ngày, set thời gian bắt đầu là 0h và kết thúc là 0h ngày hôm sau
-        formState.value.start = startDate.startOf('day');
-        formState.value.end = endDate.add(1, 'day').startOf('day');
+    //Kiểm tra nếu là "task"
+    if (newType === 'task' && startDate && endDate) {
+      if (isAllDay) {
+        const expectedStart = startDate.startOf('day');
+        const expectedEnd = startDate.add(1, 'day').startOf('day');
+
+        if (!startDate.isSame(expectedStart)) {
+          formState.value.start = expectedStart;
+        }
+
+        if (!endDate.isSame(expectedEnd)) {
+          formState.value.end = expectedEnd;
+        }
       } else {
-        // Nếu không phải cả ngày, đảm bảo kết thúc trong cùng ngày
+        // Nếu end không cùng ngày với start, sửa lại end
         if (!endDate.isSame(startDate, 'day')) {
-          formState.value.end = startDate.endOf('day');
+          const expectedEnd = startDate.endOf('day');
+          if (!endDate.isSame(expectedEnd)) {
+            formState.value.end = expectedEnd;
+          }
         }
       }
+
+      //Reset các trường phụ nếu là task
+      formState.value.attendees = [];
+      formState.value.is_busy = false;
+      formState.value.is_private = false;
+      formState.value.is_reminder = false;
+      formState.value.reminder = [];
+      formState.value.location = '';
+      formState.value.link = '';
+      formState.value.tag_id = null;
+      formState.value.sendMail = null;
+      formState.value.attachments = [];
+      presignedUrls.value = [];
     }
 
-    formState.value.attendees = [];
-    formState.value.is_busy = false;
-    formState.value.is_private = false;
-    formState.value.is_reminder = false;
-    formState.value.reminder = [];
-    formState.value.location = '';
-    formState.value.link = '';
-    formState.value.tag_id = null;
-    formState.value.sendMail = null;
-    formState.value.attachments = [];
-    presignedUrls.value = [];
+    // Kiểm tra nếu thời gian start trong quá khứ
+    formState.value.isPastTime = startDate ? startDate.isBefore(dayjs(), 'minute') : false;
   }
 );
 
-watch(
-  () => formState.value.is_all_day,
-  (newVal) => {
-    if (formState.value.type === 'task' && formState.value.start) {
-      if (newVal) {
-        // Khi bật cả ngày
-        formState.value.start = dayjs(formState.value.start).startOf('day');
-        formState.value.end = dayjs(formState.value.start).add(1, 'day').startOf('day');
-      } else {
-        // Khi tắt cả ngày
-        const startDate = dayjs(formState.value.start);
-        formState.value.start = startDate;
-        formState.value.end = startDate.endOf('day');
-      }
-    }
-  }
-);
-
-watch(
-  () => formState.value.start,
-  (newVal) => {
-    if (formState.value.type === 'task' && newVal && formState.value.end) {
-      const startDate = dayjs(newVal);
-      const endDate = dayjs(formState.value.end);
-
-      if (formState.value.is_all_day) {
-        formState.value.end = startDate.add(1, 'day').startOf('day');
-      } else if (!endDate.isSame(startDate, 'day')) {
-        formState.value.end = startDate.endOf('day');
-      }
-    }
-
-    // Kiểm tra thời gian trong quá khứ
-    formState.value.isPastTime = newVal ? dayjs(newVal).isBefore(dayjs(), 'minute') : false;
-  }
-);
 
 watch(
   () => formState.value.is_reminder,
@@ -847,7 +851,7 @@ watch(
 <template>
   <Drawer 
     :open="isAddEventModalVisible" 
-    :title="t('eventModal.title')" 
+    :title="t(`eventModal.title`)" 
     @close="handleCancel"
     width="50%"
     class="event-drawer"
@@ -855,7 +859,7 @@ watch(
     <template #extra>
       <Button type="primary" @click="handleSubmitAdd" class="rounded-md" :loading="isLoading">{{ t('eventModal.save') }}</Button>
     </template>
-    <Form layout="vertical" :rules="rules" :model="formState" ref="formRef">
+    <Form layout="vertical" :rules="rules" :required-mark="false" :model="formState" ref="formRef">
       <div class="h-full flex flex-col">
         <div class="flex-1">
           <!-- Warning message for past time -->
@@ -870,7 +874,7 @@ watch(
           <div class="form-section">
             <div class="section-title">
               <EditOutlined class="text-gray-500 mr-2" />
-              <span>{{ t('eventModal.sections.title.label') }}</span>
+              <span>{{ t('eventModal.sections.title.label') }}</span><span class="text-red-500 ml-1">*</span>
             </div>
             <div class="flex items-center">
               <Form.Item name="title" class="mb-0 flex-1">
@@ -888,6 +892,9 @@ watch(
             </div>
             <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
               <Form.Item name="type" class="mb-0">
+                <template #label>
+                  {{ t('eventModal.sections.eventType.type') }}
+                </template>
                 <Select v-model:value="formState.type" :placeholder="t('eventModal.sections.eventType.label')" class="rounded-lg w-full">
                   <Select.Option value="event">{{ t('eventModal.sections.eventType.options.event') }}</Select.Option>
                   <Select.Option value="task">{{ t('eventModal.sections.eventType.options.task') }}</Select.Option>
@@ -895,6 +902,9 @@ watch(
               </Form.Item>
 
               <Form.Item name="color_code" class="mb-0">
+                <template #label>
+                  {{ t('eventModal.sections.color.label') }}
+                </template>
                 <a-select v-model:value="formState.color_code" :placeholder="t('eventModal.sections.color.label')" class="rounded-lg w-full">
                   <a-select-option v-for="color in colors" :key="color.value" :value="color.value">
                     <div class="flex items-center">
@@ -906,6 +916,9 @@ watch(
               </Form.Item>
 
               <Form.Item name="tag" class="mb-0" v-if="formState.type == 'event'">
+                <template #label>
+                  {{ t('eventModal.sections.eventType.tag') }}
+                </template>
                 <Select v-model:value="formState.tag_id" :placeholder="t('eventModal.sections.eventType.label')" class="rounded-lg w-full">
                   <Select.Option v-for="tag in tags" :key="tag.id" :value="tag.id">
                     {{ tag.name }}
@@ -923,7 +936,10 @@ watch(
             </div>
             <div class="grid grid-cols-1 gap-3">
               <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <Form.Item :label="t('eventModal.sections.dateTime.start')" name="start" class="mb-0">
+                <Form.Item name="start" class="mb-0">
+                  <template #label>
+                    {{ t('eventModal.sections.dateTime.start') }}<span class="text-red-500 ml-1">*</span>
+                  </template>
                   <DatePicker 
                     v-model:value="formState.start" 
                     :show-time="!formState.is_all_day"
@@ -937,7 +953,10 @@ watch(
                     </template>
                   </DatePicker>
                 </Form.Item>
-                <Form.Item :label="t('eventModal.sections.dateTime.end')" name="end" class="mb-0">
+                <Form.Item name="end" class="mb-0">
+                  <template #label>
+                    {{ t('eventModal.sections.dateTime.end') }}<span class="text-red-500 ml-1">*</span>
+                  </template>
                   <DatePicker 
                     v-model:value="formState.end" 
                     :show-time="!formState.is_all_day"
@@ -1057,11 +1076,12 @@ watch(
                 <span>{{ t('eventModal.sections.description.label') }}</span>
               </div>
               <div class="section-title" v-if="formState.type == 'event'">
-                <PaperClipOutlined class="text-gray-500 mr-2" />
+                <!-- <PaperClipOutlined class="text-gray-500 mr-2" /> -->
                 <Upload
                   v-model:file-list="formState.attachments"
-                  :before-upload="handleBeforeUpload"
+                  :before-upload="() => false"
                   multiple
+                  @change="handleBeforeUpload"
                   list-type="picture-card"
                   :max-count="5"
                   class="text-blue-600 cursor-pointer hover:text-blue-800"
@@ -1096,23 +1116,6 @@ watch(
                 ['clean']
               ]"
             />
-
-            <!-- Display attached files -->
-            <div v-if="formState.attachments && formState.attachments.length > 0" class="mt-4">
-              <div class="text-sm font-medium text-gray-700 mb-2">{{ t('eventModal.sections.description.attachments') }}</div>
-              <div class="space-y-2">
-                <div v-for="(file, index) in formState.attachments" :key="index" 
-                  class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                  <div class="flex items-center">
-                    <PaperClipOutlined class="text-gray-500 mr-2" />
-                    <span class="text-sm text-gray-600">{{ file.name }}</span>
-                  </div>
-                  <Button type="text" danger @click="removeAttachment(index)">
-                    <DeleteOutlined />
-                  </Button>
-                </div>
-              </div>
-            </div>
           </div>
 
           <!-- Location Section -->
@@ -1461,5 +1464,24 @@ watch(
 
 .event-drawer :deep(.ant-picker-time-panel-column) {
   display: none !important;
+}
+
+/* Giảm size của thumbnail upload */
+:deep(.ant-upload-list-picture-card .ant-upload-list-item-container) {
+  width: 70px !important;
+  height: 70px !important;
+}
+:deep(.ant-upload-list-picture-card .ant-upload-list-item) {
+  width: 70px !important;
+  height: 70px !important;
+  font-size: 12px !important;
+  margin: 0 !important;
+}
+
+:deep(.ant-upload-picture-card-wrapper .ant-upload-select) {
+  width: 70px !important;
+  height: 70px !important;
+  font-size: 12px !important;
+  margin: 0 !important;
 }
 </style>

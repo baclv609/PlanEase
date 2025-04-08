@@ -49,8 +49,11 @@ import { attachTypeApi } from "ant-design-vue/es/message";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import "dayjs/locale/vi";
 import "dayjs/locale/en";
+import { useI18n } from 'vue-i18n';
 
 import { useSettingsStore } from '@/stores/settingsStore';
+
+const { t } = useI18n();
 
 const settingsStore = useSettingsStore();
 
@@ -77,7 +80,7 @@ const leaveOption = ref("EDIT_1");
 const eventLink = ref('');
 const user = ref(JSON.parse(localStorage.getItem('user')));
 const activeTab = ref("infoEvent");
-
+const loadingGetFiles = ref(false);
 const replyingTo = ref(null);
 const echoStore = useEchoStore();
 
@@ -195,7 +198,7 @@ const handleDelete = () => {
   if (event.value.recurrence && event.value.recurrence != 0) {
     
     Modal.confirm({
-      title: "Xóa sự kiện lặp lại",
+      title: t('options.recurrence.delete.title'),
       width: 500,
       centered: true,
       content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
@@ -211,7 +214,7 @@ const handleDelete = () => {
                 deleteOption.value = e.target.value;
               },
             }),
-            h("span", { class: "text-lg" }, "Chỉ xóa sự kiện này"),
+            h("span", { class: "text-lg" }, t('options.recurrence.delete.one')),
           ]),
         ]),
         h("div", { class: "mb-3" }, [
@@ -225,7 +228,7 @@ const handleDelete = () => {
                 deleteOption.value = e.target.value;
               },
             }),
-            h("span", { class: "text-lg" }, "Xóa sự kiện này và những sự kiện tiếp theo"),
+            h("span", { class: "text-lg" }, t('options.recurrence.delete.follow')),
           ]),
         ]),
         h("div", { class: "mb-3" }, [
@@ -239,18 +242,18 @@ const handleDelete = () => {
                 deleteOption.value = e.target.value;
               },
             }),
-            h("span", { class: "text-lg" }, "Xóa tất cả sự kiện"),
+            h("span", { class: "text-lg" }, t('options.recurrence.delete.all')),
           ]),
         ]),
       ]),
-      okText: "Xóa",
-      cancelText: "Hủy",
+      okText: t('options.recurrence.delete.delete'),
+      cancelText: t('options.recurrence.delete.cancel'),
       onOk() {
         Modal.confirm({
-          title: "Xác nhận xóa",
-          content: "Bạn có chắc chắn muốn xóa sự kiện này?",
-          okText: "Xóa",
-          cancelText: "Hủy",
+          title: t('options.recurrence.delete.confirm'),
+          content: t('options.recurrence.delete.confirm_content'),
+          okText: t('options.recurrence.delete.delete'),
+          cancelText: t('options.recurrence.delete.cancel'),
           centered: true,
           onOk() {
             deleteEvent({ code: deleteOption.value, date: event.value.start, id: event.value.id });
@@ -261,10 +264,10 @@ const handleDelete = () => {
 
   } else {
     Modal.confirm({
-      title: "Xác nhận xóa",
-      content: "Bạn có chắc chắn muốn xóa sự kiện này?",
-      okText: "Xóa",
-      cancelText: "Hủy",
+      title: t('options.recurrence.delete.confirm'),
+      content: t('options.recurrence.delete.confirm_content'),
+      okText: t('options.recurrence.delete.delete'),
+      cancelText: t('options.recurrence.delete.cancel'),
       centered: true,
       onOk() {
         deleteEvent({code: "DEL_N", date: event.value.start, id: event.value.id });
@@ -276,7 +279,7 @@ const handleDelete = () => {
 // copy link
 const copyToClipboard = () => {
   navigator.clipboard.writeText(`${window.location.origin}/calendar/event/${event.value.uuid}/invite`).then(() => {
-    message.success('Đã sao chép liên kết!');
+    message.success(t('share.link.copySuccess'));
   });
   Modal.destroyAll();
 };
@@ -289,9 +292,10 @@ const showModalLink = () => {
     maskClosable: true,
     centered: true,
     title: h("div", { class: "flex justify-between items-center" }, 
-          h("span", { class: "text-lg font-semibold" }, "Mời qua đường liên kết")),
+          h("span", { class: "text-lg font-semibold" }, t('share.link.title')),
+    ),
     content: h("div", { class: "space-y-4" }, [
-      h("p", { class: "text-gray-600 text-sm" }, "Hãy chia sẻ đường liên kết này với người khác. Họ sẽ có thể xem sự kiện và phản hồi."),
+      h("p", { class: "text-gray-600 text-sm" }, t('share.link.content')),
 
       // Ô chứa link + nút sao chép trên cùng hàng
       h("div", { class: "flex items-center bg-gray-50 p-2 rounded-md text-sm" }, [
@@ -377,7 +381,7 @@ const accept = async (uuid) => {
       }
 
       if(response.data.code == 200) {
-        message.success(response.data.message);
+        message.success(t('EventDetailsModal.general.accept'));
         emit("delete");
         emit("close", false);
       }
@@ -400,7 +404,7 @@ const refuse = async (uuid) => {
     }
 
     if(response.data.code == 200) {
-      message.info(response.data.message)
+      message.info(t('EventDetailsModal.general.refuse'));
       emit("delete");
       emit("close", false);
     }
@@ -414,7 +418,7 @@ const leaveEvent = async (uuid) => {
   if ((event.value.recurrence && event.value.recurrence != 0) || event.value.parent_id) {
     
     Modal.confirm({
-      title: "Rời khỏi sự kiện",
+      title: t('options.recurrence.participants.leave.title'),
       width: 600,
       content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
         h("div", { class: "mb-3" }, [
@@ -423,12 +427,13 @@ const leaveEvent = async (uuid) => {
               type: "radio",
               name: "leaveOption",
               value: "EDIT_1",
+              checked: leaveOption.value == "EDIT_1",
               class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
               onInput: (e) => {
                 leaveOption.value = e.target.value;
               },
             }),
-            h("span", { class: "text-lg" }, "Chỉ rời khỏi sự kiện này"),
+            h("span", { class: "text-lg" }, t('options.recurrence.participants.leave.one')),
           ]),
         ]),
         h("div", { class: "mb-3" }, [
@@ -442,7 +447,7 @@ const leaveEvent = async (uuid) => {
                 leaveOption.value = e.target.value;
               },
             }),
-            h("span", { class: "text-lg" }, "Rời khỏi sự kiện này và những sự kiện tiếp theo"),
+            h("span", { class: "text-lg" }, t('options.recurrence.participants.leave.follow')),
           ]),
         ]),
         h("div", { class: "mb-3" }, [
@@ -456,18 +461,18 @@ const leaveEvent = async (uuid) => {
                 leaveOption.value = e.target.value;
               },
             }),
-            h("span", { class: "text-lg" }, "Rời khỏi tất cả sự kiện"),
+            h("span", { class: "text-lg" }, t('options.recurrence.participants.leave.all')),
           ]),
         ]),
       ]),
-      okText: "Rời đi",
-      cancelText: "Hủy",
+      okText: t('options.recurrence.participants.leave.delete'),
+      cancelText: t('options.recurrence.participants.leave.cancel'),
       onOk() {
         Modal.confirm({
-          title: "Xác nhận rời khỏi",
-          content: "Bạn có chắc chắn muốn rời khỏi sự kiện này?",
-          okText: "Rời đi",
-          cancelText: "Hủy",
+          title: t('options.recurrence.participants.leave.confirm'),
+          content: t('options.recurrence.participants.leave.confirm_content'),
+          okText: t('options.recurrence.participants.leave.delete'),
+          cancelText: t('options.recurrence.participants.leave.cancel'),
           centered: true,
           onOk() {
             handleLeaveEvent({code: leaveOption.value, id: event.value.id, start_time: event.value.start, end_time: event.value.end, date: event.value.start, timezone: event.value.timezone});
@@ -478,10 +483,10 @@ const leaveEvent = async (uuid) => {
 
   } else {
     Modal.confirm({
-      title: "Xác nhận rời khỏi",
-      content: "Bạn có chắc chắn muốn rời khỏi sự kiện này?",
-      okText: "Rời đi",
-      cancelText: "Hủy",
+      title: t('options.recurrence.participants.leave.confirm'),
+      content: t('options.recurrence.participants.leave.confirm_content'),
+      okText: t('options.recurrence.participants.leave.delete'),
+      cancelText: t('options.recurrence.participants.leave.cancel'),
       centered: true,
       onOk() {
         handleLeaveEvent({code: "EDIT_N", id: event.value.id, start_time: event.value.start, end_time: event.value.end, date: event.value.start, timezone: event.value.timezone});
@@ -591,7 +596,8 @@ const scrollToBottom = () => {
 };
 
 const getAttachments = async () => {
-  if(files.value.length == 0) {
+  loadingGetFiles.value = true;
+  if(files.value && files.value.length == 0) {
     const response = await axios.get(`${dirApi}file-entry/${event.value.id}/files`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -603,7 +609,11 @@ const getAttachments = async () => {
       console.log(files.value);
     } catch (error) {
       console.log(error);
+    } finally {
+      loadingGetFiles.value = false;
     }
+  } else {
+    loadingGetFiles.value = false;
   }
 }
 
@@ -709,19 +719,130 @@ const completeTask = async (id) => {
   });
 
   if(response.data.code == 200) {
-    message.success("Đã hoàn thành công việc");
+    message.success(t('EventDetailsModal.task.completeSuccess'));
     emit("delete", id);
     handleClose();
   }
 }
 
-const downloadFile = (file_name) => {
-  axios.get(`${dirApi}s3/download/`, {
-    headers: {
-      Authorization: `Bearer ${token}`
+const downloadFile = async (file_name) => {
+  try {
+    const res = await axios.get(`${dirApi}s3/download/${file_name}`,{
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (res.data.urlDowload) {
+      const response = await fetch(res.data.urlDowload);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file_name;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } else {
+      message.error('Không tìm thấy link tải file.');
+    }
+  } catch (error) {
+    console.log(error);
+    message.error('Không thể tải file. Vui lòng thử lại sau.');
+  }
+}
+
+const deleteFile = async (file_name) => {
+  Modal.confirm({
+    title: t('EventDetailsModal.attachments.deleteFile'),
+    content: t('EventDetailsModal.attachments.deleteFileContent'),
+    centered: true,
+    onOk: async () => {
+      try {
+        const response = await axios.delete(`${dirApi}file-entry/delete`, {
+          headers: {
+        Authorization: `Bearer ${token}`
+      },
+      data: {
+        file_names: [file_name]
+      }
+    });
+
+    if(response.status == 200) {
+      message.success(t('EventDetailsModal.attachments.deleteFileSuccess'));
+      // Cập nhật lại danh sách file
+      files.value = files.value.filter(file => file.file_name !== file_name);
+    } else {
+      message.error(t('EventDetailsModal.attachments.deleteFileError'));
+    }
+  } catch (error) {
+        console.log(error);
+        message.error(t('EventDetailsModal.attachments.deleteFileError'));
+      }
     }
   });
 }
+
+function getRecurrenceText(event) {
+  if (!event.info?.extendedProps?.freq) return '';
+
+  const props = event.info.extendedProps;
+  const freq = props.freq;
+  const interval = props.interval || 1;
+  const count = props.count;
+  const until = props.until;
+  const dayMap = {
+    MO: t('EventDetailsModal.general.recurrence.days.monday'),
+    TU: t('EventDetailsModal.general.recurrence.days.tuesday'),
+    WE: t('EventDetailsModal.general.recurrence.days.wednesday'),
+    TH: t('EventDetailsModal.general.recurrence.days.thursday'),
+    FR: t('EventDetailsModal.general.recurrence.days.friday'),
+    SA: t('EventDetailsModal.general.recurrence.days.saturday'),
+    SU: t('EventDetailsModal.general.recurrence.days.sunday')
+  };
+  let text = '';
+
+  // Frequency
+  if (freq === 'daily') {
+    text += interval <= 1 ? t('EventDetailsModal.general.recurrence.daily') :
+      t('EventDetailsModal.general.recurrence.everyNDays', { n: interval });
+  } else if (freq === 'weekly') {
+    text += interval <= 1 ? t('EventDetailsModal.general.recurrence.weekly') :
+      t('EventDetailsModal.general.recurrence.everyNWeeks', { n: interval });
+
+    if (props.byweekday?.length > 0) {
+      const days = props.byweekday.map(day => dayMap[day] || day).join(', ');
+      text += `, ${t('EventDetailsModal.general.recurrence.on')} ${days}`;
+    }
+  } else if (freq === 'monthly') {
+    text += interval <= 1 ? t('EventDetailsModal.general.recurrence.monthly') :
+      t('EventDetailsModal.general.recurrence.everyNMonths', { n: interval });
+
+    if (props.bymonthday?.length > 0) {
+      const days = props.bymonthday.join(', ');
+      text += `, ${t('EventDetailsModal.general.recurrence.on')} ${days}`;
+    }
+  } else if (freq === 'yearly') {
+    text += interval <= 1 ? t('EventDetailsModal.general.recurrence.yearly') :
+      t('EventDetailsModal.general.recurrence.everyNYears', { n: interval });
+  }
+
+  // Count
+  if (count && count >= 1) {
+    text += `, ${t('EventDetailsModal.general.recurrence.count', { count })}`;
+  }
+
+  // Until
+  if (until && !count && dayjs(until).year() < 3000) {
+    const formatted = dayjs(until).format('DD/MM/YYYY');
+    text += `, ${t('EventDetailsModal.general.recurrence.until', { date: formatted })}`;
+  }
+
+  return text;
+}
+
 </script>
 
 <template>
@@ -754,7 +875,7 @@ const downloadFile = (file_name) => {
     </div>
 
     <a-tabs v-model:activeKey="activeTab">
-      <a-tab-pane key="infoEvent" tab="Thông tin chung">
+      <a-tab-pane key="infoEvent" :tab="t('EventDetailsModal.tab.general')">
         <!-- Event content -->
         <div class="px-4">
           <!-- Event title -->
@@ -771,7 +892,7 @@ const downloadFile = (file_name) => {
               </div>
   
               <div class="">
-                <p class="font-medium mb-0">Thời gian</p>
+                <p class="font-medium mb-0">{{ t('EventDetailsModal.general.time') }}</p>
               </div>
             </div>
 
@@ -779,7 +900,7 @@ const downloadFile = (file_name) => {
               
               <!-- Thời gian theo múi giờ sự kiện -->
               <div class="border border-1 !border-gray-300 rounded-md shadow-sm p-2">
-                <p class="text-sm text-gray-500 font-semibold mb-2 ml-1">Thời gian sự kiện</p>
+                <p class="text-sm text-gray-500 font-semibold mb-2 ml-1">{{ t('EventDetailsModal.general.timeEvent') }}</p>
                 <div class="flex flex-col ml-3">
                   <div class="grid grid-cols-2 gap-2">
                     <div class="flex items-center space-x-2">
@@ -797,7 +918,7 @@ const downloadFile = (file_name) => {
                       </div>
                       <div class="flex items-center space-x-2 col-span-2" v-if="event.is_all_day">
                         <ClockCircleOutlined class="text-gray-500" />
-                        <p class="text-gray-800 mb-0">Cả ngày</p>
+                        <p class="text-gray-800 mb-0">{{ t('EventDetailsModal.general.timeAllDay') }}</p>
                       </div>
                     </div>
                   </div>
@@ -810,7 +931,7 @@ const downloadFile = (file_name) => {
 
               <!-- Thời gian theo múi giờ người dùng -->
               <div v-if="userTimezone != event.timezone" class="border-gray-300 p-2 shadow-sm">
-                <p class="text-sm text-gray-500 font-semibold mb-2 ml-1">Thời gian theo múi giờ của bạn</p>
+                <p class="text-sm text-gray-500 font-semibold mb-2 ml-1">{{ t('EventDetailsModal.general.timeSetting') }}</p>
                 <div class="flex flex-col ml-3">
                   <div class="grid grid-cols-2 gap-2">
                     <div class="flex items-center space-x-2">
@@ -830,7 +951,7 @@ const downloadFile = (file_name) => {
                       </div>
                       <div class="flex items-center space-x-2 col-span-2" v-if="event.is_all_day">
                         <ClockCircleOutlined class="text-gray-500" />
-                        <p class="text-gray-800 mb-0">Cả ngày</p>
+                        <p class="text-gray-800 mb-0">{{ t('EventDetailsModal.general.timeAllDay') }}</p>
                       </div>
                     </div>
                   </div>
@@ -845,49 +966,28 @@ const downloadFile = (file_name) => {
           </div>
 
           <!-- Lặp lại -->
-          <div class="flex flex-col mb-4" v-if="event.recurrence && event.recurrence != 0">
+          <div class="flex flex-col mb-2" v-if="event.recurrence && event.recurrence != 0">
             <div class="flex">
               <div class="w-6 h-6 flex-shrink-0 mr-3">
                 <HistoryOutlined class="text-xl text-gray-500" />
               </div>
               <div class="flex items-center">
-                <p class="font-medium mb-0">Lặp lại</p>
+                <p class="font-medium mb-0">{{ t('EventDetailsModal.general.recurrence.title') }}</p>
               </div>
             </div>
             <div class="ml-9">
-              <span v-if="event.info.extendedProps.freq === 'daily'">
-                {{ event.info.extendedProps.interval <= 1 ? 'Hàng ngày' : `${event.info.extendedProps.interval} ngày một lần` }}
-                {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
-                {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
-              </span>
-              <span v-else-if="event.info.extendedProps.freq === 'weekly'">
-                {{ event.info.extendedProps.interval <= 1 ? 'Hàng tuần' : `${event.info.extendedProps.interval} tuần một lần` }}
-                {{ event.info.extendedProps.byweekday && event.info.extendedProps.byweekday.length > 0 ? `,vào ${event.info.extendedProps.byweekday.map(day => dayMap[day]).join(', ')}` : '' }}
-                {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
-                {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
-              </span>
-              <span v-else-if="event.info.extendedProps.freq === 'monthly'">
-                {{ event.info.extendedProps.interval <= 1 ? 'Hàng tháng' : `${event.info.extendedProps.interval} tháng một lần` }}
-                {{ event.info.extendedProps.bymonthday && event.info.extendedProps.bymonthday.length > 0 ? `,vào ngày ${event.info.extendedProps.bymonthday.join(', ')}` : '' }}
-                {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
-                {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
-              </span>
-              <span v-else-if="event.info.extendedProps.freq === 'yearly'">
-                {{ event.info.extendedProps.interval <= 1 ? 'Hàng năm' : `${event.info.extendedProps.interval} năm một lần` }}
-                {{ event.info.extendedProps.count && event.info.extendedProps.count > 1 ? `,${event.info.extendedProps.count} lần` : '' }}
-                {{ event.info.extendedProps.until && event.info.extendedProps.count == null && dayjs(event.info.extendedProps.until).year() < 3000 ? `,Đến ${dayjs(event.info.extendedProps.until).format('DD/MM/YYYY')}` : '' }}
-              </span>
+              <p class="text-gray-800 mb-0">{{ getRecurrenceText(event) }}</p>
             </div>
           </div>
 
 
-          <div class="flex items-start mb-4" v-if="event.description">
+          <div class="flex items-start mb-2" v-if="event.description">
             <div class="w-6 h-6 flex-shrink-0 mr-3">
               <AlignLeftOutlined class="text-xl text-gray-500" />
             </div>
             <div>
               <div class="flex items-center">
-                <p class="font-medium mb-0">Mô tả</p>
+                <p class="font-medium mb-0">{{ t('EventDetailsModal.general.description') }}</p>
               </div>
               
               <p class="text-gray-800" v-html="event.description"></p>
@@ -895,18 +995,18 @@ const downloadFile = (file_name) => {
           </div>
 
           <!-- Participants -->
-          <div class="flex items-start mb-4" v-if="event.attendees && event.attendees.length > 0">
+          <div class="flex items-start mb-2" v-if="event.attendees && event.attendees.length > 0">
             <div class="w-6 h-6 flex-shrink-0 mr-3">
               <UsergroupAddOutlined class="text-xl text-gray-500" />
             </div>
             <div class="w-full">
               <div class="flex items-center justify-between">
                 <div class="flex gap-1">
-                  <p class="font-medium">{{ event.attendees.length }} Người tham gia |</p>
+                  <p class="font-medium">{{ event.attendees.length }} {{ t('EventDetailsModal.general.participants') }} |</p>
                   <p class="text-xs mt-1 text-gray-600">
-                    <span>{{ event.attendees.filter(attendee => attendee.status === 'yes').length }} Đồng ý
+                    <span>{{ event.attendees.filter(attendee => attendee.status === 'yes').length }} {{ t('EventDetailsModal.general.agree') }}
                       {{ event.attendees.filter(attendee => attendee.status === 'pending').length > 0 ?
-                      `,${event.attendees.filter(attendee => attendee.status === 'pending').length} Đang chờ` : '' }}
+                      `,${event.attendees.filter(attendee => attendee.status === 'pending').length} ${t('EventDetailsModal.general.pending')}` : '' }}
                     </span>
                   </p>
                 </div>
@@ -943,57 +1043,34 @@ const downloadFile = (file_name) => {
           </div>
 
           <!-- Location -->
-          <div class="flex items-start mb-4" v-if="event.location">
+          <div class="flex items-start mb-2" v-if="event.location">
             <div class="w-6 h-6 flex-shrink-0 mr-3">
               <EnvironmentOutlined class="h-6 w-6 text-gray-500 text-xl" />
             </div>
             <div>
               <div class="flex items-center">
-                <p class="font-medium mb-0">Địa điểm</p>
+                <p class="font-medium mb-0">{{ t('EventDetailsModal.general.location') }}</p>
               </div>
               <p class="text-sm text-gray-600">{{ event.location || 'Không có' }}</p>
             </div>
           </div>
 
           <!-- Reminder -->
-          <div class="flex items-start mb-4" v-if="event.is_reminder">
+          <div class="flex items-start mb-2" v-if="event.is_reminder">
             <div class="w-6 h-6 flex-shrink-0 mr-3">
               <BellOutlined class="h-6 w-6 text-gray-500 text-xl" />
             </div>
             <div>
               <div class="flex items-center">
-                <p class="font-medium mb-0">Nhắc nhở</p>
+                <p class="font-medium mb-0">{{ t('EventDetailsModal.general.reminder') }}</p>
               </div>
 
               <p class="text-sm text-gray-600 mb-0" v-for="(time, index) in event.reminder" :key="index">
-                Trước {{ time.set_time >= 60 ? time.set_time / 60 : time.set_time }} {{ time.set_time >= 60 ? 'giờ' :
-                'phút' }} - {{ time.type }}
+                {{ t('EventDetailsModal.general.before') }} {{ time.set_time >= 60 ? time.set_time / 60 : time.set_time }} {{ time.set_time >= 60 ? 
+                t('EventDetailsModal.general.hour') : t('EventDetailsModal.general.minute') }} - {{ time.type }}
               </p>
             </div>
           </div>
-
-          <!-- Meeting link -->
-          <!-- <div class="flex items-start mb-4">
-        <div class="w-6 h-6 flex-shrink-0 mr-3">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
-        </div>
-        <div class="w-full">
-          <div class="border rounded-md p-3 flex items-center justify-between">
-            <div class="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-              </svg>
-              <span class="font-medium">Zoho Meeting</span>
-            </div>
-            <div class="flex items-center space-x-2">
-              <button class="text-blue-600 text-sm">Copy link</button>
-              <button class="bg-blue-600 text-white px-3 py-1 rounded-md text-sm">Start Meeting</button>
-            </div>
-          </div>
-        </div>
-      </div> -->
 
           <!-- Calendar -->
           <div class="flex items-start" v-if="event.type == 'event'">
@@ -1006,7 +1083,7 @@ const downloadFile = (file_name) => {
             </div>
             <div>
               <div class="flex items-center">
-                <p class="font-medium mb-0">Lịch</p>
+                <p class="font-medium mb-0">{{ t('EventDetailsModal.general.calendar') }}</p>
                 <div v-if="event.tag_color_code" class="w-3 h-3 rounded-full ml-1" :style="{ backgroundColor: event.tag_color_code }"></div>
               </div>
               <p class="text-sm text-gray-600">{{ event.tag_name || 'Không có' }}</p>
@@ -1018,7 +1095,7 @@ const downloadFile = (file_name) => {
               <FileProtectOutlined class="text-xl text-gray-500 w-6 h-6" />
             </div>
             <div>
-              <p class="font-semibold mb-0">Riêng tư</p>
+              <p class="font-semibold mb-0">{{ t('EventDetailsModal.general.private') }}</p>
             </div>
           </div>
         </div>
@@ -1026,12 +1103,12 @@ const downloadFile = (file_name) => {
         <div
           v-if="event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.status == 'yes')"
           class="flex justify-center">
-          <p class="text-green-500 mb-0">Bạn đã tham gia sự kiện này</p>
+          <p class="text-green-500 mb-0">{{ t('EventDetailsModal.general.youAreParticipating') }}</p>
         </div>
         <div
           v-else-if="event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.status == 'pending')"
           class="flex justify-center">
-          <p class="text-yellow-500 mb-0">Bạn có muốn tham gia vào sự kiện này không</p>
+          <p class="text-yellow-500 mb-0">{{ t('EventDetailsModal.general.wantToParticipate') }}</p>
         </div>
 
         <div v-if="event.attendees && event.attendees.length > 0 && user.id != event.user_id && event.attendees.some(attendee => attendee.user_id == user.id && attendee.status != 'yes')"
@@ -1040,12 +1117,12 @@ const downloadFile = (file_name) => {
             <button @click="accept(event.uuid)"
               class="px-3 py-1 rounded-md border-none bg-transparent cursor-pointer hover:bg-gray-100 font-semibold hover:text-blue-500 transition flex items-center ">
               <CheckOutlined class="mr-1" />
-              Có
+              {{ t("EventDetailsModal.general.yes") }}
             </button>
             <button @click="refuse(event.uuid)"
               class="px-3 py-1 rounded-md border-none bg-transparent cursor-pointer hover:bg-gray-100 font-semibold hover:text-blue-500 transition flex items-center">
               <CloseOutlined class="mr-1" />
-              Không
+              {{ t("EventDetailsModal.general.no") }}
             </button>
           </div>
         </div>
@@ -1055,65 +1132,85 @@ const downloadFile = (file_name) => {
             <button @click="leaveEvent(event.id)"
               class="px-3 py-1 rounded-md border-none bg-transparent cursor-pointer hover:bg-gray-100 font-semibold hover:text-blue-500 transition flex items-center ">
               <FrownOutlined class="mr-1" />
-              Rời đi
+              {{ t("EventDetailsModal.general.leave") }}
             </button>
           </div>
         </div>
 
         <div v-if="event.type == 'task'" class="flex justify-end">
-          <p v-if="event.is_done == 0" class="text-gray-500 p-2 hover:bg-gray-100 rounded-lg text-sm font-semibold cursor-pointer hover:text-blue-500 transition" @click="completeTask(event.id)">Đánh dấu là đã hoàn thành</p>
-          <p v-else class="text-gray-500 p-2 text-sm font-semibold cursor-pointer hover:text-blue-500 transition text-end">Đã hoàn thành</p>
+          <p v-if="event.is_done == 0" class="text-gray-500 p-2 hover:bg-gray-100 rounded-lg text-sm font-semibold cursor-pointer hover:text-blue-500 transition" @click="completeTask(event.id)">{{ t('EventDetailsModal.task.markAsDone') }}</p>
+          <p v-else class="text-gray-500 p-2 text-sm font-semibold cursor-pointer hover:text-blue-500 transition text-end">{{ t('EventDetailsModal.task.complete') }}</p>
         </div>
       </a-tab-pane>
 
-      <a-tab-pane key="attachments" tab="Tệp đính kèm" v-if="event.type == 'event'">
+      <a-tab-pane key="attachments" :tab="t('EventDetailsModal.tab.attachments')" v-if="event.type == 'event'">
         <div class="p-4">
-          <div v-if="files?.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div v-for="(file, index) in files" :key="index" 
-              class="border rounded-lg p-4 flex flex-col">
-              <!-- Hiển thị icon cho file -->
-              <div class="mb-3 flex items-center justify-center h-48 bg-gray-50 rounded-lg" v-if="!['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(file.extension)">
-                <div class="text-center">
-                  <FileOutlined v-if="file.extension == 'pdf'" class="text-4xl text-red-500" />
-                  <FileWordOutlined v-else-if="['doc', 'docx'].includes(file.extension)" class="text-4xl text-blue-500" />
-                  <FileExcelOutlined v-else-if="['xls', 'xlsx'].includes(file.extension)" class="text-4xl text-green-500" />
-                  <FilePptOutlined v-else-if="['ppt', 'pptx'].includes(file.extension)" class="text-4xl text-orange-500" />
-                  <FileTextOutlined v-else class="text-4xl text-gray-500" />
-                  <div class="mt-2 text-sm text-gray-600">{{ file.extension.toUpperCase() }}</div>
+          <div 
+            v-if="files?.length > 0" 
+            class="max-h-[500px] overflow-y-auto pr-2 scroll-smooth"
+          >
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+              <div v-for="(file, index) in files" :key="index" class="border rounded-lg p-4 flex flex-col">
+                <!-- Icon hoặc ảnh -->
+                <div class="mb-3 flex items-center justify-center h-48 bg-gray-50 rounded-lg" 
+                    v-if="!['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(file.extension)">
+                  <div class="text-center">
+                    <FileOutlined v-if="file.extension == 'pdf'" class="text-4xl text-red-500" />
+                    <FileWordOutlined v-else-if="['doc', 'docx'].includes(file.extension)" class="text-4xl text-blue-500" />
+                    <FileExcelOutlined v-else-if="['xls', 'xlsx'].includes(file.extension)" class="text-4xl text-green-500" />
+                    <FilePptOutlined v-else-if="['ppt', 'pptx'].includes(file.extension)" class="text-4xl text-orange-500" />
+                    <FileTextOutlined v-else class="text-4xl text-gray-500" />
+                    <div class="mt-2 text-sm text-gray-600">{{ file.extension.toUpperCase() }}</div>
+                  </div>
                 </div>
-              </div>
-              <div class="mb-3 flex items-center justify-center h-48 bg-gray-50 rounded-lg" v-else>
-                <img :src="file.url" alt="File" class="w-full h-full object-cover rounded-lg">
-              </div>
-              <!-- Thông tin file -->
-              <div class="flex flex-col">
-                <div class="font-medium text-gray-900 truncate" :title="file.client_name">
-                  {{ file.client_name }}
+                <div class="mb-3 flex items-center justify-center h-48 bg-gray-50 rounded-lg" v-else>
+                  <img :src="file.url" alt="File" class="w-full h-full object-cover rounded-lg">
                 </div>
-                <div class="text-sm text-gray-500">
-                  {{ formatFileSize(file.size) }}
+
+                <!-- Thông tin file -->
+                <div class="flex flex-col">
+                  <div class="font-medium text-gray-900 truncate" :title="file.client_name">
+                    {{ file.client_name }}
+                  </div>
+                  <div class="text-sm text-gray-500">{{ formatFileSize(file.size) }}</div>
+                  <div class="text-xs text-gray-400 mt-1">{{ new Date(file.created_at).toLocaleDateString() }}</div>
                 </div>
-                <div class="text-xs text-gray-400 mt-1">
-                  {{ new Date(file.created_at).toLocaleDateString() }}
+
+                <!-- Nút -->
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="mt-3">
+                    <a @click.prevent="downloadFile(file.file_name)" target="_blank" download
+                      class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white !bg-[#227CD9]">
+                      <DownloadOutlined class="mr-2" />
+                      {{ t('EventDetailsModal.attachments.download') }}
+                    </a>
+                  </div>
+                  <div class="mt-3">
+                    <a @click.prevent="deleteFile(file.file_name)" 
+                      class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white !bg-[#FE6D73]">
+                      <DeleteOutlined class="mr-2" />
+                      {{ t('EventDetailsModal.attachments.delete') }}
+                    </a>
+                  </div>
                 </div>
-              </div>
-              <!-- Nút tải xuống -->
-              <div class="mt-3">
-                <a @click.prevent="downloadFile(file.file_name)" target="_blank" download
-                  class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-                  <DownloadOutlined class="mr-2" />
-                  Tải xuống
-                </a>
               </div>
             </div>
           </div>
+
+          <!-- Loading / No attachments -->
           <div v-else class="text-center text-gray-500 py-8">
-            Không có tệp đính kèm
+            <div class="flex items-center justify-center space-x-2" v-if="loadingGetFiles">
+              <div class="border-t-4 border-blue-500 border-solid w-8 h-8 rounded-full animate-spin"></div>
+              <span>{{ t('EventDetailsModal.attachments.loading') }}</span>
+            </div>
+            <div v-else>
+              <p class="text-sm text-gray-400 italic">{{ t('EventDetailsModal.attachments.noAttachments') }}</p>
+            </div>
           </div>
         </div>
       </a-tab-pane>
 
-      <a-tab-pane v-if="event.type == 'event' && event.attendees.length > 0" key="discuss" tab="Thảo luận">
+      <a-tab-pane v-if="event.type == 'event' && event.attendees.length > 0" key="discuss" :tab="t('EventDetailsModal.tab.discussion')">
         <div class="flex bg-gray-100 h-[550px]">
           <!-- Main chat area -->
           <div class="flex-1 flex flex-col">
@@ -1127,7 +1224,7 @@ const downloadFile = (file_name) => {
                     stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                   </svg>
-                  <p>Chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!</p>
+                  <p>{{ t('EventDetailsModal.discussion.noMessages') }}</p>
                 </div>
               </div>
 
@@ -1182,14 +1279,14 @@ const downloadFile = (file_name) => {
             <!-- Input area -->
             <div class="bg-white border-t py-2 border-gray-200">
               <div v-if="replyingTo" class="p-2 bg-gray-100 border-l-4 border-blue-500 rounded flex items-center justify-between">
-                <p class="text-sm text-gray-600">Đang trả lời: <b>{{ replyingTo.text }}</b></p>
+                <p class="text-sm text-gray-600">{{ t('EventDetailsModal.discussion.replyingTo') }} <b>{{ replyingTo.text }}</b></p>
                 <button class="text-[#FE6D73] bg-transparent text-xs border-none cursor-pointer hover:bg-[#FE6D73] hover:text-white transition rounded-full px-[10px] py-2" @click="cancelReply"><CloseOutlined /></button>
               </div>
               <form @submit.prevent="sendMessage" class="flex space-x-2 w-full">
                 <div class="flex-1 w-11/12">
                   <input v-model="newMessage"
                     class="flex-1 border w-full px-2 border-[#227C9D] rounded-lg py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Nhập tin nhắn..." />
+                    :placeholder="t('EventDetailsModal.discussion.placeholder')" />
                 </div>
                 <div class="w-1/12">
                   <button type="submit"
