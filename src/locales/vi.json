@@ -190,7 +190,33 @@
     "failedToDeleteTag": "Không thể xóa tag. Vui lòng thử lại."
   },
   "validation": {
-    "tagNameRequired": "Vui lòng nhập tên tag!"
+    "tagNameRequired": "Vui lòng nhập tên tag!",
+    "title": {
+      "required": "Tiêu đề không được để trống",
+      "min": "Tiêu đề quá ngắn",
+      "max": "Tiêu đề quá dài"
+    },
+    "time": {
+      "required": "Vui lòng chọn thời gian",
+      "invalid": "Thời gian không hợp lệ",
+      "start_after_end": "Thời gian bắt đầu không thể sau thời gian kết thúc"
+    },
+    "attendees": {
+      "max": "Không thể thêm quá 10 khách mời"
+    },
+    "reminder": {
+      "max": "Chỉ có thể thêm tối đa 3 nhắc nhở"
+    },
+    "rrule": {
+      "freq": "Vui lòng chọn kiểu lặp lại.",
+      "interval": {
+        "required": "Khoảng cách lặp lại không được để trống.",
+        "min": "Khoảng cách lặp lại phải lớn hơn 0."
+      },
+      "until": "Ngày kết thúc không được để trống khi lặp lại.",
+      "byweekday": "Vui lòng chọn ít nhất một ngày trong tuần.",
+      "bymonthday": "Vui lòng chọn ít nhất một ngày trong tháng."
+    }
   },
   "success": {
     "tagAdded": "Đã thêm tag: {name}",
@@ -198,8 +224,12 @@
     "tagUpdated": "Cập nhật tag thành công!"
   },
   "eventModal": {
-    "title": "Thêm Sự Kiện Mới",
+    "title": "Thêm mới",
     "save": "Lưu",
+    "message": {
+      "success": "Thêm mới thành công",
+      "error": "Đã xảy ra lỗi"
+    },
     "sections": {
       "title": {
         "label": "Tiêu đề",
@@ -210,6 +240,8 @@
       },
       "eventType": {
         "label": "Loại sự kiện",
+        "type": "Kiểu",
+        "tag": "Lịch",
         "options": {
           "event": "Sự kiện",
           "task": "Việc cần làm"
@@ -284,7 +316,7 @@
       },
       "description": {
         "label": "Mô tả",
-        "addAttachment": "Thêm Tập Tin Đính Kèm",
+        "addAttachment": "Tệp Đính Kèm",
         "attachments": "Tập tin đính kèm:"
       },
       "location": {
@@ -320,6 +352,10 @@
           "label": "Đơn vị thời gian",
           "minutes": "Phút",
           "hours": "Giờ"
+        },
+        "warning": {
+          "max": "Chỉ được thêm tối đa 3 thông báo nhắc trước lịch",
+          "maxHours": "Chỉ được thông báo trước 24 giờ"
         }
       },
       "link": {
@@ -337,6 +373,13 @@
         "dontSend": "Không gửi",
         "back": "Quay lại"
       }
+    }
+  },
+  "eventModalEdit": {
+    "title": "Chỉnh sửa",
+    "message": {
+      "success": "Cập nhật thành công",
+      "error": "Đã xảy ra lỗi"
     }
   },
   "settings": {
@@ -411,5 +454,141 @@
     "selectEvents": "Chọn sự kiện để khôi phục hoặc xóa",
     "restoreSelected": "Khôi phục đã chọn",
     "deleteSelected": "Xóa đã chọn"
+  },
+  "options": {
+    "sendMail": {
+      "title": "Gửi email thông báo?",
+      "content": "Bạn có muốn gửi email thông báo cho những người tham gia không?",
+      "send": "Gửi",
+      "dontSend": "Không gửi",
+      "back": "Quay lại"
+    },
+    "recurrence": {
+      "edit": {
+        "title": "Chỉnh sửa sự kiện lặp lại",
+        "one": "Chỉ sửa sự kiện này",
+        "follow": "Sửa sự kiện này và các sự kiện tiếp theo",
+        "all": "Sửa tất cả sự kiện",
+        "update": "Cập nhật",
+        "cancel": "Hủy"
+      },
+      "delete": {
+        "title": "Xóa sự kiện lặp lại",
+        "one": "Chỉ xóa sự kiện này",
+        "follow": "Xóa sự kiện này và các sự kiện tiếp theo",
+        "all": "Xóa tất cả sự kiện",
+        "delete": "Xóa",
+        "cancel": "Hủy",
+        "confirm": "Xác nhận xóa",
+        "confirm_content": "Bạn có chắc chắn muốn xóa sự kiện này?"
+      }
+    },
+    "participants": {
+      "leave": {
+        "title": "Rời khỏi sự kiện",
+        "content": "Bạn có chắc chắn muốn rời khỏi sự kiện này?",
+        "one": "Chỉ rời khỏi sự kiện này",
+        "follow": "Rời khỏi sự kiện này và các sự kiện tiếp theo",
+        "all": "Rời khỏi tất cả sự kiện",
+        "confirm": "Xác nhận rời khỏi",
+        "confirm_content": "Bạn có chắc chắn muốn rời khỏi sự kiện này?",
+        "delete": "Rời đi",
+        "cancel": "Hủy"
+      }
+    }
+  },
+  "share": {
+    "link": {
+      "title": "Chia sẻ sự kiện",
+      "content": "Hãy chia sẻ đường liên kết này với người khác. Họ sẽ có thể xem sự kiện và phản hồi",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép",
+      "copyError": "Không thể sao chép",
+      "copySuccess": "Đã sao chép đường liên kết",
+      "copyLink": "Sao chép liên kết"
+    }
+  },
+  "EventDetailsModal": {
+    "tab": {
+      "general": "Thông tin chung",
+      "attachments": "Tệp đính kèm",
+      "discussion": "Thảo luận"
+    },
+    "general": {
+      "time": "Thời gian",
+      "timeEvent": "Thời gian sự kiện",
+      "timeSetting": "Thời gian theo múi giờ của bạn",
+      "timeAllDay": "Cả ngày",
+      "timeZone": "Múi giờ",
+      "location": "Địa điểm",
+      "agree": "Đồng ý",
+      "pending": "Đang chờ",
+      "participants": "Người tham gia",
+      "privacy": "Quyền riêng tư",
+      "description": "Mô tả",
+      "link": "Liên kết",
+      "private": "Riêng tư",
+      "before": "Trước",
+      "hour": "giờ",
+      "calendar": "Lịch",
+      "minute": "phút",
+      "reminder": "Nhắc nhở",
+      "youAreParticipating": "Bạn đã tham gia sự kiện này",
+      "wantToParticipate": "Bạn có muốn tham gia vào sự kiện này không",
+      "accept": "Tham gia sự kiện thành công",
+      "refuse": "Từ chối tham gia sự kiện",
+      "yes": "Có",
+      "no": "Không",
+      "leave": "Rời đi",
+      "recurrence": {
+        "title": "Lặp lại",
+        "daily": "Hàng ngày",
+        "weekly": "Hàng tuần",
+        "monthly": "Hàng tháng",
+        "yearly": "Hàng năm",
+        "on": "vào",
+        "count": "{count} lần",
+        "until": "Đến {date}",
+        "everyNDays": "{n} ngày một lần",
+        "everyNWeeks": "{n} tuần một lần",
+        "everyNMonths": "{n} tháng một lần",
+        "everyNYears": "{n} năm một lần",
+        "days": {
+          "monday": "Thứ 2",
+          "tuesday": "Thứ 3",
+          "wednesday": "Thứ 4",
+          "thursday": "Thứ 5",
+          "friday": "Thứ 6",
+          "saturday": "Thứ 7",
+          "sunday": "Chủ nhật"
+        }
+      }
+    },
+    "attachments": {
+      "title": "Tệp đính kèm",
+      "add": "Thêm tệp đính kèm",
+      "delete": "Xóa",
+      "cancel": "Hủy",
+      "confirm": "Xác nhận xóa",
+      "download": "Tải xuống",
+      "noAttachments": "Không có tệp đính kèm",
+      "loading": "Đang tải...",
+      "deleteFile": "Xóa tệp đính kèm",
+      "deleteFileContent": "Bạn có chắc chắn muốn xóa tệp đính kèm này không?",
+      "deleteFileSuccess": "Đã xóa tệp đính kèm thành công",
+      "deleteFileError": "Có lỗi xảy ra khi xóa tệp đính kèm"
+    },
+    "discussion": {
+      "noMessages": "Chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!",
+      "send": "Gửi",
+      "placeholder": "Nhập tin nhắn...",
+      "replyingTo": "Đang trả lời: "
+    },
+    "task": {
+      "complete": "Đã hoàn thành",
+      "completeSuccess": "Đã hoàn thành công việc",
+      "markAsDone": "Đánh dấu là hoàn thành",
+      "completeError": "Có lỗi xảy ra"
+    }
   }
 }
