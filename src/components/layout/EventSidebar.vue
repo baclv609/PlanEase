@@ -109,19 +109,9 @@
             v-for="calendar in displayedCalendars"
             :key="calendar.id"
             class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
-            :style="{ borderLeft: `4px solid ${calendar.color}` }"
           >
             <div class="flex items-center">
-              <span
-                :style="{
-                  backgroundColor: calendar.color,
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  marginRight: '8px',
-                }"
-              ></span>
-              <a-checkbox :value="calendar.id" :checked="true" class="">
+              <a-checkbox :value="calendar.id" :checked="true" class="" :style="{ '--ant-checkbox-color': calendar.color_code }">
                 <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
               </a-checkbox>
             </div>
@@ -165,19 +155,9 @@
             v-for="calendar in displayedSharedCalendars"
             :key="calendar.id"
             class="flex bg-white border border-gray-200 justify-between p-2 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
-            :style="{ borderLeft: `5px solid ${calendar.color}` }"
           >
             <div class="flex items-center">
-              <span
-                :style="{
-                  backgroundColor: calendar.color,
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  marginRight: '8px',
-                }"
-              ></span>
-              <a-checkbox :value="calendar.id" :checked="true" class="ml-2">
+              <a-checkbox :value="calendar.id" :checked="true" class="" :style="{ '--ant-checkbox-color': calendar.color_code }">
                 <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
               </a-checkbox>
             </div>
@@ -745,19 +725,6 @@ const viewDetails = (calendarId) => {
 
   selectedCalendarId.value = calendarId;
 
-  // const calendar = myCalendars.value.find((cal) => cal.id === calendarId);
-
-  // if (calendar) { 
-  //   selectedCalendarName.value = calendar.name;
-  //   selectedCalendarColor.value = calendar.color_code;
-  //   selectedCalendarDescription.value = calendar.description;
-  // }
-
-  // const sharedUserIds = calendar.shared_user.map((user) => user.user_id);
-
-  // if (sharedUserIds.length > 0) {
-  //   selectedSharedUserIds.value = sharedUserIds;
-  // }
 };
 
 const deleteCalendar = async (calendarId) => {
@@ -1059,5 +1026,15 @@ const handleCheckboxChange = (checked, calendarId) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+:deep(.ant-checkbox-checked .ant-checkbox-inner) {
+  background-color: var(--ant-checkbox-color) !important;
+  border-color: var(--ant-checkbox-color) !important;
+}
+
+:deep(.ant-checkbox-wrapper:hover .ant-checkbox-inner),
+:deep(.ant-checkbox:hover .ant-checkbox-inner) {
+  border-color: var(--ant-checkbox-color) !important;
 }
 </style>
