@@ -1037,4 +1037,14 @@ const handleCheckboxChange = (checked, calendarId) => {
 :deep(.ant-checkbox:hover .ant-checkbox-inner) {
   border-color: var(--ant-checkbox-color) !important;
 }
+
+:deep(.ant-checkbox-wrapper:hover .ant-checkbox-checked .ant-checkbox-inner),
+:deep(.ant-checkbox:hover .ant-checkbox-checked .ant-checkbox-inner) {
+  background-color: var(--ant-checkbox-color) !important;
+  border-color: var(--ant-checkbox-color) !important;
+}
+
+:deep(.ant-checkbox-checked::after) {
+  border-color: var(--ant-checkbox-color) !important;
+}
 </style>
