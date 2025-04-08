@@ -109,19 +109,9 @@
             v-for="calendar in displayedCalendars"
             :key="calendar.id"
             class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
-            :style="{ borderLeft: `4px solid ${calendar.color}` }"
           >
             <div class="flex items-center">
-              <span
-                :style="{
-                  backgroundColor: calendar.color,
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  marginRight: '8px',
-                }"
-              ></span>
-              <a-checkbox :value="calendar.id" :checked="true" class="">
+              <a-checkbox :value="calendar.id" :checked="true" class="" :style="{ '--ant-checkbox-color': calendar.color_code }">
                 <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
               </a-checkbox>
             </div>
@@ -165,19 +155,9 @@
             v-for="calendar in displayedSharedCalendars"
             :key="calendar.id"
             class="flex bg-white border border-gray-200 justify-between p-2 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
-            :style="{ borderLeft: `5px solid ${calendar.color}` }"
           >
             <div class="flex items-center">
-              <span
-                :style="{
-                  backgroundColor: calendar.color,
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  marginRight: '8px',
-                }"
-              ></span>
-              <a-checkbox :value="calendar.id" :checked="true" class="ml-2">
+              <a-checkbox :value="calendar.id" :checked="true" class="" :style="{ '--ant-checkbox-color': calendar.color_code }">
                 <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
               </a-checkbox>
             </div>
@@ -224,11 +204,39 @@
         />
       </a-form-item>
       <a-form-item :label="t('calendar.colorHex')">
-        <input
-          type="color"
-          v-model="newTagCalendar.color"
-          class="border h-10 rounded w-10 cursor-pointer"
-        />
+        <a-select
+          v-model:value="newTagCalendar.color_code"
+          style="width: 100%"
+          :dropdown-match-select-width="false"
+          :dropdown-style="{ padding: '8px', width: '220px' }"
+        >
+          <template #dropdownRender>
+            <div class="grid grid-cols-4 gap-2">
+              <div
+                v-for="color in colorOptions"
+                :key="color.value"
+                class="color-option"
+                :class="{ 'color-selected': newTagCalendar.color_code === color.value }"
+                :style="{ backgroundColor: color.value }"
+                @click="newTagCalendar.color_code = color.value"
+              >
+                <CheckOutlined v-if="newTagCalendar.color_code === color.value" class="check-icon" />
+              </div>
+            </div>
+          </template>
+          <a-select-option
+            v-for="color in colorOptions"
+            :key="color.value"
+            :value="color.value"
+          >
+            <div class="flex items-center">
+              <span
+                class="w-4 h-4 rounded-full mr-2"
+                :style="{ backgroundColor: color.value }"
+              ></span>
+            </div>
+          </a-select-option>
+        </a-select>
       </a-form-item>
       <a-form-item :label="t('common.description')">
         <a-textarea
@@ -274,11 +282,39 @@
         />
       </a-form-item>
       <a-form-item :label="t('calendar.colorHex')">
-        <input
-          type="color"
-          v-model="selectedTagCalendar.color"
-          class="border h-10 rounded w-10 cursor-pointer"
-        />
+        <a-select
+          v-model:value="selectedTagCalendar.color_code"
+          style="width: 100%"
+          :dropdown-match-select-width="false"
+          :dropdown-style="{ padding: '8px', width: '220px' }"
+        >
+          <template #dropdownRender>
+            <div class="grid grid-cols-4 gap-2">
+              <div
+                v-for="color in colorOptions"
+                :key="color.value"
+                class="color-option"
+                :class="{ 'color-selected': selectedTagCalendar.color_code === color.value }"
+                :style="{ backgroundColor: color.value }"
+                @click="selectedTagCalendar.color_code = color.value"
+              >
+                <CheckOutlined v-if="selectedTagCalendar.color_code === color.value" class="check-icon" />
+              </div>
+            </div>
+          </template>
+          <a-select-option
+            v-for="color in colorOptions"
+            :key="color.value"
+            :value="color.value"
+          >
+            <div class="flex items-center">
+              <span
+                class="w-4 h-4 rounded-full mr-2"
+                :style="{ backgroundColor: color.value }"
+              ></span>
+            </div>
+          </a-select-option>
+        </a-select>
       </a-form-item>
       <a-form-item :label="t('common.description')">
         <a-textarea
@@ -338,6 +374,7 @@ import {
   CloseOutlined,
   CalendarOutlined,
   CheckSquareOutlined,
+  CheckOutlined,
 } from "@ant-design/icons-vue";
 
 import dayjs from "dayjs";
@@ -366,16 +403,31 @@ const hiddenTagsStore = useHiddenTagsStore(); // Khởi tạo store
 const isModalOpenAddTag = ref(false);
 const isModalOpenUpdateTag = ref(false);
 
+const colorOptions = [
+  { value: '#FF5733', label: 'Red' },
+  { value: '#33FF57', label: 'Green' },
+  { value: '#3357FF', label: 'Blue' },
+  { value: '#F1C40F', label: 'Yellow' },
+  { value: '#8E44AD', label: 'Purple' },
+  { value: '#E74C3C', label: 'Coral' },
+  { value: '#3498DB', label: 'Sky Blue' },
+  { value: '#2ECC71', label: 'Emerald' },
+  { value: '#9B59B6', label: 'Amethyst' },
+  { value: '#1ABC9C', label: 'Turquoise' },
+  { value: '#E67E22', label: 'Orange' },
+  { value: '#34495E', label: 'Dark Blue' }
+];
+
 const newTagCalendar = ref({
   name: "",
-  color: "#1890ff",
+  color_code: "#FF5733",
   description: "",
   attendees: [],
   attendeeRole: "viewer",
 });
 const selectedTagCalendar = ref({
   name: "",
-  color: "#1890ff",
+  color_code: "#FF5733",
   description: "",
   shared_user: [],
   attendees: [],
@@ -679,8 +731,8 @@ const handleOk = async () => {
     "#1ABC9C",
   ];
 
-  if (!newTagCalendar.value.color) {
-    newTagCalendar.value.color =
+  if (!newTagCalendar.value.color_code) {
+    newTagCalendar.value.color_code =
       randomColors[Math.floor(Math.random() * randomColors.length)];
   }
 
@@ -696,7 +748,7 @@ const handleOk = async () => {
       {
         name: newTagCalendar.value.name,
         description: newTagCalendar.value.description,
-        color_code: newTagCalendar.value.color,
+        color_code: newTagCalendar.value.color_code,
         shared_user: shared_users,
       },
       {
@@ -715,7 +767,7 @@ const handleOk = async () => {
 
       newTagCalendar.value = {
         name: "",
-        color: "#1890ff",
+        color_code: "#FF5733",
         description: "",
         attendees: [],
         attendeeRole: "viewer",
@@ -745,19 +797,6 @@ const viewDetails = (calendarId) => {
 
   selectedCalendarId.value = calendarId;
 
-  // const calendar = myCalendars.value.find((cal) => cal.id === calendarId);
-
-  // if (calendar) { 
-  //   selectedCalendarName.value = calendar.name;
-  //   selectedCalendarColor.value = calendar.color_code;
-  //   selectedCalendarDescription.value = calendar.description;
-  // }
-
-  // const sharedUserIds = calendar.shared_user.map((user) => user.user_id);
-
-  // if (sharedUserIds.length > 0) {
-  //   selectedSharedUserIds.value = sharedUserIds;
-  // }
 };
 
 const deleteCalendar = async (calendarId) => {
@@ -801,7 +840,7 @@ const openUpdateCalendar = (calendarId) => {
     selectedTagCalendar.value = {
       id: calendar.id,
       name: calendar.name,
-      color: calendar.color_code,
+      color_code: calendar.color_code,
       description: calendar.description,
       shared_user: calendar.shared_user ?? [],
       attendees: attendees,
@@ -817,8 +856,8 @@ const handleUpdateOk = async () => {
       (tag) => tag.id === selectedTagCalendar.value.id
     );
 
-    if (!selectedTagCalendar.value.color && oldTag) {
-      selectedTagCalendar.value.color = oldTag.color_code;
+    if (!selectedTagCalendar.value.color_code && oldTag) {
+      selectedTagCalendar.value.color_code = oldTag.color_code;
     }
 
     // Chuyển đổi dữ liệu attendees thành shared_user
@@ -831,7 +870,7 @@ const handleUpdateOk = async () => {
       `${dirApi}tags/${selectedTagCalendar.value.id}`,
       {
         ...selectedTagCalendar.value,
-        color_code: selectedTagCalendar.value.color,
+        color_code: selectedTagCalendar.value.color_code,
         shared_user: shared_users,
       },
       {
@@ -852,7 +891,7 @@ const handleUpdateOk = async () => {
       // Reset form và đóng modal
       selectedTagCalendar.value = {
         name: "",
-        color: "#1890ff",
+        color_code: "#FF5733",
         description: "",
         shared_user: [],
         attendees: [],
@@ -1059,5 +1098,71 @@ const handleCheckboxChange = (checked, calendarId) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+:deep(.ant-checkbox-checked .ant-checkbox-inner) {
+  background-color: var(--ant-checkbox-color) !important;
+  border-color: var(--ant-checkbox-color) !important;
+}
+
+:deep(.ant-checkbox-wrapper:hover .ant-checkbox-inner),
+:deep(.ant-checkbox:hover .ant-checkbox-inner) {
+  border-color: var(--ant-checkbox-color) !important;
+}
+
+:deep(.ant-checkbox-wrapper:hover .ant-checkbox-checked .ant-checkbox-inner),
+:deep(.ant-checkbox:hover .ant-checkbox-checked .ant-checkbox-inner) {
+  background-color: var(--ant-checkbox-color) !important;
+  border-color: var(--ant-checkbox-color) !important;
+}
+
+:deep(.ant-checkbox-checked::after) {
+  border-color: var(--ant-checkbox-color) !important;
+}
+
+.color-option {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #e0e0e0;
+}
+
+.color-selected {
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #e0e0e0;
+}
+
+.check-icon {
+  color: white;
+  font-size: 16px;
+  filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.3));
+}
+
+:deep(.ant-select-selector) {
+  height: 40px !important;
+  padding: 4px 11px !important;
+  display: flex;
+  align-items: center;
+}
+
+:deep(.ant-select-selection-item) {
+  display: flex;
+  align-items: center;
+}
+
+:deep(.ant-select-selection-item span) {
+  width: 24px;
+  height: 24px;
 }
 </style>
