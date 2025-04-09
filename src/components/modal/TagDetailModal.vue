@@ -165,12 +165,10 @@ const formatDate = (dateString) => {
     }).format(date);
 };
 
-// Get user initials for avatar
 const getInitials = (firstName, lastName) => {
     return (firstName?.charAt(0) || '') + (lastName?.charAt(0) || '');
 };
 
-// Capitalize first letter
 const capitalizeFirstLetter = (string) => {
     if (!string) return '';
     return string.charAt(0).toUpperCase() + string.slice(1);

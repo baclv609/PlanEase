@@ -919,7 +919,7 @@ onMounted(() => {
        @cancel="isEditDrawerVisible = false" 
        @calendar-updated="handleCalendarUpdate"/>
 
-    <ChatBot />
+    <!-- <ChatBot /> -->
 
   </div>
 </template>
@@ -927,8 +927,9 @@ onMounted(() => {
 <style scoped>
 .calendar-wrapper {
   width: 100%;
-  min-height: 600px;
-  padding: 16px;
+  /* min-height: 600px; */
+  height: calc(100vh - 76px);
+ 
   border-radius: 8px;
 }
 
@@ -946,8 +947,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
-  padding: 10px;
+  padding: 0 10px;
+  margin-bottom: 16px;
   background: #fff;
 }
 

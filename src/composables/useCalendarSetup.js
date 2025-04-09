@@ -419,16 +419,7 @@ export function useCalendar(calendarRef) {
     updateTransformedEvents();
   };
   const handleDeleteEvent = async (eventId) => {
-    // console.log("eventId", eventId);
-    // // Xóa sự kiện từ transformedEvents
-    // transformedEvents.value = transformedEvents.value.filter(event => event.id !== eventId);
 
-    // // Cập nhật lại lịch
-    // if (calendarRef.value) {
-    //   console.log('delete');
-    //   const calendarApi = calendarRef.value.getApi();
-    //   calendarApi.removeEvent(eventId); // Loại bỏ sự kiện khỏi lịch
-    // }
     await fetchEvents();
     updateTransformedEvents();
   };
@@ -439,6 +430,11 @@ export function useCalendar(calendarRef) {
     headerToolbar: false,
     locale: settingsStore.language,
     dayMaxEvents: true,
+
+    height: 'calc(100vh - 200px)',
+    contentHeight: 'calc(100vh - 200px)',
+    expandRows: true,
+    
     timeZone: selectedTimezone.value,
     now: dayjs().tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day').toDate(),
     firstDay: settingsStore.firstDay,

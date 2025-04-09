@@ -100,9 +100,6 @@
       </a-layout-content>
     </a-layout>
 
-    <!-- <a-layout-footer class="text-center text-gray-500 py-4">
-      © 2025 Calendar App. All Rights Reserved. | Terms of Use | Privacy Policy
-    </a-layout-footer> -->
 
     <SettingCalender v-model:isModalOpen="isModalOpen" />
   </a-layout>
