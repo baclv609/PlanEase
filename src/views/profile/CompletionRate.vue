@@ -106,12 +106,6 @@ onMounted(() => {
   padding: 24px;
 }
 
-.chart-container {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-}
 
 .chart {
   width: 100%;
