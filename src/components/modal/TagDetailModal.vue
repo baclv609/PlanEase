@@ -48,12 +48,20 @@
                         <TeamOutlined class="mr-1" />
                         Shared With
                     </h4>
-                    <a-button type="link" size="small" @click="handleShare">
-                        <template #icon>
-                            <UserAddOutlined />
-                        </template>
-                        Share
-                    </a-button>
+                    <div class="flex items-center gap-2">
+                        <a-button type="link" size="small" @click="handleInviteLink">
+                            <template #icon>
+                                <LinkOutlined />
+                            </template>
+                            Invite via Link
+                        </a-button>
+                        <a-button type="link" size="small" @click="handleShare">
+                            <template #icon>
+                                <UserAddOutlined />
+                            </template>
+                            Share
+                        </a-button>
+                    </div>
                 </div>
 
                 <div class="bg-gray-50 rounded-lg">
@@ -70,21 +78,40 @@
                                 <div class="text-xs text-gray-500">{{ user.email }}</div>
                             </div>
 
-                            <div class="ml-auto flex items-center">
-                                <a-tag :color="getRoleColor(user.role)">{{ capitalizeFirstLetter(user.role) }}</a-tag>
-                                <a-tag :color="getStatusColor(user.status)">{{ capitalizeFirstLetter(user.status)
-                                }}</a-tag>
-                                <a-dropdown>
+                            <div class="ml-auto flex items-center gap-2">
+                                <a-dropdown :trigger="['click']">
                                     <template #overlay>
-                                        <a-menu>
-                                            <a-menu-item key="1" @click="changeRole(user)">Change Role</a-menu-item>
-                                            <a-menu-item key="2" @click="removeUser(user)">Remove</a-menu-item>
-                                        </a-menu>
+                                    <a-menu @click="({ key }) => onSelectRole(user, key)">
+                                        <a-menu-item key="admin">Admin</a-menu-item>
+                                        <a-menu-item key="editor">Editor</a-menu-item>
+                                        <a-menu-item key="viewer">Viewer</a-menu-item>
+                                    </a-menu>
                                     </template>
-                                    <a-button type="text" size="small">
-                                        <EllipsisOutlined />
+                                    <a-button size="small">
+                                    {{ getSelectedRole(user.user_id) }}
+                                    <DownOutlined />
                                     </a-button>
                                 </a-dropdown>
+
+                                 <!-- Trạng thái -->
+                                <a-tag :color="getStatusColor(user.status)">
+                                    {{ capitalizeFirstLetter(user.status) }}
+                                </a-tag>
+
+                                <!-- Nút Lưu khi có thay đổi -->
+                                <a-button
+                                    v-if="hasRoleChanged(user)"
+                                    type="primary"
+                                    size="small"
+                                    @click="saveRoleChange(user)"
+                                >
+                                    Lưu
+                                </a-button>
+
+                                <!-- Nút Xoá người dùng -->
+                                <a-button type="text" size="small" @click="removeUser(user)">
+                                    <DeleteOutlined />
+                                </a-button>
                             </div>
                         </div>
                     </div>
@@ -93,12 +120,13 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </a-modal>
 </template>
 
 <script setup>
-import { defineProps, defineEmits, watch, ref } from 'vue';
+import { defineProps, defineEmits, watch, ref, reactive } from 'vue';
 import axios from 'axios';
 import {
     EditOutlined,
@@ -106,8 +134,11 @@ import {
     TeamOutlined,
     UserAddOutlined,
     EllipsisOutlined,
-    DeleteOutlined
+    DeleteOutlined,
+    DownOutlined
 } from '@ant-design/icons-vue';
+
+const tempRoles = reactive({});
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem("access_token");
@@ -133,19 +164,41 @@ const tagData = ref({
 watch(
     () => [props.selectedCalendarId, props.open],
     async ([id, open]) => {
-        if (id && open) { 
+        if (id && open) {
             await fetchCalendarDetail(id);
         }
     },
     { immediate: true }
 );
 
+const onSelectRole = (user, selectedRole) => {
+  tempRoles[user.user_id] = selectedRole;
+};
+
+const hasRoleChanged = (user) => {
+  return tempRoles[user.user_id] && tempRoles[user.user_id] !== user.role;
+};
+
+const getSelectedRole = (userId) => {
+//   return tempRoles[userId] || getUserById(userId)?.role || 'viewer';
+};
+const saveRoleChange = (user) => {
+  const newRole = tempRoles[user.user_id];
+  emit('changeRole', {
+    tagId: tagData.value.id,
+    userId: user.user_id,
+    newRole,
+  });
+
+  delete tempRoles[user.user_id];
+};
+
 const fetchCalendarDetail = async (calendarId) => {
     try {
         const res = await axios.get(`${dirApi}tags/${calendarId}/show`, {
             headers: { Authorization: `Bearer ${token}` },
         });
-        tagData.value = res.data.data.tag        ;
+        tagData.value = res.data.data.tag;
         console.log("Chi tiết tag calendar:", tagData.value);
     } catch (error) {
         console.log("Lỗi khi lấy chi tiết tag calendar:", error);
