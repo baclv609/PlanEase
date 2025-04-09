@@ -1039,7 +1039,6 @@ const formatTimeFromNow = (datetime) => {
     }
   }
 
-  // console.log("Final result:", result);
   return result;
 };
 
