@@ -23,7 +23,7 @@ const routes = [
   ...schedule,
   ...event,
   ...support,
-//   ...notFound,
+  ...notFound,
 ];
 
 const router = createRouter({
