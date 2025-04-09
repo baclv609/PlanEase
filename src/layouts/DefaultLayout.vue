@@ -83,7 +83,10 @@
         breakpoint="lg"
         @breakpoint="onBreakpoint"
       >
-        <EventSidebar v-if="!isSidebarCollapsed" />
+        <div v-show="!isSidebarCollapsed">
+          <EventSidebar />
+        </div>
+
       </a-layout-sider>
 
       <a-layout-content class="p-2">
