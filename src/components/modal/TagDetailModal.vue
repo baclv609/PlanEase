@@ -19,7 +19,7 @@
                 </div>
             </div>
 
-            <!-- Tag Information -->
+            <!-- Tag Information
             <div class="grid grid-cols-1 gap-6 mb-6">
                 <div class="bg-gray-50 p-4 rounded-lg">
                     <h4 class="text-sm font-medium mb-3 flex items-center">
@@ -39,7 +39,7 @@
                     </div>
 
                 </div>
-            </div>
+            </div>  -->
 
             <!-- Shared Users -->
             <div class="mb-6">
@@ -48,11 +48,8 @@
                         <TeamOutlined class="mr-1" />
                         Shared With
                     </h4>
-                    <a-button type="link" size="small" @click="handleShare">
-                        <template #icon>
-                            <UserAddOutlined />
-                        </template>
-                        Share
+                    <a-button type="link" @click="shareViaLink">
+                        Share via Link
                     </a-button>
                 </div>
 
@@ -71,20 +68,19 @@
                             </div>
 
                             <div class="ml-auto flex items-center">
-                                <a-tag :color="getRoleColor(user.role)">{{ capitalizeFirstLetter(user.role) }}</a-tag>
-                                <a-tag :color="getStatusColor(user.status)">{{ capitalizeFirstLetter(user.status)
-                                }}</a-tag>
-                                <a-dropdown>
+                                <a-dropdown :trigger="['click']">
                                     <template #overlay>
                                         <a-menu>
-                                            <a-menu-item key="1" @click="changeRole(user)">Change Role</a-menu-item>
-                                            <a-menu-item key="2" @click="removeUser(user)">Remove</a-menu-item>
+                                            <a-menu-item key="admin" @click="() => handleRoleChange(user, 'admin')">Admin</a-menu-item>
+                                            <a-menu-item key="editor" @click="() => handleRoleChange(user, 'editor')">Editor</a-menu-item>
+                                            <a-menu-item key="viewer" @click="() => handleRoleChange(user, 'viewer')">Viewer</a-menu-item>
                                         </a-menu>
                                     </template>
                                     <a-button type="text" size="small">
-                                        <EllipsisOutlined />
+                                        {{ capitalizeFirstLetter(user.role) }} <DownOutlined />
                                     </a-button>
                                 </a-dropdown>
+                                <a-tag :color="getStatusColor(user.status)" class="ml-2">{{ capitalizeFirstLetter(user.status) }}</a-tag>
                             </div>
                         </div>
                     </div>
@@ -92,13 +88,40 @@
                         This tag is not shared with anyone
                     </div>
                 </div>
+                <a-button 
+                    v-if="anyRoleChanged" 
+                    type="primary" 
+                    size="small" 
+                    class="mt-3"
+                    @click="saveAllRoleChanges"
+                >
+                    Save
+                </a-button>
+            </div>
+
+            <!-- Invite by Email -->
+            <div class="flex items-center mb-6">
+                <a-button type="primary" icon="plus" @click="toggleEmailInput">
+                    Add
+                </a-button>
+                <div v-if="showEmailInput" class="ml-3">
+                    <a-input
+                        placeholder="Enter email"
+                        v-model="inviteEmail"
+                        @pressEnter="inviteUser"
+                        style="width: 200px"
+                    />
+                    <a-button type="primary" @click="inviteUser" class="ml-2">
+                        Invite
+                    </a-button>
+                </div>
             </div>
         </div>
     </a-modal>
 </template>
 
 <script setup>
-import { defineProps, defineEmits, watch, ref } from 'vue';
+import { defineProps, defineEmits, watch, ref, computed } from 'vue';
 import axios from 'axios';
 import {
     EditOutlined,
@@ -106,7 +129,8 @@ import {
     TeamOutlined,
     UserAddOutlined,
     EllipsisOutlined,
-    DeleteOutlined
+    DeleteOutlined,
+    DownOutlined
 } from '@ant-design/icons-vue';
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
@@ -129,6 +153,11 @@ const tagData = ref({
     created_at: '',
     updated_at: ''
 });
+
+const showEmailInput = ref(false);
+const inviteEmail = ref('');
+
+const anyRoleChanged = computed(() => tagData.value.shared_user.some(user => user.roleChanged));
 
 watch(
     () => [props.selectedCalendarId, props.open],
@@ -224,13 +253,41 @@ const handleShare = () => {
 };
 
 // Change role
-const changeRole = (user) => {
-    emit('changeRole', { tagId: props.tagData.id, userId: user.user_id, currentRole: user.role });
+const handleRoleChange = (user, newRole) => {
+    user.role = newRole;
+    user.roleChanged = true;
+};
+
+const saveAllRoleChanges = () => {
+    tagData.value.shared_user.forEach(user => {
+        if (user.roleChanged) {
+            emit('changeRole', { tagId: props.tagData.id, userId: user.user_id, newRole: user.role });
+            user.roleChanged = false;
+        }
+    });
 };
 
 // Remove user
 const removeUser = (user) => {
     emit('removeUser', { tagId: props.tagData.id, userId: user.user_id });
+};
+
+const toggleEmailInput = () => {
+    showEmailInput.value = !showEmailInput.value;
+};
+
+const shareViaLink = () => {
+    // Implement share via link functionality
+    console.log('Link shared');
+};
+
+const inviteUser = () => {
+    if (inviteEmail.value) {
+        // Implement invite user functionality
+        console.log(`Invited ${inviteEmail.value}`);
+        inviteEmail.value = '';
+        showEmailInput.value = false;
+    }
 };
 </script>
 
