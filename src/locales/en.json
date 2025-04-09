@@ -592,5 +592,11 @@
       "markAsDone": "Mark as Done",
       "completeError": "An error occurred"
     }
+  },
+  "header": {
+    "notifications": "Notifications",
+    "trash": "Trash",
+    "settings": "Settings",
+    "profile": "Profile"
   }
 }

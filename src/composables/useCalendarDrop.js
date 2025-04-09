@@ -110,16 +110,27 @@ export function useCalendarDrop() {
                 },
             });
         } else {
-            const payload = {
-                code: "EDIT_N",
-                start_time: newStart,
-                end_time: newEnd,
-                id: info.event.id,
-                timezone_code: taskTimezone,
-                is_all_day: isAllDay ? 1 : 0
-            };
-    
-            await handleUpdate(payload, info);
+            Modal.confirm({
+                title: "Xác nhận thay đổi",
+                content: "Bạn có chắc chắn muốn thay đổi thời gian của sự kiện này?",
+                okText: "Đồng ý",
+                cancelText: "Hủy",
+                onOk: async () => {
+                    const payload = {
+                        code: "EDIT_N",
+                        start_time: newStart,
+                        end_time: newEnd,
+                        id: info.event.id,
+                        timezone_code: taskTimezone,
+                        is_all_day: isAllDay ? 1 : 0
+                    };
+            
+                    await handleUpdate(payload, info);
+                },
+                onCancel() {
+                    info.revert();
+                }
+            });
         }
     };
 

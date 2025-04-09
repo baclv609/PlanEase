@@ -590,5 +590,11 @@
       "markAsDone": "Đánh dấu là hoàn thành",
       "completeError": "Có lỗi xảy ra"
     }
+  },
+  "header": {
+    "notifications": "Thông báo",
+    "trash": "Thùng rác",
+    "settings": "Cài đặt",
+    "profile": "Hồ sơ"
   }
 }

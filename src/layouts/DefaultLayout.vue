@@ -12,7 +12,7 @@
           <TrophyOutlined /> {{ $t("Update_plane") }}
         </a-button> -->
 
-        <a-tooltip title="Thông báo">
+        <a-tooltip :title="$t('header.notifications')">
           <a-badge :count="unreadCount" :offset="[-3, 7]" :show-zero="false">
             <a-button shape="circle" @click="openNotificationModal" class="border border-[#15C5B2] !bg-white hover:!bg-orange-50 transition-colors">
               <BellOutlined class="text-orange-500" />
@@ -21,13 +21,13 @@
         </a-tooltip>
 
         <!-- Trash -->
-        <a-tooltip title="Thùng rác">
+        <a-tooltip :title="$t('header.trash')">
           <a-button shape="circle" @click="router.push('/calendar/trash')" class="border border-[#15C5B2] !bg-white hover:!bg-orange-50 transition-colors">
             <DeleteOutlined class="text-orange-500" />
           </a-button>
         </a-tooltip>
 
-        <a-tooltip title="Cài đặt">
+        <a-tooltip :title="$t('header.settings')">
           <a-button shape="circle" @click="openSettingsModal" class="border border-[#15C5B2] !bg-white hover:!bg-orange-50 transition-colors">
             <SettingOutlined class="text-orange-500" />
           </a-button>
@@ -35,7 +35,7 @@
 
         <!-- Profile -->
         <div>
-          <a-tooltip title="Hồ sơ">
+          <a-tooltip :title="$t('header.profile')">
             <a-button shape="circle" @click="openProfileDrawer" class="border border-[#15C5B2] !bg-white hover:!bg-orange-50 transition-colors">
               <UserOutlined class="text-orange-500" />
             </a-button>
