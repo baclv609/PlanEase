@@ -25,7 +25,7 @@ const routes = [
   ...event,
   ...support,
   ...tag,
-//   ...notFound,
+  ...notFound,
 ];
 
 const router = createRouter({

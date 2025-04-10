@@ -97,9 +97,12 @@ const tag = ref({
   owner_name: '',
 });
 
+// Extract uuid from route
+const uuid = route.params.id;
+
 const fetchTagInvite = async () => {
   try {
-    const response = await axios.get(`${dirApi}tags/invite/${route.params.id}`, {
+    const response = await axios.get(`${dirApi}tags/invite/${uuid}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -122,7 +125,7 @@ const handleAccept = async () => {
   accepting.value = true;
   try {
     const response = await axios.post(
-      `${dirApi}tags/invite/${route.params.id}/accept`,
+      `${dirApi}tags/invite/${uuid}/accept`,
       {},
       {
         headers: {

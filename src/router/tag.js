@@ -1,6 +1,6 @@
 const tag = [
   {
-    path: "/tag/invite/:id",
+    path: "/calendar/tag/:id/invite",
     name: "tag-invite",
     component: () => import("@/views/tag/TagInviteView.vue"),
     props: true,
