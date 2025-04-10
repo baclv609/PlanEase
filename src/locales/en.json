@@ -142,7 +142,10 @@
     "retry": "Retry",
     "viewMore": "View More",
     "description": "Description",
-    "back": "Back"
+    "back": "Back",
+    "backToCalendar": "Back to Calendar",
+    "decline": "Decline",
+    "accept": "Accept"
   },
   "calendar": {
     "createEvent": "Create Event",
@@ -509,9 +512,7 @@
           "cancel": "Cancel"
         }
       }
-
     }
-
   },
   "share": {
     "link": {
@@ -611,5 +612,17 @@
     "trash": "Trash",
     "settings": "Settings",
     "profile": "Profile"
+  },
+  "tag": {
+    "invite": {
+      "title": "Tag Invitation",
+      "description": "You have been invited to join a tag.",
+      "error": {
+        "fetch": "Failed to fetch tag invitation details."
+      },
+      "success": {
+        "accepted": "You have successfully accepted the tag invitation."
+      }
+    }
   }
 }

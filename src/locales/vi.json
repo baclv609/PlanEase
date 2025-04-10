@@ -143,7 +143,10 @@
     "retry": "Thử lại",
     "viewMore": "Xem thêm",
     "description": "Mô tả",
-    "back": "Quay lại"
+    "back": "Quay lại",
+    "backToCalendar": "Quay lại Lịch",
+    "decline": "Từ chối",
+    "accept": "Chấp nhận"
   },
   "calendar": {
     "createEvent": "Tạo sự kiện",
@@ -609,5 +612,17 @@
     "trash": "Thùng rác",
     "settings": "Cài đặt",
     "profile": "Hồ sơ"
+  },
+  "tag": {
+    "invite": {
+      "title": "Lời mời tham gia tag",
+      "description": "Bạn đã được mời tham gia một tag.",
+      "error": {
+        "fetch": "Không thể lấy thông tin lời mời tag."
+      },
+      "success": {
+        "accepted": "Bạn đã chấp nhận lời mời tham gia tag thành công."
+      }
+    }
   }
 }

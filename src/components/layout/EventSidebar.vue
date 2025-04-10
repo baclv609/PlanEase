@@ -116,7 +116,7 @@
               </a-checkbox>
             </div>
 
-            <a-dropdown>
+            <a-dropdown :trigger="['click']">
               <EllipsisOutlined
                 class="text-gray-500 text-lg cursor-pointer hover:text-black transition"
               />
@@ -162,7 +162,7 @@
               </a-checkbox>
             </div>
 
-            <a-dropdown>
+            <a-dropdown :trigger="['click']">
               <EllipsisOutlined
                 class="text-gray-500 text-lg cursor-pointer hover:text-black transition"
               />
