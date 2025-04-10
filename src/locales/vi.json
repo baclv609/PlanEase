@@ -213,7 +213,14 @@
         "required": "Khoảng cách lặp lại không được để trống.",
         "min": "Khoảng cách lặp lại phải lớn hơn 0."
       },
-      "until": "Ngày kết thúc không được để trống khi lặp lại.",
+      "count": {
+        "required": "Số lần lặp lại không được để trống",
+        "min": "Số lần lặp lại phải lớn hơn 0"
+      },
+      "until": {
+        "required": "Ngày kết thúc không được để trống khi lặp lại",
+        "after_start": "Ngày kết thúc lặp lại không hợp lệ"
+      },
       "byweekday": "Vui lòng chọn ít nhất một ngày trong tuần.",
       "bymonthday": "Vui lòng chọn ít nhất một ngày trong tháng."
     }
@@ -229,6 +236,12 @@
     "message": {
       "success": "Thêm mới thành công",
       "error": "Đã xảy ra lỗi"
+    },
+    "timeConflict": {
+      "title": "Thời gian trùng lặp",
+      "content": "Thời gian bắt đầu và thời gian kết thúc của sự kiện đã trùng lặp với sự kiện khác. Vui lòng chọn thời gian khác.",
+      "continue": "Tiếp tục",
+      "cancel": "Hủy"
     },
     "sections": {
       "title": {
