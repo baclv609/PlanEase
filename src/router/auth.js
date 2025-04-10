@@ -60,6 +60,16 @@ const auth = [
             layout: 'auth',
             notAuthRequired: false,
         }, 
+    },
+
+    {
+        path: '/loginAdmin',
+        name: 'loginAdmin',
+        component: () => import('@/views/auth/LoginAdminView.vue'),
+        meta: {
+            layout: 'auth',
+            notAuthRequired: false,
+        },
     }
 ];
 export default auth;
