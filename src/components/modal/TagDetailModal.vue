@@ -132,26 +132,6 @@
                                         <MoreOutlined />
                                     </a-button>
                                 </a-dropdown>
-
-                                 <!-- Trạng thái -->
-                                <a-tag :color="getStatusColor(user.status)">
-                                    {{ capitalizeFirstLetter(user.status) }}
-                                </a-tag>
-
-                                <!-- Nút Lưu khi có thay đổi -->
-                                <a-button
-                                    v-if="hasRoleChanged(user)"
-                                    type="primary"
-                                    size="small"
-                                    @click="saveRoleChange(user)"
-                                >
-                                    Lưu
-                                </a-button>
-
-                                <!-- Nút Xoá người dùng -->
-                                <a-button type="text" size="small" @click="removeUser(user)">
-                                    <DeleteOutlined />
-                                </a-button>
                             </div>
                         </div>
                     </div>
@@ -214,7 +194,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, watch, ref, computed } from 'vue';
+import { defineProps, defineEmits, watch, ref, computed, reactive } from 'vue';
 import { PlusOutlined, MoreOutlined, CaretDownOutlined , CopyOutlined} from '@ant-design/icons-vue';
 
 import axios from 'axios';
