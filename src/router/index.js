@@ -10,6 +10,7 @@ import settingsRouter from "./settings";
 import calendar from "./calendar";
 import users from "./users";
 import roles from "./role";
+import tag from "./tag";
 import { message } from 'ant-design-vue';
 
 
@@ -23,7 +24,8 @@ const routes = [
   ...schedule,
   ...event,
   ...support,
-  ...notFound,
+  ...tag,
+//   ...notFound,
 ];
 
 const router = createRouter({
