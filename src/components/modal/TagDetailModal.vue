@@ -1,5 +1,5 @@
 <template>
-    <a-modal :open="open" title="Tag Details" @cancel="handleCancel" :maskClosable="false"
+    <a-modal :open="open" :title="$t('event.tag_name')" @cancel="handleCancel" :maskClosable="false"
         class="tag-detail-modal" :width="600">
         <div class="px-4 pt-4">
             <!-- Tag Header -->
@@ -14,7 +14,7 @@
                         <template #icon>
                             <EditOutlined />
                         </template>
-                        Edit
+                        {{ $t('event.edit') }}
                     </a-button>
                 </div>
             </div>
@@ -46,7 +46,7 @@
                 <div class="flex items-center justify-between mb-3">
                     <h4 class="text-sm font-medium flex items-center">
                         <TeamOutlined class="mr-1" />
-                        Shared With
+                        {{ $t('event.invitees') }}
                     </h4>
                     <div>
                         <a-button type="text" @click="toggleEmailInput">
@@ -64,7 +64,7 @@
                 <div class="bg-gray-50 rounded-lg">
                     <!-- Invite by Email -->
                     <div v-if="showEmailInput" class="my-1 w-full pb-2">
-                        <a-select show-search placeholder="Enter email to invite" :options="state.data"
+                        <a-select show-search :placeholder="$t('event.guests')" :options="state.data"
                             :filter-option="false" :loading="state.fetching" @search="fetchUser"
                             @select="handleUserSelect" :value="null" class="w-full">
                             <template #option="{ label, value, first_name, last_name, avatar }">
@@ -98,9 +98,9 @@
                                     <template #overlay>
                                         <a-menu>
                                             <a-menu-item key="editor"
-                                                @click="() => handleRoleChange(user, 'editor')">Editor</a-menu-item>
+                                                @click="() => handleRoleChange(user, 'editor')">{{ $t('event.roles.editor') }}</a-menu-item>
                                             <a-menu-item key="viewer"
-                                                @click="() => handleRoleChange(user, 'viewer')">Viewer</a-menu-item>
+                                                @click="() => handleRoleChange(user, 'viewer')">{{ $t('event.roles.viewer') }}</a-menu-item>
                                         </a-menu>
                                     </template>
                                     <a-button type="text" size="small">
@@ -120,11 +120,11 @@
                                     <template #overlay>
                                         <a-menu>
                                             <a-menu-item key="transfer" @click="() => handleTransferOwnership(user)">
-                                                Transfer Ownership
+                                                {{ $t('options.participants.leave.title') }}
                                             </a-menu-item>
                                             <a-menu-divider />
                                             <a-menu-item key="remove" danger @click="() => showDeleteConfirm(user)">
-                                                Remove User
+                                                {{ $t('event.delete') }}
                                             </a-menu-item>
                                         </a-menu>
                                     </template>
@@ -139,11 +139,11 @@
                       
 
                     <div v-else class="p-4 text-center text-gray-500">
-                        This tag is not shared with anyone
+                        {{ $t('event.error.fetch_shared_tags') }}
                     </div>
                       <!-- Invited Users List -->
                       <div v-if="invitedUsers.length > 0" class="mb-6">
-                        <h4 class="text-sm font-medium mb-3">Invited Users</h4>
+                        <h4 class="text-sm font-medium mb-3">{{ $t('event.guests') }}</h4>
                         <div class="bg-gray-50 rounded-lg">
                             <div v-for="user in invitedUsers" :key="user.value"
                                 class="flex items-center p-3 border-b last:border-b-0">
@@ -162,9 +162,9 @@
                                         <template #overlay>
                                             <a-menu>
                                                 <a-menu-item key="editor"
-                                                    @click="() => changeUserRole(user, 'editor')">Editor</a-menu-item>
+                                                    @click="() => changeUserRole(user, 'editor')">{{ $t('event.roles.editor') }}</a-menu-item>
                                                 <a-menu-item key="viewer"
-                                                    @click="() => changeUserRole(user, 'viewer')">Viewer</a-menu-item>
+                                                    @click="() => changeUserRole(user, 'viewer')">{{ $t('event.roles.viewer') }}</a-menu-item>
                                             </a-menu>
                                         </template>
                                         <a-button type="text" size="small">
@@ -186,7 +186,7 @@
         <template #footer>
             <div v-show="hasChanges" class="flex justify-end">
                 <a-button type="primary" size="small" @click="saveChanges">
-                    Save Changes
+                    {{ $t('profile.save') }}
                 </a-button>
             </div>
         </template>
@@ -195,6 +195,7 @@
 
 <script setup>
 import { defineProps, defineEmits, watch, ref, computed, reactive } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { PlusOutlined, MoreOutlined, CaretDownOutlined , CopyOutlined} from '@ant-design/icons-vue';
 
 import axios from 'axios';
@@ -209,6 +210,8 @@ import {
 } from '@ant-design/icons-vue';
 import { debounce } from 'lodash';
 import { message, Modal } from 'ant-design-vue';
+
+const { t } = useI18n();
 
 const tempRoles = reactive({});
 
@@ -420,13 +423,13 @@ const shareViaLink = () => {
     if (tagData.value && tagData.value.invite_link) {
         navigator.clipboard.writeText(tagData.value.invite_link)
             .then(() => {
-                message.success('Link đã được sao chép vào clipboard');
+                message.success(t('share.link.copySuccess'));
             })
             .catch(() => {
-                message.error('Không thể sao chép link');
+                message.error(t('share.link.copyError'));
             });
     } else {
-        message.warning('Không có link chia sẻ cho tag này');
+        message.warning(t('event.error.fetch_shared_tags'));
     }
 };
 
@@ -673,18 +676,17 @@ const removeUserFromEvents = async (user, events = []) => {
 const showDeleteConfirm = async (user) => {
     const relatedEvents = await getUserEventsInTag(user, props.selectedCalendarId);
 
-    let contentMessage = `Bạn có chắc chắn muốn xóa ${user.first_name} ${user.last_name} khỏi tag này?`;
-
+    let contentMessage = t('options.recurrence.delete.confirm_content');
     if (relatedEvents.length > 0) {
-        contentMessage += `\n\n⚠️ Người này đang tham gia ${relatedEvents.length} sự kiện thuộc tag này. Nếu tiếp tục, họ sẽ bị gỡ khỏi các sự kiện đó.`;
+        contentMessage += '\n\n' + t('options.recurrence.delete.confirm_content');
     }
 
     Modal.confirm({
-        title: 'Xác nhận xóa',
+        title: t('options.recurrence.delete.confirm'),
         content: contentMessage,
-        okText: 'Xóa',
+        okText: t('options.recurrence.delete.delete'),
         okType: 'danger',
-        cancelText: 'Hủy',
+        cancelText: t('options.recurrence.delete.cancel'),
         async onOk() {
             await removeUserFromTag(user, props.selectedCalendarId);
 
