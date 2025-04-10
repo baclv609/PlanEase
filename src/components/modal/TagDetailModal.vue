@@ -1,7 +1,7 @@
 <template>
-    <a-modal :open="open" title="Tag Details" @cancel="handleCancel" :footer="null" :maskClosable="false"
+    <a-modal :open="open" title="Tag Details" @cancel="handleCancel" :maskClosable="false"
         class="tag-detail-modal" :width="600">
-        <div class="p-4">
+        <div class="px-4 pt-4">
             <!-- Tag Header -->
             <div class="flex items-center mb-6">
                 <div class="flex items-center px-3 py-1.5 rounded-full"
@@ -63,7 +63,7 @@
 
                 <div class="bg-gray-50 rounded-lg">
                     <!-- Invite by Email -->
-                    <div v-if="showEmailInput" class="my-1 w-full">
+                    <div v-if="showEmailInput" class="my-1 w-full pb-2">
                         <a-select show-search placeholder="Enter email to invite" :options="state.data"
                             :filter-option="false" :loading="state.fetching" @search="fetchUser"
                             @select="handleUserSelect" :value="null" class="w-full">
@@ -169,11 +169,10 @@
                                         </template>
                                         <a-button type="text" size="small">
                                             {{ capitalizeFirstLetter(user.role) }}
-                                            <DownOutlined />
+                                            <CaretDownOutlined />
                                         </a-button>
                                     </a-dropdown>
-
-                                    <a-button type="text" danger size="small" class="ml-2" >
+                                    <a-button type="text" danger size="small" class="ml-2" @click="() => removeInvitedUser(user)">
                                         <DeleteOutlined />
                                     </a-button>
                                 </div>
@@ -181,17 +180,17 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="flex justify-end mt-3">
-                    <a-button :disabled="!hasChanges" :class="{ 'opacity-50 cursor-not-allowed': !hasChanges }"
-                        type="primary" size="small" @click="saveChanges">
-                        Save Changes
-                    </a-button>
-                </div>
             </div>
 
             
         </div>
+        <template #footer>
+            <div v-show="hasChanges" class="flex justify-end">
+                <a-button type="primary" size="small" @click="saveChanges">
+                    Save Changes
+                </a-button>
+            </div>
+        </template>
     </a-modal>
 </template>
 
@@ -658,6 +657,14 @@ const showDeleteConfirm = async (user) => {
     });
 };
 
+// Function to remove user from invited list
+const removeInvitedUser = (user) => {
+    const index = invitedUsers.value.findIndex(u => u.value === user.value);
+    if (index !== -1) {
+        invitedUsers.value.splice(index, 1);
+        message.success('Đã xóa người dùng khỏi danh sách mời');
+    }
+};
 
 </script>
 
