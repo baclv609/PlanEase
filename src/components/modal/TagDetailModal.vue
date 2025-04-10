@@ -48,25 +48,25 @@
                         <TeamOutlined class="mr-1" />
                         Shared With
                     </h4>
-                   <div>
-                    <a-button type="text" @click="toggleEmailInput">
-                        <template #icon>
-                            <PlusOutlined />
-                        </template>
-                    </a-button>
+                    <div>
+                        <a-button type="text" @click="toggleEmailInput">
+                            <template #icon>
+                                <PlusOutlined />
+                            </template>
+                        </a-button>
 
                         <a-button type="link" @click="shareViaLink">
-                            Share via Link
+                            <CopyOutlined />
                         </a-button>
-                   </div>
+                    </div>
                 </div>
 
                 <div class="bg-gray-50 rounded-lg">
                     <!-- Invite by Email -->
                     <div v-if="showEmailInput" class="my-1 w-full">
                         <a-select show-search placeholder="Enter email to invite" :options="state.data"
-                            :filter-option="false" :loading="state.fetching" @search="fetchUser" @select="handleUserSelect"
-                            :value="null" class="w-full">
+                            :filter-option="false" :loading="state.fetching" @search="fetchUser"
+                            @select="handleUserSelect" :value="null" class="w-full">
                             <template #option="{ label, value, first_name, last_name, avatar }">
                                 <div class="flex items-center">
                                     <a-avatar :src="avatar" :size="24" class="mr-2">
@@ -105,74 +105,99 @@
                                     </template>
                                     <a-button type="text" size="small">
                                         {{ capitalizeFirstLetter(user.role) }}
-                                        <DownOutlined />
+                                        <CaretDownOutlined />
                                     </a-button>
                                 </a-dropdown>
                                 <a-tag :color="getStatusColor(user.status)" class="ml-2">{{
                                     capitalizeFirstLetter(user.status)
-                                    }}</a-tag>
+                                }}</a-tag>
+                                <!-- <a-button type="text" danger size="small" class="ml-2"
+                                    @click="() => showDeleteConfirm(user)">
+                                    <DeleteOutlined />
+                                </a-button> -->
+
+                                <a-dropdown :trigger="['click']">
+                                    <template #overlay>
+                                        <a-menu>
+                                            <a-menu-item key="transfer" @click="() => handleTransferOwnership(user)">
+                                                Transfer Ownership
+                                            </a-menu-item>
+                                            <a-menu-divider />
+                                            <a-menu-item key="remove" danger @click="() => showDeleteConfirm(user)">
+                                                Remove User
+                                            </a-menu-item>
+                                        </a-menu>
+                                    </template>
+                                    <a-button type="text" size="small">
+                                        <MoreOutlined />
+                                    </a-button>
+                                </a-dropdown>
                             </div>
                         </div>
                     </div>
+
+                      
+
                     <div v-else class="p-4 text-center text-gray-500">
                         This tag is not shared with anyone
                     </div>
+                      <!-- Invited Users List -->
+                      <div v-if="invitedUsers.length > 0" class="mb-6">
+                        <h4 class="text-sm font-medium mb-3">Invited Users</h4>
+                        <div class="bg-gray-50 rounded-lg">
+                            <div v-for="user in invitedUsers" :key="user.value"
+                                class="flex items-center p-3 border-b last:border-b-0">
+                                <a-avatar :src="user.avatar" :size="32"
+                                    :style="{ backgroundColor: !user.avatar ? '#1890ff' : 'transparent' }">
+                                    {{ !user.avatar ? getInitials(user.first_name, user.last_name) : '' }}
+                                </a-avatar>
+
+                                <div class="ml-3">
+                                    <div class="font-medium">{{ user.first_name }} {{ user.last_name }}</div>
+                                    <div class="text-xs text-gray-500">{{ user.label }}</div>
+                                </div>
+
+                                <div class="ml-auto flex items-center">
+                                    <a-dropdown :trigger="['click']">
+                                        <template #overlay>
+                                            <a-menu>
+                                                <a-menu-item key="editor"
+                                                    @click="() => changeUserRole(user, 'editor')">Editor</a-menu-item>
+                                                <a-menu-item key="viewer"
+                                                    @click="() => changeUserRole(user, 'viewer')">Viewer</a-menu-item>
+                                            </a-menu>
+                                        </template>
+                                        <a-button type="text" size="small">
+                                            {{ capitalizeFirstLetter(user.role) }}
+                                            <DownOutlined />
+                                        </a-button>
+                                    </a-dropdown>
+
+                                    <a-button type="text" danger size="small" class="ml-2" >
+                                        <DeleteOutlined />
+                                    </a-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="flex justify-end mt-3">
-                    <a-button v-if="hasChanges" 
-                        type="primary" 
-                        size="small" 
-                        @click="saveChanges">
+                    <a-button :disabled="!hasChanges" :class="{ 'opacity-50 cursor-not-allowed': !hasChanges }"
+                        type="primary" size="small" @click="saveChanges">
                         Save Changes
                     </a-button>
                 </div>
             </div>
 
-            <!-- Invited Users List -->
-            <div v-if="invitedUsers.length > 0" class="mb-6">
-                <h4 class="text-sm font-medium mb-3">Invited Users</h4>
-                <div class="bg-gray-50 rounded-lg">
-                    <div v-for="user in invitedUsers" :key="user.value" 
-                        class="flex items-center p-3 border-b last:border-b-0">
-                        <a-avatar :src="user.avatar" :size="32"
-                            :style="{ backgroundColor: !user.avatar ? '#1890ff' : 'transparent' }">
-                            {{ !user.avatar ? getInitials(user.first_name, user.last_name) : '' }}
-                        </a-avatar>
-
-                        <div class="ml-3">
-                            <div class="font-medium">{{ user.first_name }} {{ user.last_name }}</div>
-                            <div class="text-xs text-gray-500">{{ user.label }}</div>
-                        </div>
-
-                        <div class="ml-auto flex items-center">
-                            <a-dropdown :trigger="['click']">
-                                <template #overlay>
-                                    <a-menu>
-                                        <a-menu-item key="editor"
-                                            @click="() => changeUserRole(user, 'editor')">Editor</a-menu-item>
-                                        <a-menu-item key="viewer"
-                                            @click="() => changeUserRole(user, 'viewer')">Viewer</a-menu-item>
-                                    </a-menu>
-                                </template>
-                                <a-button type="text" size="small">
-                                    {{ capitalizeFirstLetter(user.role) }}
-                                    <DownOutlined />
-                                </a-button>
-                            </a-dropdown>
-                            <a-tag :color="getStatusColor(user.status)" class="ml-2">
-                                {{ capitalizeFirstLetter(user.status) }}
-                            </a-tag>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
         </div>
     </a-modal>
 </template>
 
 <script setup>
 import { defineProps, defineEmits, watch, ref, computed } from 'vue';
-import { PlusOutlined } from '@ant-design/icons-vue';
+import { PlusOutlined, MoreOutlined, CaretDownOutlined , CopyOutlined} from '@ant-design/icons-vue';
 
 import axios from 'axios';
 import {
@@ -185,13 +210,13 @@ import {
     DownOutlined
 } from '@ant-design/icons-vue';
 import { debounce } from 'lodash';
-import { message } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem("access_token");
 
 const props = defineProps({
-    open: Boolean,  // changed from `visible` to `open`
+    open: Boolean,  
     selectedCalendarId: Number
 });
 
@@ -207,6 +232,9 @@ const tagData = ref({
     created_at: '',
     updated_at: ''
 });
+
+// Track original data for comparison
+const originalTagData = ref(null);
 
 const showEmailInput = ref(false);
 const inviteEmail = ref('');
@@ -237,6 +265,8 @@ const fetchCalendarDetail = async (calendarId) => {
             headers: { Authorization: `Bearer ${token}` },
         });
         tagData.value = res.data.data.tag;
+        // Store original data when fetching
+        originalTagData.value = JSON.parse(JSON.stringify(tagData.value));
         console.log("Chi tiết tag calendar:", tagData.value);
     } catch (error) {
         console.log("Lỗi khi lấy chi tiết tag calendar:", error);
@@ -313,12 +343,45 @@ const saveAllRoleChanges = () => {
         }
     });
 };
-const  handleEdit = () => {
+const handleEdit = () => {
     console.log("Edit tag");
 };
 // Remove user
-const removeUser = (user) => {
-    console.log("Remove user");
+const removeUser = async (user) => {
+    try {
+        // Create new shared_users array without the removed user
+        const shared_users = tagData.value.shared_user
+            .filter(u => u.user_id !== user.user_id)
+            .map(u => ({
+                user_id: u.user_id,
+                role: u.role,
+                status: u.status
+            }));
+
+        const response = await axios.put(
+            `${dirApi}tags/${props.selectedCalendarId}`,
+            {
+                name: tagData.value.name,
+                color_code: tagData.value.color_code,
+                description: tagData.value.description,
+                shared_user: shared_users
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
+        if (response.data.code === 200) {
+            message.success('Đã xóa người dùng thành công');
+            // Refresh the tag data
+            await fetchCalendarDetail(props.selectedCalendarId);
+        }
+    } catch (error) {
+        console.error('Error removing user:', error);
+        message.error('Xóa người dùng thất bại');
+    }
 };
 
 const toggleEmailInput = () => {
@@ -378,7 +441,7 @@ const handleUserSelect = (userId) => {
 
     // Check if user is already in the tag
     const isAlreadyInTag = tagData.value.shared_user.some(u => u.user_id === user.value) ||
-                          invitedUsers.value.some(u => u.value === user.value);
+        invitedUsers.value.some(u => u.value === user.value);
 
     if (isAlreadyInTag) {
         message.warning('This user is already in the tag');
@@ -387,8 +450,8 @@ const handleUserSelect = (userId) => {
 
     const alreadyAdded = invitedUsers.value.some(u => u.value === user.value);
     if (!alreadyAdded) {
-        invitedUsers.value.push({ 
-            ...user, 
+        invitedUsers.value.push({
+            ...user,
             role: 'viewer',
             status: 'pending'
         });
@@ -453,6 +516,9 @@ const saveChanges = async () => {
                     user.roleChanged = false;
                 }
             });
+
+            // Update original data after successful save
+            originalTagData.value = JSON.parse(JSON.stringify(tagData.value));
         }
     } catch (error) {
         console.error('Error saving invitations:', error);
@@ -460,17 +526,32 @@ const saveChanges = async () => {
     }
 };
 
-// Add computed property to check if there are any changes
+// Track changes in the modal
 const hasChanges = computed(() => {
-    return anyRoleChanged.value || invitedUsers.value.length > 0;
+    if (!originalTagData.value) return false;
+
+    // Check for role changes in existing users
+    const hasRoleChanges = tagData.value.shared_user.some(user => user.roleChanged);
+
+    // Check for new invited users
+    const hasNewUsers = invitedUsers.value.length > 0;
+
+    // Check for removed users
+    const hasRemovedUsers = originalTagData.value.shared_user.length !== tagData.value.shared_user.length;
+
+    return hasRoleChanges || hasNewUsers || hasRemovedUsers;
 });
 
-// Add watch to handle modal close
-watch(() => props.open, (newVal) => {
-    if (!newVal) {
+// Watch for modal open to store original data
+watch(() => props.open, async (newVal) => {
+    if (newVal) {
+        // Store original data when modal opens
+        originalTagData.value = JSON.parse(JSON.stringify(tagData.value));
+    } else {
         // Reset everything when modal closes
         invitedUsers.value = [];
         showEmailInput.value = false;
+        originalTagData.value = null;
         tagData.value.shared_user.forEach(user => {
             if (user.roleChanged) {
                 user.roleChanged = false;
@@ -478,6 +559,106 @@ watch(() => props.open, (newVal) => {
         });
     }
 });
+
+// Hàm lấy danh sách sự kiện của người dùng trong tag
+const getUserEventsInTag = async (user, tagId) => {
+    try {
+        const res = await axios.get(`${dirApi}events/tag/${tagId}/user/${user.user_id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.data.code === 200) {
+            return res.data.data.events || [];
+        }
+
+        return [];
+    } catch (err) {
+        console.error("Lỗi khi lấy danh sách sự kiện:", err);
+        return [];
+    }
+};
+// Hàm xoá user khỏi tag
+const removeUserFromTag = async (user, tagId) => {
+    try {
+        const shared_users = tagData.value.shared_user
+            .filter(u => u.user_id !== user.user_id)
+            .map(u => ({
+                user_id: u.user_id,
+                role: u.role,
+                status: u.status
+            }));
+
+        const res = await axios.put(
+            `${dirApi}tags/${tagId}`,
+            {
+                name: tagData.value.name,
+                color_code: tagData.value.color_code,
+                description: tagData.value.description,
+                shared_user: shared_users
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        if (res.data.code === 200) {
+            message.success("Xóa người dùng khỏi tag thành công");
+            await fetchCalendarDetail(tagId);
+        }
+    } catch (err) {
+        console.error("Lỗi khi xoá user khỏi tag:", err);
+        message.error("Xóa người dùng thất bại");
+    }
+};
+
+// Hàm xóa user khỏi các sự kiện liên quan
+const removeUserFromEvents = async (user, events = []) => {
+    try {
+        const promises = events.map(event =>
+            axios.put(`${dirApi}events/${event.id}/remove-user`, {
+                user_id: user.user_id
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+        );
+
+        await Promise.all(promises);
+
+        message.success(`Đã gỡ ${user.first_name} khỏi ${events.length} sự kiện liên quan`);
+    } catch (err) {
+        console.error("Lỗi khi xoá user khỏi các sự kiện:", err);
+        message.error("Gỡ khỏi sự kiện thất bại");
+    }
+};
+
+
+
+const showDeleteConfirm = async (user) => {
+    const relatedEvents = await getUserEventsInTag(user, props.selectedCalendarId);
+
+    let contentMessage = `Bạn có chắc chắn muốn xóa ${user.first_name} ${user.last_name} khỏi tag này?`;
+
+    if (relatedEvents.length > 0) {
+        contentMessage += `\n\n⚠️ Người này đang tham gia ${relatedEvents.length} sự kiện thuộc tag này. Nếu tiếp tục, họ sẽ bị gỡ khỏi các sự kiện đó.`;
+    }
+
+    Modal.confirm({
+        title: 'Xác nhận xóa',
+        content: contentMessage,
+        okText: 'Xóa',
+        okType: 'danger',
+        cancelText: 'Hủy',
+        async onOk() {
+            await removeUserFromTag(user, props.selectedCalendarId);
+
+            if (relatedEvents.length > 0) {
+                await removeUserFromEvents(user, relatedEvents);
+            }
+        }
+    });
+};
+
+
 </script>
 
 <style scoped>
