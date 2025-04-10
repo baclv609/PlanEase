@@ -229,6 +229,7 @@ const tagData = ref({
     description: null,
     color_code: '#1890ff',
     shared_user: [],
+    invite_link: '',
     created_at: '',
     updated_at: ''
 });
@@ -286,10 +287,14 @@ const fetchCalendarDetail = async (calendarId) => {
         const res = await axios.get(`${dirApi}tags/${calendarId}/show`, {
             headers: { Authorization: `Bearer ${token}` },
         });
-        tagData.value = res.data.data.tag;
+        console.log("API Response:", res.data);
+        tagData.value = {
+            ...res.data.data.tag,
+            invite_link: res.data.data.invite_link
+        };
         // Store original data when fetching
         originalTagData.value = JSON.parse(JSON.stringify(tagData.value));
-        console.log("Chi tiết tag calendar:", tagData.value);
+        console.log("Tag data after fetch:", tagData.value);
     } catch (error) {
         console.log("Lỗi khi lấy chi tiết tag calendar:", error);
     }
@@ -411,8 +416,18 @@ const toggleEmailInput = () => {
 };
 
 const shareViaLink = () => {
-    // Implement share via link functionality
-    console.log('Link shared');
+    console.log("Current tag data:", tagData.value);
+    if (tagData.value && tagData.value.invite_link) {
+        navigator.clipboard.writeText(tagData.value.invite_link)
+            .then(() => {
+                message.success('Link đã được sao chép vào clipboard');
+            })
+            .catch(() => {
+                message.error('Không thể sao chép link');
+            });
+    } else {
+        message.warning('Không có link chia sẻ cho tag này');
+    }
 };
 
 const fetchUser = debounce(async (value) => {
