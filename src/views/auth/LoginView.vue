@@ -31,6 +31,13 @@ const onFinish = async (values) => {
     isLoading.value = true;
     const res = await axios.post(`${dirApi}auth/login`, values);
 
+    if (res.data.code === 400) {
+      const userEmail = values.email;
+      localStorage.setItem("verifyEmail", userEmail);
+      message.warning(res.data.message || "Email is not verified");
+      router.push({name: 'verify'});
+    }
+
     if (res.data.code === 200) {
       message.success(res.data.message || "Login successfully");
 

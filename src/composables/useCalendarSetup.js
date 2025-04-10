@@ -66,7 +66,6 @@ export function useCalendarEvents() {
       console.error('Lỗi khi tải lịch trình:', error);
     }
   };
-
   const formattedEvents = computed(() =>
     rawEvents.value.map((event) => {
       const start = event.start_time
@@ -87,11 +86,11 @@ export function useCalendarEvents() {
           .toFormat(event.is_all_day ? 'yyyy-MM-dd' : 'yyyy-MM-dd\'T\'HH:mm:ss') //nếu cả ngày thì giờ
         : null;
 
-      const rruleEnd = event.rrule?.until
-        ? DateTime.fromISO(event.rrule.until, { zone: 'utc' })
+      const rruleEnd = event.rrule && typeof event.rrule.until === 'string' && event.rrule.until.trim() !== ''
+      ? DateTime.fromISO(event.rrule.until, { zone: 'utc' })
           .setZone(selectedTimezone.value)
           .toFormat('yyyy-MM-dd\'T\'HH:mm:ss')
-        : null;
+      : null;
 
       const isEditable = event.user_id == user_id ||
         (event.attendees && event.attendees.some(attendee =>
@@ -130,6 +129,7 @@ export function useCalendarEvents() {
         allDay: event.is_all_day === 1,
         backgroundColor: event.color_code || '#3788d8',
         tag_color_code: event.tag_color_code,
+        default_permission: event.default_permission,
         borderColor: event.tag_color_code || event.color_code,
         location: event.location,
         editable: isEditable,
@@ -183,8 +183,11 @@ export function useCalendarEvents() {
               dtstart: rruleStart,
               freq: event.rrule.freq || null,
               interval: event.rrule.interval || 1,
-              until: rruleEnd,
-              count: event.rrule.count || null,
+              // nếu có count và until thì rrule mới có count và until
+              ...(event.rrule.count != null ? { count: event.rrule.count } : {}),
+              ...(typeof event.rrule.until == 'string' && event.rrule.until.trim() != ''
+                  ? { until: rruleEnd }
+                  : {}),
               byweekday: event.rrule.byweekday || null,
               bymonth: event.rrule.bymonth || null,
               bymonthday: event.rrule.bymonthday || null,

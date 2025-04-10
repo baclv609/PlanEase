@@ -292,6 +292,54 @@ const rules = {
       },
     },
   ],
+  // Thêm rules cho phần lặp lại
+  'rrule.until': [
+    {
+      validator: () => {
+        if (formState.value.is_repeat && formState.value.rrule?.endType === 'until') {
+          if (!formState.value.rrule.until) {
+            return Promise.reject(t('validation.rrule.until.required'));
+          }
+          const untilDate = dayjs(formState.value.rrule.until);
+          const startDate = dayjs(formState.value.start);
+          if (untilDate.isBefore(startDate) || untilDate.isSame(startDate)) {
+            return Promise.reject(t('validation.rrule.until.after_start'));
+          }
+        }
+        return Promise.resolve();
+      },
+    },
+  ],
+  'rrule.count': [
+    {
+      validator: () => {
+        if (formState.value.is_repeat && formState.value.rrule?.endType === 'count') {
+          if (!formState.value.rrule.count) {
+            return Promise.reject(t('validation.rrule.count.required'));
+          }
+          if (formState.value.rrule.count < 1) {
+            return Promise.reject(t('validation.rrule.count.min'));
+          }
+        }
+        return Promise.resolve();
+      },
+    },
+  ],
+  'rrule.interval': [
+    {
+      validator: () => {
+        if (formState.value.is_repeat) {
+          if (!formState.value.rrule.interval) {
+            return Promise.reject(t('validation.rrule.interval.required'));
+          }
+          if (formState.value.rrule.interval < 1) {
+            return Promise.reject(t('validation.rrule.interval.min'));
+          }
+        }
+        return Promise.resolve();
+      },
+    },
+  ],
 };
 
 const handleExcludeDate = (date) => {
@@ -379,6 +427,42 @@ watch(
 );
 
 // Xử lý thêm
+const checkPossibleTime = async (start, end, timezone) => {
+  try {
+    const response = await axios.post(
+      `${dirApi}tasks/checkPossibleStartTime`,
+      {
+        start_time: start.format("YYYY-MM-DD HH:mm:ss"),
+        end_time: end.format("YYYY-MM-DD HH:mm:ss"),
+        timezone_code: timezone
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    console.log('response', response);
+    if (response.data.code === 477) {
+      return new Promise((resolve) => {
+        Modal.confirm({
+          title: t('eventModal.timeConflict.title'),
+          content: t('eventModal.timeConflict.content'),
+          okText: t('eventModal.timeConflict.continue'),
+          cancelText: t('eventModal.timeConflict.cancel'),
+          onOk: () => resolve(true),
+          onCancel: () => resolve(false)
+        });
+      });
+    }
+
+    return true;
+  } catch (error) {
+    console.log('Loi khi kiem tra thoi gian', error);
+  }
+};
+
+// Sửa lại hàm handleSave để sử dụng checkPossibleTime
 const handleSave = async () => {
   isLoading.value = true;
   try {
@@ -412,7 +496,7 @@ const handleSave = async () => {
       count: formState.value.rrule?.count ?? null,
       until: formState.value.rrule?.until
         ? dayjs(formState.value.rrule?.until).format("YYYY-MM-DD HH:mm:ss")
-        : dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+        : null,
       byweekday: formState.value.rrule?.byweekday.length
         ? formState.value.rrule.byweekday
         : null,
@@ -424,8 +508,18 @@ const handleSave = async () => {
         : null,
     };
 
-    // console.log(dataApi);
-    console.log(presignedUrls.value);
+    // Kiểm tra thời gian trước khi lưu
+    const canProceed = await checkPossibleTime(
+      formState.value.start,
+      formState.value.end,
+      formState.value.timezone_code
+    );
+
+    if (!canProceed) {
+      isLoading.value = false;
+      return;
+    }
+
     const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}tasks`, dataApi, {
       headers: {
         "Content-Type": "application/json",
@@ -481,7 +575,7 @@ const handleSave = async () => {
   } catch (error) {
     console.log("Loi", error);
   } finally {
-    isLoading.value =false;
+    isLoading.value = false;
   }
 };
 
@@ -846,6 +940,7 @@ watch(
     }
   }
 );
+
 </script>
 
 <template>
@@ -1027,16 +1122,18 @@ watch(
 
                   <div>
                     <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.interval.label') }}</label>
-                    <Input v-model:value="formState.rrule.interval" 
-                      type="number" 
-                      min="1"
-                      :max="999"
-                      @input="(e) => {
-                        const value = parseInt(e.target.value);
-                        if (value < 1) formState.rrule.interval = 1;
-                      }"
-                      @blur="!formState.rrule.interval || formState.rrule.interval < 1 ? formState.rrule.interval = 1 : formState.rrule.interval" 
-                      class="w-full" />
+                    <Form.Item name="rrule.interval" class="mb-0">
+                      <Input v-model:value="formState.rrule.interval" 
+                        type="number" 
+                        min="1"
+                        :max="999"
+                        @input="(e) => {
+                          const value = parseInt(e.target.value);
+                          if (value < 1) formState.rrule.interval = 1;
+                        }"
+                        @blur="!formState.rrule.interval || formState.rrule.interval < 1 ? formState.rrule.interval = 1 : formState.rrule.interval" 
+                        class="w-full" />
+                    </Form.Item>
                   </div>
                 </div>
 
@@ -1053,14 +1150,18 @@ watch(
                   <div class="grid grid-cols-1">
                     <div v-if="formState.rrule.endType === 'count'">
                       <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.count.label') }}</label>
-                      <Input v-model:value="formState.rrule.count" type="number" min="1" :placeholder="t('eventModal.sections.recurrence.count.placeholder')"
-                        class="w-full" />
+                      <Form.Item name="rrule.count" class="mb-0">
+                        <Input v-model:value="formState.rrule.count" type="number" min="1" :placeholder="t('eventModal.sections.recurrence.count.placeholder')"
+                          class="w-full" />
+                      </Form.Item>
                     </div>
 
                     <div v-if="formState.rrule.endType === 'until'">
                       <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.until.label') }}</label>
-                      <a-date-picker v-model:value="formState.rrule.until" :placeholder="t('eventModal.sections.recurrence.until.placeholder')"
-                        class="w-full" />
+                      <Form.Item name="rrule.until" class="mb-0">
+                        <a-date-picker v-model:value="formState.rrule.until" :placeholder="t('eventModal.sections.recurrence.until.placeholder')"
+                          class="w-full" />
+                      </Form.Item>
                     </div>
                   </div>
                 </div>

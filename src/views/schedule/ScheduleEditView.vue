@@ -170,7 +170,7 @@
                             <div class="flex flex-col gap-2 mb-8">
                                 <label class="text-gray-700 font-medium">{{ t('eventModal.sections.recurrence.endType.label') }}</label>
                                 <a-radio-group v-model:value="formState.rrule.endType" class="flex">
-                                    <a-radio value="never">{{ t('eventModal.sections.recurrence.endType.never') }}</a-radio>
+                                    <a-radio value="">{{ t('eventModal.sections.recurrence.endType.never') }}</a-radio>
                                     <a-radio value="until">{{ t('eventModal.sections.recurrence.endType.until') }}</a-radio>
                                     <a-radio value="count">{{ t('eventModal.sections.recurrence.endType.count') }}</a-radio>
                                 </a-radio-group>
@@ -179,14 +179,18 @@
                             <div class="grid grid-cols-1">
                                 <div v-if="formState.rrule.endType === 'count'">
                                     <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.count.label') }}</label>
-                                    <Input v-model:value="formState.rrule.count" type="number" min="1" :placeholder="t('eventModal.sections.recurrence.count.placeholder')"
-                                        class="w-full" />
+                                    <a-form-item name="rrule.count" class="mb-0">
+                                        <Input v-model:value="formState.rrule.count" type="number" min="1" :placeholder="t('eventModal.sections.recurrence.count.placeholder')"
+                                            class="w-full" />
+                                    </a-form-item>
                                 </div>
 
                                 <div v-if="formState.rrule.endType === 'until'">
                                     <label class="text-gray-700 block font-medium mb-2">{{ t('eventModal.sections.recurrence.until.label') }}</label>
-                                    <a-date-picker v-model:value="formState.rrule.until" :placeholder="t('eventModal.sections.recurrence.until.placeholder')"
-                                        class="w-full" />
+                                    <a-form-item name="rrule.until" class="mb-0">
+                                        <a-date-picker v-model:value="formState.rrule.until" :placeholder="t('eventModal.sections.recurrence.until.placeholder')"
+                                            class="w-full" />
+                                    </a-form-item>
                                 </div>
                             </div>
                         </div>
@@ -569,7 +573,7 @@ const updateFormStateFromProps = (event) => {
                     : null,
                 until: event.info?.extendedProps?.until
                     ? dayjs(event.info.extendedProps.until)
-                    : dayjs("3000-12-31 23:59:59"),
+                    : null,
                 byweekday: Array.isArray(event.info?.extendedProps?.byweekday)
                     ? event.info.extendedProps.byweekday
                     : [],
@@ -583,13 +587,13 @@ const updateFormStateFromProps = (event) => {
                     ? event.info.extendedProps.bysetpos
                     : [],
                 endType: event.info?.extendedProps?.count ? "count" 
-                    : event.info?.extendedProps?.until && dayjs(event.info?.extendedProps?.until).year() < 3000 ? "until" 
+                    : event.info?.extendedProps?.until ? "until" 
                     : ""
             } : {
                 freq: null,
                 interval: 1,
                 count: null,
-                until: dayjs("3000-12-31 23:59:59"),
+                until: null,
                 byweekday: [],
                 bymonthday: [],
                 bymonth: [],
@@ -668,7 +672,7 @@ const formState = ref({
         freq: null,
         interval: 1,
         count: null,
-        until: dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+        until: null,
         byweekday: [],
         bymonthday: [],
         bymonth: [],
@@ -769,7 +773,7 @@ watch(
                 freq: formState.value.rrule.freq || "daily", // Set mặc định là daily nếu chưa có
                 interval: formState.value.rrule.interval || 1,
                 count: formState.value.rrule.count || null,
-                until: formState.value.rrule.until || dayjs("3000-12-31 23:59:59"),
+                until: formState.value.rrule.until || null,
                 byweekday: formState.value.rrule.byweekday || [],
                 bymonthday: formState.value.rrule.bymonthday || [],
                 bymonth: formState.value.rrule.bymonth || [],
@@ -1259,7 +1263,7 @@ const handleSubmit = async () => {
 // Hàm cập nhật sự kiện
 const updateEvent = async ({ code, date, id }) => {
     isLoading.value = true;
-    console.log(formState.value.attendees)
+
     try {
         const dataApi = {
             id: id,
@@ -1293,14 +1297,7 @@ const updateEvent = async ({ code, date, id }) => {
             freq: formState.value.rrule?.freq || null,
             interval: formState.value.rrule?.interval ?? 1,
             count: formState.value.rrule?.count ?? null,
-            until: formState.value.rrule?.endType === "count" 
-                ? dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss")
-                : formState.value.rrule?.endType === "until" 
-                    ? (formState.value.rrule?.until && 
-                       dayjs(formState.value.rrule.until).format() !== dayjs(props.event?.info?.extendedProps?.until).format()
-                        ? dayjs(formState.value.rrule.until).format("YYYY-MM-DD 00:00:00")
-                        : dayjs(props.event?.info?.extendedProps?.until).format("YYYY-MM-DD 00:00:00"))
-                    : dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+            until: formState.value.rrule?.until ? formState.value.rrule.until.format("YYYY-MM-DD HH:mm:ss") : null,
             byweekday: formState.value.rrule?.byweekday.length && formState.value.rrule?.freq === "weekly" ? formState.value.rrule.byweekday : null,
             bymonthday: formState.value.rrule?.bymonthday.length && formState.value.rrule?.freq === "monthly" ? formState.value.rrule.bymonthday : null,
             bymonth: formState.value.rrule?.bymonth.length && formState.value.rrule?.freq === "yearly" ? formState.value.rrule.bymonth : null,
@@ -1421,7 +1418,7 @@ const updateEvent = async ({ code, date, id }) => {
                     freq: null,
                     interval: 1,
                     count: null,
-                    until: dayjs("3000-12-31 23:59:59").format("YYYY-MM-DD HH:mm:ss"),
+                    until: null,
                     byweekday: [],
                     bymonthday: [],
                     bymonth: [],
@@ -1443,7 +1440,55 @@ const updateEvent = async ({ code, date, id }) => {
 // Tạo computed property cho rules
 const formRules = computed(() => ({
     ...eventRules,
-    ...recurringEventRules
+    ...recurringEventRules,
+    // Thêm rules cho phần lặp lại
+    'rrule.until': [
+        {
+        validator: () => {
+            if (formState.value.is_repeat && formState.value.rrule?.endType === 'until') {
+            if (!formState.value.rrule.until) {
+                return Promise.reject(t('validation.rrule.until.required'));
+            }
+            const untilDate = dayjs(formState.value.rrule.until);
+            const startDate = dayjs(formState.value.start);
+            if (untilDate.isBefore(startDate) || untilDate.isSame(startDate)) {
+                return Promise.reject(t('validation.rrule.until.after_start'));
+            }
+            }
+            return Promise.resolve();
+        },
+        },
+    ],
+    'rrule.count': [
+        {
+        validator: () => {
+            if (formState.value.is_repeat && formState.value.rrule?.endType === 'count') {
+            if (!formState.value.rrule.count) {
+                return Promise.reject(t('validation.rrule.count.required'));
+            }
+            if (formState.value.rrule.count < 1) {
+                return Promise.reject(t('validation.rrule.count.min'));
+            }
+            }
+            return Promise.resolve();
+        },
+        },
+    ],
+    'rrule.interval': [
+        {
+        validator: () => {
+            if (formState.value.is_repeat) {
+            if (!formState.value.rrule.interval) {
+                return Promise.reject(t('validation.rrule.interval.required'));
+            }
+            if (formState.value.rrule.interval < 1) {
+                return Promise.reject(t('validation.rrule.interval.min'));
+            }
+            }
+            return Promise.resolve();
+        },
+        },
+    ],
 }));
 
 // Add watch for formState

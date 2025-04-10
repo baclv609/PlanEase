@@ -212,7 +212,14 @@
         "required": "Repeat interval is required.",
         "min": "Repeat interval must be greater than 0."
       },
-      "until": "End date is required when repeating.",
+      "count": {
+        "required": "Repeat count is required.",
+        "min": "Repeat count must be greater than 0."
+      },
+      "until": {
+        "required": "End date is required when repeating.",
+        "after_start": "End date is not valid"
+      },
       "byweekday": "Please select at least one weekday.",
       "bymonthday": "Please select at least one day of the month."
     }
@@ -225,6 +232,12 @@
   "eventModal": {
     "title": "Add New",
     "save": "Save",
+    "timeConflict": {
+      "title": "Time Conflict",
+      "content": "The start and end time of the event has already been taken by another event. Please select a different time.",
+      "continue": "Continue",
+      "cancel": "Cancel"
+    },
     "message": {
       "success": "Add new successfully",
       "error": "An error occurred"
