@@ -765,6 +765,20 @@ const openUpdateCalendar = (calendarId) => {
 onBeforeUnmount(() => {
   echoStore.stopListening();
 });
+
+const createEvent = () => {
+  isAddEventModalVisible.value = true;
+  selectedEventAdd.value = {
+    type: 'event'
+  };
+};
+
+const createTask = () => {
+  isAddEventModalVisible.value = true;
+  selectedEventAdd.value = {
+    type: 'task'
+  };
+};
 </script>
 
 <style scoped>
