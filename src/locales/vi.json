@@ -156,7 +156,7 @@
     "dontMissEvents": "Đừng bỏ lỡ các sự kiện đã lên lịch",
     "noUpcomingEvents": "Không có sự kiện nào trong 24h tới",
     "myCalendar": "Lịch của tôi",
-    "myCalendars": "📌 Lịch của tôi",
+    "myCalendars": " Lịch của tôi",
     "sharedCalendars": "🔗 Lịch được chia sẻ",
     "displayOnly": "Hiển thị duy nhất",
     "details": "Chi tiết",
@@ -448,7 +448,19 @@
     "cancel": "Hủy",
     "saving": "Đang lưu...",
     "saveSuccess": "Cài đặt đã được lưu",
-    "saveError": "Không thể lưu cài đặt, vui lòng thử lại"
+    "saveError": "Không thể lưu cài đặt, vui lòng thử lại",
+    "message": {
+      "success": "Cài đặt đã được lưu",
+      "error": "Không thể lưu cài đặt, vui lòng thử lại",
+      "reset": "Cài đặt đã được reset"
+    },
+    "months": "Tháng {month}",
+    "log": {
+      "timezone": {
+        "selected": " Múi giờ được chọn: {timezone}",
+        "utc": "Giờ UTC: {offset}"
+      }
+    }
   },
   "trash": {
     "titleTrash": "Thùng rác",
