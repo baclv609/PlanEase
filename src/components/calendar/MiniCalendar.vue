@@ -415,7 +415,8 @@ onMounted(() => {
 }
 
 :deep(.fc-daygrid-day-number) {
-  color: white;
+  color: #ffffff !important;
+  font-weight: 500;
 }
 
 :deep(.fc-event) {
