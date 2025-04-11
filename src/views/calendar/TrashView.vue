@@ -38,9 +38,29 @@
             </div>
         </div>
 
-        <a-table :columns="columns" :data-source="filteredEvents"
-            :row-selection="{ selectedRowKeys: selectedEvents, onChange: onSelectChange }" :pagination="false"
-            :row-key="record => record.id" class="custom-table">
+        <a-table 
+            :columns="columns" 
+            :data-source="paginatedEvents"
+            :row-selection="{ selectedRowKeys: selectedEvents, onChange: onSelectChange }" 
+            :pagination="{
+                current: currentPage,
+                pageSize: pageSize,
+                total: totalItems,
+                showSizeChanger: true,
+                showQuickJumper: false,
+                showTotal: (total) => `Tổng cộng ${total} mục`,
+                onChange: (page, pageSize) => {
+                    currentPage = page;
+                    pageSize = pageSize;
+                },
+                onShowSizeChange: (current, size) => {
+                    currentPage = 1;
+                    pageSize = size;
+                }
+            }"
+            :loading="loading"
+            :row-key="record => record.id" 
+            class="custom-table">
             <template #bodyCell="{ column, record }">
                 <template v-if="column.key === 'action'">
                     <div class="flex gap-2">
@@ -117,9 +137,10 @@ const token = localStorage.getItem('access_token');
 const selectedTag = ref(null);
 const selectedEvents = ref([]);
 const loading = ref(false);
+const currentPage = ref(1);
+const pageSize = ref(10);
 
 const tags = ref([]);
-
 const events = ref([]);
 
 const getTrashEvents = async () => {
@@ -165,6 +186,14 @@ const filteredEvents = computed(() => {
     if (!selectedTag.value) return events.value;
     return events.value.filter(event => event.tag_id == selectedTag.value);
 });
+
+const paginatedEvents = computed(() => {
+    const start = (currentPage.value - 1) * pageSize.value;
+    const end = start + pageSize.value;
+    return filteredEvents.value.slice(start, end);
+});
+
+const totalItems = computed(() => filteredEvents.value.length);
 
 const formatDate = (date, isTime) => {
     if (!isTime) {
@@ -337,5 +366,52 @@ const columns = [
 :deep(.ant-checkbox-checked .ant-checkbox-inner) {
     background-color: #17C3B2;
     border-color: #17C3B2;
+}
+
+:deep(.ant-pagination) {
+    margin: 16px 0;
+    padding: 0 16px;
+}
+
+:deep(.ant-pagination-item) {
+    border-radius: 4px;
+    border-color: #e5e7eb;
+}
+
+:deep(.ant-pagination-item-active) {
+    background-color: #17C3B2;
+    border-color: #17C3B2;
+}
+
+:deep(.ant-pagination-item-active a) {
+    color: white;
+}
+
+:deep(.ant-pagination-item:hover) {
+    border-color: #17C3B2;
+}
+
+:deep(.ant-pagination-prev:hover .ant-pagination-item-link),
+:deep(.ant-pagination-next:hover .ant-pagination-item-link) {
+    border-color: #17C3B2;
+    color: #17C3B2;
+}
+
+:deep(.ant-pagination-options) {
+    margin-left: 16px;
+}
+
+:deep(.ant-select-selector) {
+    border-radius: 4px;
+    border-color: #e5e7eb;
+}
+
+:deep(.ant-select-selector:hover) {
+    border-color: #17C3B2;
+}
+
+:deep(.ant-select-focused .ant-select-selector) {
+    border-color: #17C3B2;
+    box-shadow: 0 0 0 2px rgba(23, 195, 178, 0.1);
 }
 </style>
