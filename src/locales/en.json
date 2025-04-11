@@ -193,6 +193,10 @@
   },
   "validation": {
     "tagNameRequired": "Please enter tag name!",
+    "tagNameMinLength": "Tag name must be at least 3 characters",
+    "tagNameMaxLength": "Tag name cannot exceed 50 characters",
+    "colorRequired": "Please select a color",
+    "descriptionMaxLength": "Description cannot exceed 500 characters",
     "title": {
       "required": "Title is required",
       "min": "Title is too short",
@@ -230,7 +234,8 @@
   "success": {
     "tagAdded": "Added tag: {name}",
     "tagDeleted": "Tag deleted successfully!",
-    "tagUpdated": "Tag updated successfully!"
+    "tagUpdated": "Tag updated successfully!",
+    "displayOnly": "Now displaying only tag {name}"
   },
   "eventModal": {
     "title": "Add New",
