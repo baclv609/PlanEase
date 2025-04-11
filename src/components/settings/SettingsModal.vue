@@ -327,7 +327,7 @@ const handleSave = async () => {
       settingsStore.saveToLocalStorage();
       settingsStore.updateFullCalendar();
 
-      message.success("Cài đặt đã được lưu");
+      message.success(t('settings.message.success'));
       emit("update:isModalOpen", false);
     } else {
       // Nếu API thất bại, khôi phục lại settings cũ
@@ -339,7 +339,7 @@ const handleSave = async () => {
         locale.value = previousLocale;
       }
 
-      message.error("Không thể lưu cài đặt, vui lòng thử lại");
+      message.error(t('settings.message.error'));
     }
   } catch (error) {
     // Trong trường hợp có lỗi, cũng khôi phục settings cũ
@@ -352,7 +352,7 @@ const handleSave = async () => {
     if (error.response?.data?.message) {
       message.error(error.response.data.message);
     } else {
-      message.error("Đã xảy ra lỗi khi lưu cài đặt");
+      message.error(t('settings.message.error'));
     }
   } finally {
     isSaving.value = false;
@@ -379,13 +379,13 @@ const resetSettings = () => {
   changeLanguage(settingsStore.language);
   updateMultiMonthSettings();
 
-  message.success("Cài đặt đã được reset");
+  message.success(t('settings.message.reset'));
 };
 
 // Danh sách tháng 1-12
 const monthOptions = computed(() =>
   Array.from({ length: 12 }, (_, i) => ({
-    label: `Tháng ${i + 1}`,
+    label: t('settings.months', { month: i + 1 }),
     value: i + 1,
   }))
 );
@@ -417,8 +417,8 @@ const filterTimeZones = (input, option) => {
 
 // Log giá trị múi giờ khi thay đổi
 const logTimeZone = (value) => {
-  console.log("🔍 Múi giờ được chọn:", value);
-  console.log("🕒 Giờ UTC:", moment.tz(value).utcOffset() / 60);
+  console.log(t('settings.log.timezone.selected', { timezone: value }));
+  console.log(t('settings.log.timezone.utc', { offset: moment.tz(value).utcOffset() / 60 }));
 };
 
 onMounted(() => {

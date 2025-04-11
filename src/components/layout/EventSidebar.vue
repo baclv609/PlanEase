@@ -121,7 +121,7 @@
               />
               <template #overlay>
                 <a-menu>
-                  <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
+                  <a-menu-item @click="displayOnly(calendar.id)">{{ t('calendar.calendarSection.displayOnly') }}</a-menu-item>
                   <a-menu-item @click="openUpdateCalendar(calendar.id)">{{
                     $t("calendar.calendarSection.edit")
                   }}</a-menu-item>

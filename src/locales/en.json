@@ -446,7 +446,19 @@
     "cancel": "Cancel",
     "saving": "Saving...",
     "saveSuccess": "Settings saved successfully",
-    "saveError": "Could not save settings, please try again"
+    "saveError": "Could not save settings, please try again",
+    "message": {
+      "success": "Settings saved successfully",
+      "error": "Failed to save settings, please try again",
+      "reset": "Settings have been reset"
+    },
+    "months": "Month {month}",
+    "log": {
+      "timezone": {
+        "selected": "🔍 Selected timezone: {timezone}",
+        "utc": "UTC time: {offset}"
+      }
+    }
   },
   "trash": {
     "titleTrash": "Trash",
