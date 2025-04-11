@@ -18,7 +18,7 @@
         </div>
 
         <div class="w-[65px]">
-          <a-form-item label="Màu sắc" name="color_code">
+          <a-form-item :label="t('calendar.colorHex')" name="color_code">
             <a-select
               v-model:value="formState.color_code"
               :dropdown-match-select-width="false"
