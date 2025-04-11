@@ -105,7 +105,7 @@
     "update_tag": "Update Tag",
     "tag_name": "Tag Name",
     "enter_tag_name": "Enter tag name",
-    "color": "Color (Hex Code)",
+    "color": "Color",
     "description": "Description",
     "enter_description": "Enter tag description",
     "invitees": "Invitees",
@@ -138,9 +138,9 @@
     "close": "Close"
   },
   "common": {
-    "create": "Create New",
+    "create": "Create",
     "retry": "Retry",
-    "viewMore": "View More",
+    "viewMore": "View more",
     "description": "Description",
     "back": "Back",
     "backToCalendar": "Back to Calendar",
@@ -154,7 +154,7 @@
     "dontMissEvents": "Don't miss your scheduled events",
     "noUpcomingEvents": "No events in next 24 hours",
     "myCalendar": "My Calendar",
-    "myCalendars": "📌 My Calendars",
+    "myCalendars": "My Calendars",
     "sharedCalendars": "🔗 Shared Calendars",
     "displayOnly": "Display Only",
     "details": "Details",
@@ -162,10 +162,10 @@
     "delete": "Delete",
     "tagName": "Tag Name",
     "enterTagName": "Enter tag name",
-    "colorHex": "Color (Hex Code)",
+    "colorHex": "Color",
     "enterTagDescription": "Enter tag description",
     "updateTag": "Update Tag",
-    "addTag": "Add Tag",
+    "addTag": "Add New Tag",
     "views": {
       "day": "Day",
       "week": "Week",
@@ -177,8 +177,8 @@
       "title": "My Calendar",
       "edit": "Edit",
       "delete": "Delete",
-      "showMore": "Show More",
-      "showLess": "Show Less"
+      "showMore": "Show more",
+      "showLess": "Show less"
     }
   },
   "errors": {
@@ -193,6 +193,10 @@
   },
   "validation": {
     "tagNameRequired": "Please enter tag name!",
+    "tagNameMinLength": "Tag name must be at least 3 characters",
+    "tagNameMaxLength": "Tag name cannot exceed 50 characters",
+    "colorRequired": "Please select a color",
+    "descriptionMaxLength": "Description cannot exceed 500 characters",
     "title": {
       "required": "Title is required",
       "min": "Title is too short",
@@ -230,7 +234,8 @@
   "success": {
     "tagAdded": "Added tag: {name}",
     "tagDeleted": "Tag deleted successfully!",
-    "tagUpdated": "Tag updated successfully!"
+    "tagUpdated": "Tag updated successfully!",
+    "displayOnly": "Now displaying only tag {name}"
   },
   "eventModal": {
     "title": "Add New",

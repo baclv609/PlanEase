@@ -107,7 +107,7 @@
     "update_tag": "Cập nhật Tag",
     "tag_name": "Tên Tag",
     "enter_tag_name": "Nhập tên tag",
-    "color": "Màu sắc (Mã Hex)",
+    "color": "Màu sắc",
     "description": "Mô tả",
     "enter_description": "Nhập mô tả tag",
     "invitees": "Người được mời",
@@ -164,10 +164,10 @@
     "delete": "Xóa",
     "tagName": "Tên tag",
     "enterTagName": "Nhập tên tag",
-    "colorHex": "Màu sắc (Mã Hex)",
-    "enterTagDescription": "Nhập mô tả tag",
-    "updateTag": "Cập nhật Tag",
-    "addTag": "Thêm Tag",
+    "colorHex": "Màu sắc",
+    "enterTagDescription": "Nhập mô tả cho tag",
+    "updateTag": "Cập nhật tag",
+    "addTag": "Thêm tag mới",
     "views": {
       "day": "Ngày",
       "week": "Tuần",
@@ -195,6 +195,10 @@
   },
   "validation": {
     "tagNameRequired": "Vui lòng nhập tên tag!",
+    "tagNameMinLength": "Tên tag phải có ít nhất 3 ký tự",
+    "tagNameMaxLength": "Tên tag không được vượt quá 50 ký tự",
+    "colorRequired": "Vui lòng chọn màu sắc",
+    "descriptionMaxLength": "Mô tả không được vượt quá 500 ký tự",
     "title": {
       "required": "Tiêu đề không được để trống",
       "min": "Tiêu đề quá ngắn",
@@ -232,7 +236,8 @@
   "success": {
     "tagAdded": "Đã thêm tag: {name}",
     "tagDeleted": "Tag đã được xóa thành công!",
-    "tagUpdated": "Cập nhật tag thành công!"
+    "tagUpdated": "Cập nhật tag thành công!",
+    "displayOnly": "Đã hiển thị duy nhất tag {name}"
   },
   "eventModal": {
     "title": "Thêm mới",
