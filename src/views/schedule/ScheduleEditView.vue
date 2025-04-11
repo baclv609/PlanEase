@@ -1582,22 +1582,35 @@ watch(
 
 // kiểm tra có sửa các thuộc tính lặp lại hay không
 const hasRecurrenceChanges = () => {
-    
     const originalProps = props.event.info.extendedProps;
     const newProps = formState.value.rrule;
-    
-    // Chỉ kiểm tra các thuộc tính liên quan đến lặp lại
+
     const hasRecurrencePropertyChanged = 
         originalProps.freq !== newProps.freq ||
         originalProps.interval !== newProps.interval ||
-        originalProps.count !== newProps.count ||
-        (originalProps.until && newProps.until && dayjs(originalProps.until).format() !== dayjs(newProps.until).format()) ||
-        (originalProps.byweekday?.length > 0 && newProps.byweekday?.length > 0 && 
-         JSON.stringify(originalProps.byweekday) !== JSON.stringify(newProps.byweekday)) ||
-        (originalProps.bymonthday?.length > 0 && newProps.bymonthday?.length > 0 && 
-         JSON.stringify(originalProps.bymonthday) !== JSON.stringify(newProps.bymonthday)) ||
-        (originalProps.bymonth?.length > 0 && newProps.bymonth?.length > 0 && 
-         JSON.stringify(originalProps.bymonth) !== JSON.stringify(newProps.bymonth));
+
+        // So sánh endType ("" | "count" | "until")
+        originalProps.endType !== newProps.endType ||
+
+        // Nếu endType là 'count', thì so sánh count
+        (newProps.endType === 'count' &&
+            originalProps.count !== newProps.count) ||
+
+        // Nếu endType là 'until', thì so sánh until
+        (newProps.endType === 'until' &&
+            dayjs(originalProps.until).format() !== dayjs(newProps.until).format()) ||
+
+        // So sánh byweekday
+        (originalProps.byweekday?.length > 0 && newProps.byweekday?.length > 0 &&
+            JSON.stringify(originalProps.byweekday) !== JSON.stringify(newProps.byweekday)) ||
+
+        // So sánh bymonthday
+        (originalProps.bymonthday?.length > 0 && newProps.bymonthday?.length > 0 &&
+            JSON.stringify(originalProps.bymonthday) !== JSON.stringify(newProps.bymonthday)) ||
+
+        // So sánh bymonth
+        (originalProps.bymonth?.length > 0 && newProps.bymonth?.length > 0 &&
+            JSON.stringify(originalProps.bymonth) !== JSON.stringify(newProps.bymonth));
 
     return hasRecurrencePropertyChanged;
 };

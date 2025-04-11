@@ -50,9 +50,10 @@
         "general_error": "Đã xảy ra lỗi, vui lòng thử lại"
       },
       "success": {
-        "reset_link_sent": "Liên kết đặt lại mật khẩu đã được gửi đến email của bạn"
+        "reset_link_sent": "Mã khôi phục đặt lại mật khẩu đã được gửi đến email của bạn"
       }
-    }
+    },
+    "back_to_login": "Quay lại đăng nhập"
   },
   "profile": {
     "change_avatar": "Đổi ảnh",
@@ -623,6 +624,34 @@
       "success": {
         "accepted": "Bạn đã chấp nhận lời mời tham gia tag thành công."
       }
+    }
+  },
+  "ResetPassword": {
+    "label": {
+      "reset_token": "Mã khôi phục mật khẩu",
+      "new_password": "Mật khẩu mới",
+      "confirm_password": "Xác nhận mật khẩu"
+    },
+    "placeholder": {
+      "reset_token": "Nhập mã khôi phục mật khẩu",
+      "new_password": "Nhập mật khẩu mới",
+      "confirm_password": "Nhập lại mật khẩu mới"
+    },
+    "title": "Đặt lại mật khẩu",
+    "description": "Nhập mật khẩu mới của bạn",
+    "validate": {
+      "reset_token_required": "Vui lòng nhập mã khôi phục mật khẩu",
+      "password_required": "Mật khẩu không được để trống",
+      "password_min": "Mật khẩu phải có ít nhất 8 ký tự",
+      "password_confirm_required": "Xác nhận mật khẩu không được để trống",
+      "password_mismatch": "Mật khẩu xác nhận không khớp",
+      "password_invalid": "Mật khẩu phải bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"
+    },
+    "success": {
+      "password_reset_success": "Đặt lại mật khẩu thành công!"
+    },
+    "error": {
+      "general_error": "Có lỗi xảy ra, vui lòng thử lại"
     }
   }
 }

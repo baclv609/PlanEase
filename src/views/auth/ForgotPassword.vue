@@ -3,6 +3,9 @@ import { ref } from "vue";
 import axios from "axios";
 import { message } from "ant-design-vue";
 import router from "@/router";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const email = ref("");
@@ -11,8 +14,8 @@ const formState = ref({ email: "" });
 const errorMail = ref({});
 const rules = {
   email: [
-    { required: true, message: $t('auth.forgot_password.error.email_required'), trigger: "blur" },
-    { type: "email", message: $t('auth.forgot_password.error.email_invalid'), trigger: ["blur", "change"] },
+    { required: true, message: t('auth.forgot_password.error.email_required'), trigger: "blur" },
+    { type: "email", message: t('auth.forgot_password.error.email_invalid'), trigger: ["blur", "change"] },
   ],
 };
 
@@ -44,11 +47,11 @@ const onSubmit = async () => {
   // console.log(data);
   await axios.post(`${dirApi}user/send-reset-password-mail`, data)
     .then(response => {
-      message.success($t('auth.forgot_password.success.reset_link_sent'));
+      message.success(t('auth.forgot_password.success.reset_link_sent'));
       router.push({name: "reset-password"});
     })
     .catch(error => {
-      message.error(error.data.message || $t('auth.forgot_password.error.general_error'));
+      message.error(t('auth.forgot_password.error.general_error'));
       // console.log(error);
       errorMail.value = error.response.data.errors
       // console.log(errorMail.value);
@@ -64,17 +67,20 @@ const onSubmit = async () => {
     <div class="container max-w-lg mx-auto py-10">
       <div class="text-center">
         <img class="w-16 h-14 mx-auto" src="../../assets/images/logo.png" alt="Logo" />
-        <h1 class="mt-4 text-2xl font-semibold tracking-wide text-gray-800">{{ $t('auth.forgot_password.title') }}</h1>
-        <p class="mt-2 text-gray-500">{{ $t('auth.forgot_password.description') }}</p>
+        <h1 class="mt-4 text-2xl font-semibold tracking-wide text-gray-800">{{ t('auth.forgot_password.title') }}</h1>
+        <p class="mt-2 text-gray-500">{{ t('auth.forgot_password.description') }}</p>
       </div>
 
-      <a-form class="mt-6" layout="vertical" :model="formState" :rules="rules" @finish="onSubmit">
-        <a-form-item :label="$t('auth.forgot_password.email')" name="email">
+      <a-form class="mt-6" layout="vertical" :model="formState" :required-mark="false" :rules="rules" @finish="onSubmit">
+        <a-form-item name="email">
+          <template #label>
+            <span class="text-gray-700">{{ t('auth.forgot_password.email') }}</span> <span class="text-red-500 ml-1">*</span>
+          </template>
           <a-input 
             v-model:value="formState.email" 
             class="border border-orange-300" 
             type="email" 
-            :placeholder="$t('auth.forgot_password.enter_email')" 
+            :placeholder="t('auth.forgot_password.enter_email')" 
             :class="{'border-red-500':errorMail.email }"
           />
 
@@ -83,14 +89,14 @@ const onSubmit = async () => {
         
         <a-form-item>
           <a-button :loading="isLoading" type="primary" class="gradient-btn" html-type="submit" block>
-            {{ $t('auth.forgot_password.send') }}
+            {{ t('auth.forgot_password.send') }}
           </a-button>
         </a-form-item>
       </a-form>
 
       <div class="mt-6 text-center">
         <router-link to="/login" class="text-sm text-orange-500 hover:underline">
-          {{ $t('auth.forgot_password.back_to_login') }}
+          {{ t('auth.forgot_password.back_to_login') }}
         </router-link>
       </div>
     </div>
