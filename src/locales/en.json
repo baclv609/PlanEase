@@ -49,7 +49,7 @@
         "general_error": "An error occurred, please try again"
       },
       "success": {
-        "reset_link_sent": "Password reset link has been sent to your email"
+        "reset_link_sent": "Password recovery code has been sent to your email"
       }
     }
   },
@@ -623,6 +623,34 @@
       "success": {
         "accepted": "You have successfully accepted the tag invitation."
       }
+    }
+  },
+  "ResetPassword": {
+    "label": {
+      "reset_token": "Password Recovery Code",
+      "new_password": "New password",
+      "confirm_password": "Password confirmation"
+    },
+    "placeholder": {
+      "reset_token": "Enter password recovery code",
+      "new_password": "Enter new password",
+      "confirm_password": "Confirm new password"
+    },
+    "title": "Reset Password",
+    "description": "Enter your new password",
+    "validate": {
+      "reset_token_required": "Please enter password recovery code",
+      "password_required": "Please enter a password",
+      "password_mismatch": "Passwords do not match",
+      "password_min": "Password must be at least 8 characters",
+      "password_confirm_required": "Please confirm your password",
+      "password_invalid": "Password must contain uppercase, lowercase, numbers and special characters"
+    },
+    "success": {
+      "password_reset_success": "Password reset successfully!"
+    },
+    "error": {
+      "general_error": "An error occurred, please try again"
     }
   }
 }

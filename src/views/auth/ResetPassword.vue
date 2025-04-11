@@ -3,6 +3,9 @@ import { ref } from "vue";
 import axios from "axios";
 import { message } from "ant-design-vue";
 import router from "@/router";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const isLoading = ref(false);
@@ -15,19 +18,27 @@ const formState = ref({
 
 const rules = {
   reset_token:[
-    {required: true, message: "Please enter OTP code"}
+    {required: true, message: t("ResetPassword.validate.reset_token_required")},
   ],
   password: [
-    { required: true, message: "Please enter password!" },
-    { min: 8, message: "Password must be at least 8 characters" },
+    { required: true, message: t("ResetPassword.validate.password_required") },
+    { min: 8, message: t("ResetPassword.validate.password_min") },
     {
       pattern:
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
-      message: "Password must contain uppercase, lowercase, numbers and special characters",
+      message: t("ResetPassword.validate.password_invalid"),
     }
 ],
   password_confirmation: [
-    {required: true, message: "Please enter password confirmation"},
+    {required: true, message: t("ResetPassword.validate.password_confirm_required")},
+    ({ getFieldValue }) => ({
+      validator(_, value) {
+        if (!value || getFieldValue("password") === value) {
+          return Promise.resolve();
+        }
+        return Promise.reject(new Error(t("ResetPassword.validate.password_mismatch")));
+      },
+    }),
   ]
 };
 
@@ -37,15 +48,18 @@ const onSubmit = async () => {
   await axios.post(`${dirApi}user/reset-password`, data)
     .then(response => {
         // console.log(response.data);
-        message.success(response.data.message);
+        message.success(t("ResetPassword.success.password_reset_success"));
         router.push({name: 'login'});
     })
     .catch(error => {
-        message.error("An error occurred");
-        // console.log(error.response.data.message);
-        resetErrors.value = error.response.data.errors
+        
+        console.log(error.response);
+        if(error.response.status == 422) {
+          resetErrors.value = error.response.data.errors;
+        }
+
         if(error.response.data.code == 400) {
-            resetErrors.value = error.response.data;
+          message.error(error.response.data.message);
         }
     })
     .finally(() => {
@@ -59,48 +73,57 @@ const onSubmit = async () => {
     <div class="container max-w-md mx-auto">
       <div class="text-center">
         <img class="w-16 h-14" src="../../assets/images/logo.png" alt="Logo" />
-        <h1 class="mt-4 text-2xl font-semibold tracking-wide text-gray-800">Password change</h1>
-        <p class="mt-2 text-gray-500">Enter your new password.</p>
+        <h1 class="mt-4 text-2xl font-semibold tracking-wide text-gray-800">{{ t("ResetPassword.title") }}</h1>
+        <p class="mt-2 text-gray-500">{{ t("ResetPassword.description") }}</p>
       </div>
 
-      <a-form class="mt-6" layout="vertical" :model="formState" :rules="rules" @finish="onSubmit">
-        <a-form-item label="Password recovery code" name="reset_token">
+      <a-form class="mt-6" layout="vertical" :model="formState" :required-mark="false" :rules="rules" @finish="onSubmit">
+        <a-form-item name="reset_token">
+          <template #label>
+            <span class="text-gray-700">{{ t('ResetPassword.label.reset_token') }}</span> <span class="text-red-500 ml-1">*</span>
+          </template>
           <a-input v-model:value="formState.reset_token" 
                     type="text" 
                     class="border border-orange-300"
-                    placeholder="Enter recovery code" 
+                    :placeholder="t('ResetPassword.placeholder.reset_token')" 
                     />
                     <span class="text-red-500" v-if="resetErrors.message">{{ resetErrors.message }}</span>
         </a-form-item>
 
-        <a-form-item label="New Password" name="password">
+        <a-form-item name="password">
+          <template #label>
+            <span class="text-gray-700">{{ t('ResetPassword.label.new_password') }}</span> <span class="text-red-500 ml-1">*</span>
+          </template>
           <a-input v-model:value="formState.password" 
                     type="password" 
                     class="border border-orange-300" 
-                    placeholder="Enter new password" 
+                    :placeholder="t('ResetPassword.placeholder.new_password')" 
                     :class="{'text-red-500': resetErrors.password}"
                     />
                     <span class="text-red-500" v-if="resetErrors.password">{{ resetErrors.password[0] }}</span>
         </a-form-item>
 
-        <a-form-item label="Confirm Password" name="password_confirmation">
+        <a-form-item name="password_confirmation">
+          <template #label>
+            <span class="text-gray-700">{{ t('ResetPassword.label.confirm_password') }}</span> <span class="text-red-500 ml-1">*</span>
+          </template>
           <a-input v-model:value="formState.password_confirmation" 
                      type="password"
                      class="border border-orange-300"
-                     placeholder="Enter password confirmation" 
+                     :placeholder="t('ResetPassword.placeholder.confirm_password')" 
                      :class="{'text-red-500': resetErrors.password_confirmation}"
                      />
                      <span class="text-red-500" v-if="resetErrors.password_confirmation">{{ resetErrors.password_confirmation[0] }}</span>
         </a-form-item>
         
         <a-form-item>
-          <a-button :loading="isLoading" type="primary" class="gradient-btn" html-type="submit" block>Change password</a-button>
+          <a-button :loading="isLoading" type="primary" class="gradient-btn" html-type="submit" block>{{ t("change_password") }}</a-button>
         </a-form-item>
       </a-form>
 
       <div class="mt-6 text-center">
         <router-link to="/login" class="text-sm text-gray-400 hover:underline hover:text-gray-600">
-          Back to login
+          {{ t("auth.back_to_login") }}
         </router-link>
       </div>
     </div>
