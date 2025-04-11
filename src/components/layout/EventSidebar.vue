@@ -123,7 +123,6 @@
               <template #overlay>
                 <a-menu>
                   <a-menu-item @click="displayOnly(calendar.id)">Hiển thị duy nhất</a-menu-item>
-                  <!-- <a-menu-item @click="viewDetails(calendar.id)">Chi tiết</a-menu-item> -->
                   <a-menu-item @click="openUpdateCalendar(calendar.id)">{{
                     $t("calendar.calendarSection.edit")
                   }}</a-menu-item>
@@ -133,16 +132,6 @@
                 </a-menu>
               </template>
             </a-dropdown>
-          </div>
-          <div v-if="myCalendars.length > 5" class="flex justify-center mt-2">
-            <a-button type="text" @click="showAll = !showAll">
-              <template v-if="showAll">
-                <CaretUpOutlined /> {{ $t("calendar.calendarSection.showLess") }}
-              </template>
-              <template v-else>
-                <CaretDownOutlined /> {{ $t("calendar.calendarSection.showMore") }}
-              </template>
-            </a-button>
           </div>
         </div>
 
@@ -496,13 +485,13 @@ const openDrawerAdd = () => {
   isModalOpenAddTag.value = true;
 };
 
-// Giới hạn hiển thị
+// Thay đổi computed property displayedCalendars để luôn hiển thị tất cả
 const displayedCalendars = computed(() => {
-  return showAll.value ? myCalendars.value : myCalendars.value.slice(0, 5);
+  return myCalendars.value;
 });
 
 const displayedSharedCalendars = computed(() => {
-  return showAllShared.value ? sharedCalendars.value : sharedCalendars.value.slice(0, 5);
+  return sharedCalendars.value;
 });
 
 const fetchCalendars = async () => {
@@ -540,7 +529,9 @@ fetchCalendars();
 
 const handleTagAdded = (newTag) => {
   myCalendars.value.push(newTag);
-      updateFilteredEvents();
+  // Thêm tag mới vào selectedCalendars để tự động tích checkbox
+  selectedCalendars.value.push(newTag.id);
+  updateFilteredEvents();
 };
 
 const handleTagUpdated = (updatedTag) => {
