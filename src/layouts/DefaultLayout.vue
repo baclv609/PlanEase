@@ -200,6 +200,15 @@ const openProfileDrawer = () => {
 
 const toggleSidebar = () => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
+  
+  // Force calendar to resize and refresh
+  setTimeout(() => {
+    if (calendarRef.value) {
+      const calendar = calendarRef.value.getApi();
+      calendar.render();
+      calendar.updateSize();
+    }
+  }, 300); // Wait for sidebar animation to complete
 };
 
 const isEventModalVisible = ref(false);
@@ -253,5 +262,19 @@ const onBreakpoint = (broken) => {
 
 .ant-layout-sider-zero-width {
   transition: all 0.3s ease;
+}
+
+:deep(.fc) {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+:deep(.fc-view) {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+:deep(.fc-scroller) {
+  overflow: hidden !important;
 }
 </style>

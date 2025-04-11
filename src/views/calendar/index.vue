@@ -927,10 +927,48 @@ onMounted(() => {
 <style scoped>
 .calendar-wrapper {
   width: 100%;
-  /* min-height: 600px; */
-  height: calc(100vh - 76px);
- 
+  /* height: calc(100vh - 76px); */
   border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.fc) {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+:deep(.fc-view) {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+:deep(.fc-scroller) {
+  overflow: hidden !important;
+}
+
+:deep(.fc-scroller-liquid-absolute) {
+  position: relative !important;
+}
+
+:deep(.fc-scrollgrid) {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+:deep(.fc-col-header) {
+  width: 100% !important;
+}
+
+:deep(.fc-daygrid-body) {
+  width: 100% !important;
+}
+
+:deep(.fc-daygrid-day-frame) {
+  width: 100% !important;
+}
+
+:deep(.fc-daygrid-day-events) {
+  width: 100% !important;
 }
 
 /* Tùy chỉnh style cho skeleton */
