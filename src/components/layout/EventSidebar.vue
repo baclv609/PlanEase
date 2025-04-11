@@ -1,6 +1,6 @@
 <template>
   <a-card
-    :bodyStyle="{ padding: '16px' }"
+    :bodyStyle="{ padding: '10px' }"
     class="!bg-transparent border-none shadow-none"
   >
     <a-dropdown :trigger="['click']">
@@ -37,10 +37,9 @@
     </div>
 
     <div class="mt-3">
-      <h2 class="mb-0">{{ t("calendar.upcomingEvents") }}</h2>
-      <p>{{ t("calendar.dontMissEvents") }}</p>
+      <h2 class="mb-2">{{ t("calendar.upcomingEvents") }}</h2>
+      <!-- <p>{{ t("calendar.dontMissEvents") }}</p> -->
 
-      <!-- Loading state -->
       <!-- <div v-if="loading" class="flex justify-center my-4">
         <a-spin />
       </div> -->
@@ -769,14 +768,18 @@ onBeforeUnmount(() => {
 const createEvent = () => {
   isAddEventModalVisible.value = true;
   selectedEventAdd.value = {
-    type: 'event'
+    type: 'event',
+    start: dayjs(),
+    end: dayjs().add(1, 'hour')
   };
 };
 
 const createTask = () => {
   isAddEventModalVisible.value = true;
   selectedEventAdd.value = {
-    type: 'task'
+    type: 'task',
+    start: dayjs(),
+    end: dayjs().add(1, 'hour')
   };
 };
 </script>
@@ -856,5 +859,8 @@ const createTask = () => {
 :deep(.ant-select-selection-item span) {
   width: 24px;
   height: 24px;
+}
+:deep(.ant-list-item) {
+  padding: 10px !important;
 }
 </style>

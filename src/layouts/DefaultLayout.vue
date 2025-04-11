@@ -102,12 +102,22 @@
 
 
     <SettingCalender v-model:isModalOpen="isModalOpen" />
+
+    <EventModal
+      v-model:open="isEventModalVisible"
+      :event="selectedEvent"
+      @save="handleEventModalSuccess"
+      @cancel="isEventModalVisible = false"
+    />
   </a-layout>
 </template>
 
 <script setup>
 import { ref, defineProps, onMounted, watch } from "vue";
 import { TrophyOutlined, SettingOutlined, UserOutlined, BellOutlined, DeleteOutlined, MenuOutlined, PlusOutlined, CalendarOutlined, CheckSquareOutlined } from "@ant-design/icons-vue";
+import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import dayjs from "dayjs";
 
 import ProfileDrawer from "@/views/profile/ProfileDrawer.vue";
 import SettingCalender from "@/components/settings/SettingsModal.vue";
@@ -118,6 +128,7 @@ import { message } from "ant-design-vue";
 import router from "@/router";
 import Search from "@/components/Search.vue";
 import { useEchoStore } from "@/stores/echoStore";
+import EventModal from "@/views/calendar/components/EventModal.vue";
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const selectedCalendars = ref(["exercise", "dinner", "outing"]);
@@ -191,12 +202,36 @@ const toggleSidebar = () => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
 };
 
+const isEventModalVisible = ref(false);
+const selectedEvent = ref(null);
+
 const createEvent = () => {
-  router.push({ name: 'calendar-view', params: { view: 'day' } });
+  const now = dayjs();
+  const endTime = now.add(1, 'hour');
+  
+  selectedEvent.value = {
+    type: 'event',
+    start: now,
+    end: endTime
+  };
+  isEventModalVisible.value = true;
 };
 
 const createTask = () => {
-  router.push({ name: 'calendar-view', params: { view: 'day' } });
+  const now = dayjs();
+  const endTime = now.add(1, 'hour');
+  
+  selectedEvent.value = {
+    type: 'task',
+    start: now,
+    end: endTime
+  };
+  isEventModalVisible.value = true;
+};
+
+const handleEventModalSuccess = () => {
+  isEventModalVisible.value = false;
+  selectedEvent.value = null;
 };
 
 const onBreakpoint = (broken) => {

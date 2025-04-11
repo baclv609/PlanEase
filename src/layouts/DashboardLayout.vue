@@ -255,7 +255,7 @@ const userAvatar = computed(() => {
 }
 
 .main-content {
-  padding: 24px;
+  padding: 16px;
   max-width: 1400px;
   margin: 0 auto;
   width: 95%;
@@ -317,7 +317,7 @@ const userAvatar = computed(() => {
   }
 
   .main-content {
-    padding: 16px;
+    padding: 10px;
     width: 100%;
   }
 }
