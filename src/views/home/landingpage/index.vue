@@ -7,10 +7,10 @@
           <img :src="logo" alt="PlanEase logo" class="logo-img" />
         </div>
         <nav class="nav">
-          <a href="#features" class="nav-link">Tính năng</a>
-          <a href="#how-it-works" class="nav-link">Cách thức</a>
-          <a href="#pricing" class="nav-link">Bảng giá</a>
-          <a href="#faq" class="nav-link">Hỏi đáp</a>
+          <a @click.prevent="scrollToSection('hero')" class="nav-link">Trang chủ</a>
+          <a @click.prevent="scrollToSection('features')" class="nav-link">Tính năng</a>
+          <a @click.prevent="scrollToSection('how-it-works')" class="nav-link">Cách thức</a>
+          <a @click.prevent="scrollToSection('testimonials')" class="nav-link">Khách hàng </a>
         </nav>
         <div class="auth-buttons">
           <a-button type="text" class="login-btn" @click="handleLogin">Đăng nhập</a-button>
@@ -20,7 +20,7 @@
     </header>
 
     <!-- Hero Section -->
-    <section class="hero">
+    <section id="hero" class="hero">
       <div class="container">
         <div class="hero-content">
           <h1 class="hero-title">
@@ -95,7 +95,7 @@
     </section>
 
     <!-- Testimonials Section -->
-    <section class="testimonials">
+    <section id="testimonials" class="testimonials">
       <div class="container">
         <div class="section-header animate-on-scroll">
           <h2 class="section-title">Khách hàng nói gì</h2>
@@ -179,7 +179,7 @@
               <h4 class="link-group-title">{{ group.title }}</h4>
               <ul class="link-list">
                 <li v-for="(link, linkIndex) in group.links" :key="linkIndex">
-                  <a :href="link.url" class="footer-link">{{ link.text }}</a>
+                  <a @click.prevent="scrollToSection(link.section)" class="footer-link">{{ link.text }}</a>
                 </li>
               </ul>
             </div>
@@ -208,6 +208,7 @@ import { Autoplay, Pagination, Navigation } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
+import logo from '@/assets/images/logo.png'
 import {
   CalendarOutlined,
   TeamOutlined,
@@ -224,7 +225,7 @@ import {
 } from '@ant-design/icons-vue';
 
 // Placeholder images with updated colors
-const logo = 'https://via.placeholder.com/160x40/227C9D/FFFFFF?text=PlanEase';
+// const logo = '@/assets/images/logo.png';
 const heroImage = 'https://via.placeholder.com/600x400/FFCB77/FFFFFF?text=Dashboard+Preview';
 const user1Avatar = 'https://via.placeholder.com/100x100/17C3B2/FFFFFF?text=User+1';
 const user2Avatar = 'https://via.placeholder.com/100x100/FFCB77/FFFFFF?text=User+2';
@@ -330,39 +331,39 @@ const testimonials = ref([
 
 const footerLinks = ref([
   {
-    title: 'Sản phẩm',
+    title: 'Liên kết nhanh',
     links: [
-      { text: 'Tính năng', url: '#features' },
-      { text: 'Bảng giá', url: '#pricing' },
-      { text: 'Tích hợp', url: '#' },
-      { text: 'Ứng dụng di động', url: '#' }
+      { text: 'Trang chủ', section: 'hero' },
+      { text: 'Tính năng', section: 'features' },
+      { text: 'Cách thức', section: 'how-it-works' },
+      { text: 'Khách hàng nói gì', section: 'testimonials' }
     ]
   },
   {
     title: 'Công ty',
     links: [
-      { text: 'Về chúng tôi', url: '#' },
-      { text: 'Blog', url: '#' },
-      { text: 'Đối tác', url: '#' },
-      { text: 'Tuyển dụng', url: '#' }
+      { text: 'Về chúng tôi', section: '#' },
+      { text: 'Blog', section: '#' },
+      { text: 'Đối tác', section: '#' },
+      { text: 'Tuyển dụng', section: '#' }
     ]
   },
   {
     title: 'Hỗ trợ',
     links: [
-      { text: 'Trung tâm trợ giúp', url: '#' },
-      { text: 'Liên hệ', url: '#' },
-      { text: 'Tài liệu API', url: '#' },
-      { text: 'Trạng thái hệ thống', url: '#' }
+      { text: 'Trung tâm trợ giúp', section: '#' },
+      { text: 'Liên hệ', section: '#' },
+      { text: 'Tài liệu API', section: '#' },
+      { text: 'Trạng thái hệ thống', section: '#' }
     ]
   },
   {
     title: 'Pháp lý',
     links: [
-      { text: 'Điều khoản sử dụng', url: '#' },
-      { text: 'Chính sách bảo mật', url: '#' },
-      { text: 'Chính sách cookie', url: '#' },
-      { text: 'GDPR', url: '#' }
+      { text: 'Điều khoản sử dụng', section: '#' },
+      { text: 'Chính sách bảo mật', section: '#' },
+      { text: 'Chính sách cookie', section: '#' },
+      { text: 'GDPR', section: '#' }
     ]
   }
 ]);
@@ -389,6 +390,20 @@ const handleGetStarted = () => {
 const handleLearnMore = () => {
   const featuresSection = document.querySelector('#features');
   featuresSection.scrollIntoView({ behavior: 'smooth' });
+};
+
+const scrollToSection = (sectionId) => {
+  const element = document.getElementById(sectionId);
+  if (element) {
+    const headerOffset = 80; // Height of fixed header
+    const elementPosition = element.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth'
+    });
+  }
 };
 
 // Animation observer
@@ -441,7 +456,8 @@ onMounted(() => {
 }
 
 .logo-img {
-  height: 40px;
+  height: 65px;
+  width: 80px;
 }
 
 .nav {
@@ -454,10 +470,28 @@ onMounted(() => {
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s;
+  cursor: pointer;
+  position: relative;
+  padding: 8px 0;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #FFCB77;
+    transition: width 0.3s;
+  }
 
   &:hover {
     color: #FFCB77;
     transform: translateY(-2px);
+
+    &::after {
+      width: 100%;
+    }
   }
 }
 
@@ -985,7 +1019,8 @@ onMounted(() => {
 
 .footer-logo {
   .logo-img {
-    height: 40px;
+    height: 65px;
+  width: 80px;
     margin-bottom: 16px;
   }
 }
