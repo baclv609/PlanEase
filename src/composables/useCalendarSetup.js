@@ -437,8 +437,8 @@ export function useCalendar(calendarRef) {
     height: 'calc(100vh - 200px)',
     contentHeight: 'calc(100vh - 200px)',
     contentHeight: settingsStore.displayMode === 'dayGridMonth' ? 'calc(100vh - 200px)' : 'auto',
-// để 2 cái giống nhau ms hoạt động
 
+    
     expandRows: true,
 
     allDaySlot: true,
