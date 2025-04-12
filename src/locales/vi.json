@@ -180,7 +180,8 @@
       "edit": "Chỉnh sửa",
       "delete": "Xóa",
       "showMore": "Xem thêm",
-      "showLess": "Thu gọn"
+      "showLess": "Thu gọn",
+      "displayOnly": "Chỉ hiển thị nhãn này"
     }
   },
   "errors": {
@@ -405,6 +406,7 @@
     }
   },
   "settings": {
+    "columns": "cột",
     "title": "Cài đặt lịch trình",
     "display": "Giao diện",
     "time": "Thời gian",

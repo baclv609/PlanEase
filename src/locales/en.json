@@ -178,7 +178,8 @@
       "edit": "Edit",
       "delete": "Delete",
       "showMore": "Show more",
-      "showLess": "Show less"
+      "showLess": "Show less",
+      "displayOnly": "Display only"
     }
   },
   "errors": {
@@ -403,6 +404,7 @@
     }
   },
   "settings": {
+    "columns": "columns",
     "title": "Schedule Settings",
     "display": "Display",
     "time": "Time",

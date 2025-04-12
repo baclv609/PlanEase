@@ -130,6 +130,7 @@ import Search from "@/components/Search.vue";
 import { useEchoStore } from "@/stores/echoStore";
 import EventModal from "@/views/calendar/components/EventModal.vue";
 
+
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const selectedCalendars = ref(["exercise", "dinner", "outing"]);
 const isModalOpen = ref(false);
@@ -139,6 +140,7 @@ const user = JSON.parse(localStorage.getItem("user"));
 const token = localStorage.getItem("access_token");
 
 const isSidebarCollapsed = ref(false);
+const calendarRef = ref(null);
 
 const openSettingsModal = () => {
   isModalOpen.value = true;
