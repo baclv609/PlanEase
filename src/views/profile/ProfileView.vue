@@ -323,23 +323,31 @@ const changePassword = async () => {
 };
 
 // Hàm logout
-const handleLogout = () => {
-  axios
-    .post(`${dirApi}auth/logout`, {}, { headers: { Authorization: `Bearer ${token}` } })
-    .then((response) => {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("user");
+const handleLogout = async () => {
+  try {
+    // First clean up Echo and stores before API call
+    const echoStore = useEchoStore();
+    echoStore.stopListening();
+    echoStore.destroyEcho();
 
-      const echoStore = useEchoStore();
-      echoStore.stopListening();
-      echoStore.destroyEcho();
+    const response = await axios.post(
+      `${dirApi}auth/logout`, 
+      {}, 
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      message.success(response.data.message || t("profile.success.logout_success"));
-      router.push({ name: "home" });
-    })
-    .catch(() => {
-      message.error(t("profile.error.general_error"));
-    });
+    // Clear local storage
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+
+    message.success(t("profile.success.logout_success"));
+
+    // Navigate after cleanup is done
+    await router.push('/');
+
+  } catch (error) {
+    message.error(t("profile.error.general_error")); 
+  }
 };
 
 // Gọi API khi component mounted

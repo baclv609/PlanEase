@@ -15,9 +15,9 @@ import { message } from 'ant-design-vue';
 
 
 const routes = [
+    ...calendar,
   ...dashboard,
   ...auth,
-  ...calendar,
   ...settingsRouter,
   ...users,
   ...roles,
@@ -88,6 +88,5 @@ router.beforeEach(async (to, from, next) => {
     NProgress.done();
 });
 
-// console.log(JSON.parse(localStorage.getItem("user")));
 
 export default router;
