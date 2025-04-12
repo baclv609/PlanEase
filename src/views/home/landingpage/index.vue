@@ -97,26 +97,54 @@
     <!-- Testimonials Section -->
     <section class="testimonials">
       <div class="container">
-        <div class="section-header">
+        <div class="section-header animate-on-scroll">
           <h2 class="section-title">Khách hàng nói gì</h2>
           <p class="section-description">
             Những phản hồi từ người dùng của chúng tôi
           </p>
         </div>
 
-        <div class="testimonials-slider">
-          <div class="testimonial-card" v-for="(testimonial, index) in testimonials" :key="index">
-            <div class="testimonial-content">
-              <p class="testimonial-text">{{ testimonial.text }}</p>
-            </div>
-            <div class="testimonial-author">
-              <a-avatar :size="48" :src="testimonial.avatar" />
-              <div class="author-info">
-                <h4 class="author-name">{{ testimonial.name }}</h4>
-                <p class="author-role">{{ testimonial.role }}</p>
+        <div class="testimonials-slider animate-on-scroll">
+          <Swiper
+            :modules="[Autoplay, Pagination, Navigation]"
+            :slides-per-view="1"
+            :space-between="30"
+            :autoplay="{
+              delay: 5000,
+              disableOnInteraction: false
+            }"
+            :pagination="{ clickable: true }"
+            :navigation="true"
+            :breakpoints="{
+              640: {
+                slidesPerView: 2
+              },
+              1024: {
+                slidesPerView: 3
+              }
+            }"
+          >
+            <SwiperSlide v-for="(testimonial, index) in testimonials" :key="index">
+              <div class="testimonial-card">
+                <div class="testimonial-rating">
+                  <template v-for="star in 5" :key="star">
+                    <StarFilled v-if="star <= testimonial.rating" class="star-filled" />
+                    <StarOutlined v-else class="star-outlined" />
+                  </template>
+                </div>
+                <div class="testimonial-content">
+                  <p class="testimonial-text">{{ testimonial.text }}</p>
+                </div>
+                <div class="testimonial-author">
+                  <a-avatar :size="48" :src="testimonial.avatar" />
+                  <div class="author-info">
+                    <h4 class="author-name">{{ testimonial.name }}</h4>
+                    <p class="author-role">{{ testimonial.role }}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </SwiperSlide>
+          </Swiper>
         </div>
       </div>
     </section>
@@ -173,8 +201,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Autoplay, Pagination, Navigation } from 'swiper';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 import {
   CalendarOutlined,
   TeamOutlined,
@@ -185,7 +218,9 @@ import {
   FacebookOutlined,
   TwitterOutlined,
   InstagramOutlined,
-  LinkedinOutlined
+  LinkedinOutlined,
+  StarFilled,
+  StarOutlined
 } from '@ant-design/icons-vue';
 
 // Placeholder images with updated colors
@@ -260,19 +295,36 @@ const testimonials = ref([
     text: 'PlanEase đã giúp nhóm của chúng tôi làm việc hiệu quả hơn rất nhiều. Giao diện thân thiện và dễ sử dụng.',
     avatar: user1Avatar,
     name: 'Nguyễn Văn A',
-    role: 'Trưởng phòng Marketing'
+    role: 'Trưởng phòng Marketing',
+    rating: 5
   },
   {
     text: 'Tôi rất ấn tượng với các tính năng của PlanEase. Đặc biệt là phần lịch và nhắc nhở rất hữu ích.',
     avatar: user2Avatar,
     name: 'Trần Thị B',
-    role: 'Quản lý dự án'
+    role: 'Quản lý dự án',
+    rating: 5
   },
   {
     text: 'PlanEase đã giúp tôi quản lý thời gian và công việc tốt hơn. Tôi có thể dễ dàng theo dõi tiến độ của mình.',
     avatar: user3Avatar,
     name: 'Lê Văn C',
-    role: 'Nhân viên phát triển'
+    role: 'Nhân viên phát triển',
+    rating: 4
+  },
+  {
+    text: 'Tính năng phân tích dữ liệu của PlanEase rất mạnh mẽ. Nó giúp tôi đưa ra quyết định chính xác hơn.',
+    avatar: user1Avatar,
+    name: 'Phạm Thị D',
+    role: 'Giám đốc điều hành',
+    rating: 5
+  },
+  {
+    text: 'Tôi đã thử nhiều công cụ quản lý dự án, nhưng PlanEase là công cụ tốt nhất cho nhóm của tôi.',
+    avatar: user2Avatar,
+    name: 'Hoàng Văn E',
+    role: 'Trưởng nhóm phát triển',
+    rating: 5
   }
 ]);
 
@@ -338,6 +390,24 @@ const handleLearnMore = () => {
   const featuresSection = document.querySelector('#features');
   featuresSection.scrollIntoView({ behavior: 'smooth' });
 };
+
+// Animation observer
+const animateOnScroll = () => {
+  const elements = document.querySelectorAll('.animate-on-scroll');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  elements.forEach(element => observer.observe(element));
+};
+
+onMounted(() => {
+  animateOnScroll();
+});
 </script>
 
 <style scoped>
@@ -691,14 +761,23 @@ const handleLearnMore = () => {
   padding: 80px 0;
   background: #FFFFFF;
   position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 203, 119, 0.05), rgba(254, 109, 115, 0.05));
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+  }
 }
 
 .testimonials-slider {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 32px;
-  max-width: 1200px;
-  margin: 0 auto;
+  position: relative;
+  padding: 20px 0;
 }
 
 .testimonial-card {
@@ -708,6 +787,22 @@ const handleLearnMore = () => {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   transition: all 0.3s;
   border: 1px solid rgba(255, 203, 119, 0.2);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '"';
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 80px;
+    color: rgba(255, 203, 119, 0.1);
+    font-family: serif;
+    line-height: 1;
+  }
 
   &:hover {
     transform: translateY(-5px);
@@ -716,8 +811,28 @@ const handleLearnMore = () => {
   }
 }
 
+.testimonial-rating {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+
+  .star-filled {
+    color: #FFCB77;
+    font-size: 16px;
+  }
+
+  .star-outlined {
+    color: #FFCB77;
+    font-size: 16px;
+    opacity: 0.5;
+  }
+}
+
 .testimonial-content {
+  flex: 1;
   margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
 }
 
 .testimonial-text {
@@ -726,12 +841,18 @@ const handleLearnMore = () => {
   line-height: 1.6;
   font-style: italic;
   opacity: 0.9;
+  margin: 0;
 }
 
 .testimonial-author {
   display: flex;
   align-items: center;
   gap: 16px;
+  margin-top: auto;
+  position: relative;
+  z-index: 1;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 203, 119, 0.2);
 }
 
 .author-info {
@@ -746,7 +867,49 @@ const handleLearnMore = () => {
     font-size: 14px;
     color: #227C9D;
     opacity: 0.8;
+    margin: 0;
   }
+}
+
+/* Swiper Customization */
+:deep(.swiper-pagination-bullet) {
+  width: 10px;
+  height: 10px;
+  background: #FFCB77;
+  opacity: 0.5;
+  transition: all 0.3s;
+}
+
+:deep(.swiper-pagination-bullet-active) {
+  opacity: 1;
+  background: #FE6D73;
+  transform: scale(1.2);
+}
+
+:deep(.swiper-button-next),
+:deep(.swiper-button-prev) {
+  color: #FFCB77;
+  transition: all 0.3s;
+  background: rgba(255, 255, 255, 0.9);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  &::after {
+    font-size: 16px;
+  }
+
+  &:hover {
+    color: #FE6D73;
+    transform: scale(1.1);
+    background: white;
+  }
+}
+
+:deep(.swiper-button-disabled) {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 /* CTA Section */
@@ -893,6 +1056,18 @@ const handleLearnMore = () => {
   }
 }
 
+/* Animation Classes */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out;
+}
+
+.animate-on-scroll.animate {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .header .container {
@@ -950,6 +1125,23 @@ const handleLearnMore = () => {
     flex-direction: column;
     gap: 16px;
     text-align: center;
+  }
+
+  .testimonials-slider {
+    padding: 10px 0;
+  }
+
+  .testimonial-card {
+    padding: 24px;
+  }
+
+  .testimonial-text {
+    font-size: 14px;
+  }
+
+  :deep(.swiper-button-next),
+  :deep(.swiper-button-prev) {
+    display: none;
   }
 }
 </style>
