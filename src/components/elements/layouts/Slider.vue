@@ -65,10 +65,10 @@ const { hasMobile } = useResize();
 </template>
 
 <style scoped>
-.slider-layout {
+/* .slider-layout {
   background: #FEF9EF !important;
   border-right: 1px solid rgba(255, 203, 119, 0.2);
-}
+} */
 
 .logo-wrapper {
   height: 80px;
@@ -76,23 +76,23 @@ const { hasMobile } = useResize();
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: linear-gradient(60deg,
+  /* background: linear-gradient(60deg,
     #FFCC77 0%,    
     #15C5B2 50%,   
     #227CA0 100%  
-  );
+  ); */
   margin-bottom: 16px;
 }
 
 .logo-wrapper.mobile {
-  background: #FEF9EF;
-  border-bottom: 1px solid rgba(255, 203, 119, 0.2);
+  /* background: #FEF9EF;
+  border-bottom: 1px solid rgba(255, 203, 119, 0.2); */
 }
 
 .logo-full {
   width: 160px;
   height: auto;
-  max-height: 48px;
+  max-height: 100px;
   object-fit: contain;
 }
 
@@ -108,31 +108,31 @@ const { hasMobile } = useResize();
   display: flex;
   gap: 8px;
   align-items: center;
-  color: #17C3B2;
+  /* color: #17C3B2; */
 }
 
-:deep(.ant-layout-sider-children) {
+/* :deep(.ant-layout-sider-children) {
   background: #FEF9EF;
-}
+} */
 
 /* Drawer styles */
 .slider-drawer {
   :deep(.ant-drawer-wrapper-body) {
-    background: #FEF9EF;
+    /* background: #FEF9EF; */
   }
 
   :deep(.ant-drawer-body) {
-    background: #FEF9EF;
+    /* background: #FEF9EF; */
   }
 }
 
 /* Menu styles - these should be coordinated with Menu.vue */
-:deep(.ant-menu) {
+/* :deep(.ant-menu) {
   background: #FEF9EF;
   border-right: none;
-}
+} */
 
-:deep(.ant-menu-item) {
+/* :deep(.ant-menu-item) {
   color: #17C3B2;
   
   &:hover {
@@ -151,10 +151,10 @@ const { hasMobile } = useResize();
   &-title:hover {
     color: #FFCB77 !important;
   }
-}
+} */
 
 /* Custom scrollbar */
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
   width: 6px;
 }
 
@@ -169,5 +169,5 @@ const { hasMobile } = useResize();
 
 ::-webkit-scrollbar-thumb:hover {
   background: #17C3B2;
-}
+} */
 </style>

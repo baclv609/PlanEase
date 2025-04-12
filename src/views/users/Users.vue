@@ -67,8 +67,11 @@
     <a-card class="filter-section" :bordered="false">
       <div class="filter-header">
         <div class="left-section">
-          <a-input-search v-model:value="searchText" placeholder="Tìm kiếm theo email..." @search="handleSearch"
-            :loading="loading" allow-clear enter-button class="search-input">
+          <a-input-search v-model:value="searchText" placeholder="Tìm kiếm theo email..." @search="handleSearch" 
+            :loading="loading" allow-clear enter-button class="search-input"  :style="{
+                border: '1px solid #d9d9d9',
+                borderRadius: '8px'
+              }">
             <template #prefix>
               <SearchOutlined style="padding: 0 12px; color: rgba(0, 0, 0, 0.45)" />
             </template>
@@ -107,13 +110,23 @@
             <span class="row-number">{{ (pagination.current - 1) * pagination.pageSize + index + 1 }}</span>
           </template>
 
-          <template v-else-if="column.key === 'email'">
+          <template v-else-if="column.key === 'userInfo'">
             <div class="user-info">
-              <a-avatar :size="32" :src="record.avatar"
-                :style="{ backgroundColor: !record.avatar ? getAvatarColor(record.email) : '' }">
+              <a-avatar 
+                :size="48" 
+                :src="record.avatar || '/default-avatar.png'"
+                :style="{ backgroundColor: !record.avatar ? getAvatarColor(record.email) : '' }"
+                class="user-avatar"
+              >
                 {{ !record.avatar ? getAvatarText(record.email) : '' }}
               </a-avatar>
-              <span class="email-text">{{ record.email }}</span>
+              <div class="user-details">
+                <div class="user-name">
+                  <span class="last-name">{{ record.last_name }}</span>
+                  <span class="first-name">{{ record.first_name }}</span>
+                </div>
+                <div class="user-email">{{ record.email }}</div>
+              </div>
             </div>
           </template>
 
@@ -190,7 +203,7 @@ const dirApi = import.meta.env.VITE_API_BASE_URL;
 
 const columns = [
   { title: 'STT', key: 'id' },
-  { title: 'Email', key: 'email' },
+  { title: 'User Info', key: 'userInfo' },
   { title: 'Gender', dataIndex: 'gender' },
   { title: 'Phone', dataIndex: 'phone' },
   { title: 'Role', key: 'role' },
@@ -568,12 +581,62 @@ const fetchBannedUsersCount = async () => {
 .user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  padding: 8px 0;
 }
 
-.email-text {
-  color: #1f1f1f;
-  font-weight: 500;
+.user-avatar {
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #fff;
+  transition: all 0.3s;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-name {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  
+  .last-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f1f1f;
+  }
+  
+  .first-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1f1f1f;
+  }
+}
+
+.user-email {
+  font-size: 14px;
+  color: #8c8c8c;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    background: #8c8c8c;
+    border-radius: 50%;
+    margin-right: 4px;
+  }
 }
 
 .role-tags {

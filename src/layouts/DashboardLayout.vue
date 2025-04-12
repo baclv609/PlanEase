@@ -146,8 +146,8 @@ const userAvatar = computed(() => {
 
       <a-layout-footer class="footer">
         <div class="footer-content">
-          <span class="copyright">© 2024 Prepedu Interview</span>
-          <span class="version">Version 1.0</span>
+          <!-- <span class="copyright">© 2025 Prepedu Interview</span>
+          <span class="version">Version 1.0</span> -->
         </div>
       </a-layout-footer>
     </a-layout>
@@ -256,9 +256,9 @@ const userAvatar = computed(() => {
 
 .main-content {
   padding: 16px;
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 95%;
+  /* max-width: 1400px; */
+  /* margin: 0 auto; */
+  /* width: 95%; */
   background: #fff;
 }
 

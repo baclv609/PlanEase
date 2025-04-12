@@ -34,12 +34,12 @@ const { authState } = useAuth();
       <router-link :to="{ name: 'users' }"> Quản lý người dùng </router-link>
     </a-menu-item>
 
-    <a-menu-item key="roles">
+    <!-- <a-menu-item key="roles">
       <template #icon>
         <SafetyCertificateOutlined />
       </template>
       <router-link :to="{ name: 'roles' }"> Quản lý role </router-link>
-    </a-menu-item>
+    </a-menu-item> -->
 
     <!-- quan lý setting -->
     <!-- <a-menu-item key="settings">
