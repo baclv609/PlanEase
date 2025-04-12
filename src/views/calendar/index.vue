@@ -927,7 +927,7 @@ onMounted(() => {
 <style scoped>
 .calendar-wrapper {
   width: 100%;
-  /* height: calc(100vh - 76px); */
+  min-height: calc(100vh - 76px);
   border-radius: 8px;
   overflow: hidden;
   /* scroll ben tuan va ngay */

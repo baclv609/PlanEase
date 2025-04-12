@@ -147,7 +147,9 @@
     "back": "Quay lại",
     "backToCalendar": "Quay lại Lịch",
     "decline": "Từ chối",
-    "accept": "Chấp nhận"
+    "accept": "Chấp nhận",
+    "yes": "Có",
+    "no": "Không"
   },
   "calendar": {
     "createEvent": "Tạo sự kiện",
@@ -181,7 +183,9 @@
       "delete": "Xóa",
       "showMore": "Xem thêm",
       "showLess": "Thu gọn",
-      "displayOnly": "Chỉ hiển thị nhãn này"
+      "displayOnly": "Chỉ hiển thị nhãn này",
+      "deleteConfirmTitle": "Xác nhận xóa tag",
+      "deleteConfirmContent": "Bạn có chắc chắn muốn xóa tag \"{name}\"? Hành động này sẽ xóa tất cả các sự kiện và công việc liên quan đến tag này."
     }
   },
   "errors": {
@@ -192,7 +196,9 @@
     "failedToLoadEvents": "Không thể tải danh sách sự kiện",
     "tagExists": "Tag này đã tồn tại!",
     "failedToAddTag": "Không thể thêm tag",
-    "failedToDeleteTag": "Không thể xóa tag. Vui lòng thử lại."
+    "failedToDeleteTag": "Không thể xóa tag. Vui lòng thử lại.",
+    "deleteFailed": "Không thể xóa tag. Vui lòng thử lại.",
+    "cannotDeleteLastTag": "Không thể xóa tag cuối cùng. Bạn phải có ít nhất một tag trong hệ thống."
   },
   "validation": {
     "tagNameRequired": "Vui lòng nhập tên tag!",

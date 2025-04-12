@@ -140,12 +140,14 @@
   "common": {
     "create": "Create",
     "retry": "Retry",
-    "viewMore": "View more",
+    "viewMore": "View More",
     "description": "Description",
     "back": "Back",
     "backToCalendar": "Back to Calendar",
     "decline": "Decline",
-    "accept": "Accept"
+    "accept": "Accept",
+    "yes": "Yes",
+    "no": "No"
   },
   "calendar": {
     "createEvent": "Create Event",
@@ -179,18 +181,22 @@
       "delete": "Delete",
       "showMore": "Show more",
       "showLess": "Show less",
-      "displayOnly": "Display only"
+      "displayOnly": "Display only",
+      "deleteConfirmTitle": "Confirm Tag Deletion",
+      "deleteConfirmContent": "Are you sure you want to delete the tag \"{name}\"? This action will delete all events and tasks associated with this tag."
     }
   },
   "errors": {
     "serverError": "Server error, please try again later",
     "sessionExpired": "Session expired, please login again",
-    "connectionError": "Could not connect to server",
+    "connectionError": "Cannot connect to server",
     "generalError": "An error occurred, please try again",
     "failedToLoadEvents": "Failed to load events",
     "tagExists": "This tag already exists!",
     "failedToAddTag": "Failed to add tag",
-    "failedToDeleteTag": "Failed to delete tag. Please try again."
+    "failedToDeleteTag": "Failed to delete tag. Please try again.",
+    "deleteFailed": "Failed to delete tag. Please try again.",
+    "cannotDeleteLastTag": "Cannot delete the last tag. You must have at least one tag in the system."
   },
   "validation": {
     "tagNameRequired": "Please enter tag name!",
