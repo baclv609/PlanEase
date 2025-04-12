@@ -4,7 +4,7 @@
     <header class="header">
       <div class="container">
         <div class="logo">
-          <img :src="logo" alt="PlanEase logo" class="logo-img" />
+          <img :src="logo" alt="Notibro logo" class="logo-img" />
         </div>
         <nav class="nav">
           <a @click.prevent="scrollToSection('hero')" class="nav-link">Trang chủ</a>
@@ -24,8 +24,8 @@
       <div class="container">
         <div class="hero-content">
           <h1 class="hero-title">
-            <span class="gradient-text">PlanEase</span> - Quản lý công việc thông minh
-          </h1>
+            <span class="gradient-text">Notibro</span> - Quản lý công việc thông minh
+      </h1>
           <p class="hero-subtitle">
             Giải pháp quản lý công việc toàn diện, giúp bạn làm việc hiệu quả hơn
           </p>
@@ -45,7 +45,7 @@
           </div>
         </div>
         <div class="hero-image">
-          <img :src="heroImage" alt="PlanEase Dashboard" />
+          <img :src="heroImage" alt="Notibro Dashboard" />
         </div>
       </div>
     </section>
@@ -80,7 +80,7 @@
           <p class="section-description">
             Đơn giản, dễ dàng và hiệu quả
           </p>
-        </div>
+    </div>
 
         <div class="steps-container">
           <div class="step-item" v-for="(step, index) in steps" :key="index">
@@ -102,30 +102,17 @@
           <p class="section-description">
             Những phản hồi từ người dùng của chúng tôi
           </p>
-        </div>
+    </div>
 
         <div class="testimonials-slider animate-on-scroll">
-          <Swiper
-            :modules="[Autoplay, Pagination, Navigation]"
-            :slides-per-view="1"
-            :space-between="30"
-            :autoplay="{
-              delay: 5000,
-              disableOnInteraction: false
-            }"
-            :pagination="{ clickable: true }"
-            :navigation="true"
-            :breakpoints="{
-              640: {
-                slidesPerView: 2
-              },
-              1024: {
-                slidesPerView: 3
-              }
-            }"
-          >
-            <SwiperSlide v-for="(testimonial, index) in testimonials" :key="index">
-              <div class="testimonial-card">
+          <div class="slider-container">
+            <div class="slider-content">
+              <div 
+                v-for="(testimonial, index) in testimonials" 
+                :key="index"
+                class="testimonial-card"
+                :class="{ active: currentSlide === index }"
+              >
                 <div class="testimonial-rating">
                   <template v-for="star in 5" :key="star">
                     <StarFilled v-if="star <= testimonial.rating" class="star-filled" />
@@ -143,8 +130,25 @@
                   </div>
                 </div>
               </div>
-            </SwiperSlide>
-          </Swiper>
+            </div>
+            <div class="slider-controls">
+              <button class="slider-button prev" @click="prevSlide">
+                <LeftOutlined />
+              </button>
+              <div class="slider-dots">
+                <button 
+                  v-for="(_, index) in testimonials" 
+                  :key="index"
+                  class="dot"
+                  :class="{ active: currentSlide === index }"
+                  @click="currentSlide = index"
+                />
+              </div>
+              <button class="slider-button next" @click="nextSlide">
+                <RightOutlined />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -155,7 +159,7 @@
         <div class="cta-content">
           <h2 class="cta-title">Sẵn sàng bắt đầu?</h2>
           <p class="cta-description">
-            Đăng ký ngay hôm nay để trải nghiệm những tính năng tuyệt vời của PlanEase
+            Đăng ký ngay hôm nay để trải nghiệm những tính năng tuyệt vời của Notibro
           </p>
           <a-button type="primary" size="large" class="cta-button" @click="handleGetStarted">
             Bắt đầu miễn phí
@@ -169,7 +173,7 @@
       <div class="container">
         <div class="footer-content">
           <div class="footer-logo">
-            <img :src="logo" alt="PlanEase logo" class="logo-img" />
+            <img :src="logo" alt="Notibro logo" class="logo-img" />
             <p class="footer-description">
               Giải pháp quản lý công việc toàn diện cho cá nhân và doanh nghiệp
             </p>
@@ -187,7 +191,7 @@
         </div>
         <div class="footer-bottom">
           <p class="copyright">
-            © {{ new Date().getFullYear() }} PlanEase. All Rights Reserved.
+            © {{ new Date().getFullYear() }} Notibro. All Rights Reserved.
           </p>
           <div class="social-links">
             <a v-for="(social, index) in socialLinks" :key="index" :href="social.url" class="social-link">
@@ -201,14 +205,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
-import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Autoplay, Pagination, Navigation } from 'swiper';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
 import logo from '@/assets/images/logo.png'
+import heroImage from '@/assets/images/Calender-FullPage.png'
 import {
   CalendarOutlined,
   TeamOutlined,
@@ -221,15 +221,16 @@ import {
   InstagramOutlined,
   LinkedinOutlined,
   StarFilled,
-  StarOutlined
+  StarOutlined,
+  LeftOutlined,
+  RightOutlined
 } from '@ant-design/icons-vue';
 
 // Placeholder images with updated colors
-// const logo = '@/assets/images/logo.png';
-const heroImage = 'https://via.placeholder.com/600x400/FFCB77/FFFFFF?text=Dashboard+Preview';
-const user1Avatar = 'https://via.placeholder.com/100x100/17C3B2/FFFFFF?text=User+1';
-const user2Avatar = 'https://via.placeholder.com/100x100/FFCB77/FFFFFF?text=User+2';
-const user3Avatar = 'https://via.placeholder.com/100x100/227C9D/FFFFFF?text=User+3';
+// const heroImage = 'https://via.placeholder.com/600x400/FFCB77/FFFFFF?text=Dashboard+Preview';
+const user1Avatar = '';
+const user2Avatar = '';
+const user3Avatar = '';
 
 const router = useRouter();
 
@@ -275,7 +276,7 @@ const features = ref([
 const steps = ref([
   {
     title: 'Đăng ký tài khoản',
-    description: 'Tạo tài khoản miễn phí và bắt đầu sử dụng PlanEase'
+    description: 'Tạo tài khoản miễn phí và bắt đầu sử dụng Notibro'
   },
   {
     title: 'Thiết lập dự án',
@@ -293,35 +294,35 @@ const steps = ref([
 
 const testimonials = ref([
   {
-    text: 'PlanEase đã giúp nhóm của chúng tôi làm việc hiệu quả hơn rất nhiều. Giao diện thân thiện và dễ sử dụng.',
+    text: 'Notibro đã giúp nhóm của chúng tôi làm việc hiệu quả hơn rất nhiều. Giao diện thân thiện và dễ sử dụng.',
     avatar: user1Avatar,
     name: 'Nguyễn Văn A',
     role: 'Trưởng phòng Marketing',
     rating: 5
   },
   {
-    text: 'Tôi rất ấn tượng với các tính năng của PlanEase. Đặc biệt là phần lịch và nhắc nhở rất hữu ích.',
+    text: 'Tôi rất ấn tượng với các tính năng của Notibro. Đặc biệt là phần lịch và nhắc nhở rất hữu ích.',
     avatar: user2Avatar,
     name: 'Trần Thị B',
     role: 'Quản lý dự án',
     rating: 5
   },
   {
-    text: 'PlanEase đã giúp tôi quản lý thời gian và công việc tốt hơn. Tôi có thể dễ dàng theo dõi tiến độ của mình.',
+    text: 'Notibro đã giúp tôi quản lý thời gian và công việc tốt hơn. Tôi có thể dễ dàng theo dõi tiến độ của mình.',
     avatar: user3Avatar,
     name: 'Lê Văn C',
     role: 'Nhân viên phát triển',
     rating: 4
   },
   {
-    text: 'Tính năng phân tích dữ liệu của PlanEase rất mạnh mẽ. Nó giúp tôi đưa ra quyết định chính xác hơn.',
+    text: 'Tính năng phân tích dữ liệu của Notibro rất mạnh mẽ. Nó giúp tôi đưa ra quyết định chính xác hơn.',
     avatar: user1Avatar,
     name: 'Phạm Thị D',
     role: 'Giám đốc điều hành',
     rating: 5
   },
   {
-    text: 'Tôi đã thử nhiều công cụ quản lý dự án, nhưng PlanEase là công cụ tốt nhất cho nhóm của tôi.',
+    text: 'Tôi đã thử nhiều công cụ quản lý dự án, nhưng Notibro là công cụ tốt nhất cho nhóm của tôi.',
     avatar: user2Avatar,
     name: 'Hoàng Văn E',
     role: 'Trưởng nhóm phát triển',
@@ -420,8 +421,36 @@ const animateOnScroll = () => {
   elements.forEach(element => observer.observe(element));
 };
 
+// Testimonials slider
+const currentSlide = ref(0);
+const slideInterval = ref(null);
+
+const nextSlide = () => {
+  currentSlide.value = (currentSlide.value + 1) % testimonials.value.length;
+};
+
+const prevSlide = () => {
+  currentSlide.value = (currentSlide.value - 1 + testimonials.value.length) % testimonials.value.length;
+};
+
+const startAutoPlay = () => {
+  slideInterval.value = setInterval(nextSlide, 5000);
+};
+
+const stopAutoPlay = () => {
+  if (slideInterval.value) {
+    clearInterval(slideInterval.value);
+    slideInterval.value = null;
+  }
+};
+
 onMounted(() => {
   animateOnScroll();
+  startAutoPlay();
+});
+
+onBeforeUnmount(() => {
+  stopAutoPlay();
 });
 </script>
 
@@ -559,7 +588,7 @@ onMounted(() => {
 
 .gradient-text {
   background: linear-gradient(135deg, #FFCB77, #FE6D73);
-  -webkit-background-clip: text;
+    -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -814,52 +843,49 @@ onMounted(() => {
   padding: 20px 0;
 }
 
-.testimonial-card {
-  background: #FFFFFF;
-  padding: 32px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s;
-  border: 1px solid rgba(255, 203, 119, 0.2);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+.slider-container {
   position: relative;
+  padding: 20px 0;
+}
+
+.slider-content {
+  position: relative;
+  height: 300px;
   overflow: hidden;
+}
 
-  &::before {
-    content: '"';
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 80px;
-    color: rgba(255, 203, 119, 0.1);
-    font-family: serif;
-    line-height: 1;
-  }
+.testimonial-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.5s ease;
+  pointer-events: none;
+}
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(255, 203, 119, 0.2);
-    border-color: #FFCB77;
-  }
+.testimonial-card.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
 }
 
 .testimonial-rating {
   display: flex;
   gap: 4px;
   margin-bottom: 16px;
+}
 
-  .star-filled {
-    color: #FFCB77;
-    font-size: 16px;
-  }
+.star-filled {
+  color: #FFCB77;
+  font-size: 16px;
+}
 
-  .star-outlined {
-    color: #FFCB77;
-    font-size: 16px;
-    opacity: 0.5;
-  }
+.star-outlined {
+  color: #FFCB77;
+  font-size: 16px;
+  opacity: 0.5;
 }
 
 .testimonial-content {
@@ -905,45 +931,58 @@ onMounted(() => {
   }
 }
 
-/* Swiper Customization */
-:deep(.swiper-pagination-bullet) {
-  width: 10px;
-  height: 10px;
-  background: #FFCB77;
-  opacity: 0.5;
-  transition: all 0.3s;
+.slider-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
 }
 
-:deep(.swiper-pagination-bullet-active) {
-  opacity: 1;
-  background: #FE6D73;
-  transform: scale(1.2);
-}
-
-:deep(.swiper-button-next),
-:deep(.swiper-button-prev) {
-  color: #FFCB77;
-  transition: all 0.3s;
-  background: rgba(255, 255, 255, 0.9);
+.slider-button {
+  background: white;
+  border: none;
   width: 40px;
   height: 40px;
   border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
-  &::after {
-    font-size: 16px;
-  }
+  transition: all 0.3s;
+  color: #FFCB77;
 
   &:hover {
-    color: #FE6D73;
+    background: #FFCB77;
+    color: white;
     transform: scale(1.1);
-    background: white;
   }
 }
 
-:deep(.swiper-button-disabled) {
-  opacity: 0.3;
-  cursor: not-allowed;
+.slider-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #FFCB77;
+  opacity: 0.5;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &.active {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
 }
 
 /* CTA Section */
@@ -951,7 +990,7 @@ onMounted(() => {
   padding: 80px 0;
   background: linear-gradient(135deg, #FFCB77, #FE6D73);
   text-align: center;
-  color: white;
+    color: white;
   position: relative;
   overflow: hidden;
 
@@ -980,7 +1019,7 @@ onMounted(() => {
 }
 
 .cta-description {
-  font-size: 18px;
+    font-size: 18px;
   margin-bottom: 32px;
   opacity: 0.9;
 }
@@ -1051,7 +1090,7 @@ onMounted(() => {
 
 .footer-link {
   color: #227C9D;
-  text-decoration: none;
+    text-decoration: none;
   display: block;
   margin-bottom: 8px;
   transition: all 0.3s;
@@ -1162,21 +1201,16 @@ onMounted(() => {
     text-align: center;
   }
 
-  .testimonials-slider {
-    padding: 10px 0;
+  .slider-content {
+    height: 400px;
   }
 
   .testimonial-card {
-    padding: 24px;
+    padding: 20px;
   }
 
-  .testimonial-text {
-    font-size: 14px;
-  }
-
-  :deep(.swiper-button-next),
-  :deep(.swiper-button-prev) {
+  .slider-button {
     display: none;
   }
-}
+  }
 </style>
