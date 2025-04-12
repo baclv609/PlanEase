@@ -434,9 +434,13 @@ export function useCalendar(calendarRef) {
     locale: settingsStore.language,
     dayMaxEvents: true,
 
-    height: '100vh',
-    // contentHeight: '100%',
-    // expandRows: true,
+    height: 'calc(100vh - 200px)',
+    contentHeight: 'calc(100vh - 200px)',
+    contentHeight: settingsStore.displayMode === 'dayGridMonth' ? 'calc(100vh - 200px)' : 'auto',
+// để 2 cái giống nhau ms hoạt động
+
+    expandRows: true,
+
     allDaySlot: true,
 
     // chặn kéo thả vào allday trong timeGridWeek và timeGridDay
