@@ -1,185 +1,955 @@
 <template>
-  <div class="min-h-screen bg-white">
+  <div class="landing-page">
     <!-- Header -->
-    <header class="bg-[#FFF7E6] py-4">
-      <div class="container mx-auto flex justify-between items-center px-4">
-        <img :src="logo" alt="Notibro logo" class="h-16" />
-
-        <nav class="flex space-x-4 text-gray-600">
-          <a class="hover:underline text-orange-400" href="#"> Overview </a>
-          <a class="hover:underline text-orange-400" href="#"> Notibro Plus </a>
+    <header class="header">
+      <div class="container">
+        <div class="logo">
+          <img :src="logo" alt="PlanEase logo" class="logo-img" />
+        </div>
+        <nav class="nav">
+          <a href="#features" class="nav-link">Tính năng</a>
+          <a href="#how-it-works" class="nav-link">Cách thức</a>
+          <a href="#pricing" class="nav-link">Bảng giá</a>
+          <a href="#faq" class="nav-link">Hỏi đáp</a>
         </nav>
+        <div class="auth-buttons">
+          <a-button type="text" class="login-btn" @click="handleLogin">Đăng nhập</a-button>
+          <a-button type="primary" class="register-btn" @click="handleRegister">Đăng ký</a-button>
+        </div>
       </div>
     </header>
 
     <!-- Hero Section -->
-    <main class="max-w-4xl mx-auto px-4 py-16 text-center">
-      <!-- <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-4 leading-7">
-        Làm việc
-        <span class="text-[#00BFA6]"> hiệu quả </span>
-        <span class="text-orange-400">hơn</span> là
-        <br />
-        tăng khối lượng công việc
-      </h1>
-      <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
-        Trang web tích hợp AI giúp bạn nâng cao hiệu suất công việc và biết được thông tin nào là quan trọng đối với
-        mình
-      </p>
-      <button
-        class="bg-gradient-to-r from-yellow-400 to-green-400 text-white font-bold py-2 px-6 rounded-full"
-      >
-        Trải nghiệm Notibro
-      </button> -->
-
-      <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-4 leading-7 text-gradient">
-        Easy Schedule - Work Better <br> Enjoy Life!
-      </h1>
-      <p class="text-gray-500 text-lg mb-8">
-        Notibro offers an intuitive user experience, making it easy for you <br> to manage your schedule without difficulty.
-      </p>
-      <!-- <a
-                href="#"
-                class="bg-blue-400 bg-gradient-to-r border-none from-yellow-400 to-green-400 text-white font-bold py-2 px-6 rounded-full"
-            >
-                Trải nghiệm Notibro
-            </a> -->
-      <router-link to="#" @click.prevent="handleNavigation"
-        class="border-none text-white font-bold gradient-button">
-        Experience Notibro
-      </router-link>
-
-    </main>
-
-    <!-- Features Section -->
-    <div class="max-w-6xl mx-auto px-4 py-16 grid gap-16">
-      <div v-for="(feature, index) in features" :key="index" class="grid md:grid-cols-2 gap-8 items-center" :class="{
-        'order-first md:order-last': index % 2 === 0,
-      }">
-        <FeatureCard :icon="feature.icon" :title="feature.title" :description="feature.description" />
-        <div class="bg-gray-100 rounded-lg aspect-video"></div>
-      </div>
-    </div>
-
-    <!-- How People Use Section -->
-    <div class="bg-blue-50 py-16">
-      <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-3xl font-bold text-center mb-12">
-          How people use Notibro
-        </h2>
-        <div class="grid md:grid-cols-3 gap-8">
-          <HowPeopleUseCard v-for="(useCase, index) in howPeopleUse" :key="index" :icon="useCase.icon"
-            :title="useCase.title" :description="useCase.description" :additionalInfo="useCase.additionalInfo" />
+    <section class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <h1 class="hero-title">
+            <span class="gradient-text">PlanEase</span> - Quản lý công việc thông minh
+          </h1>
+          <p class="hero-subtitle">
+            Giải pháp quản lý công việc toàn diện, giúp bạn làm việc hiệu quả hơn
+          </p>
+          <div class="hero-buttons">
+            <a-button type="primary" size="large" class="primary-button" @click="handleGetStarted">
+              Bắt đầu ngay
+            </a-button>
+            <a-button size="large" class="secondary-button" @click="handleLearnMore">
+              Tìm hiểu thêm
+            </a-button>
+          </div>
+          <div class="hero-stats">
+            <div class="stat-item" v-for="(stat, index) in stats" :key="index">
+              <span class="stat-number">{{ stat.number }}</span>
+              <span class="stat-text">{{ stat.text }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-image">
+          <img :src="heroImage" alt="PlanEase Dashboard" />
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Tính năng nổi bật</h2>
+          <p class="section-description">
+            Khám phá những tính năng giúp bạn quản lý công việc hiệu quả hơn
+          </p>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card" v-for="(feature, index) in features" :key="index">
+            <div class="feature-icon">
+              <component :is="feature.icon" />
+            </div>
+            <h3 class="feature-title">{{ feature.title }}</h3>
+            <p class="feature-description">{{ feature.description }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Cách thức hoạt động</h2>
+          <p class="section-description">
+            Đơn giản, dễ dàng và hiệu quả
+          </p>
+        </div>
+
+        <div class="steps-container">
+          <div class="step-item" v-for="(step, index) in steps" :key="index">
+            <div class="step-number">{{ index + 1 }}</div>
+            <div class="step-content">
+              <h3 class="step-title">{{ step.title }}</h3>
+              <p class="step-description">{{ step.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Khách hàng nói gì</h2>
+          <p class="section-description">
+            Những phản hồi từ người dùng của chúng tôi
+          </p>
+        </div>
+
+        <div class="testimonials-slider">
+          <div class="testimonial-card" v-for="(testimonial, index) in testimonials" :key="index">
+            <div class="testimonial-content">
+              <p class="testimonial-text">{{ testimonial.text }}</p>
+            </div>
+            <div class="testimonial-author">
+              <a-avatar :size="48" :src="testimonial.avatar" />
+              <div class="author-info">
+                <h4 class="author-name">{{ testimonial.name }}</h4>
+                <p class="author-role">{{ testimonial.role }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+      <div class="container">
+        <div class="cta-content">
+          <h2 class="cta-title">Sẵn sàng bắt đầu?</h2>
+          <p class="cta-description">
+            Đăng ký ngay hôm nay để trải nghiệm những tính năng tuyệt vời của PlanEase
+          </p>
+          <a-button type="primary" size="large" class="cta-button" @click="handleGetStarted">
+            Bắt đầu miễn phí
+          </a-button>
+        </div>
+      </div>
+    </section>
 
     <!-- Footer -->
-    <div class="bg-yellow-100 py-4">
-      <div class="max-w-7xl mx-auto px-6 text-center">
-        <p class="text-[#000000] font-semibold m-0">
-          © 2025 Notibro. All Rights Reserved. | Terms of Use | Privacy Policy
-        </p>
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-logo">
+            <img :src="logo" alt="PlanEase logo" class="logo-img" />
+            <p class="footer-description">
+              Giải pháp quản lý công việc toàn diện cho cá nhân và doanh nghiệp
+            </p>
+          </div>
+          <div class="footer-links">
+            <div class="link-group" v-for="(group, index) in footerLinks" :key="index">
+              <h4 class="link-group-title">{{ group.title }}</h4>
+              <ul class="link-list">
+                <li v-for="(link, linkIndex) in group.links" :key="linkIndex">
+                  <a :href="link.url" class="footer-link">{{ link.text }}</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p class="copyright">
+            © {{ new Date().getFullYear() }} PlanEase. All Rights Reserved.
+          </p>
+          <div class="social-links">
+            <a v-for="(social, index) in socialLinks" :key="index" :href="social.url" class="social-link">
+              <component :is="social.icon" />
+            </a>
+          </div>
+        </div>
       </div>
-    </div>
+    </footer>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { RouterLink, useRouter } from "vue-router";
-import FeatureCard from "@/views/home/landingpage/FeatureCard.vue";
-import HowPeopleUseCard from "@/views/home/landingpage/HowPeopleUseCard.vue";
-import iconMap from "@/utils/iconLoader";
-import logo from "@/assets/images/logo.png";
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import {
+  CalendarOutlined,
+  TeamOutlined,
+  NotificationOutlined,
+  FileTextOutlined,
+  BarChartOutlined,
+  SettingOutlined,
+  FacebookOutlined,
+  TwitterOutlined,
+  InstagramOutlined,
+  LinkedinOutlined
+} from '@ant-design/icons-vue';
+
+// Placeholder images with updated colors
+const logo = 'https://via.placeholder.com/160x40/227C9D/FFFFFF?text=PlanEase';
+const heroImage = 'https://via.placeholder.com/600x400/FFCB77/FFFFFF?text=Dashboard+Preview';
+const user1Avatar = 'https://via.placeholder.com/100x100/17C3B2/FFFFFF?text=User+1';
+const user2Avatar = 'https://via.placeholder.com/100x100/FFCB77/FFFFFF?text=User+2';
+const user3Avatar = 'https://via.placeholder.com/100x100/227C9D/FFFFFF?text=User+3';
 
 const router = useRouter();
 
-const handleNavigation = () => {
-  const isAuthenticated = !!localStorage.getItem("access_token"); // Giả sử lưu token khi đăng nhập
-  if (isAuthenticated) {
-    router.push("/calendar");
-  } else {
-    router.push("/login");
-  }
-};
+const stats = ref([
+  { number: '10K+', text: 'Người dùng' },
+  { number: '4.8/5', text: 'Đánh giá' },
+  { number: '99.9%', text: 'Uptime' }
+]);
 
-// Tạo dữ liệu cho phần "Features"
 const features = ref([
   {
-    title: "Upload information source",
-    description:
-      "Import events easily from other sources or other calendar applications. Automatically synchronize all information for more effective time management.",
-    icon: iconMap["upload_icon.png"],
+    icon: CalendarOutlined,
+    title: 'Lịch thông minh',
+    description: 'Quản lý và theo dõi công việc một cách trực quan với lịch thông minh'
   },
   {
-    title: "Instant insights",
-    description:
-      `View event details with just one click. Include information like time, location, and participants so you don't miss anything important.`,
-    icon: iconMap["thunder 1.png"],
+    icon: TeamOutlined,
+    title: 'Làm việc nhóm',
+    description: 'Cộng tác hiệu quả với đồng nghiệp trong các dự án'
   },
   {
-    title: "Grasp accurate information sources",
-    description:
-      "Search for events by keywords or smart filters. From personal work to team events, everything is clearly organized and easily accessible.",
-    icon: iconMap["check-mark 1.png"],
+    icon: NotificationOutlined,
+    title: 'Nhắc nhở',
+    description: 'Không bao giờ bỏ lỡ deadline với hệ thống nhắc nhở thông minh'
   },
   {
-    title: "Planning is more effective and enjoyable",
-    description:
-      `Intuitive scheduling tool with flexible display options: daily, weekly, monthly calendars. Integrated notifications and time suggestions help you always be ready.`,
-    icon: iconMap["clipboard 1.png"],
+    icon: FileTextOutlined,
+    title: 'Báo cáo',
+    description: 'Theo dõi tiến độ và hiệu suất làm việc với báo cáo chi tiết'
   },
+  {
+    icon: BarChartOutlined,
+    title: 'Phân tích',
+    description: 'Đánh giá hiệu suất và đưa ra quyết định dựa trên dữ liệu'
+  },
+  {
+    icon: SettingOutlined,
+    title: 'Tùy chỉnh',
+    description: 'Tùy chỉnh giao diện và tính năng theo nhu cầu của bạn'
+  }
 ]);
 
-// Tạo dữ liệu cho phần "How People Use"
-const howPeopleUse = ref([
+const steps = ref([
   {
-    title: `Comprehensive schedule management`,
-    description:
-      "Import schedules from different sources such as calendar applications. The calendar is clearly displayed by day, week, or month, helping you easily control all your plans.",
-    additionalInfo: "Keep everything at hand and manage your time better.",
-    icon: iconMap["calendar 2.png"],
+    title: 'Đăng ký tài khoản',
+    description: 'Tạo tài khoản miễn phí và bắt đầu sử dụng PlanEase'
   },
   {
-    title: "Organize work effectively",
-    description:"Easily add, edit, or delete events with just a few clicks. Schedule automatic reminders so you don't miss any important tasks.",
-    additionalInfo: "Confidently control your time.",
-    icon: iconMap["layer 1.png"],
+    title: 'Thiết lập dự án',
+    description: 'Tạo dự án mới và mời các thành viên tham gia'
   },
   {
-    title: "Time suggestions and work improvements",
-    description:
-      "The system automatically suggests free times or properly arranges group meetings based on everyone's participation. No more worrying about scheduling conflicts or missing information.",
-    additionalInfo: "Discover how to work more efficiently than ever.",
-    icon: iconMap["idea 1.png"],
+    title: 'Quản lý công việc',
+    description: 'Thêm công việc, gán người thực hiện và theo dõi tiến độ'
   },
+  {
+    title: 'Theo dõi hiệu suất',
+    description: 'Xem báo cáo và phân tích hiệu suất làm việc'
+  }
 ]);
+
+const testimonials = ref([
+  {
+    text: 'PlanEase đã giúp nhóm của chúng tôi làm việc hiệu quả hơn rất nhiều. Giao diện thân thiện và dễ sử dụng.',
+    avatar: user1Avatar,
+    name: 'Nguyễn Văn A',
+    role: 'Trưởng phòng Marketing'
+  },
+  {
+    text: 'Tôi rất ấn tượng với các tính năng của PlanEase. Đặc biệt là phần lịch và nhắc nhở rất hữu ích.',
+    avatar: user2Avatar,
+    name: 'Trần Thị B',
+    role: 'Quản lý dự án'
+  },
+  {
+    text: 'PlanEase đã giúp tôi quản lý thời gian và công việc tốt hơn. Tôi có thể dễ dàng theo dõi tiến độ của mình.',
+    avatar: user3Avatar,
+    name: 'Lê Văn C',
+    role: 'Nhân viên phát triển'
+  }
+]);
+
+const footerLinks = ref([
+  {
+    title: 'Sản phẩm',
+    links: [
+      { text: 'Tính năng', url: '#features' },
+      { text: 'Bảng giá', url: '#pricing' },
+      { text: 'Tích hợp', url: '#' },
+      { text: 'Ứng dụng di động', url: '#' }
+    ]
+  },
+  {
+    title: 'Công ty',
+    links: [
+      { text: 'Về chúng tôi', url: '#' },
+      { text: 'Blog', url: '#' },
+      { text: 'Đối tác', url: '#' },
+      { text: 'Tuyển dụng', url: '#' }
+    ]
+  },
+  {
+    title: 'Hỗ trợ',
+    links: [
+      { text: 'Trung tâm trợ giúp', url: '#' },
+      { text: 'Liên hệ', url: '#' },
+      { text: 'Tài liệu API', url: '#' },
+      { text: 'Trạng thái hệ thống', url: '#' }
+    ]
+  },
+  {
+    title: 'Pháp lý',
+    links: [
+      { text: 'Điều khoản sử dụng', url: '#' },
+      { text: 'Chính sách bảo mật', url: '#' },
+      { text: 'Chính sách cookie', url: '#' },
+      { text: 'GDPR', url: '#' }
+    ]
+  }
+]);
+
+const socialLinks = ref([
+  { icon: FacebookOutlined, url: '#' },
+  { icon: TwitterOutlined, url: '#' },
+  { icon: InstagramOutlined, url: '#' },
+  { icon: LinkedinOutlined, url: '#' }
+]);
+
+const handleLogin = () => {
+  router.push('/login');
+};
+
+const handleRegister = () => {
+  router.push('/register');
+};
+
+const handleGetStarted = () => {
+  router.push('/register');
+};
+
+const handleLearnMore = () => {
+  const featuresSection = document.querySelector('#features');
+  featuresSection.scrollIntoView({ behavior: 'smooth' });
+};
 </script>
 
 <style scoped>
-  .text-gradient {
-    font-weight: bold;
-    background: linear-gradient(90deg, #23c5b9, #97b67a, #f9c76c);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
+.landing-page {
+  min-height: 100vh;
+  background: #FEF9EF;
+}
+
+/* Header */
+.header {
+  background: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80px;
+}
+
+.logo-img {
+  height: 40px;
+}
+
+.nav {
+  display: flex;
+  gap: 32px;
+}
+
+.nav-link {
+  color: #227C9D;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s;
+
+  &:hover {
+    color: #FFCB77;
+    transform: translateY(-2px);
+  }
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+.login-btn {
+  color: #666;
+  font-weight: 500;
+}
+
+.register-btn {
+  background: #FFCB77;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(255, 203, 119, 0.3);
+  transition: all 0.3s;
+
+  &:hover {
+    background: #FE6D73;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(254, 109, 115, 0.4);
+  }
+}
+
+/* Hero Section */
+.hero {
+  padding: 160px 0 80px;
+  background: linear-gradient(135deg, #FEF9EF 0%, #FFFFFF 100%);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 203, 119, 0.1), rgba(254, 109, 115, 0.1));
+    clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 0% 100%);
+  }
+}
+
+.hero .container {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+
+.hero-content {
+  flex: 1;
+  max-width: 600px;
+}
+
+.hero-title {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 24px;
+  color: #1a1a1a;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #FFCB77, #FE6D73);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.primary-button {
+  background: #FFCB77;
+  border: none;
+  height: 48px;
+  padding: 0 32px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(255, 203, 119, 0.3);
+  transition: all 0.3s;
+
+  &:hover {
+    background: #FE6D73;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(254, 109, 115, 0.4);
+  }
+}
+
+.secondary-button {
+  height: 48px;
+  padding: 0 32px;
+  font-weight: 600;
+  border: 2px solid #FFCB77;
+  color: #FFCB77;
+  background: transparent;
+  transition: all 0.3s;
+
+  &:hover {
+    background: rgba(255, 203, 119, 0.1);
+    transform: translateY(-2px);
+    border-color: #FE6D73;
+    color: #FE6D73;
+  }
+}
+
+.hero-stats {
+  display: flex;
+  gap: 48px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 700;
+  color: #227C9D;
+  margin-bottom: 4px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stat-text {
+  font-size: 14px;
+  color: #227C9D;
+  font-weight: 500;
+}
+
+.hero-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Features Section */
+.features {
+  padding: 80px 0;
+  background: #FFFFFF;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 203, 119, 0.05), rgba(254, 109, 115, 0.05));
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+  }
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.section-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+}
+
+.section-description {
+  font-size: 18px;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+}
+
+.feature-card {
+  background: #FFFFFF;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+  border: 1px solid rgba(255, 203, 119, 0.2);
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(255, 203, 119, 0.2);
+    border-color: #FFCB77;
+  }
+}
+
+.feature-icon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #FFCB77, #FE6D73);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(255, 203, 119, 0.3);
+}
+
+.feature-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #227C9D;
+  margin-bottom: 12px;
+}
+
+.feature-description {
+  font-size: 16px;
+  color: #227C9D;
+  line-height: 1.6;
+  opacity: 0.8;
+}
+
+/* How It Works Section */
+.how-it-works {
+  padding: 80px 0;
+  background: #FEF9EF;
+  position: relative;
+}
+
+.steps-container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.step-number {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #FFCB77, #FE6D73);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(255, 203, 119, 0.3);
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #227C9D;
+  margin-bottom: 8px;
+}
+
+.step-description {
+  font-size: 16px;
+  color: #227C9D;
+  line-height: 1.6;
+  opacity: 0.8;
+}
+
+/* Testimonials Section */
+.testimonials {
+  padding: 80px 0;
+  background: #FFFFFF;
+  position: relative;
+}
+
+.testimonials-slider {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.testimonial-card {
+  background: #FFFFFF;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+  border: 1px solid rgba(255, 203, 119, 0.2);
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(255, 203, 119, 0.2);
+    border-color: #FFCB77;
+  }
+}
+
+.testimonial-content {
+  margin-bottom: 24px;
+}
+
+.testimonial-text {
+  font-size: 16px;
+  color: #227C9D;
+  line-height: 1.6;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.author-info {
+  h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #227C9D;
+    margin-bottom: 4px;
   }
 
-  .gradient-button {
-    background: linear-gradient(90deg, #f6c36b, #20c3b3, #1a6dab);
-    border: none;
-    border-radius: 30px;
-    color: white;
-    padding: 15px 30px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: 0.2s;
-    text-decoration: none;
+  p {
+    font-size: 14px;
+    color: #227C9D;
+    opacity: 0.8;
   }
-  .gradient-button:hover {
-      transform: scale(1.05);
-      opacity: 85%;
+}
+
+/* CTA Section */
+.cta {
+  padding: 80px 0;
+  background: linear-gradient(135deg, #FFCB77, #FE6D73);
+  text-align: center;
+  color: white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    opacity: 0.1;
   }
+}
+
+.cta-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.cta-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cta-description {
+  font-size: 18px;
+  margin-bottom: 32px;
+  opacity: 0.9;
+}
+
+.cta-button {
+  background: white;
+  color: #FFCB77;
+  border: none;
+  height: 48px;
+  padding: 0 32px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    color: #FE6D73;
+  }
+}
+
+/* Footer */
+.footer {
+  background: #FFFFFF;
+  padding: 80px 0 24px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 64px;
+  margin-bottom: 48px;
+}
+
+.footer-logo {
+  .logo-img {
+    height: 40px;
+    margin-bottom: 16px;
+  }
+}
+
+.footer-description {
+  color: #666;
+  line-height: 1.6;
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+}
+
+.link-group-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+}
+
+.link-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-link {
+  color: #227C9D;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 8px;
+  transition: all 0.3s;
+  font-weight: 500;
+
+  &:hover {
+    color: #FFCB77;
+    transform: translateX(4px);
+  }
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 24px;
+  border-top: 1px solid #eee;
+}
+
+.copyright {
+  color: #666;
+}
+
+.social-links {
+  display: flex;
+  gap: 16px;
+}
+
+.social-link {
+  color: #227C9D;
+  font-size: 20px;
+  transition: all 0.3s;
+
+  &:hover {
+    color: #FFCB77;
+    transform: translateY(-2px);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header .container {
+    flex-direction: column;
+    height: auto;
+    padding: 16px;
+  }
+
+  .nav {
+    margin: 16px 0;
+  }
+
+  .hero {
+    padding: 120px 0 40px;
+  }
+
+  .hero .container {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero-content {
+    margin-bottom: 40px;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+  }
+
+  .hero-stats {
+    justify-content: center;
+  }
+
+  .hero-title {
+    font-size: 36px;
+  }
+
+  .section-title {
+    font-size: 28px;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-links {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+}
 </style>
