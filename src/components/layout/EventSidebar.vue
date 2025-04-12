@@ -179,11 +179,12 @@ import {
   CalendarOutlined,
   CheckSquareOutlined,
   CheckOutlined,
+  ExclamationCircleOutlined,
 } from "@ant-design/icons-vue";
 
 import dayjs from "dayjs";
-import { ref, onMounted, onBeforeUnmount, computed, onUnmounted, watch } from "vue";
-import { message } from "ant-design-vue";
+import { ref, onMounted, onBeforeUnmount, computed, onUnmounted, watch, h } from "vue";
+import { message, Modal } from "ant-design-vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { useEchoStore } from "@/stores/echoStore";
@@ -715,30 +716,50 @@ const viewDetails = (calendarId) => {
 };
 
 const deleteCalendar = async (calendarId) => {
-  try {
-    const token = localStorage.getItem("access_token");
-    const response = await axios.delete(`${dirApi}tags/${calendarId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  const calendar = myCalendars.value.find(cal => cal.id === calendarId) || 
+                  sharedCalendars.value.find(cal => cal.id === calendarId);
+                  
+  if (!calendar) return;
 
-    console.log("Xóa tag", response.data);
-
-    if (response.data.code === 200) {
-      myCalendars.value = myCalendars.value.filter(
-        (calendar) => calendar.id !== calendarId
-      );
-      sharedCalendars.value = sharedCalendars.value.filter(
-        (calendar) => calendar.id !== calendarId
-      );
-
-      message.success(t("success.tagDeleted"));
-    } else {
-      message.error(response.data.message || "Có lỗi xảy ra!");
-    }
-  } catch (error) {
-    console.error("Lỗi khi xóa tag:", error);
-    message.error("Không thể xóa tag. Vui lòng thử lại.");
+  // Kiểm tra số lượng tag còn lại
+  const totalTags = myCalendars.value.length + sharedCalendars.value.length;
+  if (totalTags <= 1) {
+    message.warning(t('errors.cannotDeleteLastTag'));
+    return;
   }
+
+  Modal.confirm({
+    title: t('calendar.calendarSection.deleteConfirmTitle'),
+    icon: () => h(ExclamationCircleOutlined),
+    content: t('calendar.calendarSection.deleteConfirmContent', { name: calendar.name }),
+    okText: t('common.yes'),
+    cancelText: t('common.no'),
+    okType: 'danger',
+    async onOk() {
+      try {
+        const token = localStorage.getItem("access_token");
+        const response = await axios.delete(`${dirApi}tags/${calendarId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.data.code === 200) {
+          myCalendars.value = myCalendars.value.filter(
+            (calendar) => calendar.id !== calendarId
+          );
+          sharedCalendars.value = sharedCalendars.value.filter(
+            (calendar) => calendar.id !== calendarId
+          );
+
+          message.success(t("success.tagDeleted"));
+        } else {
+          message.error(response.data.message || t("error.deleteFailed"));
+        }
+      } catch (error) {
+        console.error("Lỗi khi xóa tag:", error);
+        message.error(t("error.deleteFailed"));
+      }
+    },
+  });
 };
 
 // Update
