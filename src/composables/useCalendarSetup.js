@@ -434,9 +434,26 @@ export function useCalendar(calendarRef) {
     locale: settingsStore.language,
     dayMaxEvents: true,
 
-    height: 'calc(100vh - 200px)',
-    contentHeight: 'calc(100vh - 200px)',
-    expandRows: true,
+    height: '100vh',
+    // contentHeight: '100%',
+    // expandRows: true,
+    allDaySlot: true,
+
+    // chặn kéo thả vào allday trong timeGridWeek và timeGridDay
+    eventAllow: (dropInfo, draggedEvent) => {
+      const currentView = draggedEvent._context.viewApi.type; // Lấy loại view hiện tại
+
+      // Chặn kéo thả trong chế độ timeGridWeek và timeGridDay
+      if (currentView === 'timeGridWeek' || currentView === 'timeGridDay') {
+        if(dropInfo.allDay) {
+          return false; // Không cho phép kéo thả nếu là sự kiện cả ngày
+        } else {
+          return true;
+        }
+      }
+
+      return true; // Cho phép kéo thả trong các chế độ khác
+    },
     
     timeZone: selectedTimezone.value,
     now: dayjs().tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day').toDate(),

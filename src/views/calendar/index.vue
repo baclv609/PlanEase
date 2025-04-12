@@ -930,6 +930,8 @@ onMounted(() => {
   /* height: calc(100vh - 76px); */
   border-radius: 8px;
   overflow: hidden;
+  /* scroll ben tuan va ngay */
+  overflow-y: auto; 
 }
 
 :deep(.fc) {

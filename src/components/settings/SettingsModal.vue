@@ -4,6 +4,7 @@
     :title="$t('settings.title')"
     width="650px"
     @ok="handleSave"
+    centered
     @cancel="handleCancel"
     :footer="null"
   >
@@ -38,17 +39,17 @@
                   </a-select>
                 </a-form-item>
 
-                <a-form-item :label="$t('settings.showNonCurrentDates')">
+                <!-- <a-form-item :label="$t('settings.showNonCurrentDates')">
                   <a-switch
                     v-model:checked="tempSettings.showNonCurrentDates"
                     @change="updateMultiMonthSettings"
                   />
-                </a-form-item>
+                </a-form-item> -->
               </template>
 
-              <a-form-item :label="$t('settings.showWeekNumbers')">
+              <!-- <a-form-item :label="$t('settings.showWeekNumbers')">
                 <a-switch v-model:checked="tempSettings.showWeekNumbers" />
-              </a-form-item>
+              </a-form-item> -->
             </a-form>
           </div>
         </a-tab-pane>
@@ -123,7 +124,7 @@
         </a-tab-pane>
 
         <!-- Thông báo Tab -->
-        <a-tab-pane key="notification" :tab="$t('settings.notification')">
+        <!-- <a-tab-pane key="notification" :tab="$t('settings.notification')">
           <div class="tab-content">
             <h3>{{ $t('settings.notification') }}</h3>
             <a-form layout="vertical">
@@ -140,7 +141,7 @@
               </a-form-item>
             </a-form>
           </div>
-        </a-tab-pane>
+        </a-tab-pane> -->
 
         <!-- Ngôn ngữ Tab -->
         <a-tab-pane key="language" :tab="$t('language')">

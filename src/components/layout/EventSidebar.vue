@@ -26,7 +26,11 @@
         </a-menu>
       </template>
     </a-dropdown>
-
+    <EventModal 
+      :isAddEventModalVisible="isAddEventModalVisible" 
+      :event="selectedEventAdd"
+      @cancel="isAddEventModalVisible = false"
+    />
     <div class="calendar-section">
       <MiniCalendar
         :events="filteredEvents"
