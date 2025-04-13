@@ -249,7 +249,7 @@
     "save": "Save",
     "timeConflict": {
       "title": "Time Conflict",
-      "content": "The start and end time of the event has already been taken by another event. Please select a different time.",
+      "content": "The start and end times overlap with another event. Are you sure you want to create it?",
       "continue": "Continue",
       "cancel": "Cancel"
     },

@@ -255,7 +255,7 @@
     },
     "timeConflict": {
       "title": "Thời gian trùng lặp",
-      "content": "Thời gian bắt đầu và thời gian kết thúc của sự kiện đã trùng lặp với sự kiện khác. Vui lòng chọn thời gian khác.",
+      "content": "Thời gian bắt đầu và kết thúc trùng với sự kiện khác. Bạn có chắc chắn muốn tạo sự kiện này không?",
       "continue": "Tiếp tục",
       "cancel": "Hủy"
     },
