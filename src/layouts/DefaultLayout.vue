@@ -94,7 +94,7 @@
           v-model:isNotificationOpen="isNotificationOpen" 
           :notifications="notifications" 
           />
-        <div class="bg-white p-4 rounded-lg shadow">
+        <div class="bg-white px-4 pb-4 pt-2 rounded-lg shadow">
           <slot></slot>
         </div>
       </a-layout-content>
@@ -104,7 +104,7 @@
     <SettingCalender v-model:isModalOpen="isModalOpen" />
 
     <EventModal
-      v-model:open="isEventModalVisible"
+    :isAddEventModalVisible="isEventModalVisible"
       :event="selectedEvent"
       @save="handleEventModalSuccess"
       @cancel="isEventModalVisible = false"
