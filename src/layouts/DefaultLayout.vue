@@ -277,6 +277,6 @@ const onBreakpoint = (broken) => {
 }
 
 :deep(.fc-scroller) {
-  overflow: hidden !important;
+  /* overflow: hidden !important; */
 }
 </style>

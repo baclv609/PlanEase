@@ -434,12 +434,12 @@ export function useCalendar(calendarRef) {
     locale: settingsStore.language,
     dayMaxEvents: true,
 
-    height: 'calc(100vh - 200px)',
-    contentHeight: 'calc(100vh - 200px)',
-    contentHeight: settingsStore.displayMode === 'dayGridMonth' ? 'calc(100vh - 200px)' : 'auto',
+    // height: 'calc(100vh - 200px)',
+    contentHeight: 'calc(100vh - 170px)',
+    // contentHeight: settingsStore.displayMode === 'dayGridMonth' ? 'calc(100vh - 200px)' : 'auto',
 
     
-    expandRows: true,
+    // expandRows: true,
 
     allDaySlot: true,
 
