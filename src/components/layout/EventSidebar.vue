@@ -26,121 +26,119 @@
         </a-menu>
       </template>
     </a-dropdown>
-    <EventModal 
-      :isAddEventModalVisible="isAddEventModalVisible" 
-      :event="selectedEventAdd"
-      @cancel="isAddEventModalVisible = false"
-    />
-    <div class="calendar-section">
-      <MiniCalendar
-        :events="filteredEvents"
-        @dateSelect="handleDateSelect"
-        @rangeSelect="handleRangeSelect"
-        @viewChange="handleViewChange"
-      />
-    </div>
 
-    <div class="mt-3">
-      <h2 class="mb-2">{{ t("calendar.upcomingEvents") }}</h2>
-      <!-- <p>{{ t("calendar.dontMissEvents") }}</p> -->
-
-      <!-- <div v-if="loading" class="flex justify-center my-4">
-        <a-spin />
-      </div> -->
-
-      <!-- Error state -->
-      <a-empty v-if="error" :description="error" class="my-4">
-        <template #extra>
-          <a-button type="primary" @click="fetchUpcomingTasks">
-            {{ t("common.retry") }}
-          </a-button>
-        </template>
-      </a-empty>
-
-      <!-- No events -->
-      <a-empty
-        v-else-if="!formattedUpcomingTasks.length"
-        :description="t('calendar.noUpcomingEvents')"
-        class="my-4"
-      />
-
-      <!-- Events list -->
-      <template v-if="formattedUpcomingTasks.length">
-        <a-list :data-source="displayedUpcomingTasks" bordered>
-          <template #renderItem="{ item }">
-            <a-list-item>
-              <div class="flex justify-between w-full items-center">
-                <div class="event-details flex-1 mx-3">
-                  <div class="font-medium">{{ item.title }}</div>
-                  <div class="text-sm text-gray-500">
-                    {{ formatDateTime(item.start_time) }}
-                  </div>
-                </div>
-                <a-tag :color="getEventColor(item.priority)">
-                  {{ item.formattedTime }}
-                </a-tag>
-              </div>
-            </a-list-item>
-          </template>
-        </a-list>
-
-        <!-- Nút xem thêm -->
-        <div v-if="hasMoreTasks" class="text-center mt-3">
-          <a-button type="link" @click="viewMoreEvents">
-            {{ t("common.viewMore") }}
-          </a-button>
-        </div>
-      </template>
-    </div>
-
-    <div class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
-      <div class="flex justify-between items-center mb-3">
-        <h3 class="text-lg font-semibold">{{ $t("calendar.calendarSection.title") }}</h3>
-        <PlusOutlined
-          @click="isModalOpenAddTag = true"
-          class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]"
+      <div class="calendar-section">
+        <MiniCalendar
+          :events="filteredEvents"
+          @dateSelect="handleDateSelect"
+          @rangeSelect="handleRangeSelect"
+          @viewChange="handleViewChange"
         />
       </div>
 
-      <a-checkbox-group
-        v-model:value="selectedCalendars"
-        class="flex flex-col gap-2"
-        @change="updateFilteredEvents"
-      >
-        <div v-if="myCalendars.length">
-          <div
-            v-for="calendar in displayedCalendars"
-            :key="calendar.id"
-            class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
-          >
-            <div class="flex items-center">
-              <a-checkbox :value="calendar.id" :checked="true" class="" :style="{ '--ant-checkbox-color': calendar.color_code }">
-                <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
-              </a-checkbox>
-            </div>
+      <div class="mt-3">
+        <h2 class="mb-2">{{ t("calendar.upcomingEvents") }}</h2>
+        <!-- <p>{{ t("calendar.dontMissEvents") }}</p> -->
 
-            <a-dropdown :trigger="['click']">
-              <EllipsisOutlined
-                class="text-gray-500 text-lg cursor-pointer hover:text-black transition"
-              />
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item @click="displayOnly(calendar.id)">{{ t('calendar.calendarSection.displayOnly') }}</a-menu-item>
-                  <a-menu-item @click="openUpdateCalendar(calendar.id)">{{
-                    $t("calendar.calendarSection.edit")
-                  }}</a-menu-item>
-                  <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red">{{
-                    $t("calendar.calendarSection.delete")
-                  }}</a-menu-item>
-                </a-menu>
-              </template>
-            </a-dropdown>
+        <!-- <div v-if="loading" class="flex justify-center my-4">
+          <a-spin />
+        </div> -->
+
+        <!-- Error state -->
+        <a-empty v-if="error" :description="error" class="my-4">
+          <template #extra>
+            <a-button type="primary" @click="fetchUpcomingTasks">
+              {{ t("common.retry") }}
+            </a-button>
+          </template>
+        </a-empty>
+
+        <!-- No events -->
+        <a-empty
+          v-else-if="!formattedUpcomingTasks.length"
+          :description="t('calendar.noUpcomingEvents')"
+          class="my-4"
+        />
+
+        <!-- Events list -->
+        <template v-if="formattedUpcomingTasks.length">
+          <a-list :data-source="displayedUpcomingTasks" bordered>
+            <template #renderItem="{ item }">
+              <a-list-item>
+                <div class="flex justify-between w-full items-center">
+                  <div class="event-details flex-1 mx-3">
+                    <div class="font-medium">{{ item.title }}</div>
+                    <div class="text-sm text-gray-500">
+                      {{ formatDateTime(item.start_time) }}
+                    </div>
+                  </div>
+                  <a-tag :color="getEventColor(item.priority)">
+                    {{ item.formattedTime }}
+                  </a-tag>
+                </div>
+              </a-list-item>
+            </template>
+          </a-list>
+
+          <!-- Nút xem thêm -->
+          <div v-if="hasMoreTasks" class="text-center mt-3">
+            <a-button type="link" @click="viewMoreEvents">
+              {{ t("common.viewMore") }}
+            </a-button>
           </div>
+        </template>
+      </div>
+
+      <div class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-lg font-semibold">{{ $t("calendar.calendarSection.title") }}</h3>
+          <PlusOutlined
+            @click="isModalOpenAddTag = true"
+            class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]"
+          />
         </div>
 
-        
-      </a-checkbox-group>
-    </div>
+        <a-checkbox-group
+          v-model:value="selectedCalendars"
+          class="flex flex-col gap-2"
+          @change="updateFilteredEvents"
+        >
+          <div v-if="myCalendars.length">
+            <div
+              v-for="calendar in displayedCalendars"
+              :key="calendar.id"
+              class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
+            >
+              <div class="flex items-center">
+                <a-checkbox :value="calendar.id" :checked="true" class="" :style="{ '--ant-checkbox-color': calendar.color_code }">
+                  <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
+                </a-checkbox>
+              </div>
+
+              <a-dropdown :trigger="['click']">
+                <EllipsisOutlined
+                  class="text-gray-500 text-lg cursor-pointer hover:text-black transition"
+                />
+                <template #overlay>
+                  <a-menu>
+
+                    <!-- <a-menu-item @click="viewDetails(calendar.id)">Xem chi tiet</a-menu-item> -->
+                    <a-menu-item @click="displayOnly(calendar.id)">{{ t('calendar.calendarSection.displayOnly') }}</a-menu-item>
+                    <a-menu-item @click="openUpdateCalendar(calendar.id)">{{
+                      $t("calendar.calendarSection.edit")
+                    }}</a-menu-item>
+                    <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red">{{
+                      $t("calendar.calendarSection.delete")
+                    }}</a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown>
+            </div>
+          </div>
+
+          
+        </a-checkbox-group>
+      </div>
   </a-card>
 
   <AddTagModal
@@ -155,7 +153,7 @@
   />
 
   <EventModal
-    :open="isAddEventModalVisible"
+    :isAddEventModalVisible="isAddEventModalVisible"
     :event="selectedEventAdd"
     @save="handleEventModalSuccess"
     @cancel="isAddEventModalVisible = false"
