@@ -11,11 +11,17 @@ export const useUpcomingTasksStore = defineStore('upcomingTasks', {
     async fetchUpcomingTasks() {
       this.loading = true;
       this.error = null;
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        this.loading = false;
+        return;
+      }
 
       try {
         const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}tasks/upComingTasks`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 

@@ -42,15 +42,13 @@ const handleLogout = async () => {
         } 
       }
     );
-
+    // Dừng Echo listener nếu có
+    const echoStore = useEchoStore();
+    // echoStore.stopListening();
+    echoStore.destroyEcho();
     // Xóa token và thông tin user khỏi localStorage
     localStorage.removeItem('access_token');
     localStorage.removeItem('user');
-
-    // Dừng Echo listener nếu có
-    const echoStore = useEchoStore();
-    echoStore.stopListening();
-    echoStore.destroyEcho();
 
     message.success('Đăng xuất thành công');
     router.push({ name: 'home' });

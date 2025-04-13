@@ -327,7 +327,7 @@ const handleLogout = async () => {
   try {
     // First clean up Echo and stores before API call
     const echoStore = useEchoStore();
-    echoStore.stopListening();
+    // echoStore.stopListening();
     echoStore.destroyEcho();
 
     const response = await axios.post(

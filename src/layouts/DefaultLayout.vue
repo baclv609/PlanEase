@@ -183,7 +183,7 @@ onMounted(() => {
 
     fetchNotification();
 
-    // console.log("📡 Lắng nghe realtime trong DefaultLayout");
+    console.log("📡 Lắng nghe realtime trong DefaultLayout");
 });
 
 // Số lượng thông báo chưa đọc
