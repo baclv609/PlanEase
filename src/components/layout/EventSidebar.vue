@@ -786,9 +786,9 @@ const openUpdateCalendar = (calendarId) => {
   }
 };
 
-onBeforeUnmount(() => {
-  echoStore.stopListening();
-});
+// onBeforeUnmount(() => {
+  // echoStore.stopListening();
+// });
 
 const createEvent = () => {
   isAddEventModalVisible.value = true;
