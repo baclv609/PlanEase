@@ -46,7 +46,7 @@ router.beforeEach(async (to, from, next) => {
         // Nếu là admin
         if (isAdmin) {
             // Nếu vào trang login hoặc register, chuyển đến trang 404
-            if (['/login', '/register', '/loginAdmin'].includes(to.path)) {
+            if (['/login', '/register', '/loginAdmin', '/verify', '/forgot-password', '/reset-password'].includes(to.path)) {
                 next({ name: 'not-found', replace: true }); // Chuyển hướng đến trang 404
                 NProgress.done();
                 return;
@@ -69,16 +69,22 @@ router.beforeEach(async (to, from, next) => {
             next();
             NProgress.done();
         } else {
-            // Nếu không phải admin và cố truy cập dashboard
-            if (to.name === 'dashboard') {
-                // message.error("Bạn không có quyền truy cập!");
+            if (to.path === '/') {
                 next({ name: 'calendar', replace: true });
                 NProgress.done();
                 return;
             }
 
+            // Nếu không phải admin và cố truy cập dashboard
+            if (to.name === 'dashboard') {
+                // message.error("Bạn không có quyền truy cập!");
+                next({ name: 'not-found', replace: true });
+                NProgress.done();
+                return;
+            }
+
             // Nếu người dùng đã đăng nhập mà vào trang login/register, chuyển đến trang 404
-            if (['/login', '/register','/loginAdmin'].includes(to.path)) {
+            if (['/login', '/register','/loginAdmin', '/verify', '/forgot-password', '/reset-password'].includes(to.path)) {
                 next({ name: 'not-found', replace: true });
                 NProgress.done();
                 return;
