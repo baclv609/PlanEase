@@ -6,6 +6,7 @@ const dashboard = [
         meta: {
             requiresAuth: true,
             layout: 'dashboard',
+            roles: ['admin']
         }
     }
 ]

@@ -33,59 +33,88 @@ const router = createRouter({
   routes,
 });
 
+
 router.beforeEach(async (to, from, next) => {
     NProgress.start();
-    const isAuthenticated = Boolean(localStorage.getItem("access_token"));
-    const userData = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {};
-    const isAdmin = userData.role?.toLowerCase() === 'admin';
 
-    // console.log('Debug Navigation:', {
-    //     isAuthenticated,
-    //     isAdmin,
-    //     currentPath: to.path,
-    //     targetRoute: to.name
-    // });
+    const isAuthenticated = Boolean(localStorage.getItem("access_token"));
+    const userData = isAuthenticated ? JSON.parse(localStorage.getItem("user")) : {};
+    const isAdmin = userData?.role?.toLowerCase() === 'admin';
 
     // Nếu đã đăng nhập
     if (isAuthenticated) {
         // Nếu là admin
         if (isAdmin) {
-            // Nếu đang ở trang đăng nhập hoặc trang chủ, chuyển đến dashboard
-            if (to.path === '/' || to.path === '/login' || to.path === '/register') {
-                console.log('Redirecting admin to dashboard');
-                next({ name: 'dashboard', replace: true });
+            // Nếu vào trang login hoặc register, chuyển đến trang 404
+            if (['/login', '/register', '/loginAdmin', '/verify', '/forgot-password', '/reset-password'].includes(to.path)) {
+                next({ name: 'not-found', replace: true }); // Chuyển hướng đến trang 404
                 NProgress.done();
                 return;
             }
-        } else {
-            // Nếu không phải admin và cố truy cập dashboard
-            if (to.name === 'dashboard') {
-                message.error("Bạn không có quyền truy cập!");
+
+            // Nếu vào trang chủ, chuyển đến trang người dùng bình thường
+            if (to.path === '/') {
                 next({ name: 'calendar', replace: true });
                 NProgress.done();
                 return;
             }
 
-            // Nếu ở trang đăng nhập hoặc trang chủ, chuyển đến calendar
-            if (to.path === '/' || to.path === '/login' || to.path === '/register') {
+            // Nếu vào dashboard, cho phép truy cập bình thường
+            if (to.name === 'dashboard') {
+                next();
+                NProgress.done();
+                return;
+            }
+
+            next();
+            NProgress.done();
+        } else {
+            if (to.path === '/') {
                 next({ name: 'calendar', replace: true });
                 NProgress.done();
                 return;
             }
-        }
-    } else {
-        // Nếu chưa đăng nhập và cố truy cập trang yêu cầu xác thực
-        if (to.meta.requiresAuth) {
-            message.warning("Bạn cần đăng nhập để truy cập!");
-            next({ name: 'login', replace: true });
+
+            // Nếu không phải admin và cố truy cập dashboard
+            if (to.name === 'dashboard') {
+                // message.error("Bạn không có quyền truy cập!");
+                next({ name: 'not-found', replace: true });
+                NProgress.done();
+                return;
+            }
+
+            // Nếu người dùng đã đăng nhập mà vào trang login/register, chuyển đến trang 404
+            if (['/login', '/register','/loginAdmin', '/verify', '/forgot-password', '/reset-password'].includes(to.path)) {
+                next({ name: 'not-found', replace: true });
+                NProgress.done();
+                return;
+            }
+
+            // Các trang khác cho người dùng bình thường
+            next();
             NProgress.done();
             return;
         }
-    }
+    } else {
+        // Chưa đăng nhập mà cố vào dashboard → chuyển sang loginAdmin
+        if (to.name === 'dashboard') {
+            next({ name: 'loginAdmin', replace: true });
+            NProgress.done();
+            return;
+        }
 
-    // Cho phép điều hướng
-    next();
-    NProgress.done();
+        // Nếu chưa đăng nhập và cố truy cập trang yêu cầu xác thực
+        if (to.meta.requiresAuth) {
+            message.warning("Bạn cần đăng nhập để truy cập!");
+              next({ name: 'login', replace: true });
+            NProgress.done();
+            return;
+        }
+
+        // Nếu chưa đăng nhập và truy cập vào login hoặc register thì vẫn vào bình thường
+        next();
+        NProgress.done();
+    }
 });
 
 
