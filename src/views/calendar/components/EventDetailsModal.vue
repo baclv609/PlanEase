@@ -307,7 +307,7 @@ const handleDelete = () => {
       okText: t('options.recurrence.delete.delete'),
       cancelText: t('options.recurrence.delete.cancel'),
       onOk() {
-        deleteEvent({ code: deleteOption.value, date: event.value.start, id: event.value.id });
+        confirmNotifyGuests({ code: deleteOption.value, date: event.value.start, id: event.value.id });
       },
     });
 
