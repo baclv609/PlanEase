@@ -591,6 +591,7 @@ const handleSubmitAdd = async () => {
         content: t('options.sendMail.content'),
         okText: t('options.sendMail.send'),
         width: 600,
+        centered: true,
         onCancel() {
           Modal.destroyAll()
         },

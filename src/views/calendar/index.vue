@@ -919,7 +919,7 @@ onMounted(() => {
        @cancel="isEditDrawerVisible = false" 
        @calendar-updated="handleCalendarUpdate"/>
 
-    <!-- <ChatBot /> -->
+    <ChatBot />
 
   </div>
 </template>

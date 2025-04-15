@@ -16,9 +16,63 @@ const selectedEvent = ref(null);
 const editOption = ref("");
 
 
+export function useCalendarDrop(t) {
+    // Check event has attendees
+    const checkHasAteendees = (attendees) => {
+        console.log(attendees)
+        if (!attendees || attendees.length === 0) {
+            return true;
+        }
+    
+        return new Promise((resolve) => {
+            Modal.confirm({
+                title: t('eventModal.messages.sendEmail.title'),
+                content: t('eventModal.messages.sendEmail.content'),
+                centered: true,
+                width: 600,
+                okButtonProps: { style: { display: 'none' } },
+                cancelButtonProps: { style: { display: 'none' } },
+                footer: () =>
+                    h("div", { class: "w-full flex justify-end space-x-4 p-4" }, [
+                        h(
+                            "button",
+                            {
+                                class: "text-gray-500 hover:text-gray-700 border-0 px-4 py-2 cursor-pointer font-semibold rounded-lg transition duration-200 text-sm",
+                                onClick: () => {
+                                    Modal.destroyAll();
+                                    resolve("back");
+                                },
+                            },
+                            t('eventModal.messages.sendEmail.back')
+                        ),
+                        h(
+                            "button",
+                            {
+                                class: "text-red-500 hover:text-red-700 border-0 rounded-lg px-4 py-2 cursor-pointer font-semibold transition duration-200 text-sm",
+                                onClick: () => {
+                                    Modal.destroyAll();
+                                    resolve("no");
+                                },
+                            },
+                            t('eventModal.messages.sendEmail.dontSend')
+                        ),
+                        h(
+                            "button",
+                            {
+                                class: "text-blue-500 hover:text-blue-700 hover:bg-gray-200 rounded-lg px-4 py-2 cursor-pointer font-semibold border-0 transition duration-200 text-sm",
+                                onClick: () => {
+                                    Modal.destroyAll();
+                                    resolve("yes");
+                                },
+                            },
+                            t('eventModal.messages.sendEmail.send')
+                        ),
+                    ]),
+            });
+        });
+    }
 
 
-export function useCalendarDrop() {
     const eventDrop = async (info) => {
         const taskTimezone = info.event.extendedProps.timezone;
         
@@ -47,7 +101,7 @@ export function useCalendarDrop() {
             };
     
             Modal.confirm({
-                title: "Cập nhật sự kiện lặp lại",
+                title: t('options.recurrence.edit.title'),
                 width: 650,
                 content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
                     h("div", { class: "mb-3" }, [
@@ -61,7 +115,7 @@ export function useCalendarDrop() {
                                     editOption.value = e.target.value;
                                 },
                             }),
-                            h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
+                            h("span", { class: "text-lg" }, t('options.recurrence.edit.one')),
                         ]),
                         
                     ]),
@@ -76,14 +130,14 @@ export function useCalendarDrop() {
                                     editOption.value = e.target.value;
                                 },
                             }),
-                            h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
+                            h("span", { class: "text-lg" }, t('options.recurrence.edit.follow')),
                         ]),
                         
                     ]),
                 ]),
-                okText: "Cập nhật",
-                cancelText: "Hủy",
-                onOk() {
+                okText: t('options.recurrence.edit.update'),
+                cancelText: t('options.recurrence.edit.cancel'),
+                onOk: async () => {
                     if (!editOption.value) {
                         message.error("Vui lòng chọn tùy chọn cập nhật trước khi tiếp tục!");
                         info.revert();
@@ -99,6 +153,14 @@ export function useCalendarDrop() {
                         timezone_code: taskTimezone,
                         is_all_day: isAllDay ? 1 : 0
                     };
+
+                    // Check if the event has attendees
+                    const choice = await checkHasAteendees(info.event.extendedProps.attendees);
+                    if (choice === "back") {
+                        info.revert();
+                        return // Dừng lại, không làm gì nữa
+                    }
+                    payload.sendMail = choice;
     
                     // Thêm log để debug payload
                     console.log('Payload:', payload);
@@ -113,8 +175,8 @@ export function useCalendarDrop() {
             Modal.confirm({
                 title: "Xác nhận thay đổi",
                 content: "Bạn có chắc chắn muốn thay đổi thời gian của sự kiện này?",
-                okText: "Đồng ý",
-                cancelText: "Hủy",
+                okText: t('options.recurrence.edit.update'),
+                cancelText: t('options.recurrence.edit.cancel'),
                 onOk: async () => {
                     const payload = {
                         code: "EDIT_N",
@@ -124,7 +186,14 @@ export function useCalendarDrop() {
                         timezone_code: taskTimezone,
                         is_all_day: isAllDay ? 1 : 0
                     };
-            
+                    
+                    const choice = await checkHasAteendees(info.event.extendedProps.attendees);
+                    if (choice === "back") {
+                        info.revert();
+                        return;
+                    }
+                    payload.sendMail = choice;
+
                     await handleUpdate(payload, info);
                 },
                 onCancel() {
@@ -170,7 +239,7 @@ export function useCalendarDrop() {
                                 editOption.value = e.target.value;
                             },
                         }),
-                        h("span", { class: "text-lg" }, "Chỉ cập nhật sự kiện này"),
+                        h("span", { class: "text-lg" }, t('options.recurrence.edit.one')),
                     ]),
                 ]),
                 h("div", { class: "mb-3" }, [
@@ -184,7 +253,7 @@ export function useCalendarDrop() {
                                 editOption.value = e.target.value;
                             },
                         }),
-                        h("span", { class: "text-lg" }, "Cập nhật sự kiện này và những sự kiện tiếp theo"),
+                        h("span", { class: "text-lg" }, t('options.recurrence.edit.follow')),
                     ]),
                 ]),
                 h("div", { class: "mb-3" }, [
@@ -198,7 +267,7 @@ export function useCalendarDrop() {
                                 editOption.value = e.target.value;
                             },
                         }),
-                        h("span", { class: "text-lg" }, "Cập nhật giờ cho tất cả các sự kiện"),
+                        h("span", { class: "text-lg" }, t('options.recurrence.edit.all')),
                     ]),
                 ])
             ];
@@ -216,19 +285,19 @@ export function useCalendarDrop() {
                                     editOption.value = e.target.value;
                                 },
                             }),
-                            h("span", { class: "text-lg" }, "Cập nhật giờ cho tất cả các sự kiện (giữ nguyên ngày)"),
+                            h("span", { class: "text-lg" }, t('options.recurrence.edit.all')),
                         ]),
                     ])
                 );
             }
     
             Modal.confirm({
-                title: "Cập nhật thời gian sự kiện lặp lại",
+                title: t('options.recurrence.edit.title'),
                 width: 650,
                 content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, modalOptions),
-                okText: "Cập nhật",
-                cancelText: "Hủy",
-                onOk() {
+                okText: t('options.recurrence.edit.update'),
+                cancelText: t('options.recurrence.edit.cancel'),
+                onOk: async () => {
                     if (!editOption.value) {
                         message.error("Vui lòng chọn tùy chọn cập nhật trước khi tiếp tục!");
                         info.revert();
@@ -244,6 +313,14 @@ export function useCalendarDrop() {
                         timezone_code: taskTimezone,
                         is_all_day: isAllDay ? 1 : 0
                     };
+
+                    // Check if the event has attendees
+                    const choice = await checkHasAteendees(info.event.extendedProps.attendees);
+                    if (choice === "back") {
+                        info.revert();
+                        return // Dừng lại, không làm gì nữa
+                    }
+                    payload.sendMail = choice;
     
                     console.log('Payload:', payload);
 
@@ -262,7 +339,14 @@ export function useCalendarDrop() {
                 timezone_code: taskTimezone,
                 is_all_day: isAllDay ? 1 : 0
             };
-    
+
+            const choice = await checkHasAteendees(info.event.extendedProps.attendees);
+            if (choice === "back") {
+                info.revert();
+                return // Dừng lại, không làm gì nữa
+            }
+            payload.sendMail = choice;
+
             await handleUpdate(payload, info);
         }
     };
