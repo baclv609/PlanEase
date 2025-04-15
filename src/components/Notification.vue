@@ -118,7 +118,9 @@ const icons = ref({
   accept_invite: "👨‍👨‍👧‍👦",
   refuse_invite: "🙅‍♀️",
   invite_to_task: "🥳",
-  updated_task: "📅",
+  update_task: "📅",
+  leave_task: "😢",
+  delete_task: "🗑️",
   default: "📢",
 });
 

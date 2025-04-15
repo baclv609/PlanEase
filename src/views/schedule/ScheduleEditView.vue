@@ -441,7 +441,7 @@ const tags = ref([]);
 const origin = ref(typeof window !== 'undefined' ? window.location.origin : '');
 const isLoading = ref(false);
 const originalIsRepeat = ref(false); // Lưu trạng thái ban đầu của is_repeat
-
+const originalAttendees = ref([]); // Lưu danh sách người tham gia ban đầu
 
 const editOption = ref("EDIT_1");
 
@@ -503,7 +503,7 @@ const updateFormStateFromProps = (event) => {
         console.log("Dữ liệu sự kiện:", event);
 
         originalIsRepeat.value = event.recurrence === 1;
-
+        originalAttendees.value = event.attendees || [];
         // Xử lý ngày trong tuần nếu là sự kiện lặp lại theo tuần
         let byweekday = [];
         if (event.recurrence === 1 && event.info?.extendedProps?.freq === 'weekly') {
@@ -1260,6 +1260,55 @@ const handleSubmit = async () => {
     }
 };
 
+const showSendMailModal = () => {
+    return new Promise((resolve) => {
+        Modal.confirm({
+            title: t('eventModal.messages.sendEmail.title'),
+            content: t('eventModal.messages.sendEmail.content'),
+            centered: true,
+            width: 600,
+            okButtonProps: { style: { display: 'none' } },
+            cancelButtonProps: { style: { display: 'none' } },
+            footer: () =>
+                h("div", { class: "w-full flex justify-end space-x-4 p-4" }, [
+                    h(
+                        "button",
+                        {
+                            class: "text-gray-500 hover:text-gray-700 border-0 px-4 py-2 cursor-pointer font-semibold rounded-lg transition duration-200 text-sm",
+                            onClick: () => {
+                                Modal.destroyAll();
+                                resolve("back");
+                            },
+                        },
+                        t('eventModal.messages.sendEmail.back')
+                    ),
+                    h(
+                        "button",
+                        {
+                            class: "text-red-500 hover:text-red-700 border-0 rounded-lg px-4 py-2 cursor-pointer font-semibold transition duration-200 text-sm",
+                            onClick: () => {
+                                Modal.destroyAll();
+                                resolve("no");
+                            },
+                        },
+                        t('eventModal.messages.sendEmail.dontSend')
+                    ),
+                    h(
+                        "button",
+                        {
+                            class: "text-blue-500 hover:text-blue-700 hover:bg-gray-200 rounded-lg px-4 py-2 cursor-pointer font-semibold border-0 transition duration-200 text-sm",
+                            onClick: () => {
+                                Modal.destroyAll();
+                                resolve("yes");
+                            },
+                        },
+                        t('eventModal.messages.sendEmail.send')
+                    ),
+                ]),
+        });
+    });
+};
+
 // Hàm cập nhật sự kiện
 const updateEvent = async ({ code, date, id }) => {
     isLoading.value = true;
@@ -1305,6 +1354,15 @@ const updateEvent = async ({ code, date, id }) => {
             is_private: formState.value.is_private ? 1 : 0,
             // path: formState.value.attachments.map(att => att.id),
             link: null,
+        };
+
+        if((originalAttendees.value && originalAttendees.value.length > 0) || (formState.value.attendees && formState.value.attendees.length > 0)) {
+            const choice = await showSendMailModal();
+            if (choice === "back") {
+                isLoading.value = false;
+                return; // Dừng lại, không làm gì nữa
+            }
+            dataApi.sendMail = choice;
         };
 
         console.log("data send",dataApi);

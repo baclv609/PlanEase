@@ -166,7 +166,7 @@ watch(
 const formatDate = (date) => (date ? dayjs(date).format("YYYY-MM-DD HH:mm") : "Không xác định");
 
 // Hàm xử lý xóa sự kiện
-const deleteEvent = async ({code, date, id}) => {
+const deleteEvent = async ({code, date, id, sendMail}) => {
 
   try {
     const response = await axios.delete(`${dirApi}tasks/${id}`, {
@@ -174,7 +174,7 @@ const deleteEvent = async ({code, date, id}) => {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        data: { code, date }
+        data: { code, date , id, sendMail}
       }
     );
 
@@ -195,6 +195,64 @@ const deleteEvent = async ({code, date, id}) => {
 
 // Xử lý xóa sự kiện
 const handleDelete = () => {
+  const hasGuests = event.value.attendees && event.value.attendees.length > 0;
+
+  const confirmNotifyGuests = (deleteData) => {
+  if (!hasGuests) {
+    deleteEvent(deleteData);
+    return;
+  }
+
+  Modal.confirm({
+    title: t('eventModal.messages.sendEmail.title'),
+    content: t('eventModal.messages.sendEmail.content'),
+    centered: true,
+    width: 600,
+    okButtonProps: { style: { display: 'none' } },
+    cancelButtonProps: { style: { display: 'none' } },
+    footer: () =>
+      h("div", { class: "w-full flex justify-end space-x-4 p-4" }, [
+        // Nút "Quay lại"
+        h(
+          "button",
+          {
+            class: "text-gray-500 hover:text-gray-700 border-0 px-4 py-2 cursor-pointer font-semibold rounded-lg transition duration-200 text-sm",
+            onClick: () => {
+              Modal.destroyAll(); // Huỷ xoá
+            },
+          },
+          t('eventModal.messages.sendEmail.back')
+        ),
+
+        // Nút "Không gửi"
+        h(
+          "button",
+          {
+            class: "text-red-500 hover:text-red-700 border-0 rounded-lg px-4 py-2 cursor-pointer font-semibold transition duration-200 text-sm",
+            onClick: () => {
+              Modal.destroyAll();
+              deleteEvent({ ...deleteData, sendMail: 'no' });
+            },
+          },
+          t('eventModal.messages.sendEmail.dontSend')
+        ),
+
+        // Nút "Gửi"
+        h(
+          "button",
+          {
+            class: "text-blue-500 hover:text-blue-700 hover:bg-gray-200 rounded-lg px-4 py-2 cursor-pointer font-semibold border-0 transition duration-200 text-sm",
+            onClick: () => {
+              Modal.destroyAll();
+              deleteEvent({ ...deleteData, sendMail: 'yes' });
+            },
+          },
+          t('eventModal.messages.sendEmail.send')
+        ),
+      ]),
+    });
+  };
+
   if (event.value.recurrence && event.value.recurrence != 0) {
     
     Modal.confirm({
@@ -249,16 +307,7 @@ const handleDelete = () => {
       okText: t('options.recurrence.delete.delete'),
       cancelText: t('options.recurrence.delete.cancel'),
       onOk() {
-        Modal.confirm({
-          title: t('options.recurrence.delete.confirm'),
-          content: t('options.recurrence.delete.confirm_content'),
-          okText: t('options.recurrence.delete.delete'),
-          cancelText: t('options.recurrence.delete.cancel'),
-          centered: true,
-          onOk() {
-            deleteEvent({ code: deleteOption.value, date: event.value.start, id: event.value.id });
-          },
-        });
+        deleteEvent({ code: deleteOption.value, date: event.value.start, id: event.value.id });
       },
     });
 
@@ -270,9 +319,24 @@ const handleDelete = () => {
       cancelText: t('options.recurrence.delete.cancel'),
       centered: true,
       onOk() {
-        deleteEvent({code: "DEL_N", date: event.value.start, id: event.value.id });
+        const deleteData = {
+          code: "DEL_N",
+          date: event.value.start,
+          id: event.value.id,
+        };
+        confirmNotifyGuests(deleteData);
       },
     });
+    // Modal.confirm({
+    //   title: t('options.recurrence.delete.confirm'),
+    //   content: t('options.recurrence.delete.confirm_content'),
+    //   okText: t('options.recurrence.delete.delete'),
+    //   cancelText: t('options.recurrence.delete.cancel'),
+    //   centered: true,
+    //   onOk() {
+    //     deleteEvent({code: "DEL_N", date: event.value.start, id: event.value.id });
+    //   },
+    // });
   }
 }
 

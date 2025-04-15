@@ -24,6 +24,8 @@ import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 import { useHiddenTagsStore } from '@/stores/hiddenTagsStore';
 
+import { useI18n } from 'vue-i18n';
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 const settingsStore = useSettingsStore();
@@ -31,9 +33,6 @@ const selectedTimezone = computed(() => settingsStore.timeZone);
 const user_id = JSON.parse(localStorage.getItem('user')).id;
 const calendarRef = ref(null);
 
-
-// Kéo thả
-const { eventDrop, eventResize } = useCalendarDrop();
 
 function calculateDuration(start_time, end_time) {
   const start = new Date(start_time);
@@ -229,6 +228,10 @@ export function useCalendar(calendarRef) {
 
 
   const transformedEvents = ref([]);
+
+  const { t } = useI18n(); // Sử dụng i18n để dịch các chuỗi
+  // Kéo thả
+  const { eventDrop, eventResize } = useCalendarDrop(t);
 
   // Hàm lọc sự kiện theo danh sách tag_id
   const filterEvents = (hiddenIds) => {
@@ -458,9 +461,10 @@ export function useCalendar(calendarRef) {
 
       return true; // Cho phép kéo thả trong các chế độ khác
     },
-    
+
+    nowIndicator: true,
     timeZone: selectedTimezone.value,
-    now: dayjs().tz(settingsStore.timeZone || 'Asia/Saigon').startOf('day').toDate(),
+    now: dayjs().tz(settingsStore.timeZone || 'Asia/Saigon').toDate(),
     firstDay: settingsStore.firstDay,
     initialDate: settingsStore.initialDate || dayjs().format('YYYY-MM-DD'),
     initialView: settingsStore.displayMode || 'dayGridMonth',
