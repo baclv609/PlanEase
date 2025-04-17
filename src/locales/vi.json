@@ -678,5 +678,20 @@
     "error": {
       "general_error": "Có lỗi xảy ra, vui lòng thử lại"
     }
+  },
+  "MailModal": {
+    "main-modal": "Gửi email cho khách mời",
+    "title": "Tiêu đề",
+    "receive_person": "Người nhận",
+    "content": "Nội dung muốn gửi",
+    "receive-location": "Nội dung thông báo của bạn sẽ được gửi đến những khách mời được chọn",
+    "placeholder": {
+      "search": "Nhập email",
+      "content": "Nhập nội dung muốn gửi đến mọi người"
+    },
+    "cancel": "Hủy",
+    "success": "Gửi email thành công",
+    "error": "Gửi email thất bại",
+    "send": "Gửi"
   }
 }
