@@ -152,6 +152,7 @@
     "no": "Không"
   },
   "calendar": {
+    "tasks": "Việc cần làm của tôi",
     "createEvent": "Tạo sự kiện",
     "createTask": "Việc cần làm",
     "upcomingEvents": "Sự kiện sắp tới",
