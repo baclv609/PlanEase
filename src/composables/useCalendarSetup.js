@@ -374,8 +374,8 @@ export function useCalendar(calendarRef) {
     } else {
       // Nếu ở chế độ khác (week, day), mặc định sự kiện kéo dài 30p
       selectedEventAdd.value = {
-        start: info.dateStr,
-        end: info.allDay ? dayjs(info.dateStr).add(1, 'day').format('YYYY-MM-DD') : dayjs(info.dateStr).add(30, 'minutes').format(),
+        start: dayjs(info.dateStr).tz(selectedTimezone.value).format('YYYY-MM-DD HH:mm'),
+        end: info.allDay ? dayjs(info.dateStr).tz(selectedTimezone.value).add(1, 'day').format('YYYY-MM-DD') : dayjs(info.dateStr).tz(selectedTimezone.value).add(30, 'minutes').format('YYY-MM-DD HH:mm'),
         allDay: info.allDay,
       };
     }
@@ -394,7 +394,7 @@ export function useCalendar(calendarRef) {
       uuid: extendedProps.uuid || null,
       user_id: extendedProps.user_id || null,
       type: extendedProps.type || 'task',
-      start: event.startStr || '',
+      start: dayjs(event.startStr).tz(selectedTimezone).format('YYYY-MM-DD HH:mm') || '',
       end: event.endStr || '',
       start_time: extendedProps.start_time || null,
       end_time: extendedProps.end_time || null,
