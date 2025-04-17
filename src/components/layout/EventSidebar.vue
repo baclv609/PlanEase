@@ -682,7 +682,7 @@ const hasMoreTasks = computed(() => {
 });
 
 const viewMoreEvents = () => {
-  router.push({ name: "upcoming" });
+  router.push({ name: "calendar-upcoming" });
 };
 
 // Thêm hàm xử lý khi checkbox thay đổi

@@ -1,21 +1,22 @@
 <template>
   <div class="upcoming-events-page">
     <!-- Header -->
-    <div class="page-header mb-6">
+    <div class="page-header mb-4">
       <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold">
+        <h1 class="text-xl font-bold">
           {{ language === 'vi' ? 'Sự kiện sắp tới' : 'Upcoming Events' }}
         </h1>
-        <div class="flex flex-wrap gap-4 items-center">
+        <div class="flex flex-wrap gap-2 items-center">
           <a-input-search
-          v-model:value="filters.search"
-          :placeholder="language === 'vi' ? 'Tìm kiếm sự kiện...' : 'Search events...'"
-          @search="handleSearch"
-          class="w-64"
-        />
-        <a-button type="primary" @click="resetFilters">
-          {{ language === 'vi' ? 'Đặt lại' : 'Reset' }}
-        </a-button>
+            v-model:value="filters.search"
+            :placeholder="language === 'vi' ? 'Tìm kiếm sự kiện...' : 'Search events...'"
+            @search="handleSearch"
+            class="w-48"
+            size="small"
+          />
+          <a-button type="primary" @click="resetFilters" size="small">
+            {{ language === 'vi' ? 'Đặt lại' : 'Reset' }}
+          </a-button>
         </div>
       </div>
 
@@ -58,187 +59,114 @@
       </div>
     </div>
 
-    <!-- Loading state -->
-    <a-skeleton v-if="loading" active />
+    <!-- Events Container -->
+    <div class="events-container">
+      <!-- Loading state -->
+      <a-skeleton v-if="loading" active />
 
-    <!-- Error state -->
-    <a-empty
-      v-else-if="error"
-      :description="error"
-      class="my-4"
-    >
-      <template #extra>
-        <a-button type="primary" @click="fetchUpcomingTasks">
-          {{ language === 'vi' ? 'Thử lại' : 'Try again' }}
-        </a-button>
-      </template>
-    </a-empty>
-
-    <!-- No events -->
-    <a-empty
-      v-else-if="!filteredTasks.length"
-      :description="language === 'vi' ? 'Không có sự kiện sắp tới' : 'No upcoming events'"
-      class="my-4"
-    />
-
-    <!-- Events list -->
-    <template v-else>
-      <a-list 
-        :data-source="paginatedTasks" 
-        :pagination="pagination"
-        bordered
+      <!-- Error state -->
+      <a-empty
+        v-else-if="error"
+        :description="error"
+        class="my-4"
       >
-        <template #renderItem="{ item }">
-          <a-list-item>
-            <a-card 
-              class="w-full" 
-              :bordered="false"
-              :style="{ borderLeft: `4px solid ${item.color || getEventColor(item.priority)}` }"
-            >
-              <div class="event-card">
-                <!-- 1. Thông tin cơ bản -->
-                <div class="event-header flex justify-between items-start mb-4">
-                  <div class="flex-1">
-                    <div class="flex items-center gap-2">
-                      <a-tag :color="getEventColor(item.priority)" class="m-0">
-                        {{ getPriorityLabel(item.priority) }}
-                      </a-tag>
-                      <h3 class="text-lg font-medium m-0">{{ item.title }}</h3>
-                      <a-tag :color="getEventTypeColor(item.type)">
-                        {{ getEventTypeLabel(item.type) }}
+        <template #extra>
+          <a-button type="primary" @click="fetchUpcomingTasks" size="small">
+            {{ language === 'vi' ? 'Thử lại' : 'Try again' }}
+          </a-button>
+        </template>
+      </a-empty>
+
+      <!-- No events -->
+      <a-empty
+        v-else-if="!filteredTasks.length"
+        :description="language === 'vi' ? 'Không có sự kiện sắp tới' : 'No upcoming events'"
+        class="my-4"
+      />
+
+      <!-- Events list -->
+      <template v-else>
+        <a-list 
+          :data-source="paginatedTasks" 
+          :pagination="pagination"
+          class="events-list"
+        >
+          <template #renderItem="{ item }">
+            <a-list-item class="event-item">
+              <a-card 
+                class="w-full event-card" 
+                :bordered="false"
+                :style="{ borderLeft: `4px solid ${item.color_code || '#1890ff'}` }"
+              >
+                <div class="event-content">
+                  <!-- Event Header -->
+                  <div class="event-header">
+                    <div class="event-title">
+                      <div class="flex items-center gap-2">
+                        <a-tag :color="item.color_code || '#1890ff'" class="m-0">
+                          {{ item.tag_name }}
+                        </a-tag>
+                        <h3 class="text-base font-medium m-0">{{ item.title }}</h3>
+                      </div>
+                    </div>
+                    <div class="event-time">
+                      <a-tag :color="getTimeRemainingColor(item.start_time)">
+                        {{ formatTimeFromNow(item.start_time) }}
                       </a-tag>
                     </div>
-                    
-                    <!-- Thời gian và múi giờ -->
-                    <div class="text-gray-600 mt-2">
-                      <div class="flex items-center gap-2">
+                  </div>
+
+                  <!-- Event Details -->
+                  <div class="event-details">
+                    <!-- Time Information -->
+                    <div class="time-info">
+                      <div class="flex items-center gap-2 text-gray-600 text-sm">
                         <ClockCircleOutlined />
                         <span>{{ formatDateTime(item.start_time) }} - {{ formatDateTime(item.end_time) }}</span>
-                        <a-tooltip :title="timeZone">
-                          <GlobalOutlined />
-                          <span class="ml-1">{{ formatTimezone(timeZone) }}</span>
-                        </a-tooltip>
                       </div>
-                      
-                      <!-- Tần suất lặp lại -->
-                      <div v-if="item.recurrence" class="flex items-center gap-2 mt-1">
-                        <ReloadOutlined />
-                        <span>{{ getRecurrenceLabel(item.recurrence) }}</span>
+                      <div v-if="item.is_all_day" class="flex items-center gap-2 text-gray-600 text-sm mt-1">
+                        <CalendarOutlined />
+                        <span>{{ language === 'vi' ? 'Cả ngày' : 'All day' }}</span>
                       </div>
                     </div>
-                  </div>
 
-                  <!-- Trạng thái -->
-                  <div class="text-right">
-                    <a-tag :color="getStatusColor(item.status)">
-                      {{ item.formattedTime }}
-                    </a-tag>
-                  </div>
-                </div>
-
-                <!-- 2. Địa điểm & Liên kết -->
-                <div class="event-location-links mb-4">
-                  <div v-if="item.location" class="flex items-center gap-2 text-gray-600">
-                    <EnvironmentOutlined />
-                    <span>{{ item.location }}</span>
-                  </div>
-                  
-                  <div v-if="item.link" class="flex items-center gap-2 text-gray-600 mt-1">
-                    <VideoCameraOutlined />
-                    <a :href="item.link" target="_blank">{{ getMeetingPlatform(item.link) }}</a>
-                  </div>
-                  
-                  <div v-if="item.relatedUrl" class="flex items-center gap-2 text-gray-600 mt-1">
-                    <LinkOutlined />
-                    <a :href="item.relatedUrl" target="_blank">{{ language === 'vi' ? 'Tài liệu liên quan' : 'Related documents' }}</a>
-                  </div>
-                </div>
-
-                <!-- 3. Người tham gia -->
-                <div class="event-participants mb-4">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                      <UserOutlined />
-                      <span class="text-gray-600">{{ item.organizer?.name }}</span>
-                      <CrownOutlined v-if="item.isOrganizer" class="text-yellow-500" />
+                    <!-- Timezone Information -->
+                    <div class="timezone-info text-gray-600 text-xs mt-2">
+                      <div class="flex items-center gap-2">
+                        <GlobalOutlined />
+                        <span>{{ language === 'vi' ? 'Múi giờ sự kiện:' : 'Event timezone:' }} {{ item.timezone_code }}</span>
+                        <span class="mx-2">|</span>
+                        <span>{{ language === 'vi' ? 'Múi giờ hệ thống:' : 'System timezone:' }} {{ timeZone }}</span>
+                      </div>
                     </div>
-                    
-                    <a-avatar-group :max-count="3">
-                      <a-tooltip 
-                        v-for="attendee in item.attendees" 
-                        :key="attendee.user_id" 
-                        :title="`${attendee.first_name} ${attendee.last_name}`"
-                      >
-                        <a-avatar :src="attendee.avatar">
-                          {{ attendee.first_name?.[0] }}{{ attendee.last_name?.[0] }}
-                        </a-avatar>
-                      </a-tooltip>
-                    </a-avatar-group>
-                  </div>
-                </div>
 
-                <!-- 4. Nhắc nhở -->
-                <div v-if="item.reminders?.length" class="event-reminders mb-4">
-                  <div class="flex items-start gap-2 text-gray-600">
-                    <BellOutlined class="mt-1" />
-                    <div class="flex flex-col gap-1">
-                      <span class="font-medium">{{ language === 'vi' ? 'Nhắc nhở:' : 'Reminders:' }}</span>
-                      <div v-for="(reminder, index) in item.reminders" :key="index" class="ml-4">
-                        {{ formatReminder(reminder) }}
+                    <!-- Location & Links -->
+                    <div class="event-links" v-if="item.location || item.link">
+                      <div v-if="item.location" class="flex items-center gap-2 text-gray-600 text-sm mt-2">
+                        <EnvironmentOutlined />
+                        <span>{{ item.location }}</span>
+                      </div>
+                      <div v-if="item.link" class="flex items-center gap-2 text-gray-600 text-sm mt-2">
+                        <VideoCameraOutlined />
+                        <a :href="item.link" target="_blank">{{ getMeetingPlatform(item.link) }}</a>
+                      </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div v-if="item.description" class="event-description text-gray-600 text-sm mt-2">
+                      <div class="flex items-center gap-2">
+                        <FileTextOutlined />
+                        <span>{{ item.description }}</span>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                <!-- 5. Mô tả & Tài liệu -->
-                <div class="event-description">
-                  <div v-if="item.description" class="text-gray-600 mb-2">
-                    <div class="flex items-center gap-2">
-                      <FileTextOutlined />
-                      <span>{{ item.description }}</span>
-                    </div>
-                  </div>
-                  
-                  <!-- Tài liệu đính kèm -->
-                  <div v-if="item.attachments?.length" class="flex flex-wrap gap-2 mt-2">
-                    <a-tag 
-                      v-for="file in item.attachments" 
-                      :key="file.id"
-                      class="flex items-center gap-1"
-                    >
-                      <PaperClipOutlined />
-                      {{ file.name }}
-                    </a-tag>
-                  </div>
-                </div>
-
-                <!-- Actions -->
-                <!-- <div class="event-actions mt-4 flex justify-end gap-2">
-                  <a-button 
-                    v-if="item.canEdit"
-                    type="link" 
-                    size="small"
-                    @click="handleEditEvent(item)"
-                  >
-                    <template #icon><EditOutlined /></template>
-                    {{ language === 'vi' ? 'Chỉnh sửa' : 'Edit' }}
-                  </a-button>
-                  
-                  <a-button 
-                    type="link" 
-                    size="small"
-                    @click="handleViewDetails(item)"
-                  >
-                    <template #icon><EyeOutlined /></template>
-                    {{ language === 'vi' ? 'Chi tiết' : 'Details' }}
-                  </a-button>
-                </div> -->
-              </div>
-            </a-card>
-          </a-list-item>
-        </template>
-      </a-list>
-    </template>
+              </a-card>
+            </a-list-item>
+          </template>
+        </a-list>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -262,7 +190,10 @@ import {
   PaperClipOutlined,
   EditOutlined,
   EyeOutlined,
-  ReloadOutlined
+  ReloadOutlined,
+  CalendarOutlined,
+  LockOutlined,
+  UnlockOutlined
 } from '@ant-design/icons-vue';
 import { useUpcomingTasksStore } from '@/stores/upcomingTasksStore'; // Import store
 
@@ -374,9 +305,8 @@ const formatTimeFromNow = (datetime) => {
   const diffHours = Math.floor(diffMinutes / 60);
   const diffDays = Math.floor(diffHours / 24);
   
-  const isToday = eventTime.isSame(now, 'day');
-  const isTomorrow = eventTime.isSame(now.clone().add(1, 'day'), 'day');
   const isOngoing = diffMinutes <= 0 && diffMinutes > -60;
+  const isPast = diffMinutes < 0;
 
   const formats = {
     vi: {
@@ -399,36 +329,33 @@ const formatTimeFromNow = (datetime) => {
 
   const t = formats[language.value] || formats.en;
 
-  let result;
   if (isOngoing) {
-    result = t.ongoing;
-  } else if (diffMinutes < 0) {
+    return t.ongoing;
+  } else if (isPast) {
     if (diffMinutes > -60) {
-      result = t.past(language.value === "vi" ? "phút" : "minutes", Math.abs(diffMinutes));
+      return t.past(language.value === "vi" ? "phút" : "minutes", Math.abs(diffMinutes));
     } else if (diffHours > -24) {
-      result = t.past(language.value === "vi" ? "giờ" : "hours", Math.abs(diffHours));
+      return t.past(language.value === "vi" ? "giờ" : "hours", Math.abs(diffHours));
     } else if (diffDays > -7) {
-      result = t.past(language.value === "vi" ? "ngày" : "days", Math.abs(diffDays));
+      return t.past(language.value === "vi" ? "ngày" : "days", Math.abs(diffDays));
     } else {
-      result = t.default;
+      return t.default;
     }
   } else {
     if (diffMinutes < 60) {
-      result = t.future(language.value === "vi" ? "phút" : "minutes", diffMinutes);
+      return t.future(language.value === "vi" ? "phút" : "minutes", diffMinutes);
     } else if (diffHours < 24) {
-      result = t.future(language.value === "vi" ? "giờ" : "hours", diffHours);
+      return t.future(language.value === "vi" ? "giờ" : "hours", diffHours);
     } else if (diffDays < 7) {
-      result = t.future(language.value === "vi" ? "ngày" : "days", diffDays);
-    } else if (isToday) {
-      result = t.today;
-    } else if (isTomorrow) {
-      result = t.tomorrow;
+      return t.future(language.value === "vi" ? "ngày" : "days", diffDays);
+    } else if (eventTime.isSame(now, 'day')) {
+      return t.today;
+    } else if (eventTime.isSame(now.clone().add(1, 'day'), 'day')) {
+      return t.tomorrow;
     } else {
-      result = t.default;
+      return t.default;
     }
   }
-  
-  return result;
 };
 
 // Get event type label
@@ -507,16 +434,10 @@ const fetchUpcomingTasks = async () => {
     );
 
     if (response?.data?.code === 200) {
-      console.log('API Response:', response.data.data);
-      // Process and format the data
-      upcomingTasks.value = (response.data.data || []).map(task => {
-        console.log('Processing task:', task);
-        return {
-          ...task,
-          color: task.color || getEventColor(task.priority),
-          formattedTime: formatTimeFromNow(task.start_time)
-        };
-      });
+      upcomingTasks.value = (response.data.data || []).map(task => ({
+        ...task,
+        formattedTime: formatTimeFromNow(task.start_time)
+      }));
     } else {
       throw new Error(response?.data?.message || 'Không thể tải danh sách sự kiện');
     }
@@ -640,23 +561,67 @@ const handleEditEvent = (event) => {
 const handleViewDetails = (event) => {
   // Xử lý xem chi tiết sự kiện
 };
+
+// Add new function to determine color based on time remaining
+const getTimeRemainingColor = (startTime) => {
+  if (!startTime) return '#1890ff';
+  
+  const now = moment();
+  const eventTime = moment.utc(startTime).tz(timeZone.value);
+  const diffMinutes = eventTime.diff(now, 'minutes');
+  
+  if (diffMinutes < 0) return '#d9d9d9'; // Past
+  if (diffMinutes < 60) return '#ff4d4f'; // Less than 1 hour
+  if (diffMinutes < 1440) return '#faad14'; // Less than 24 hours
+  return '#52c41a'; // More than 24 hours
+};
 </script>
 
 <style scoped>
 .upcoming-events-page {
-  padding: 24px;
+  padding: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
-.filters {
-  margin-bottom: 24px;
+.events-container {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.events-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.events-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.events-list::-webkit-scrollbar-thumb {
+  background-color: #d9d9d9;
+  border-radius: 3px;
+}
+
+.events-list::-webkit-scrollbar-track {
+  background-color: #f0f0f0;
+  border-radius: 3px;
+}
+
+.event-item {
+  margin-bottom: 8px;
 }
 
 .event-card {
-  padding: 0 16px !important;
+  padding: 12px !important;
   border-radius: 8px;
   background: #fff;
   transition: all 0.3s;
@@ -664,35 +629,78 @@ const handleViewDetails = (event) => {
 
 .event-card:hover {
   background: #fafafa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.ant-card {
-  transition: all 0.3s ease;
+.event-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.ant-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.event-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-title h3 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-time {
+  flex-shrink: 0;
+}
+
+.event-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.time-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-description {
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .ant-tag {
   margin-right: 0;
-}
-
-.ant-avatar-group {
-  .ant-avatar {
-    border: 2px solid #fff;
-  }
+  font-size: 12px;
 }
 
 /* Responsive styles */
 @media (max-width: 768px) {
   .event-header {
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
   }
   
-  .event-actions {
-    justify-content: flex-start;
+  .event-time {
+    width: 100%;
+    text-align: left;
   }
+}
+:deep(.ant-card-body) {
+  padding: 10px !important;
 }
 </style>
