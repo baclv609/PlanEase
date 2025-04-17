@@ -1700,12 +1700,6 @@ const handleBeforeUpload = async (info) => {
     formData.append(`files[${index}]`, file); // Thêm index vào tên field
   });
 
-  console.log('Files to upload:', files);
-  console.log('FormData entries:');
-  for (let pair of formData.entries()) {
-    console.log(pair[0], pair[1]);
-  }
-
   try {
     const { data } = await axios.post(
       `${dirApi}s3/upload`,
