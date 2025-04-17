@@ -484,6 +484,7 @@ const handleSave = async () => {
       borderColor: formState.value.borderColor || null,
       is_all_day: formState.value.is_all_day || 0,
       is_repeat: formState.value.is_repeat || 0,
+      link: formState.value.link || null,
       rrule: formState.value.rrule || null,
       exclude_time: formState.value.exclude_time || null,
       timezone_code: formState.value.timezone_code ? formState.value.timezone_code : null,
