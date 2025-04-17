@@ -103,6 +103,16 @@
           class="flex flex-col gap-2"
           @change="updateFilteredEvents"
         >
+          <!-- Add default Tasks checkbox -->
+          <div class="flex bg-[#FDE4B2] justify-between p-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all">
+            <div class="flex items-center">
+              <a-checkbox :value="null" class="" :checked="true" :style="{ '--ant-checkbox-color': '#1890ff' }">
+                <span class="text-gray-700 text-sm font-medium">{{ t('calendar.tasks') }}</span>
+              </a-checkbox>
+            </div>
+          </div>
+
+          <!-- Existing calendars -->
           <div v-if="myCalendars.length">
             <div
               v-for="calendar in displayedCalendars"
@@ -435,15 +445,51 @@ const handleViewChange = ({ mode, date, start, end, events }) => {
   }
 };
 
+// const updateFilteredEvents = () => {
+//   // Lưu danh sách các tag bị bỏ tích
+//   const unselectedTags = [...myCalendars.value, ...sharedCalendars.value]
+//     .filter((cal) => !selectedCalendars.value.includes(cal.id))
+//     .map((cal) => cal.id);
+
+//   hiddenTagsStore.setHiddenTags(unselectedTags);
+//   // console.log("Các tag bị bỏ tích:", unselectedTags);
+// };
 const updateFilteredEvents = () => {
   // Lưu danh sách các tag bị bỏ tích
   const unselectedTags = [...myCalendars.value, ...sharedCalendars.value]
     .filter((cal) => !selectedCalendars.value.includes(cal.id))
     .map((cal) => cal.id);
 
+  // Kiểm tra xem có bỏ tích Tasks không
+  const isTasksHidden = !selectedCalendars.value.includes(null);
+  if (isTasksHidden) {
+    unselectedTags.push(null);
+  }
+
   hiddenTagsStore.setHiddenTags(unselectedTags);
-  // console.log("Các tag bị bỏ tích:", unselectedTags);
 };
+
+// watch(
+//   [myCalendars, sharedCalendars],
+//   ([newMyCalendars, newSharedCalendars]) => {
+//     // Khi có dữ liệu mới, cập nhật selectedCalendars
+//     const allCalendarIds = [...newMyCalendars, ...newSharedCalendars].map(
+//       (cal) => cal.id
+//     );
+//     selectedCalendars.value = allCalendarIds;
+//     updateFilteredEvents();
+//   },
+//   { immediate: true }
+// );
+
+
+// onMounted(() => {
+//   const allCalendarIds = [...myCalendars.value, ...sharedCalendars.value].map(
+//     (cal) => cal.id
+//   );
+//   selectedCalendars.value = allCalendarIds;
+//   updateFilteredEvents();
+// });
 
 watch(
   [myCalendars, sharedCalendars],
@@ -452,7 +498,7 @@ watch(
     const allCalendarIds = [...newMyCalendars, ...newSharedCalendars].map(
       (cal) => cal.id
     );
-    selectedCalendars.value = allCalendarIds;
+    selectedCalendars.value = [null, ...allCalendarIds]; // Add null for Tasks
     updateFilteredEvents();
   },
   { immediate: true }
@@ -462,9 +508,10 @@ onMounted(() => {
   const allCalendarIds = [...myCalendars.value, ...sharedCalendars.value].map(
     (cal) => cal.id
   );
-  selectedCalendars.value = allCalendarIds;
+  selectedCalendars.value = [null, ...allCalendarIds]; // Add null for Tasks
   updateFilteredEvents();
 });
+
 const displayOnly = (calendarId) => {
   // Chỉ giữ lại tag được chọn
   selectedCalendars.value = [calendarId];
