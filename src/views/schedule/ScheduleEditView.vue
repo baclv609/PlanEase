@@ -1501,21 +1501,16 @@ const formRules = computed(() => ({
     ...recurringEventRules,
     // Thêm rules cho phần lặp lại
     'rrule.until': [
-        {
+    {
         validator: () => {
-            if (formState.value.is_repeat && formState.value.rrule?.endType === 'until') {
+        if (formState.value.is_repeat && formState.value.rrule?.endType === 'until') {
             if (!formState.value.rrule.until) {
-                return Promise.reject(t('validation.rrule.until.required'));
+            return Promise.reject(t('validation.rrule.until.required'));
             }
-            const untilDate = dayjs(formState.value.rrule.until);
-            const startDate = dayjs(formState.value.start);
-            if (untilDate.isBefore(startDate) || untilDate.isSame(startDate)) {
-                return Promise.reject(t('validation.rrule.until.after_start'));
-            }
-            }
-            return Promise.resolve();
+        }
+        return Promise.resolve();
         },
-        },
+    },
     ],
     'rrule.count': [
         {
