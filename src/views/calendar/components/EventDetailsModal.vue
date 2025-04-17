@@ -70,7 +70,7 @@ const props = defineProps({
   event: Object,
 });
 
-const emit = defineEmits(["closeEventDetailModalVisible", "close", "editTask", "delete"]);
+const emit = defineEmits(["closeEventDetailModalVisible", "close", "editTask", "delete", "mail-event-id"]);
 const isVisible = ref(props.isEventDetailModalVisible);
 const event = ref({});
 const dirApi = import.meta.env.VITE_API_BASE_URL;
@@ -907,6 +907,10 @@ function getRecurrenceText(event) {
   return text;
 }
 
+function openMailModal(eventId) {
+  console.log(eventId)
+  emit('mail-event-id', eventId);
+}
 </script>
 
 <template>
@@ -1075,7 +1079,7 @@ function getRecurrenceText(event) {
                   </p>
                 </div>
                 <div class="flex space-x-2">
-                  <button
+                  <button @click="openMailModal(event.id)"
                     class="text-gray-800 bg-transparent border-none hover:bg-gray-100 rounded-full transition px-3 py-2 cursor-pointer">
                     <MailOutlined class="text-xl py-1" />
                   </button>
@@ -1366,6 +1370,7 @@ function getRecurrenceText(event) {
       </a-tab-pane>
     </a-tabs>
   </Modal>
+
 </template>
 
 <style scoped>

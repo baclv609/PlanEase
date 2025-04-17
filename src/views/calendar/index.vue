@@ -40,6 +40,7 @@ import EventDetailModal from "./components/EventDetailsModal.vue";
 import ChatBot from "@/components/ChatBot.vue";
 
 import { useEchoStore } from "@/stores/echoStore";
+import MailModal from "./components/MailModal.vue";
 
 const settingsStore = useSettingsStore();
 const calendarRef = ref(null);
@@ -48,6 +49,9 @@ const isUpdatingProgrammatically = ref(false);
 const currentDate = ref("");
 
 const fullCalendarRef = ref(null);
+
+const showMailModal = ref(false);
+const selectedEventIdForMail = ref(null);
 
 const isEditDrawerVisible = ref(false);
 const selectedEventToEdit = ref(null); 
@@ -854,6 +858,11 @@ onMounted(() => {
     }
   }
 });
+
+const handleOpenMailModal = (eventId) => {
+  selectedEventIdForMail.value = eventId;
+  showMailModal.value = true;
+};
 </script>
 
 <template>
@@ -912,7 +921,9 @@ onMounted(() => {
 
     <!-- Modal chi tiết sự kiện -->
     <EventDetailModal :open="isEventDetailModalVisible" :event="selectedEvent"  @editTask="openEditDrawer"
-      @close="isEventDetailModalVisible = false" @delete="handleDeleteEvent" />
+      @close="isEventDetailModalVisible = false" @delete="handleDeleteEvent" 
+      @mail-event-id="handleOpenMailModal"
+    />
 
       <ScheduleEditView :open="isEditDrawerVisible" :event="selectedEventToEdit"  
        @update:visible="isEditDrawerVisible = $event" 
@@ -921,6 +932,13 @@ onMounted(() => {
 
     <ChatBot />
 
+    <transition name="overlay-fade">
+      <MailModal
+        v-if="showMailModal"
+        :event-id="selectedEventIdForMail"
+        @close="showMailModal = false"
+      />
+    </transition>
   </div>
 </template>
 
@@ -995,6 +1013,23 @@ onMounted(() => {
 :deep(.task_done) {
   opacity: 0.5 !important;
   text-decoration: line-through !important;
+}
+
+:deep(.overlay-fade-enter-active),
+:deep(.overlay-fade-leave-active) {
+  transition: all 0.3s ease;
+}
+
+:deep(.overlay-fade-enter-from),
+:deep(.overlay-fade-leave-to) {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+:deep(.overlay-fade-enter-to),
+:deep(.overlay-fade-leave-from) {
+  opacity: 1;
+  transform: scale(1);
 }
 
 </style>

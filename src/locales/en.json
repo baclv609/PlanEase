@@ -677,5 +677,20 @@
     "error": {
       "general_error": "An error occurred, please try again"
     }
+  },
+  "MailModal": {
+    "main-modal": "Email to guests",
+    "title": "Title",
+    "receive_person": "Receiver",
+    "content": "Content you want to send",
+    "receive-location": "Your announcement content will be sent to selected guests",
+    "placeholder": {
+      "search": "Enter email",
+      "content": "Enter the content you want to send to everyone"
+    },
+    "cancel": "Cancel",
+    "success": "Email sent successfully",
+    "error": "Sending email failed",
+    "send": "Send"
   }
 }
