@@ -568,6 +568,7 @@
       "privacy": "Privacy",
       "description": "Description",
       "link": "Link",
+      "busy": "Busy",
       "reminder": "Reminder",
       "before": "Before",
       "hour": "hour",

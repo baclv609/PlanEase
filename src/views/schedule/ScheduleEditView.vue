@@ -381,7 +381,7 @@
                     <span>{{ t('eventModal.sections.link.label') }}</span>
                 </div>
                 <a-form-item name="url" class="w-full">
-                    <a-input :placeholder="t('eventModal.sections.link.placeholder')" class="bg-gray-50 rounded-lg" v-model:value="formState.url" />
+                    <a-input :placeholder="t('eventModal.sections.link.placeholder')" class="bg-gray-50 rounded-lg" v-model:value="formState.link" />
                 </a-form-item>
             </div>
 
@@ -541,7 +541,7 @@ const updateFormStateFromProps = (event) => {
             user_id: event.user_id,
             type: event.type || "event",
             location: event.location || "",
-            url: event.url || "",
+            link: event.link || "",
             attendees: Array.isArray(event.attendees) && event.attendees.length > 0
                 ? event.attendees.map(att => ({
                     label: att.email || att.user?.email || '',
@@ -661,6 +661,7 @@ const formState = ref({
     is_busy: false,
     parent_id: null,
     tags: null,
+    link: null,
     recurrence: null,
     timezone_code: "UTC",
     description: "",
@@ -1353,7 +1354,7 @@ const updateEvent = async ({ code, date, id }) => {
             tag_id: formState.value.tags || null,
             is_private: formState.value.is_private ? 1 : 0,
             // path: formState.value.attachments.map(att => att.id),
-            link: null,
+            link: formState.value.link || null,
         };
 
         if((originalAttendees.value && originalAttendees.value.length > 0) || (formState.value.attendees && formState.value.attendees.length > 0)) {

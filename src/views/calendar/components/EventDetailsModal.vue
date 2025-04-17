@@ -38,7 +38,8 @@ import { AlignLeftOutlined,
          FileExcelOutlined, 
          FilePptOutlined, 
          FileTextOutlined,
-         DownloadOutlined 
+         DownloadOutlined, 
+         LinkOutlined
         } from "@ant-design/icons-vue";
 
 import { useEchoStore } from "@/stores/echoStore";
@@ -1123,6 +1124,18 @@ function openMailModal(eventId) {
             </div>
           </div>
 
+          <div class="flex items-start mb-2" v-if="event.link">
+            <div class="w-6 h-6 flex-shrink-0 mr-3">
+              <LinkOutlined class="h-6 w-6 text-gray-500 text-xl" />
+            </div>
+            <div>
+              <div class="flex items-center">
+                <p class="font-medium mb-0">{{ t('EventDetailsModal.general.link') }}</p>
+              </div>
+              <a :href="event.link" target="_blank" rel="noopener noreferrer" class="text-sm text-gray-600">{{ event.link}}</a>
+            </div>
+          </div>
+
           <!-- Reminder -->
           <div class="flex items-start mb-2" v-if="event.is_reminder">
             <div class="w-6 h-6 flex-shrink-0 mr-3">
@@ -1149,12 +1162,14 @@ function openMailModal(eventId) {
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <div>
+            <div v-if="event.type == 'event'">
               <div class="flex items-center">
                 <p class="font-medium mb-0">{{ t('EventDetailsModal.general.calendar') }}</p>
                 <div v-if="event.tag_color_code" class="w-3 h-3 rounded-full ml-1" :style="{ backgroundColor: event.tag_color_code }"></div>
               </div>
-              <p class="text-sm text-gray-600">{{ event.tag_name || 'Không có' }}</p>
+              <div class="flex gap-1">
+                <p class="text-sm text-gray-600">{{ event.tag_name || 'Không có' }}</p> <p v-if="event.is_busy"> - {{ t('EventDetailsModal.general.busy') }}</p>
+              </div>
             </div>
           </div>
 
