@@ -17,7 +17,7 @@
   "Ăn tối": "Ăn tối",
   "Đi chơi": "Đi chơi",
   "Update_plane": "Nâng cấp kế hoạch",
-  "Search": "Tìm kiếm",
+  "Search": "Tìm kiệm",
   "modalTitle": "Thêm / Chỉnh sửa Sự Kiện",
   "Event Title": "Tiêu đề sự kiện",
   "Enter Title": "Nhập tiêu đề",
@@ -152,8 +152,9 @@
     "no": "Không"
   },
   "calendar": {
+    "tasks": "Việc cần làm của tôi",
     "createEvent": "Tạo sự kiện",
-    "createTask": "Tạo việc cần làm",
+    "createTask": "Việc cần làm",
     "upcomingEvents": "Sự kiện sắp tới",
     "dontMissEvents": "Đừng bỏ lỡ các sự kiện đã lên lịch",
     "noUpcomingEvents": "Không có sự kiện nào trong 24h tới",

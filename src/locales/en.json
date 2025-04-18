@@ -150,6 +150,7 @@
     "no": "No"
   },
   "calendar": {
+    "tasks": "My Tasks",
     "createEvent": "Create Event",
     "createTask": "Create Task",
     "upcomingEvents": "Upcoming Events",
