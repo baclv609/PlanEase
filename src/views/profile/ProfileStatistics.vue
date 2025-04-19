@@ -33,10 +33,10 @@
 
     <div class="statistics-grid">
       <div class="statistics-item">
-        <CompletionRate :date-range="dateRange" />
+        <CompletionRate :date-range="dateRange" :key="chartKeyTask"/>
       </div>
       <div class="statistics-item">
-        <BusiestDay :date-range="dateRange" />
+        <BusiestDay :date-range="dateRange" :key="chartKeyQuantity" />
       </div>
     </div>
   </div>
@@ -57,6 +57,8 @@ const dateRange = ref([]);
 const filterType = ref('week');
 const lastUpdateTime = ref(new Date().toLocaleString('vi-VN'));
 const router = useRouter();
+const chartKeyTask = ref(0);
+const chartKeyQuantity = ref(0);
 
 const refreshData = async () => {
   loading.value = true;
@@ -64,7 +66,9 @@ const refreshData = async () => {
     await fetchData();
     lastUpdateTime.value = new Date().toLocaleString('vi-VN');
     message.success('Đã cập nhật dữ liệu mới nhất');
-    router.go(0);
+    chartKeyTask.value++;
+    chartKeyQuantity.value++;
+    // router.go(0);
   } catch (error) {
     message.error('Có lỗi xảy ra khi cập nhật dữ liệu');
   } finally {

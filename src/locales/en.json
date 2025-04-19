@@ -204,7 +204,9 @@
     "tagNameMinLength": "Tag name must be at least 3 characters",
     "tagNameMaxLength": "Tag name cannot exceed 50 characters",
     "colorRequired": "Please select a color",
-    "descriptionMaxLength": "Description cannot exceed 500 characters",
+    "descriptionMaxLength": "Description cannot exceed 1000 characters",
+    "locationMaxLength": "Location too long",
+    "linkInvalid": "URL invalid",
     "title": {
       "required": "Title is required",
       "min": "Title is too short",

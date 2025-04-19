@@ -1,5 +1,5 @@
 <template>
-    <a-drawer :open="visible" :rules="rules" :title="t('eventModalEdit.title')" placement="right" :width="drawerWidth"
+    <a-drawer :open="visible" :title="t('eventModalEdit.title')" placement="right" :width="drawerWidth"
         @close="handleClose" @update:open="(val) => emit('update:visible', val)" :destroyOnClose="true"
         :maskClosable="false">
         <template #extra>
@@ -7,21 +7,24 @@
                 <a-button type="primary" @click="handleSubmit" :loading="isLoading" class="px-6">{{ t('eventModal.save') }}</a-button>
             </div>
         </template>
-        <a-form ref="formRef" layout="vertical" :model="formState" :required-mark="false" :rules="formRules" @submit.prevent="handleSubmit" class="event-form">
+        <a-form ref="formRef" layout="vertical" :model="formState" :required-mark="false" :rules="rules" @submit.prevent="handleSubmit" class="event-form">
             <!-- Title Section -->
             <div class="form-section">
-                <div class="section-title">
-                    <EditOutlined class="text-gray-500 mr-2" />
-                    <span>{{ t('eventModal.sections.title.label') }}</span><span class="text-red-500 ml-1">*</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="flex h-8 justify-center w-8 items-center mr-3">
-                        <div :style="{ backgroundColor: formState.color_code, width: '12px', height: '12px', borderRadius: '50%' }"></div>
+                <a-form-item name="title">
+                    <div class="section-title">
+                        <EditOutlined class="text-gray-500 mr-2" />
+                        <span>{{ t('eventModal.sections.title.label') }}</span><span class="text-red-500 ml-1">*</span>
                     </div>
-                    <a-input :placeholder="t('eventModal.sections.title.placeholder')"
-                        class="bg-gray-50 rounded-lg w-full min-w-[200px]" 
-                        v-model:value="formState.title" />
-                </div>
+                    <div class="flex items-center">
+                        <div class="flex h-8 justify-center w-8 items-center mr-3">
+                            <div :style="{ backgroundColor: formState.color_code, width: '12px', height: '12px', borderRadius: '50%' }"></div>
+                        </div>
+                        
+                        <a-input :placeholder="t('eventModal.sections.title.placeholder')"
+                            class="bg-gray-50 rounded-lg w-full min-w-[200px]" 
+                            v-model:value="formState.title" />
+                    </div>
+                </a-form-item>
             </div>
 
             <!-- Event Type Section -->
@@ -84,11 +87,7 @@
                                 :show-time="!formState.allDay"
                                 :format="formState.allDay ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm'"
                                 class="w-full"
-                                :disabled-time="formState.allDay ? () => ({
-                                    disabledHours: () => Array.from({ length: 24 }, (_, i) => i),
-                                    disabledMinutes: () => Array.from({ length: 60 }, (_, i) => i),
-                                    disabledSeconds: () => Array.from({ length: 60 }, (_, i) => i)
-                                }) : undefined"
+                                :disabled-time="formState.allDay ? () => ({ disabledHours: () => Array.from({ length: 24 }, (_, i) => i) }) : undefined"
                                 :allow-clear="false"
                                 />
                         </a-form-item>
@@ -100,11 +99,7 @@
                                 :show-time="!formState.allDay"
                                 :format="formState.allDay ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm'"
                                 class="w-full"
-                                :disabled-time="formState.allDay ? () => ({
-                                    disabledHours: () => Array.from({ length: 24 }, (_, i) => i),
-                                    disabledMinutes: () => Array.from({ length: 60 }, (_, i) => i),
-                                    disabledSeconds: () => Array.from({ length: 60 }, (_, i) => i)
-                                }) : undefined"
+                                :disabled-time="formState.allDay ? () => ({ disabledHours: () => Array.from({ length: 24 }, (_, i) => i) }) : undefined"
                                 :allow-clear="false"
                                 />
                         </a-form-item>
@@ -404,7 +399,7 @@ import {
     PaperClipOutlined,
     AlignLeftOutlined
 } from '@ant-design/icons-vue';
-import { Button, Checkbox, Col, InputNumber, message, Row, Card, Tag, Select, DatePicker, Input, Modal, Upload } from 'ant-design-vue';
+import { Button, Checkbox, Col, InputNumber, message, Row, Card, Tag, Select, DatePicker, Input, Modal, Upload, Form } from 'ant-design-vue';
 import { QuillEditor } from '@vueup/vue-quill';
 import 'quill/dist/quill.snow.css';
 // import moment from "moment-timezone";
@@ -542,6 +537,7 @@ const updateFormStateFromProps = (event) => {
             type: event.type || "event",
             location: event.location || "",
             link: event.link || "",
+            oldStart: startTime ? dayjs(startTime).tz(event.info?.extendedProps?.timezone).format('YYYY-MM-DD HH:mm:ss') : dayjs().tz(event.info?.extendedProps?.timezone).format('YYYY-MM-DD HH:mm:ss'),
             attendees: Array.isArray(event.attendees) && event.attendees.length > 0
                 ? event.attendees.map(att => ({
                     label: att.email || att.user?.email || '',
@@ -685,80 +681,83 @@ const formState = ref({
 const rules = {
     title: [
         { required: true, message: t('validation.title.required'), trigger: "blur" },
-        { min: 3, max: 255, message: t('validation.title.min'), trigger: "blur" },
+        { min: 3, message: t('validation.title.min'), trigger: "blur" },
         { max: 255, message: t('validation.title.max'), trigger: "blur" },
     ],
-    time: [
-        { required: true, message: t('validation.time.required'), trigger: "change" },
-        {
-            validator: (_, value) => {
-                if (!value || value.length !== 2) return Promise.reject(t('validation.time.invalid'));
-                if (dayjs(value[0]).isAfter(value[1])) return Promise.reject(t('validation.time.start_after_end'));
-                return Promise.resolve();
-            },
-            trigger: "change",
-        },
+    start: [
+        { required: true, message: t('validation.time.required'), trigger: "change" }
     ],
-    attendees: [
-        {
-            validator: (_, value) => {
-                if (value.length > 10) return Promise.reject(t('validation.attendees.max'));
-                return Promise.resolve();
-            },
-            trigger: "change",
+    end: [
+    { required: true, message: t('validation.time.required'), trigger: ['change', 'blur'] },
+    {
+        validator: (_, value) => {
+        const start = formState.value.start;
+        if (!start || !value) return Promise.resolve();
+
+        const startTime = dayjs(start);
+        const endTime = dayjs(value);
+
+        if (!startTime.isValid() || !endTime.isValid()) {
+            return Promise.reject(t('validation.time.invalid'));
+        }
+
+        if (formState.value.allDay) {
+            if (!endTime.isAfter(startTime, 'day')) {
+                return Promise.reject(t('validation.time.start_after_end'));
+            }
+        } else {
+            if (!endTime.isAfter(startTime)) {
+                return Promise.reject(t('validation.time.invalid'));
+            }
+        }
+
+        return Promise.resolve();
         },
+        trigger: ['change', 'blur'],
+    }
     ],
-    reminder: [
-        {
-            validator: (_, value) => {
-                if (value.length > 3) return Promise.reject(t('validation.reminder.max'));
-                return Promise.resolve();
-            },
-            trigger: "change",
+  description: [
+    { max: 1000, message: t('validation.descriptionMaxLength'), trigger: "blur" }
+  ],
+  location: [
+    { max: 255, message: t('validation.locationMaxLength'), trigger: "blur" }
+  ],
+  link: [
+    {
+      validator: (_, value) => {
+        if (!value) return Promise.resolve(); // optional field
+        const urlRegex = /^(https?:\/\/)([\w-]+(\.[\w-]+)+)(:\d+)?(\/[\w-./?%&=]*)?$/;
+        if (!urlRegex.test(value)) {
+          return Promise.reject(t('validation.linkInvalid'));
+        }
+        return Promise.resolve();
+      },
+      trigger: 'blur',
+    }
+  ],
+  attendees: [
+    {
+        validator: (_, value) => {
+            if (value && value.length > 10) {
+                return Promise.reject(t('validation.attendees.max'));
+            }
+            return Promise.resolve();
         },
-    ],
-    rrule: {
-        freq: [
-            { required: true, message: t('validation.rrule.freq'), trigger: "change" },
-        ],
-        interval: [
-            { required: true, message: t('validation.rrule.interval.required'), trigger: "change" },
-            { type: 'number', min: 1, message: t('validation.rrule.interval.min'), trigger: "change" },
-        ],
-        until: [
-            {
-                validator: (_, value) => {
-                    if (formState.value.is_repeat && !value) {
-                        return Promise.reject(t('validation.rrule.until'));
-                    }
-                    return Promise.resolve();
-                },
-                trigger: "change",
-            },
-        ],
-        byweekday: [
-            {
-                validator: (_, value) => {
-                    if (formState.value.rrule.freq === 'weekly' && (!value || value.length === 0)) {
-                        return Promise.reject(t('validation.rrule.byweekday'));
-                    }
-                    return Promise.resolve();
-                },
-                trigger: "change",
-            },
-        ],
-        bymonthday: [
-            {
-                validator: (_, value) => {
-                    if (formState.value.rrule.freq === 'monthly' && (!value || value.length === 0)) {
-                        return Promise.reject(t('validation.rrule.bymonthday'));
-                    }
-                    return Promise.resolve();
-                },
-                trigger: "change",
-            },
-        ],
+        trigger: "change"
+    }
+  ],
+  byweekday: [
+    {
+      validator: () => {
+        if (formState.value.is_repeat && formState.value.rrule?.freq === "WEEKLY") {
+          if (formState.value.rrule.byweekday.length === 0) {
+            return Promise.reject(t('validation.rrule.byweekday'));
+          }
+        }
+        return Promise.resolve();
+      },
     },
+  ],
 };
 
 
@@ -1310,6 +1309,42 @@ const showSendMailModal = () => {
     });
 };
 
+// Check trùng lặp thời gian
+const checkPossibleTime = async (start, end, timezone) => {
+  try {
+    const response = await axios.post(
+      `${dirApi}tasks/checkPossibleStartTime`,
+      {
+        start_time: start.format("YYYY-MM-DD HH:mm:ss"),
+        end_time: end.format("YYYY-MM-DD HH:mm:ss"),
+        timezone_code: timezone
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    console.log('response', response);
+    if (response.data.code === 477) {
+      return new Promise((resolve) => {
+        Modal.confirm({
+          title: t('eventModal.timeConflict.title'),
+          content: t('eventModal.timeConflict.content'),
+          okText: t('eventModal.timeConflict.continue'),
+          cancelText: t('eventModal.timeConflict.cancel'),
+          onOk: () => resolve(true),
+          onCancel: () => resolve(false)
+        });
+      });
+    }
+
+    return true;
+  } catch (error) {
+    console.log('Loi khi kiem tra thoi gian', error);
+  }
+};
+
 // Hàm cập nhật sự kiện
 const updateEvent = async ({ code, date, id }) => {
     isLoading.value = true;
@@ -1322,9 +1357,7 @@ const updateEvent = async ({ code, date, id }) => {
                 ? formState.value.start.format("YYYY-MM-DD HH:mm:ss")
                 : null,
             title: formState.value.title || "(Không có tiêu đề)",
-            updated_date: formState.value.start
-                ? formState.value.start.format("YYYY-MM-DD HH:mm:ss")
-                : null,
+            updated_date: formState.value.oldStart,
             end_time: formState.value.end
                 ? formState.value.end.format("YYYY-MM-DD HH:mm:ss")
                 : null,
@@ -1356,6 +1389,17 @@ const updateEvent = async ({ code, date, id }) => {
             // path: formState.value.attachments.map(att => att.id),
             link: formState.value.link || null,
         };
+
+        const canProceed = await checkPossibleTime(
+            formState.value.start,
+            formState.value.end,
+            formState.value.timezone_code
+        );
+
+        if (!canProceed) {
+            isLoading.value = false;
+            return;
+        }
 
         if((originalAttendees.value && originalAttendees.value.length > 0) || (formState.value.attendees && formState.value.attendees.length > 0)) {
             const choice = await showSendMailModal();
@@ -1497,53 +1541,52 @@ const updateEvent = async ({ code, date, id }) => {
 };
 
 // Tạo computed property cho rules
-const formRules = computed(() => ({
-    ...eventRules,
-    ...recurringEventRules,
-    // Thêm rules cho phần lặp lại
-    'rrule.until': [
-    {
-        validator: () => {
-        if (formState.value.is_repeat && formState.value.rrule?.endType === 'until') {
-            if (!formState.value.rrule.until) {
-            return Promise.reject(t('validation.rrule.until.required'));
-            }
-        }
-        return Promise.resolve();
-        },
-    },
-    ],
-    'rrule.count': [
-        {
-        validator: () => {
-            if (formState.value.is_repeat && formState.value.rrule?.endType === 'count') {
-            if (!formState.value.rrule.count) {
-                return Promise.reject(t('validation.rrule.count.required'));
-            }
-            if (formState.value.rrule.count < 1) {
-                return Promise.reject(t('validation.rrule.count.min'));
-            }
-            }
-            return Promise.resolve();
-        },
-        },
-    ],
-    'rrule.interval': [
-        {
-        validator: () => {
-            if (formState.value.is_repeat) {
-            if (!formState.value.rrule.interval) {
-                return Promise.reject(t('validation.rrule.interval.required'));
-            }
-            if (formState.value.rrule.interval < 1) {
-                return Promise.reject(t('validation.rrule.interval.min'));
-            }
-            }
-            return Promise.resolve();
-        },
-        },
-    ],
-}));
+    // const formRules = computed(() => ({
+    //     ...eventRules(t),
+    //     ...recurringEventRules,
+    //     'rrule.until': [
+    //     {
+    //         validator: () => {
+    //         if (formState.value.is_repeat && formState.value.rrule?.endType === 'until') {
+    //             if (!formState.value.rrule.until) {
+    //             return Promise.reject(t('validation.rrule.until.required'));
+    //             }
+    //         }
+    //         return Promise.resolve();
+    //         },
+    //     },
+    //     ],
+    //     'rrule.count': [
+    //         {
+    //         validator: () => {
+    //             if (formState.value.is_repeat && formState.value.rrule?.endType === 'count') {
+    //             if (!formState.value.rrule.count) {
+    //                 return Promise.reject(t('validation.rrule.count.required'));
+    //             }
+    //             if (formState.value.rrule.count < 1) {
+    //                 return Promise.reject(t('validation.rrule.count.min'));
+    //             }
+    //             }
+    //             return Promise.resolve();
+    //         },
+    //         },
+    //     ],
+    //     'rrule.interval': [
+    //         {
+    //         validator: () => {
+    //             if (formState.value.is_repeat) {
+    //             if (!formState.value.rrule.interval) {
+    //                 return Promise.reject(t('validation.rrule.interval.required'));
+    //             }
+    //             if (formState.value.rrule.interval < 1) {
+    //                 return Promise.reject(t('validation.rrule.interval.min'));
+    //             }
+    //             }
+    //             return Promise.resolve();
+    //         },
+    //         },
+    //     ],
+    // }));
 
 // Add watch for formState
 watch(
