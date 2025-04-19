@@ -464,7 +464,8 @@ const checkPossibleTime = async (start, end, timezone) => {
       {
         start_time: start.format("YYYY-MM-DD HH:mm:ss"),
         end_time: end.format("YYYY-MM-DD HH:mm:ss"),
-        timezone_code: timezone
+        timezone_code: timezone,
+        not_check_id: null
       },
       {
         headers: {
@@ -673,6 +674,8 @@ const handleSubmitAdd = async () => {
   }
 };
 
+let reminderWarningShown = false;
+
 const addReminder = () => {
   if (!Array.isArray(formState.value.reminder)) {
     formState.value.reminder = [];
@@ -681,7 +684,14 @@ const addReminder = () => {
   if (formState.value.reminder.length < 3) {
     formState.value.reminder.push({ type: "email", time: 5, unit: "minutes" });
   } else {
-    message.warning(t('eventModal.sections.reminder.max'));
+    if (!reminderWarningShown) {
+      reminderWarningShown = true;
+      message.warning(t('validation.reminder.max'));
+
+      setTimeout(() => {
+        reminderWarningShown = false;
+      }, 3000);
+    }
   }
 };
 const formatReminders = (reminders) => {

@@ -375,7 +375,7 @@
                     <LinkOutlined class="text-gray-500 mr-2" />
                     <span>{{ t('eventModal.sections.link.label') }}</span>
                 </div>
-                <a-form-item name="url" class="w-full">
+                <a-form-item name="link" class="w-full">
                     <a-input :placeholder="t('eventModal.sections.link.placeholder')" class="bg-gray-50 rounded-lg" v-model:value="formState.link" />
                 </a-form-item>
             </div>
@@ -866,6 +866,8 @@ watch(
     }
 );
 
+let reminderWarningShown = false;
+
 const addReminder = () => {
     if (!Array.isArray(formState.value.reminder)) {
         formState.value.reminder = [];
@@ -874,7 +876,14 @@ const addReminder = () => {
     if (formState.value.reminder.length < 3) {
         formState.value.reminder.push({ type: "email", time: 5, unit: "minutes" });
     } else {
-        message.warning(t('eventModal.warning.maxReminders'));
+        if (!reminderWarningShown) {
+            reminderWarningShown = true;
+            message.warning(t('validation.reminder.max'));
+
+            setTimeout(() => {
+                reminderWarningShown = false;
+            }, 3000);
+        }
     }
 };
 const formatReminders = (reminders) => {
@@ -1084,7 +1093,7 @@ const handleSubmit = async () => {
         await formRef.value.validate();
 
         // If validation passes, proceed with update
-        if (originalIsRepeat.value === true) {
+        if (originalIsRepeat.value === true && formState.value.is_repeat) {
             // Check if freq has changed
             const originalFreq = props.event?.info?.extendedProps?.freq;
             const newFreq = formState.value.rrule?.freq;
@@ -1251,6 +1260,8 @@ const handleSubmit = async () => {
                     },
                 });
             }
+        } else if (originalIsRepeat.value == true && !formState.value.is_repeat) {
+            updateEvent({ code: "EDIT_NonRep", date: formState.value.start, id: formState.value.id });
         } else {
             // Nếu không có lặp lại, cập nhật ngay lập tức
             updateEvent({ code: "EDIT_N", date: formState.value.start, id: formState.value.id });
@@ -1310,14 +1321,15 @@ const showSendMailModal = () => {
 };
 
 // Check trùng lặp thời gian
-const checkPossibleTime = async (start, end, timezone) => {
+const checkPossibleTime = async (start, end, timezone, id) => {
   try {
     const response = await axios.post(
       `${dirApi}tasks/checkPossibleStartTime`,
       {
         start_time: start.format("YYYY-MM-DD HH:mm:ss"),
         end_time: end.format("YYYY-MM-DD HH:mm:ss"),
-        timezone_code: timezone
+        timezone_code: timezone,
+        not_check_id: id
       },
       {
         headers: {
@@ -1393,7 +1405,8 @@ const updateEvent = async ({ code, date, id }) => {
         const canProceed = await checkPossibleTime(
             formState.value.start,
             formState.value.end,
-            formState.value.timezone_code
+            formState.value.timezone_code,
+            id
         );
 
         if (!canProceed) {
