@@ -2,9 +2,9 @@
   <a-layout class="bg-gray-100 min-h-screen">
     <a-layout-header class="flex justify-between shadow !bg-[#FEF9ED] items-center px-6 sticky top-0 z-50">
       <div class="flex gap-4 items-center">
-        <a-button shape="circle" @click="toggleSidebar" class="border border-[#15C5B2] !bg-white hover:!bg-orange-50 transition-colors">
+        <!-- <a-button shape="circle" @click="toggleSidebar" class="border border-[#15C5B2] !bg-white hover:!bg-orange-50 transition-colors">
           <MenuOutlined class="text-orange-500" />
-        </a-button>
+        </a-button> -->
         <h1 @click="router.push('/calendar')" class="text-lg font-semibold"><img class="w-20 cursor-pointer" src="@/assets/images/logo.png" alt=""></h1>
       </div>
 
@@ -80,9 +80,9 @@
         width="300" 
         class="shadow !bg-white my-2 ml-1 rounded-lg"
         :collapsedWidth="0"
-        breakpoint="lg"
-        @breakpoint="onBreakpoint"
+        
       >
+      <!--  -->
         <div v-show="!isSidebarCollapsed">
           <EventSidebar />
         </div>
