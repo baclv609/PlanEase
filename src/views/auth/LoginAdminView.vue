@@ -29,7 +29,15 @@ const rule = {
 const onFinish = async (values) => {
     try {
         isLoading.value = true;
-        const res = await axios.post(`${dirApi}auth/login`, values);
+        const res = await axios.post(`${dirApi}auth/login-admin`, values);
+
+        if(res.data.code == 401){
+            message.warning(res.data.message);
+        }
+
+        if(res.data.code == 403){
+            message.warning(res.data.message);
+        }
 
         if (res.data.code === 200) {
             // Kiểm tra role của user

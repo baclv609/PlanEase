@@ -240,7 +240,7 @@ const resetForm = () => {
 const rules = {
   title: [
     { required: true, message: t('validation.title.required'), trigger: "blur" },
-    { min: 3, max: 255, message: t('validation.title.min'), trigger: "blur" },
+    { min: 3, message: t('validation.title.min'), trigger: "blur" },
     { max: 255, message: t('validation.title.max'), trigger: "blur" }
   ],
   start: [
@@ -279,6 +279,36 @@ const rules = {
       },
       trigger: "change",
     },
+  ],
+  description: [
+    { max: 1000, message: t('validation.descriptionMaxLength'), trigger: "blur" }
+  ],
+  location: [
+    { max: 255, message: t('validation.locationMaxLength'), trigger: "blur" }
+  ],
+  link: [
+    {
+      validator: (_, value) => {
+        if (!value) return Promise.resolve(); // optional field
+        const urlRegex = /^(https?:\/\/)([\w-]+(\.[\w-]+)+)(:\d+)?(\/[\w-./?%&=]*)?$/;
+        if (!urlRegex.test(value)) {
+          return Promise.reject(t('validation.linkInvalid'));
+        }
+        return Promise.resolve();
+      },
+      trigger: 'blur',
+    }
+  ],
+  attendees: [
+    {
+        validator: (_, value) => {
+            if (value && value.length > 10) {
+                return Promise.reject(t('validation.attendees.max'));
+            }
+            return Promise.resolve();
+        },
+        trigger: "change"
+    }
   ],
   byweekday: [
     {
