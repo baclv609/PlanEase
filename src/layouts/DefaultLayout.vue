@@ -77,7 +77,7 @@
         v-model:collapsed="isSidebarCollapsed" 
         :trigger="null" 
         collapsible 
-        width="300" 
+        width="310" 
         class="shadow !bg-white my-2 ml-1 rounded-lg"
         :collapsedWidth="0"
         

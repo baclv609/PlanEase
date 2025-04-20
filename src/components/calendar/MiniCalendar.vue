@@ -360,7 +360,7 @@ onMounted(() => {
 
 :deep(.fc-col-header) {
   font-size: 0.8rem;
-  background-color: white;
+  background-color: #16c4b3;
 }
 
 :deep(.fc-col-header-cell) {
@@ -378,18 +378,19 @@ onMounted(() => {
 }
 
 :deep(.fc-daygrid-day) {
-  min-height: 36px !important;
-  height: 36px !important;
-  max-height: 36px !important;
-  width: 36px !important;
+  min-height: 35px !important;
+  height: 35px !important;
+  max-height: 35px !important;
+  width: 35px !important;
   padding: 0 !important;
   aspect-ratio: 1 / 1;
 }
 
 :deep(.fc-daygrid-day-frame) {
-  min-height: 36px !important;
-  height: 36px !important;
-  max-height: 36px !important;
+  min-height: 35px !important;
+  height: 35px !important;
+  max-height: 35px !important;
+  width: 35px!important;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -418,6 +419,11 @@ onMounted(() => {
   color: #ffffff !important;
   font-weight: 500;
 }
+:deep(.fc-daygrid-day:hover .fc-daygrid-day-number) {
+  transition: all 0.2s ease;
+  padding: 2px 6px;
+}
+
 
 :deep(.fc-event) {
   border-radius: 50%;

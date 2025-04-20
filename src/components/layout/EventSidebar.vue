@@ -1,8 +1,8 @@
 <template>
-  <a-card
-    :bodyStyle="{ padding: '10px' }"
-    class="!bg-transparent border-none shadow-none"
-  >
+<a-card
+  :bodyStyle="{ padding: '6px' }"
+  class="!bg-transparent border-none shadow-none custom-scrollbar"
+>
     <a-dropdown :trigger="['click']">
       <a-button
         class="mb-3 w-50 bg-[#FECA7B] text-black font-bold px-6 py-6 border-none flex items-center justify-center gap-2 rounded-full hover:!text-white transition-colors"
@@ -933,4 +933,41 @@ const createTask = () => {
 :deep(.ant-list-item) {
   padding: 10px !important;
 }
+.custom-scrollbar {
+  max-height: 87vh;
+  overflow-y: overlay; /* hoặc auto nếu overlay không hỗ trợ */
+  position: relative;
+}
+
+/* Ẩn scrollbar mặc định */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Scrollbar track & thumb */
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #FFF;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  transition: background-color 0.3s;
+}
+
+/* Hover vào vùng scroll thì scrollbar hiện ra */
+.custom-scrollbar:hover::-webkit-scrollbar {
+  opacity: 1;
+}
+
+/* Hover vào scrollbar thì đổi màu */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #CCC;
+}
+
+
 </style>
