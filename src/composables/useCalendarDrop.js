@@ -72,6 +72,42 @@ export function useCalendarDrop(t) {
         });
     }
 
+    // Check trùng lặp thời gian
+    const checkPossibleTime = async (start, end, timezone, id) => {
+        try {
+        const response = await axios.post(
+            `${dirApi}tasks/checkPossibleStartTime`,
+            {
+            start_time: start,
+            end_time: end,
+            timezone_code: timezone,
+            not_check_id: id
+            },
+            {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('access_token')}`
+            }
+            }
+        );
+        console.log('response', response);
+        if (response.data.code === 477) {
+            return new Promise((resolve) => {
+            Modal.confirm({
+                title: t('eventModal.timeConflict.title'),
+                content: t('eventModal.timeConflict.content'),
+                okText: t('eventModal.timeConflict.continue'),
+                cancelText: t('eventModal.timeConflict.cancel'),
+                onOk: () => resolve(true),
+                onCancel: () => resolve(false)
+            });
+            });
+        }
+    
+        return true;
+        } catch (error) {
+        console.log('Loi khi kiem tra thoi gian', error);
+        }
+    };
 
     const eventDrop = async (info) => {
         const taskTimezone = info.event.extendedProps.timezone;
@@ -351,48 +387,61 @@ export function useCalendarDrop(t) {
         }
     };
 
+    const handleUpdate = async (payload, info) => {
+        try {
+            // Thêm log để debug request
+            console.log('Request payload:', payload);
+    
+            const canProceed = await checkPossibleTime(
+                payload.start_time,
+                payload.end_time,
+                payload.timezone_code,
+                payload.id
+            );
+    
+            if (!canProceed) {
+                info.revert();
+                return;
+            }
+    
+            const response = await axios.put(`${dirApi}tasks/${payload.id}/onDrag`, payload, {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('access_token')}`
+                }
+            });
+    
+            if (response.status === 200) {
+                message.success(response.data.message);
+            } else {
+                message.error("Có lỗi xảy ra, vui lòng thử lại.");
+                info?.revert();
+            }
+        } catch (error) {
+            console.error('❌ Error details:', error.response?.data || error);
+    
+            if (error.response) {
+                if (error.response.status === 401) {
+                    message.error("Bạn không có quyền thực hiện thao tác này!");
+                    info?.revert();
+                } else if (error.response.status === 500) {
+                    message.error(error.response.data.message);
+                    info?.revert();
+                } else {
+                    message.error("Đã xảy ra lỗi khi cập nhật tác vụ. Vui lòng thử lại.");
+                    info?.revert();
+                }
+            } else {
+                message.error("Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng.");
+                info?.revert();
+            }
+        }
+    };
+
     return {
         eventDrop,
         eventResize,
     };
+
 }
-
-const handleUpdate = async (payload, info) => {
-    try {
-        // Thêm log để debug request
-        console.log('Request payload:', payload);
-
-        const response = await axios.put(`${dirApi}tasks/${payload.id}/onDrag`, payload, {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`
-            }
-        });
-
-        if (response.status === 200) {
-            message.success(response.data.message);
-        } else {
-            message.error("Có lỗi xảy ra, vui lòng thử lại.");
-            info?.revert();
-        }
-    } catch (error) {
-        console.error('❌ Error details:', error.response?.data || error);
-
-        if (error.response) {
-            if (error.response.status === 401) {
-                message.error("Bạn không có quyền thực hiện thao tác này!");
-                info?.revert();
-            } else if (error.response.status === 500) {
-                message.error(error.response.data.message);
-                info?.revert();
-            } else {
-                message.error("Đã xảy ra lỗi khi cập nhật tác vụ. Vui lòng thử lại.");
-                info?.revert();
-            }
-        } else {
-            message.error("Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng.");
-            info?.revert();
-        }
-    }
-};
 
