@@ -179,6 +179,8 @@ const deleteEvent = async ({code, date, id, sendMail}) => {
       }
     );
 
+    deleteOption.value = "DEL_1";
+
     if(response.data.code == 401) {
       message.warning(response.data.message);
     }
@@ -590,6 +592,8 @@ const handleLeaveEvent = async ({code, id, start_time, end_time, date, timezone}
         timezone_code: timezone
       }
     );
+    
+    leaveOption.value = "EDIT_1";
 
     const response = await axios.put(`${dirApi}tasks/${id}/attendeeLeaveTask`, {
       code: code,
@@ -1247,7 +1251,7 @@ function openMailModal(eventId) {
                   </div>
                 </div>
                 <div class="mb-3 flex items-center justify-center h-48 bg-gray-50 rounded-lg" v-else>
-                  <img :src="file.url" alt="File" class="w-full h-full object-cover rounded-lg">
+                  <a-image :src="file.url" :width="300" :height="200" alt="File" class="w-full h-full object-cover rounded-lg" />
                 </div>
 
                 <!-- Thông tin file -->

@@ -556,7 +556,7 @@ const updateFormStateFromProps = (event) => {
             timezone_code: event.info?.extendedProps?.timezone || "UTC",
             description: event.info?.extendedProps?.description || "",
             uuid: event.uuid ? event.uuid : null,
-            is_busy: event.is_busy === 1,
+            is_busy: event.is_busy == 1,
             parent_id: event.parent_id ? event.parent_id : null,
             attendeeRole: event.attendees.length > 0 ? event.attendees[0].role : "viewer", //lấy quyền của khách mời
             attachments: event.attachments || [],
@@ -631,6 +631,7 @@ watch(() => props.event, async (newEvent) => {
         getAllTagByUser();
         updateFormStateFromProps(newEvent);
         validateFormState();
+        // getAttachments(newEvent.id)
     }
 }, { immediate: true });
 
@@ -1092,6 +1093,11 @@ const handleSubmit = async () => {
         // Validate form using formRef
         await formRef.value.validate();
 
+        if(formState.value.type == 'task' && originalIsRepeat.value == true){
+            updateEvent({ code: "EDIT_1", date: formState.value.start, id: formState.value.id });
+            return;
+        }
+
         // If validation passes, proceed with update
         if (originalIsRepeat.value === true && formState.value.is_repeat) {
             // Check if freq has changed
@@ -1121,7 +1127,7 @@ const handleSubmit = async () => {
                                     name: "editOption",
                                     value: "EDIT_1",
                                     class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
-                                    checked: editOption.value === "EDIT_1",
+                                    checked: editOption.value == "EDIT_1",
                                     onInput: (e) => {
                                         editOption.value = e.target.value;
                                     },
@@ -1402,6 +1408,8 @@ const updateEvent = async ({ code, date, id }) => {
             link: formState.value.link || null,
         };
 
+        editOption.value = "EDIT_1";
+
         const canProceed = await checkPossibleTime(
             formState.value.start,
             formState.value.end,
@@ -1541,6 +1549,7 @@ const updateEvent = async ({ code, date, id }) => {
                     bysetpos: [],
                 },
             };
+            filePresignedMap.value = {};
             emit('update:visible', false);
         } else {
             message.warning(t('eventModalEdit.message.error'));
@@ -1744,59 +1753,91 @@ watch(
     }
 );
 
+const filePresignedMap = ref({});
 const presignedUrls = ref([]);
 const fileUploads = ref([]);
 
 // handle before upload
 const handleBeforeUpload = async (info) => {
-  const files = info.fileList.map(file => file.originFileObj).filter(Boolean);
-  const formData = new FormData();
+    const { file, fileList } = info;
 
-  // Thay đổi cách append file vào FormData
-  files.forEach((file, index) => {
-    formData.append(`files[${index}]`, file); // Thêm index vào tên field
-  });
+    // Trường hợp người dùng xóa file
+    if (file.status === 'removed') {
+        // Xóa khỏi fileUploads
+        fileUploads.value = fileUploads.value.filter(f => f.uid !== file.uid);
 
-  try {
+        // Xóa khỏi danh sách attachments hiển thị
+        formState.value.attachments = formState.value.attachments.filter(f => f.uid !== file.uid);
+
+        // Xóa presigned URL tương ứng
+        delete filePresignedMap.value[file.uid];
+
+        // Cập nhật lại danh sách presignedUrls
+        presignedUrls.value = Object.values(filePresignedMap.value);
+
+        console.log('Đã xóa file:', file.name);
+        console.log('Danh sách presigned còn lại:', presignedUrls.value);
+        return false;
+    }
+
+    // Trường hợp người dùng thêm file
+    const newFiles = fileList
+        .filter(f => f.originFileObj && !filePresignedMap.value[f.uid]) // Tránh reupload file đã xử lý
+        .map(f => f.originFileObj);
+
+    if (newFiles.length === 0) return false;
+
+    const formData = new FormData();
+        newFiles.forEach((file, index) => {
+        formData.append(`files[${index}]`, file);
+    });
+
+    try {
     const { data } = await axios.post(
-      `${dirApi}s3/upload`,
-      formData,
-      {
+        `${dirApi}s3/upload`,
+        formData,
+        {
         headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
         },
-        // Thêm timeout và maxContentLength
-        timeout: 30000, // 30 giây
+        timeout: 30000,
         maxContentLength: Infinity,
         maxBodyLength: Infinity,
-      }
+        }
     );
 
     console.log('API Response:', data);
 
     if (data.presigned_urls && data.presigned_urls.length > 0) {
-      presignedUrls.value = data.presigned_urls;
-      console.log('Presigned URLs:', data.presigned_urls);
-      
-      // Reset fileUploads trước khi thêm file mới
-      fileUploads.value = [];
-      files.forEach(file => {
-        fileUploads.value.push(file);
-      });
-      console.log('File uploads:', fileUploads.value);
+        data.presigned_urls.forEach((url, index) => {
+        const uid = fileList[fileList.length - data.presigned_urls.length + index]?.uid;
+        if (uid) {
+            filePresignedMap.value[uid] = url;
+        }
+        });
+
+        // Cập nhật danh sách presignedUrls
+        presignedUrls.value = Object.values(filePresignedMap.value);
+
+        // Cập nhật fileUploads
+        fileUploads.value = fileList
+        .filter(f => f.originFileObj)
+        .map(f => f.originFileObj);
+
+        console.log('File uploads:', fileUploads.value);
     } else {
-      console.log('No presigned URLs received');
+        console.warn('No presigned URLs received');
     }
 
-  } catch (error) {
-    console.error("Upload failed", error);
-    // Reset các biến khi upload thất bại
-    presignedUrls.value = [];
-    fileUploads.value = [];
-  }
+    } catch (error) {
+        console.error("Upload failed", error);
+        presignedUrls.value = [];
+        fileUploads.value = [];
+        filePresignedMap.value = {};
+    }
 
-  return false; // Ngăn Upload tự động xử lý
+    return false; // Ngăn Upload tự động xử lý
 };
 
 // Hàm xóa file đính kèm

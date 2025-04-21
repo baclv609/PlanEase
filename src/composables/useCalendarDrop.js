@@ -13,7 +13,7 @@ dayjs.extend(timezone);
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 
 const selectedEvent = ref(null);
-const editOption = ref("");
+const editOption = ref("EDIT_1");
 
 
 export function useCalendarDrop(t) {
@@ -135,6 +135,32 @@ export function useCalendarDrop(t) {
                 end_time: newEnd,
                 is_all_day: isAllDay ? 1 : 0
             };
+
+            if(info.event.extendedProps.type == 'task') {
+                Modal.confirm({
+                    title: t("drag.confirmChange"),
+                    content: t("drag.contentChange"),
+                    okText: t('options.recurrence.edit.update'),
+                    cancelText: t('options.recurrence.edit.cancel'),
+                    onOk: async () => {
+                        const payload = {
+                            code: "EDIT_1",
+                            id: info.event.id,
+                            updated_date: oldStart,
+                            start_time: newStart,
+                            end_time: newEnd,
+                            timezone_code: taskTimezone,
+                            is_all_day: isAllDay ? 1 : 0
+                        };
+    
+                        await handleUpdate(payload, info);
+                    },
+                    onCancel() {
+                        info.revert();
+                    }
+                });
+                return;
+            }
     
             Modal.confirm({
                 title: t('options.recurrence.edit.title'),
@@ -146,6 +172,7 @@ export function useCalendarDrop(t) {
                                 type: "radio",
                                 name: "editOption",
                                 value: "EDIT_1",
+                                checked: editOption.value == "EDIT_1",
                                 class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
                                 onChange: (e) => {
                                     editOption.value = e.target.value;
@@ -209,8 +236,8 @@ export function useCalendarDrop(t) {
             });
         } else {
             Modal.confirm({
-                title: "Xác nhận thay đổi",
-                content: "Bạn có chắc chắn muốn thay đổi thời gian của sự kiện này?",
+                title: t("drag.confirmChange"),
+                content: t("drag.contentChange"),
                 okText: t('options.recurrence.edit.update'),
                 cancelText: t('options.recurrence.edit.cancel'),
                 onOk: async () => {
@@ -335,7 +362,7 @@ export function useCalendarDrop(t) {
                 cancelText: t('options.recurrence.edit.cancel'),
                 onOk: async () => {
                     if (!editOption.value) {
-                        message.error("Vui lòng chọn tùy chọn cập nhật trước khi tiếp tục!");
+                        message.error(t('drag.chooseOption'));
                         info.revert();
                         return;
                     }
@@ -410,11 +437,13 @@ export function useCalendarDrop(t) {
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`
                 }
             });
+
+            editOption.value = "EDIT_1";
     
             if (response.status === 200) {
                 message.success(response.data.message);
             } else {
-                message.error("Có lỗi xảy ra, vui lòng thử lại.");
+                message.error(t('errors.generalError'));
                 info?.revert();
             }
         } catch (error) {
@@ -428,11 +457,11 @@ export function useCalendarDrop(t) {
                     message.error(error.response.data.message);
                     info?.revert();
                 } else {
-                    message.error("Đã xảy ra lỗi khi cập nhật tác vụ. Vui lòng thử lại.");
+                    message.error(t('errors.generalError'));
                     info?.revert();
                 }
             } else {
-                message.error("Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng.");
+                message.error("errors.serverError");
                 info?.revert();
             }
         }

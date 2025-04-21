@@ -697,5 +697,10 @@
     "success": "Gửi email thành công",
     "error": "Gửi email thất bại",
     "send": "Gửi"
+  },
+  "drag": {
+    "confirmChange": "Xác nhận thay đổi",
+    "contentChange": "Bạn có chắc chắn muốn thay đổi thời gian của sự kiện này?",
+    "chooseOption": "Vui lòng chọn tùy chọn cập nhật trước khi tiếp tục!"
   }
 }
