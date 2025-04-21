@@ -95,6 +95,7 @@ const selectDay = (day) => {
     default_permission: day.default_permission,
     borderColor: day.tag_color_code || day.color_code,
     location: day.location,
+    is_done: day.is_done,
     is_all_day: day.is_all_day,
     recurrence: day.is_repeat,
     attendees: day.attendees || [],

@@ -136,6 +136,7 @@ export function useCalendarEvents() {
         classNames: [classDone, eventTypeClass],
         displayEventTime: true,
         displayEventEnd: true,
+        durationEditable: event.type != 'task',
         extendedProps: {
           parent_id: event.parent_id || null,
           end_time: event.end_time,
@@ -376,7 +377,7 @@ export function useCalendar(calendarRef) {
       // Nếu ở chế độ khác (week, day), mặc định sự kiện kéo dài 30p
       selectedEventAdd.value = {
         start: dayjs(info.dateStr).tz(selectedTimezone.value).format('YYYY-MM-DD HH:mm'),
-        end: info.allDay ? dayjs(info.dateStr).tz(selectedTimezone.value).add(1, 'day').format('YYYY-MM-DD') : dayjs(info.dateStr).tz(selectedTimezone.value).add(30, 'minutes').format('YYY-MM-DD HH:mm'),
+        end: info.allDay ? dayjs(info.dateStr).tz(selectedTimezone.value).add(1, 'day').format('YYYY-MM-DD') : dayjs(info.dateStr).tz(selectedTimezone.value).add(30, 'minutes').format('YYYY-MM-DD HH:mm'),
         allDay: info.allDay,
       };
     }
@@ -448,14 +449,14 @@ export function useCalendar(calendarRef) {
     // expandRows: true,
 
     allDaySlot: true,
-
+    
     // chặn kéo thả vào allday trong timeGridWeek và timeGridDay
     eventAllow: (dropInfo, draggedEvent) => {
       const currentView = draggedEvent._context.viewApi.type; // Lấy loại view hiện tại
 
       // Chặn kéo thả trong chế độ timeGridWeek và timeGridDay
       if (currentView === 'timeGridWeek' || currentView === 'timeGridDay') {
-        if(dropInfo.allDay) {
+        if(dropInfo.allDay || draggedEvent.allDay) {
           return false; // Không cho phép kéo thả nếu là sự kiện cả ngày
         } else {
           return true;

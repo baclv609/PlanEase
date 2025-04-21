@@ -696,5 +696,10 @@
     "success": "Email sent successfully",
     "error": "Sending email failed",
     "send": "Send"
+  },
+  "drag": {
+    "confirmChange": "Confirm changes",
+    "contentChange": "Are you sure you want to change the time of this event?",
+    "chooseOption": "Please select the update option before continuing!"
   }
 }
