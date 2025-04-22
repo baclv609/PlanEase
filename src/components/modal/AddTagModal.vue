@@ -46,7 +46,7 @@
             </a-form-item>
 
             <!-- Invite by Email -->
-            <!-- <div class="my-1 w-full pb-2">
+            <div class="my-1 w-full pb-2">
                 <a-select show-search :placeholder="$t('event.guests')" :options="state.data" :filter-option="false"
                     :loading="state.fetching" @search="fetchUser" @select="handleUserSelect" :value="null"
                     class="w-full">
@@ -89,7 +89,7 @@
                         </a-button>
                     </div>
                 </div>
-            </div> -->
+            </div>
         </a-form>
     </a-modal>
 </template>
@@ -252,7 +252,16 @@ const handleOk = async () => {
                 name: formState.value.name,
                 description: formState.value.description,
                 color_code: formState.value.color_code,
-                shared_user: [],
+                shared_user: selectedUsers.value.map((user) => {
+                    return {
+                        user_id: user.id,
+                        role: user.role, 
+                        status: 'pending',
+                        email: user.email,
+                        first_name: user.first_name,
+                        last_name: user.last_name,
+                    }
+                },)
             },
             {
                 headers: {
