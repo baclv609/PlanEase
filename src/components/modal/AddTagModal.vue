@@ -64,39 +64,64 @@
                 </a-select>
             </div>
 
-            <div v-if="selectedUsers.length > 0" class="mt-4">
-                <div v-for="user in selectedUsers" :key="user.id"
-                    class="flex items-center justify-between mb-2 p-2 bg-gray-50 rounded">
-                    <div class="flex items-center">
-                        <a-avatar :src="user.avatar" :size="32" class="mr-3">
-                            {{ !user.avatar ? getInitials(user.first_name, user.last_name) : '' }}
-                        </a-avatar>
-                        <div>
-                            <div class="font-medium">{{ user.first_name }} {{ user.last_name }}</div>
-                            <div class="text-xs text-gray-500">{{ user.email }}</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <a-radio-group v-model:value="user.role"
-                            @change="(e) => updateUserRole(user.id, e.target.value)">
-                            <a-radio value="viewer">{{ t('event.roles.viewer') }}</a-radio>
-                            <a-radio value="editor">{{ t('event.roles.editor') }}</a-radio>
-                        </a-radio-group>
-                        <a-button type="text" danger @click="removeUser(user.id)">
-                            <template #icon>
-                                <CloseOutlined />
-                            </template>
-                        </a-button>
-                    </div>
-                </div>
+<!--  -->
+<div v-if="selectedUsers.length > 0" class="mb-6">
+    <h4 class="text-sm font-medium mb-3">{{ $t('event.guests') }}</h4>
+    <div class="bg-gray-50 rounded-lg">
+        <div v-for="user in selectedUsers" :key="user.value"
+            class="flex items-center p-3 border-b last:border-b-0">
+            <!-- Avatar Section -->
+            <a-avatar :src="user.avatar" :size="32"
+                :style="{ backgroundColor: !user.avatar ? '#1890ff' : 'transparent' }">
+                {{ !user.avatar ? getInitials(user.first_name, user.last_name) : '' }}
+            </a-avatar>
+
+            <!-- User Information Section -->
+            <div class="ml-3">
+                <div class="font-medium">{{ user.first_name }} {{ user.last_name }}</div>
+                <div class="text-xs text-gray-500">{{ user.email }}</div>
             </div>
+
+            <!-- User Role & Remove Button Section -->
+            <div class="ml-auto flex items-center">
+                <!-- Role Dropdown -->
+                <a-dropdown :trigger="['click']">
+                    <template #overlay>
+                        <a-menu>
+                            <a-menu-item key="editor" @click="() => updateUserRole(user.id, 'editor')">
+                                {{ $t('event.roles.editor') }}
+                            </a-menu-item>
+                            <a-menu-item key="viewer" @click="() => updateUserRole(user.id, 'viewer')">
+                                {{ $t('event.roles.viewer') }}
+                            </a-menu-item>
+                        </a-menu>
+                    </template>
+                    <a-button type="text" size="small">
+                        <!-- Hiển thị quyền người dùng bằng tiếng Việt -->
+                        {{ user.role === 'editor' ? $t('event.roles.editor') : $t('event.roles.viewer') }}
+                        <CaretDownOutlined />
+                    </a-button>
+
+                </a-dropdown>
+
+                <!-- Remove User Button -->
+                <a-button type="text" danger size="small" class="ml-2" @click="() => removeUser(user.id)">
+                    <DeleteOutlined />
+                </a-button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
         </a-form>
     </a-modal>
 </template>
 
 <script setup>
 import { ref, defineProps, defineEmits, onMounted, watch } from 'vue';
-import { CheckOutlined, PlusOutlined, CloseOutlined } from '@ant-design/icons-vue';
+import { CheckOutlined, PlusOutlined, CloseOutlined, DeleteOutlined,CaretDownOutlined } from '@ant-design/icons-vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { message } from 'ant-design-vue';
@@ -292,6 +317,11 @@ const handleOk = async () => {
             message.error('Không thể kết nối đến máy chủ!');
         }
     }
+};
+
+const capitalizeFirstLetter = (string) => {
+    if (!string) return '';
+    return string.charAt(0).toUpperCase() + string.slice(1);
 };
 </script>
 
