@@ -39,9 +39,13 @@ import { AlignLeftOutlined,
          FilePptOutlined, 
          FileTextOutlined,
          DownloadOutlined, 
-         LinkOutlined
+         LinkOutlined,
+         MoreOutlined,
+         CaretDownOutlined,
+         PlusOutlined
         } from "@ant-design/icons-vue";
 
+import debounce from 'lodash/debounce';
 import { useEchoStore } from "@/stores/echoStore";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
@@ -84,6 +88,13 @@ const activeTab = ref("infoEvent");
 const loadingGetFiles = ref(false);
 const replyingTo = ref(null);
 const echoStore = useEchoStore();
+const listInviteAttendees = ref([]);
+const listAttendees = ref([]);
+
+const originalAttendees = ref([]);
+const originalInviteAttendees = ref([]);
+
+const showSearchAtt = ref(false);
 
 const messages = ref([]);
 
@@ -126,38 +137,52 @@ watch(() => props.isEventDetailModalVisible, (newVal) => {
 
 watch(
   () => props.event, async (newVal) => {
-    event.value = newVal;
-    // console.log(event.value);
-    if(props.event != null && newVal && newVal.attendees?.length > 0){
-      const currentUserAttendee = newVal.attendees.find(attendee => attendee.user_id == user.value.id);
+    if(newVal) {
+      event.value = newVal;
 
-      if((currentUserAttendee && currentUserAttendee.status == "yes") || user.value.id == newVal.user_id){
-        const data = await getMessagesByGroup(newVal.parent_id ? newVal.parent_id : newVal.id);
+      if(props.event != null && newVal && newVal.attendees?.length > 0){
+        
+        if (newVal.attendees?.length > 0) {
+          const cloned = newVal.attendees.map(att => ({ ...att }));
+          // Gán vào list hiện tại
+          listAttendees.value = cloned;
+          // Gán bản gốc để so sánh về sau
+          originalAttendees.value = cloned.map(att => ({ ...att }));
+        } else {
+          listAttendees.value = [];
+          originalAttendees.value = [];
+        }
 
-        groupInfo.value = data;
-        messages.value = transformMessages(groupInfo.value.messages);
-
-        echoStore.echo.private(`task-group.${groupInfo.value.group.id}`)
-        .listen(`Chat\\NewTaskGroupChatMessages`, (message) => {   
-          
-          const formattedMessage = {
-              messageId: message.id,
-              userId: message.user_id,
-              name: `${message.user.first_name} ${message.user.last_name}`,
-              text: message.message,
-              avatar: message.user.avatar,
-              replyTo: message.reply_message
-                  ? {
-                      userId: message.reply_message.user.id,
-                      text: message.reply_message.message,
-                      name: `${message.reply_message.user.first_name} ${message.reply_message.user.last_name}`,
-                  }
-                  : null, // Nếu không có reply thì null
-              timestamp: message.created_at,
-          };
-
-          messages.value.push(formattedMessage);
-        });
+        const currentUserAttendee = newVal.attendees.find(attendee => attendee.user_id == user.value.id);
+  
+        if((currentUserAttendee && currentUserAttendee.status == "yes") || user.value.id == newVal.user_id){
+          const data = await getMessagesByGroup(newVal.parent_id ? newVal.parent_id : newVal.id);
+  
+          groupInfo.value = data;
+          messages.value = transformMessages(groupInfo.value.messages);
+  
+          echoStore.echo.private(`task-group.${groupInfo.value.group.id}`)
+          .listen(`Chat\\NewTaskGroupChatMessages`, (message) => {   
+            
+            const formattedMessage = {
+                messageId: message.id,
+                userId: message.user_id,
+                name: `${message.user.first_name} ${message.user.last_name}`,
+                text: message.message,
+                avatar: message.user.avatar,
+                replyTo: message.reply_message
+                    ? {
+                        userId: message.reply_message.user.id,
+                        text: message.reply_message.message,
+                        name: `${message.reply_message.user.first_name} ${message.reply_message.user.last_name}`,
+                    }
+                    : null, // Nếu không có reply thì null
+                timestamp: message.created_at,
+            };
+  
+            messages.value.push(formattedMessage);
+          });
+        }
       }
     }
   },
@@ -186,13 +211,13 @@ const deleteEvent = async ({code, date, id, sendMail}) => {
     }
 
     if(response.data.code == 200) {
-      message.success(response.data.message || 'Success');
+      message.success(t('deleteSuccess'));
       emit("delete", id);
       handleClose();
     }
     // console.log(response.data);
   } catch (error) {
-    message.error('An error occurred');
+    message.error(t('errors.generalError'));
   }
 }
 
@@ -407,13 +432,19 @@ const handleClose = () => {
     echoStore.echo.leave(`task-group.${groupInfo.value.group.id}`);
     groupInfo.value = {};
   }
-    files.value = [];
+  files.value = [];
+  listInviteAttendees.value = [];
+  listAttendees.value = [];
+  originalAttendees.value = [];
+  originalInviteAttendees.value = [];
+  showSearchAtt.value = false;
   emit("close", false);
 };
 
 // 
 const handleEditTask = () => {
   emit("editTask", props.event);  // Emit sự kiện với dữ liệu event
+  handleClose();
 };
 
 // Format định dạng ngày
@@ -913,9 +944,295 @@ function getRecurrenceText(event) {
 }
 
 function openMailModal(eventId) {
-  console.log(eventId)
   emit('mail-event-id', eventId);
 }
+
+const getStatusColor = (status) => {
+    switch (status) {
+        case 'yes':
+            return 'green';
+        case 'pending':
+            return 'orange';
+        case 'no':
+            return 'red';
+        default:
+            return 'default';
+    }
+};
+
+const capitalizeFirstLetter = (string) => {
+    if (!string) return '';
+    return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
+const handleRoleChange = (user, newRole) => {
+    user.role = newRole;
+};
+
+// Lấy thông tin khách mời
+const state = ref({
+  data: [],
+  fetching: false
+});
+
+let lastFetchId = 0;
+
+const fetchUser = debounce(async (value) => {
+  if (!value) {
+    state.value.data = [];
+    return;
+  }
+
+  lastFetchId += 1;
+  const fetchId = lastFetchId;
+
+  state.value.fetching = true;
+  
+  try {
+    const response = await axios.get(`${dirApi}guest?search=${value}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+
+    if (fetchId !== lastFetchId) return;
+
+    state.value.data = response.data.data
+      .map((user) => ({
+          label: {
+            email: user.email,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            avatar: user.avatar
+          },
+          value: user.id,
+      }));
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    state.value.data = [];
+  } finally {
+    state.value.fetching = false;
+  }
+}, 300);
+// Kết thúc hàm lấy thông tin khách mời
+
+const handleUserSelect = (user) => {
+  const exists1 = event.value.attendees.some(attendee => attendee.user_id == user.value);
+  const exists2 = listInviteAttendees.value.some(attendee => attendee.user_id == user.value);
+  if (exists1 || exists2) {
+    message.info(t('attendees.exists'));
+    return;
+  }
+
+  listInviteAttendees.value.push({
+    avatar: user.label.avatar,
+    email: user.label.email,
+    first_name: user.label.first_name,
+    last_name: user.label.last_name,
+    role: "viewer",
+    status: "pending",
+    user_id: user.value
+  });
+};
+
+const formatAttendees = (listInviteAttendees, attendees) => {
+  const formattedInvites = listInviteAttendees.map(att => ({
+    user_id: att.user_id,
+    role: att.role,
+    status: att.status
+  }));
+
+  const formattedAttendees = attendees.map(att => ({
+    user_id: att.user_id,
+    role: att.role,
+    status: att.status
+  }));
+
+  return [...formattedInvites, ...formattedAttendees];
+};
+
+const showModalSendMail = () => {
+  return new Promise((resolve) => {
+      Modal.confirm({
+          title: t('eventModal.messages.sendEmail.title'),
+          content: t('eventModal.messages.sendEmail.content'),
+          centered: true,
+          width: 600,
+          okButtonProps: { style: { display: 'none' } },
+          cancelButtonProps: { style: { display: 'none' } },
+          footer: () =>
+            h("div", { class: "w-full flex justify-end space-x-4 p-4" }, [
+              h(
+                "button",
+                {
+                    class: "text-gray-500 hover:text-gray-700 border-0 px-4 py-2 cursor-pointer font-semibold rounded-lg transition duration-200 text-sm",
+                    onClick: () => {
+                        Modal.destroyAll();
+                        resolve("back");
+                    },
+                },
+                t('eventModal.messages.sendEmail.back')
+              ),
+              h(
+                "button",
+                {
+                    class: "text-red-500 hover:text-red-700 border-0 rounded-lg px-4 py-2 cursor-pointer font-semibold transition duration-200 text-sm",
+                    onClick: () => {
+                        Modal.destroyAll();
+                        resolve("no");
+                    },
+                },
+                t('eventModal.messages.sendEmail.dontSend')
+              ),
+              h(
+                "button",
+                {
+                    class: "text-blue-500 hover:text-blue-700 hover:bg-gray-200 rounded-lg px-4 py-2 cursor-pointer font-semibold border-0 transition duration-200 text-sm",
+                    onClick: () => {
+                        Modal.destroyAll();
+                        resolve("yes");
+                    },
+                },
+                t('eventModal.messages.sendEmail.send')
+              ),
+            ]),
+      });
+  });
+}
+
+const showModalInviteOption = () => {
+  return new Promise((resolve) => {
+  let selectedValue = "ATEN_1";
+
+  Modal.confirm({
+    title: t('options.recurrence.edit.title'),
+    width: 600,
+    centered: true,
+    content: h("div", { class: "p-4 rounded-md border bg-white flex flex-col justify-center" }, [
+      h("div", { class: "mb-3" }, [
+        h("label", { class: "flex items-center space-x-3 cursor-pointer" }, [
+          h("input", {
+            type: "radio",
+            name: "sendOption",
+            value: "ATEN_1",
+            checked: selectedValue === "ATEN_1",
+            class: "form-radio w-5 h-5 text-blue-600",
+            onChange: (e) => {
+              selectedValue = e.target.value;
+            },
+          }),
+          h("span", {class: 'text-lg'} ,t('options.recurrence.edit.one')),
+        ]),
+      ]),
+      h("div", { class: "mb-3" }, [
+        h("label", { class: "flex items-center space-x-3 cursor-pointer" }, [
+          h("input", {
+            type: "radio",
+            name: "sendOption",
+            value: "ATEN_1B",
+            checked: selectedValue == "ATEN_1B",
+            class: "form-radio w-5 h-5 text-blue-600",
+            onChange: (e) => {
+              selectedValue = e.target.value;
+            },
+          }),
+          h("span",{class: 'text-lg'} , t('options.recurrence.edit.follow')),
+        ]),
+      ]),
+      h("div", { class: "mb-3" }, [
+        h("label", { class: "flex items-center space-x-3 cursor-pointer" }, [
+          h("input", {
+            type: "radio",
+            name: "sendOption",
+            value: "ATEN_A",
+            checked: selectedValue === "ATEN_A",
+            class: "form-radio w-5 h-5 text-blue-600",
+            onChange: (e) => {
+              selectedValue = e.target.value;
+            },
+          }),
+          h("span",{class: 'text-lg'} , t('options.recurrence.edit.all')),
+        ]),
+      ]),
+    ]),
+    okText: t('options.recurrence.edit.update'),
+    cancelText: t('options.recurrence.edit.cancel'),
+    onOk: () => {
+      resolve(selectedValue);
+    },
+    onCancel: () => {
+      resolve("back");
+    }
+  });
+});
+}
+
+const saveChanges = async () => {
+  let option = "ATEN_1";
+  let sendEmail = 'no';
+
+  if(event.value.recurrence && event.value.recurrence != 0){
+    option = await showModalInviteOption();
+
+    if(option == 'back') {
+      return;
+    }
+  } else {
+    option = "ATEN_N";
+  }
+
+  sendEmail = await showModalSendMail();
+
+  if(sendEmail == 'back') {
+    return;
+  }
+
+  const attendeesFomat = formatAttendees(listInviteAttendees.value, listAttendees.value);
+  
+  const data = {
+    code: option,
+    sendMail: sendEmail,
+    updated_date: dayjs(event.value.start).format('YYYY-MM-DD HH:mm:00'),
+    timezone_code: event.value.timezone,
+    start_time: dayjs(event.value.start).format('YYYY-MM-DD HH:mm:00'),
+    end_time: dayjs(event.value.end).format('YYYY-MM-DD HH:mm:00'),
+    attendees: attendeesFomat
+  }
+
+  console.log(data)
+
+  handleSaveChanges(data);
+}
+
+const handleSaveChanges = async (data) => {
+  const res = await axios.put(`${dirApi}tasks/${event.value.id}/attendeeManagement`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+
+  try {
+    if(res.data.code == 200) {
+      message.success(t('attendees.invited'));
+      handleClose();
+    }
+  } catch (err) {
+    message.error(t('errors.generalError'));
+    console.log(err)
+  }
+}
+
+const removeAttendee = (user) => {
+  listAttendees.value = listAttendees.value.filter(att => att.user_id != user.user_id);
+  listInviteAttendees.value = listInviteAttendees.value.filter(att => att.user_id != user.user_id);
+}
+
+const isChanged = computed(() => {
+  const hasAttendeeChanged = JSON.stringify(listAttendees.value) !== JSON.stringify(originalAttendees.value);
+  const hasInviteChanged = JSON.stringify(listInviteAttendees.value) !== JSON.stringify(originalInviteAttendees.value);
+
+  return hasAttendeeChanged || hasInviteChanged;
+});
 </script>
 
 <template>
@@ -923,7 +1240,7 @@ function openMailModal(eventId) {
 
     <div class="flex items-center justify-end mr-2 space-x-3">
       <button
-        v-if="event.user_id == user.id || (event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.role == 'editor' && attendee.status == 'yes'))"
+        v-if="(event.user_id == user.id && !event?.hiddenEditBtn) || (event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.role == 'editor' && attendee.status == 'yes'))"
         class="text-gray-800 px-[10px] py-2 border-none rounded-full cursor-pointer bg-transparent hover:bg-gray-100 transition"
         @click="handleEditTask">
         <EditOutlined class="text-xl" />
@@ -1092,7 +1409,7 @@ function openMailModal(eventId) {
               </div>
 
               <!-- Participant list -->
-              <div class="space-y-1">
+              <div class="space-y-1 max-h-[100px] overflow-y-auto">
                 <!-- Participant 1 -->
                 <div class="flex items-center" v-for="attendee in event.attendees" :key="attendee.user_id">
                   <div class="relative mr-3">
@@ -1297,7 +1614,7 @@ function openMailModal(eventId) {
         </div>
       </a-tab-pane>
 
-      <a-tab-pane v-if="event.type == 'event' && event.attendees.length > 0" key="discuss" :tab="t('EventDetailsModal.tab.discussion')">
+      <a-tab-pane v-if="event.type == 'event' && event.attendees.length > 0 && user" key="discuss" :tab="t('EventDetailsModal.tab.discussion')">
         <div class="flex bg-gray-100 h-[550px]">
           <!-- Main chat area -->
           <div class="flex-1 flex flex-col">
@@ -1386,6 +1703,134 @@ function openMailModal(eventId) {
             </div>
           </div>
         </div>
+      </a-tab-pane>
+
+      <a-tab-pane v-if="event.type == 'event' && event.user_id == user.id" key="attendees" :tab="t('EventDetailsModal.tab.attendees')">
+        <div class="grid grid-cols-12 gap-2 mb-2">
+          <button @click="() => showSearchAtt = true" class="inline-flex col-span-2 cursor-pointer items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <PlusOutlined class="h-5 w-5 mr-2" />
+            {{ t('attendees.add') }}
+          </button>
+          <a-select
+              v-if="showSearchAtt"
+              show-search
+              label-in-value 
+              :placeholder="t('attendees.search')" 
+              class="w-full col-span-10" :filter-option="false"
+              :value="null"
+              :not-found-content="state.fetching ? undefined : null" :options="state.data"
+              @select="handleUserSelect"
+              @search="fetchUser"
+            >
+            <template #option="{ label, value }">
+              <div class="flex items-center">
+                  <a-avatar :src="label.avatar || unknowUser" :size="24" class="mr-2" />
+                  <div>
+                      <div class="font-medium">{{ label.first_name }} {{ label.last_name }}</div>
+                      <div class="text-xs text-gray-500">{{ label.email }}</div>
+                  </div>
+              </div>
+            </template>
+  
+            <!-- <template v-if="state.fetching" #notFoundContent>
+                <a-spin size="small" />
+            </template> -->
+          </a-select>
+        </div>
+        <span v-if="listInviteAttendees && listInviteAttendees.length > 0" class="text-gray-500 text-md font-semibold">{{ t('attendees.guest_invite_title') }}</span>
+        <div v-if="listInviteAttendees && listInviteAttendees.length > 0" class="max-h-[200px] overflow-y-auto rounded-xl shadow-md bg-white p-4 my-2">
+          <div v-for="(user, index) in listInviteAttendees" :key="index"
+              class="flex items-center p-3 border-b last:border-b-0 hover:bg-gray-100 rounded-lg">
+              <a-avatar :src="user.avatar || unknowUser">
+              </a-avatar>
+
+              <div class="ml-3">
+                  <div class="font-medium">{{ user.first_name }} {{ user.last_name }}</div>
+                  <div class="text-xs text-gray-500">{{ user.email }}</div>
+              </div>
+
+              <div class="ml-auto flex items-center">
+                  <a-dropdown :trigger="['click']">
+                      <template #overlay>
+                          <a-menu>
+                              <a-menu-item key="editor"
+                                  @click="() => handleRoleChange(user, 'editor')">{{ $t('event.roles.editor') }}</a-menu-item>
+                              <a-menu-item key="viewer"
+                                  @click="() => handleRoleChange(user, 'viewer')">{{ $t('event.roles.viewer') }}</a-menu-item>
+                          </a-menu>
+                      </template>
+                      <a-button type="text" size="small">
+                          {{ capitalizeFirstLetter(t(`attendees.${user.role}`)) }}
+                          <CaretDownOutlined />
+                      </a-button>
+                  </a-dropdown>
+                  <!-- <a-tag :color="getStatusColor(user.status)" class="ml-2">{{
+                      capitalizeFirstLetter(t(`attendees.${user.status}`))
+                  }}</a-tag> -->
+                  <a-button type="text" danger size="small" class="ml-2"
+                      @click="() => removeAttendee(user)">
+                      <DeleteOutlined />
+                  </a-button>
+              </div>
+          </div>
+        </div>
+
+        <span v-if="listAttendees && listAttendees.length > 0" class="text-gray-500 text-md font-semibold">{{ t('attendees.guest_title') }}</span>
+        <div v-if="listAttendees && listAttendees.length > 0" class="max-h-[200px] overflow-y-auto rounded-xl shadow-md bg-white p-4">
+          <div v-for="(user, index) in listAttendees" :key="index"
+              class="flex items-center p-3 border-b last:border-b-0 hover:bg-gray-100 rounded-lg">
+              <a-avatar :src="user.avatar || unknowUser">
+              </a-avatar>
+
+              <div class="ml-3">
+                  <div class="font-medium">{{ user.first_name }} {{ user.last_name }}</div>
+                  <div class="text-xs text-gray-500">{{ user.email }}</div>
+              </div>
+
+              <div class="ml-auto flex items-center">
+                  <a-dropdown :trigger="['click']">
+                      <template #overlay>
+                          <a-menu>
+                              <a-menu-item key="editor"
+                                  @click="() => handleRoleChange(user, 'editor')">{{ $t('event.roles.editor') }}</a-menu-item>
+                              <a-menu-item key="viewer"
+                                  @click="() => handleRoleChange(user, 'viewer')">{{ $t('event.roles.viewer') }}</a-menu-item>
+                          </a-menu>
+                      </template>
+                      <a-button type="text" size="small">
+                          {{ capitalizeFirstLetter(t(`attendees.${user.role}`)) }}
+                          <CaretDownOutlined />
+                      </a-button>
+                  </a-dropdown>
+                  <a-tag :color="getStatusColor(user.status)" class="ml-2">{{
+                      capitalizeFirstLetter(t(`attendees.${user.status}`))
+                  }}</a-tag>
+                  <a-button type="text" danger size="small" class="ml-2"
+                      @click="() => removeAttendee(user)">
+                      <DeleteOutlined />
+                  </a-button>
+              </div>
+          </div>
+        </div>
+
+        <div v-if="listAttendees.length == 0 && listInviteAttendees.length == 0" class="mt-1">
+          <div class="bg-white shadow rounded-lg p-8 text-center">
+            <div class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-gray-100">
+              <UsergroupAddOutlined class="h-50 w-50 text-6xl text-gray-400" />
+            </div>
+            <h3 class="mt-5 text-lg font-medium text-gray-900">{{ t('attendees.no_attendees') }}</h3>
+            <p class="mt-2 text-sm text-gray-500">
+              {{ t('attendees.no_attendees_content') }}
+            </p>
+          </div>
+        </div>
+        
+        <div class="flex justify-end mt-3" v-if="isChanged">
+          <button class="border-none bg-blue-500 px-5 py-2 cursor-pointer text-white rounded-md hover:bg-blue-600" @click="saveChanges">
+            {{ t('profile.save') }}
+          </button>
+        </div>
+        
       </a-tab-pane>
     </a-tabs>
   </Modal>

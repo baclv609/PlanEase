@@ -32,7 +32,7 @@
                         class="mt-2 absolute z-[10000] bg-white border border-gray-200 transition rounded-md shadow-md max-h-56 overflow-y-auto">
                         <div v-for="user in filteredUsers" :key="user.id" @click="selectUser(user)"
                             class="cursor-pointer flex items-center px-3 py-2 hover:bg-gray-100 text-sm">
-                            <img :src="user.avatar" alt="avatar" class="w-6 h-6 rounded-full mr-2" />
+                            <img :src="user.avatar || defaultAvatar" alt="avatar" class="w-6 h-6 rounded-full mr-2" />
                             <span>{{ user.email }}</span>
                         </div>
                     </div>
