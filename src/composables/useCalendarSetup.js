@@ -93,7 +93,7 @@ export function useCalendarEvents() {
 
       const isEditable = event.user_id == user_id ||
         (event.attendees && event.attendees.some(attendee =>
-          attendee.user_id == user_id && attendee.role == 'editor'
+          attendee.user_id == user_id && attendee.role == 'editor' && attendee.status == 'yes'
         ));
 
       const formatTime = (date) => {

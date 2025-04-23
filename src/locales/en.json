@@ -557,7 +557,8 @@
     "tab": {
       "general": "General Information",
       "attachments": "Attachments",
-      "discussion": "Discussion"
+      "discussion": "Discussion",
+      "attendees": "Attendees"
     },
     "general": {
       "time": "Time",
@@ -701,5 +702,27 @@
     "confirmChange": "Confirm changes",
     "contentChange": "Are you sure you want to change the time of this event?",
     "chooseOption": "Please select the update option before continuing!"
-  }
+  },
+  "attendees": {
+    "title": "Update attendee list in recurring event",
+    "guest_title": "List of Attendees",
+    "guest_invite_title": "Invite to the event",
+    "invite_one": "Edit this event only",
+    "invite_follow": "Edit this event and all following events",
+    "invite_all": "Edit all events",
+    "confirm": "Confirm",
+    "viewer": "Viewer",
+    "editor": "Editor",
+    "pending": "Pending",
+    "yes": "Yes",
+    "exists": "User already exists in the list",
+    "add": "Add",
+    "search": "Enter attendee's email",
+    "no_attendees": "There are no attendees",
+    "no_attendees_content": "The event has no attendees listed yet. Please add new attendees.",
+    "invited": "Invitations sent to attendees"
+  },
+  "deleteSuccess": "Deleted successfully",
+  "editSuccess": "Updated successfully",
+  "addSuccess": "Added successfully"
 }

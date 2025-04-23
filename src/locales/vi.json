@@ -557,7 +557,8 @@
     "tab": {
       "general": "Thông tin chung",
       "attachments": "Tệp đính kèm",
-      "discussion": "Thảo luận"
+      "discussion": "Thảo luận",
+      "attendees": "Khách mời"
     },
     "general": {
       "time": "Thời gian",
@@ -702,5 +703,27 @@
     "confirmChange": "Xác nhận thay đổi",
     "contentChange": "Bạn có chắc chắn muốn thay đổi thời gian của sự kiện này?",
     "chooseOption": "Vui lòng chọn tùy chọn cập nhật trước khi tiếp tục!"
-  }
+  },
+  "attendees": {
+    "title": "Cập nhật danh sách khách mời trong sự kiện lặp lại",
+    "guest_title": "Danh sách khách mời",
+    "guest_invite_title": "Khách mời được thêm",
+    "invite_one": "Chỉ cập nhật sự kiện này",
+    "invite_follow": "Cập nhật sự kiện này và các sự kiện tiếp theo",
+    "invite_all": "Cập nhật tất cả sự kiện",
+    "confirm": "Xác nhận",
+    "viewer": "Chỉ xem",
+    "editor": "Được sửa",
+    "pending": "Đang chờ",
+    "yes": "Đồng ý",
+    "exists": "Người dùng đã tồn tại trong danh sách",
+    "add": "Thêm",
+    "search": "Nhập email khách mời",
+    "no_attendees": "Không có khách mời",
+    "no_attendees_content": "Sự kiện chưa có khách mời nào trong danh sách. Hãy thêm khách mời mới",
+    "invited": "Đã gửi lời mời đến khách mời"
+  },
+  "deleteSuccess": "Đã xóa thành công",
+  "editSuccess": "Cập nhật thành công",
+  "addSuccess": "Thêm mới thành công"
 }

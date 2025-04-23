@@ -249,13 +249,29 @@
                     <EnvironmentOutlined class="text-gray-500 mr-2" />
                     <span>{{ t('eventModal.sections.location.label') }}</span>
                 </div>
-                <a-form-item name="location" class="w-full">
-                    <a-input :placeholder="t('eventModal.sections.location.placeholder')" class="rounded-lg" v-model:value="formState.location" />
-                </a-form-item>
+                <Form.Item name="location" class="mb-0">
+                    <Input v-model:value="formState.location" :placeholder="t('eventModal.sections.location.placeholder')" class="bg-gray-50 rounded-lg"
+                    @input="onInput" />
+                </Form.Item>
+                <!-- Kết quả tìm kiếm -->
+            <ul 
+              v-if="results.length" 
+              class="mt-2 border bg-white rounded-lg shadow-lg max-h-60 overflow-y-auto w-full transition-all ease-in-out duration-300"
+            >
+              <li 
+                v-for="(item, index) in results" 
+                :key="index" 
+                @click="selectPlace(item)"
+                class="p-2 cursor-pointer hover:bg-gray-100 list-none flex items-center transition-all ease-in-out duration-200"
+              >
+                <EnvironmentOutlined class="text-gray-500 mr-2" />
+                {{ item.display_name }}
+              </li>
+            </ul>
             </div>
 
             <!-- Participants Section -->
-            <div class="form-section" v-if="formState.type == 'event'">
+            <!-- <div class="form-section" v-if="formState.type == 'event'">
                 <div class="section-title">
                     <UserOutlined class="text-gray-500 mr-2" />
                     <span>{{ t('eventModal.sections.participants.label') }}</span>
@@ -282,7 +298,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Privacy Section -->
             <div class="form-section flex flex-col gap-2">
@@ -1852,6 +1868,39 @@ const removeAttachment = (index) => {
   console.log('File Uploads:', fileUploads.value);
   console.log('Presigned URLs:', presignedUrls.value);
 };
+
+const results = ref([]);
+let debounceTimeout = null;
+const loadingSearchLocation = ref(false);
+
+// Hàm xử lý khi người dùng nhập vào input
+const onInput = async () => {
+
+  if (formState.value.location.trim() === '') {
+    results.value = [];
+    return;
+  }
+
+  if (debounceTimeout) {
+    clearTimeout(debounceTimeout)
+  }
+
+  debounceTimeout = setTimeout(async () => {
+    if (formState.value.location.length < 3) {
+      results.value = [];
+      return;
+    }
+
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(formState.value.location)}&format=json&addressdetails=1&limit=5`)
+    results.value = await res.json()
+  }, 300)
+}
+
+
+const selectPlace = (place) => {
+  formState.value.location = place.display_name;
+  results.value = [];
+}
 </script>
 
 <style scoped>
