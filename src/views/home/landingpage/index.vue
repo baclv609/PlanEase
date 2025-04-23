@@ -10,7 +10,7 @@
           <a @click.prevent="scrollToSection('hero')" class="nav-link">Trang chủ</a>
           <a @click.prevent="scrollToSection('features')" class="nav-link">Tính năng</a>
           <a @click.prevent="scrollToSection('how-it-works')" class="nav-link">Cách thức</a>
-          <a @click.prevent="scrollToSection('testimonials')" class="nav-link">Khách hàng </a>
+          <!-- <a @click.prevent="scrollToSection('testimonials')" class="nav-link">Khách hàng </a> -->
         </nav>
         <div class="auth-buttons">
           <a-button type="text" class="login-btn" @click="handleLogin">Đăng nhập</a-button>
@@ -95,7 +95,7 @@
     </section>
 
     <!-- Testimonials Section -->
-    <section id="testimonials" class="testimonials">
+    <!-- <section id="testimonials" class="testimonials">
       <div class="container">
         <div class="section-header animate-on-scroll">
           <h2 class="section-title">Khách hàng nói gì</h2>
@@ -151,7 +151,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </section> -->
 
     <!-- CTA Section -->
     <section class="cta">
@@ -175,7 +175,7 @@
           <div class="footer-logo">
             <img :src="logo" alt="Notibro logo" class="logo-img" />
             <p class="footer-description">
-              Giải pháp quản lý lịch trình toàn diện cho cá nhân
+              Giải pháp quản lý lịch trình toàn diện cho tất cả mọi ngời
             </p>
           </div>
           <div class="footer-links">
@@ -293,43 +293,43 @@ const steps = ref([
   }
 ]);
 
-const testimonials = ref([
-  {
-    text: 'Notibro đã giúp nhóm của chúng tôi làm việc hiệu quả hơn rất nhiều. Giao diện thân thiện và dễ sử dụng.',
-    avatar: user1Avatar,
-    name: 'Nguyễn Văn A',
-    role: 'Trưởng phòng Marketing',
-    rating: 5
-  },
-  {
-    text: 'Tôi rất ấn tượng với các tính năng của Notibro. Đặc biệt là phần lịch và nhắc nhở rất hữu ích.',
-    avatar: user2Avatar,
-    name: 'Trần Thị B',
-    role: 'Quản lý dự án',
-    rating: 5
-  },
-  {
-    text: 'Notibro đã giúp tôi quản lý thời gian và công việc tốt hơn. Tôi có thể dễ dàng theo dõi tiến độ của mình.',
-    avatar: user3Avatar,
-    name: 'Lê Văn C',
-    role: 'Nhân viên phát triển',
-    rating: 4
-  },
-  {
-    text: 'Tính năng phân tích dữ liệu của Notibro rất mạnh mẽ. Nó giúp tôi đưa ra quyết định chính xác hơn.',
-    avatar: user1Avatar,
-    name: 'Phạm Thị D',
-    role: 'Giám đốc điều hành',
-    rating: 5
-  },
-  {
-    text: 'Tôi đã thử nhiều công cụ quản lý dự án, nhưng Notibro là công cụ tốt nhất cho nhóm của tôi.',
-    avatar: user2Avatar,
-    name: 'Hoàng Văn E',
-    role: 'Trưởng nhóm phát triển',
-    rating: 5
-  }
-]);
+// const testimonials = ref([
+//   {
+//     text: 'Notibro đã giúp nhóm của chúng tôi làm việc hiệu quả hơn rất nhiều. Giao diện thân thiện và dễ sử dụng.',
+//     avatar: user1Avatar,
+//     name: 'Nguyễn Văn A',
+//     role: 'Trưởng phòng Marketing',
+//     rating: 5
+//   },
+//   {
+//     text: 'Tôi rất ấn tượng với các tính năng của Notibro. Đặc biệt là phần lịch và nhắc nhở rất hữu ích.',
+//     avatar: user2Avatar,
+//     name: 'Trần Thị B',
+//     role: 'Quản lý dự án',
+//     rating: 5
+//   },
+//   {
+//     text: 'Notibro đã giúp tôi quản lý thời gian và công việc tốt hơn. Tôi có thể dễ dàng theo dõi tiến độ của mình.',
+//     avatar: user3Avatar,
+//     name: 'Lê Văn C',
+//     role: 'Nhân viên phát triển',
+//     rating: 4
+//   },
+//   {
+//     text: 'Tính năng phân tích dữ liệu của Notibro rất mạnh mẽ. Nó giúp tôi đưa ra quyết định chính xác hơn.',
+//     avatar: user1Avatar,
+//     name: 'Phạm Thị D',
+//     role: 'Giám đốc điều hành',
+//     rating: 5
+//   },
+//   {
+//     text: 'Tôi đã thử nhiều công cụ quản lý lịch trình, nhưng Notibro là công cụ tốt nhất cho nhóm của tôi.',
+//     avatar: user2Avatar,
+//     name: 'Hoàng Văn E',
+//     role: 'Trưởng nhóm phát triển',
+//     rating: 5
+//   }
+// ]);
 
 const footerLinks = ref([
   {
@@ -486,7 +486,7 @@ onBeforeUnmount(() => {
 }
 
 .logo-img {
-  height: 65px;
+  height: 70px;
   width: 80px;
 }
 
