@@ -24,10 +24,10 @@
       <div class="container">
         <div class="hero-content">
           <h1 class="hero-title">
-            <span class="gradient-text">Notibro</span> - Quản lý công việc thông minh
+            <span class="gradient-text">Notibro</span> - Quản lý lịch trình thông minh
       </h1>
           <p class="hero-subtitle">
-            Giải pháp quản lý công việc toàn diện, giúp bạn làm việc hiệu quả hơn
+            Giải pháp quản lý lịch trình toàn diện, giúp bạn sắp xếp lịch trình, công việc hiệu quả hơn
           </p>
           <div class="hero-buttons">
             <a-button type="primary" size="large" class="primary-button" @click="handleGetStarted">
@@ -56,7 +56,7 @@
         <div class="section-header">
           <h2 class="section-title">Tính năng nổi bật</h2>
           <p class="section-description">
-            Khám phá những tính năng giúp bạn quản lý công việc hiệu quả hơn
+            Khám phá những tính năng giúp bạn quản lý thời gian hiệu quả hơn
           </p>
         </div>
 
@@ -175,7 +175,7 @@
           <div class="footer-logo">
             <img :src="logo" alt="Notibro logo" class="logo-img" />
             <p class="footer-description">
-              Giải pháp quản lý công việc toàn diện cho cá nhân và doanh nghiệp
+              Giải pháp quản lý lịch trình toàn diện cho cá nhân
             </p>
           </div>
           <div class="footer-links">
@@ -223,7 +223,8 @@ import {
   StarFilled,
   StarOutlined,
   LeftOutlined,
-  RightOutlined
+  RightOutlined,
+  RobotOutlined
 } from '@ant-design/icons-vue';
 
 // Placeholder images with updated colors
@@ -244,27 +245,27 @@ const features = ref([
   {
     icon: CalendarOutlined,
     title: 'Lịch thông minh',
-    description: 'Quản lý và theo dõi công việc một cách trực quan với lịch thông minh'
+    description: 'Quản lý và theo dõi lịch trình một cách trực quan với lịch thông minh'
   },
   {
     icon: TeamOutlined,
-    title: 'Làm việc nhóm',
-    description: 'Cộng tác hiệu quả với đồng nghiệp trong các dự án'
+    title: 'Chia sẻ sự kiện',
+    description: 'Kết nối, chia sẻ và phối hợp với mọi người để đạt được mục tiêu chung.'
   },
   {
     icon: NotificationOutlined,
     title: 'Nhắc nhở',
-    description: 'Không bao giờ bỏ lỡ deadline với hệ thống nhắc nhở thông minh'
+    description: 'Không bao giờ bỏ lỡ các sự kiện quan trọng với hệ thống nhắc nhở thông minh'
   },
   {
     icon: FileTextOutlined,
     title: 'Báo cáo',
-    description: 'Theo dõi tiến độ và hiệu suất làm việc với báo cáo chi tiết'
+    description: 'Theo dõi các sự kiện sắp diễn ra và đánh giá mức độ tham gia, hiệu quả theo thời gian.'
   },
   {
-    icon: BarChartOutlined,
-    title: 'Phân tích',
-    description: 'Đánh giá hiệu suất và đưa ra quyết định dựa trên dữ liệu'
+    icon: RobotOutlined,
+    title: 'Tạo lịch thông minh',
+    description: 'Sử dụng AI để tạo ra lịch trình cho bản thân'
   },
   {
     icon: SettingOutlined,
@@ -279,16 +280,16 @@ const steps = ref([
     description: 'Tạo tài khoản miễn phí và bắt đầu sử dụng Notibro'
   },
   {
-    title: 'Thiết lập dự án',
-    description: 'Tạo dự án mới và mời các thành viên tham gia'
+    title: 'Thiết lập sự kiện',
+    description: 'Lập lịch trình và mời mời các mọi người tham gia'
   },
   {
-    title: 'Quản lý công việc',
-    description: 'Thêm công việc, gán người thực hiện và theo dõi tiến độ'
+    title: 'Quản lý lịch trình',
+    description: 'Dễ dàng theo dõi, sắp xếp và cập nhật các sự kiện, công việc cá nhân hàng ngày một cách trực quan và hiệu quả.'
   },
   {
     title: 'Theo dõi hiệu suất',
-    description: 'Xem báo cáo và phân tích hiệu suất làm việc'
+    description: 'Thống kê các sự kiện công việc của bản thân'
   }
 ]);
 
