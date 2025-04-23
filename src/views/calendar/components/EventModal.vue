@@ -42,12 +42,14 @@ import {
   AlignLeftOutlined,
   PaperClipOutlined,
   LockOutlined,
+  CaretDownOutlined,
 } from '@ant-design/icons-vue';
 import moment from "moment-timezone";
 import dayjs from "dayjs";
 import axios from "axios";
 import Editor from 'primevue/editor';
 import { useI18n } from 'vue-i18n';
+import unknowUser from '@/assets/images/unknow_user.jpg';
 
 const props = defineProps({
   isAddEventModalVisible: Boolean,
@@ -753,10 +755,16 @@ const fetchUser = debounce(async (value) => {
 
     if (fetchId !== lastFetchId) return;
 
-    state.value.data = response.data.data.map(user => ({
-      label: `${user.email}`,
-      value: user.id
-    }));
+    state.value.data = response.data.data
+      .map((user) => ({
+          label: {
+            email: user.email,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            avatar: user.avatar
+          },
+          value: user.id,
+      }));
   } catch (error) {
     console.error('Error fetching users:', error);
     state.value.data = [];
@@ -765,6 +773,40 @@ const fetchUser = debounce(async (value) => {
   }
 }, 300);
 // Kết thúc hàm lấy thông tin khách mời
+
+// Hiển thị khách mời
+const handleUserSelect = (user) => {
+  const exists = formState.value.attendees.some(attendee => attendee.user_id == user.value);
+  if (exists) {
+    message.info(t('attendees.exists'));
+    return;
+  }
+
+  formState.value.attendees.push({
+    avatar: user.label.avatar,
+    email: user.label.email,
+    first_name: user.label.first_name,
+    last_name: user.label.last_name,
+    role: "viewer",
+    status: "pending",
+    user_id: user.value
+  });
+};
+
+// Đổi quyền khách mời
+const handleRoleChange = (user, newRole) => {
+    user.role = newRole;
+};
+
+const capitalizeFirstLetter = (string) => {
+    if (!string) return '';
+    return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
+// Xóa khách mời
+const removeAttendee = (user) => {
+  formState.value.attendees = formState.value.attendees.filter(att => att.user_id != user.user_id);
+}
 
 // Reset data khi component thay đổi
 watch(state, () => {
@@ -775,9 +817,9 @@ watch(state, () => {
 // Format lại mảng của người tham gia
 const transformAttendeesData = (data) => {
   return data.map(option => ({
-    user_id: option.value,
+    user_id: option.user_id,
     status: 'pending',
-    role: formState.value.role
+    role: option.role
   }));
 };
 
@@ -1364,25 +1406,73 @@ const selectPlace = (place) => {
             <div class="space-y-4">
               <Form.Item name="attendees" class="mb-0">
                 <a-select
-                  v-model:value="formState.attendees"
-                  mode="multiple"
                   label-in-value
+                  show-search
                   :placeholder="t('eventModal.sections.participants.placeholder')"
                   class="w-full rounded-lg"
                   :filter-option="false"
+                  :value="null"
                   :not-found-content="state.fetching ? undefined : null"
                   :options="state.data"
+                  @select="handleUserSelect"
                   @search="fetchUser"
                 >
                   <template #prefix>
                     <TeamOutlined class="text-gray-400" />
                   </template>
-                  <template v-if="state.fetching" #notFoundContent>
+                  <!-- <template v-if="state.fetching" #notFoundContent>
                     <a-spin size="small" />
+                  </template> -->
+                  <template #option="{ label, value }">
+                    <div class="flex items-center">
+                        <a-avatar :src="label.avatar || unknowUser" :size="24" class="mr-2" />
+                        <div>
+                            <div class="font-medium">{{ label.first_name }} {{ label.last_name }}</div>
+                            <div class="text-xs text-gray-500">{{ label.email }}</div>
+                        </div>
+                    </div>
                   </template>
                 </a-select>
+
+                <!-- List attendees -->
+                <div v-if="formState.attendees && formState.attendees.length > 0" class="max-h-[200px] overflow-y-auto rounded-xl shadow-md bg-white p-2 my-1">
+                  <div v-for="(user, index) in formState.attendees" :key="index"
+                      class="flex items-center p-1 border-b last:border-b-0 hover:bg-gray-100 rounded-lg">
+                      <a-avatar class="w-7 h-7" :src="user.avatar || unknowUser">
+                      </a-avatar>
+
+                      <div class="ml-3">
+                          <div class="font-medium text-sm">{{ user.first_name }} {{ user.last_name }}</div>
+                          <div class="text-xs text-gray-500">{{ user.email }}</div>
+                      </div>
+
+                      <div class="ml-auto flex items-center">
+                          <a-dropdown :trigger="['click']">
+                              <template #overlay>
+                                  <a-menu>
+                                      <a-menu-item key="editor"
+                                          @click="() => handleRoleChange(user, 'editor')">{{ $t('event.roles.editor') }}</a-menu-item>
+                                      <a-menu-item key="viewer"
+                                          @click="() => handleRoleChange(user, 'viewer')">{{ $t('event.roles.viewer') }}</a-menu-item>
+                                  </a-menu>
+                              </template>
+                              <a-button type="text" size="small">
+                                  {{ capitalizeFirstLetter(t(`attendees.${user.role}`)) }}
+                                  <CaretDownOutlined />
+                              </a-button>
+                          </a-dropdown>
+                          <!-- <a-tag :color="getStatusColor(user.status)" class="ml-2">{{
+                              capitalizeFirstLetter(t(`attendees.${user.status}`))
+                          }}</a-tag> -->
+                          <a-button type="text" danger size="small" class="ml-2"
+                              @click="() => removeAttendee(user)">
+                              <DeleteOutlined />
+                          </a-button>
+                      </div>
+                  </div>
+                </div>
               </Form.Item>
-              <div class="flex gap-3">
+              <!-- <div class="flex gap-3">
                 <span>{{ t('eventModal.sections.participants.permissions.label') }}</span>
                 <div class="flex gap-4 items-center">
                   <a-radio-group v-model:value="formState.role" class="flex gap-4">
@@ -1390,7 +1480,7 @@ const selectPlace = (place) => {
                     <a-radio value="editor">{{ t('eventModal.sections.participants.permissions.editor') }}</a-radio>
                   </a-radio-group>
                 </div>
-              </div>
+              </div> -->
             </div>
           </div>
 
