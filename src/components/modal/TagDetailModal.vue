@@ -4,43 +4,24 @@
         <div class="px-4 pt-4">
             <!-- Tag Header -->
             <div class="flex items-center mb-6">
-                <div class="flex items-center px-3 py-1.5 rounded-full"
-                    :style="{ backgroundColor: tagData.color_code + '20', borderColor: tagData.color_code }">
-                    <div class="w-3 h-3 rounded-full mr-2" :style="{ backgroundColor: tagData.color_code }"></div>
-                    <span :style="{ color: tagData.color_code }" class="font-medium">{{ tagData.name }}</span>
+                <div class="flex items-center gap-3">
+                    <div class="h-8 w-8 rounded-full" :style="{ backgroundColor: tagData.color_code }"></div>
+                    <div class="text-xl font-medium">{{ tagData.name }}</div>
                 </div>
-                <div class="ml-auto">
+                <!-- <div class="ml-auto">
                     <a-button type="primary" size="small" @click="handleEdit">
                         <template #icon>
                             <EditOutlined />
                         </template>
                         {{ $t('event.edit') }}
                     </a-button>
-                </div>
+                </div> -->
             </div>
-
-            <!-- Tag Information
-            <div class="grid grid-cols-1 gap-6 mb-6">
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="text-sm font-medium mb-3 flex items-center">
-                        <TagOutlined class="mr-1" />
-                        Tag Information
-                    </h4>
-
-                    <div class="mt-3">
-                        <div class="text-xs text-gray-500">Color</div>
-                    </div>
-
-                    <div class="mt-3">
-                        <div class="text-xs text-gray-500">Description</div>
-                        <div class="text-sm font-medium mt-1">
-                            {{ tagData.description || 'No description provided' }}
-                        </div>
-                    </div>
-
-                </div>
-            </div>  -->
-
+            <div class="space-y-2 mb-6" v-if="tagData.description">
+                <div class="font-medium">Mô tả:</div>
+                <p class="text-sm text-muted-foreground">{{tagData.description || 'No description provided'}}</p>
+            </div>
+         
             <!-- Shared Users -->
             <div class="mb-6">
                 <div class="flex items-center justify-between mb-3">
@@ -49,7 +30,7 @@
                         {{ $t('event.invitees') }}
                     </h4>
                     <div>
-                        <a-button type="text" @click="toggleEmailInput">
+                        <a-button v-if="tagData.is_owner" type="text" @click="toggleEmailInput">
                             <template #icon>
                                 <PlusOutlined />
                             </template>
@@ -66,7 +47,7 @@
                     <div v-if="showEmailInput" class="my-1 w-full pb-2">
                         <a-select show-search :placeholder="$t('event.guests')" :options="state.data"
                             :filter-option="false" :loading="state.fetching" @search="fetchUser"
-                            @select="handleUserSelect" :value="null" class="w-full">
+                            @select="handleUserSelect" :value="null" class="w-full mb-2">
                             <template #option="{ label, value, first_name, last_name, avatar }">
                                 <div class="flex items-center">
                                     <a-avatar :src="avatar" :size="24" class="mr-2">
@@ -94,7 +75,7 @@
                             </div>
 
                             <div class="ml-auto flex items-center">
-                                <a-dropdown :trigger="['click']">
+                                <a-dropdown v-if="tagData.is_owner" :trigger="['click']">
                                     <template #overlay>
                                         <a-menu>
                                             <a-menu-item key="editor"
@@ -103,20 +84,20 @@
                                                 @click="() => handleRoleChange(user, 'viewer')">{{ $t('event.roles.viewer') }}</a-menu-item>
                                         </a-menu>
                                     </template>
-                                    <a-button type="text" size="small">
-                                        {{ capitalizeFirstLetter(user.role) }}
+                                    <a-button v-if="tagData.is_owner" type="text" size="small">
+                                        {{ user.role === 'editor' ? $t('event.roles.editor') : $t('event.roles.viewer') }}
                                         <CaretDownOutlined />
                                     </a-button>
                                 </a-dropdown>
-                                <a-tag :color="getStatusColor(user.status)" class="ml-2">{{
-                                    capitalizeFirstLetter(user.status)
-                                }}</a-tag>
+                                <a-tag :color="getStatusColor(user.status)" class="ml-2">
+                                    {{ user.status === 'pending' ? 'Chờ xác nhận' : 'Đã tham gia' }}
+                                </a-tag>
                                 <!-- <a-button type="text" danger size="small" class="ml-2"
                                     @click="() => showDeleteConfirm(user)">
                                     <DeleteOutlined />
                                 </a-button> -->
 
-                                <a-dropdown :trigger="['click']">
+                                <a-dropdown v-if="tagData.is_owner" :trigger="['click']">
                                     <template #overlay>
                                         <a-menu>
                                             <a-menu-item key="transfer" @click="() => handleTransferOwnership(user)">
@@ -168,7 +149,7 @@
                                             </a-menu>
                                         </template>
                                         <a-button type="text" size="small">
-                                            {{ capitalizeFirstLetter(user.role) }}
+                                            {{ user.role === 'editor' ? $t('event.roles.editor') : $t('event.roles.viewer') }}
                                             <CaretDownOutlined />
                                         </a-button>
                                     </a-dropdown>
@@ -184,7 +165,7 @@
 
         </div>
         <template #footer>
-            <div v-show="hasChanges" class="flex justify-end">
+            <div v-if="tagData.is_owner && hasChanges" class="flex justify-end">
                 <a-button type="primary" size="small" @click="saveChanges">
                     {{ $t('profile.save') }}
                 </a-button>
@@ -234,9 +215,11 @@ const tagData = ref({
     shared_user: [],
     invite_link: '',
     created_at: '',
-    updated_at: ''
+    updated_at: '',
+    is_owner: false,
+    owner: null
 });
-
+const is_owner = ref()
 // Track original data for comparison
 const originalTagData = ref(null);
 
@@ -290,14 +273,13 @@ const fetchCalendarDetail = async (calendarId) => {
         const res = await axios.get(`${dirApi}tags/${calendarId}/show`, {
             headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("API Response:", res.data);
         tagData.value = {
             ...res.data.data.tag,
-            invite_link: res.data.data.invite_link
+            invite_link: res.data.data.invite_link,
+            is_owner: res.data.data.is_owner,
+            owner: res.data.data.owner
         };
-        // Store original data when fetching
         originalTagData.value = JSON.parse(JSON.stringify(tagData.value));
-        console.log("Tag data after fetch:", tagData.value);
     } catch (error) {
         console.log("Lỗi khi lấy chi tiết tag calendar:", error);
     }
@@ -342,7 +324,7 @@ const getRoleColor = (role) => {
 // Get status color
 const getStatusColor = (status) => {
     switch (status) {
-        case 'active':
+        case 'yes':
             return 'green';
         case 'pending':
             return 'orange';

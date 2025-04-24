@@ -132,7 +132,7 @@
                 <template #overlay>
                   <a-menu>
 
-                    <!-- <a-menu-item @click="viewDetails(calendar.id)">Xem chi tiet</a-menu-item> -->
+                    <a-menu-item @click="viewDetails(calendar.id)">Xem chi tiet</a-menu-item>
                     <a-menu-item @click="displayOnly(calendar.id)">{{ t('calendar.calendarSection.displayOnly') }}</a-menu-item>
                     <a-menu-item @click="openUpdateCalendar(calendar.id)">{{
                       $t("calendar.calendarSection.edit")
@@ -577,10 +577,24 @@ const fetchCalendars = async () => {
 fetchCalendars();
 
 const handleTagAdded = (newTag) => {
-  myCalendars.value.push(newTag);
-  // Thêm tag mới vào selectedCalendars để tự động tích checkbox
-  selectedCalendars.value.push(newTag.id);
-  updateFilteredEvents();
+    // Create complete tag object
+    const tagToAdd = {
+        id: newTag.id,
+        name: newTag.name,
+        color_code: newTag.color_code,
+        description: newTag.description,
+        shared_user: newTag.shared_user || [],
+        is_owner: true // Since this is a newly created tag
+    };
+
+    //thêm vào danh sách myCalendars
+    myCalendars.value.push(tagToAdd);
+    
+    // thêm vào danh sách selectedCalendars
+    selectedCalendars.value.push(newTag.id);
+    
+    // Update filtered events
+    updateFilteredEvents();
 };
 
 const handleTagUpdated = (updatedTag) => {
