@@ -24,7 +24,6 @@ const routes = [
   ...schedule,
   ...event,
   ...support,
-  ...tag,
   ...notFound,
 ];
 

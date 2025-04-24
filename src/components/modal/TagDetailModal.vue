@@ -401,9 +401,10 @@ const toggleEmailInput = () => {
 };
 
 const shareViaLink = () => {
-    console.log("Current tag data:", tagData.value);
-    if (tagData.value && tagData.value.invite_link) {
-        navigator.clipboard.writeText(tagData.value.invite_link)
+    if (tagData.value && tagData.value.uuid) {
+        const inviteLink = `${window.location.origin}/calendar/tag/${tagData.value.uuid}/invite`;
+        
+        navigator.clipboard.writeText(inviteLink)
             .then(() => {
                 message.success(t('share.link.copySuccess'));
             })
