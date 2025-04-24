@@ -76,9 +76,11 @@
 
                 <!-- Nút hành động -->
                 <div class="flex justify-center gap-4 mt-6">
-                    <a-button type="primary" :loading="loadingAccept" @click="acceptInvitation" class="px-6">
+                    <a-button type="primary" :loading="loadingAccept" :disabled="isOwner" @click="acceptInvitation"
+                        class="px-6">
                         Chấp nhận
                     </a-button>
+
 
                     <a-button danger :loading="loadingDecline" @click="declineInvitation" class="px-6">
                         Từ chối
