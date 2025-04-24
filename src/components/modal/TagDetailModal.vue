@@ -30,7 +30,7 @@
                         {{ $t('event.invitees') }}
                     </h4>
                     <div>
-                        <a-button type="text" @click="toggleEmailInput">
+                        <a-button v-if="tagData.is_owner" type="text" @click="toggleEmailInput">
                             <template #icon>
                                 <PlusOutlined />
                             </template>
@@ -75,7 +75,7 @@
                             </div>
 
                             <div class="ml-auto flex items-center">
-                                <a-dropdown :trigger="['click']">
+                                <a-dropdown v-if="tagData.is_owner" :trigger="['click']">
                                     <template #overlay>
                                         <a-menu>
                                             <a-menu-item key="editor"
@@ -84,7 +84,7 @@
                                                 @click="() => handleRoleChange(user, 'viewer')">{{ $t('event.roles.viewer') }}</a-menu-item>
                                         </a-menu>
                                     </template>
-                                    <a-button type="text" size="small">
+                                    <a-button v-if="tagData.is_owner" type="text" size="small">
                                         {{ user.role === 'editor' ? $t('event.roles.editor') : $t('event.roles.viewer') }}
                                         <CaretDownOutlined />
                                     </a-button>
@@ -97,7 +97,7 @@
                                     <DeleteOutlined />
                                 </a-button> -->
 
-                                <a-dropdown :trigger="['click']">
+                                <a-dropdown v-if="tagData.is_owner" :trigger="['click']">
                                     <template #overlay>
                                         <a-menu>
                                             <a-menu-item key="transfer" @click="() => handleTransferOwnership(user)">
@@ -165,7 +165,7 @@
 
         </div>
         <template #footer>
-            <div v-show="hasChanges" class="flex justify-end">
+            <div v-if="tagData.is_owner && hasChanges" class="flex justify-end">
                 <a-button type="primary" size="small" @click="saveChanges">
                     {{ $t('profile.save') }}
                 </a-button>
@@ -215,9 +215,11 @@ const tagData = ref({
     shared_user: [],
     invite_link: '',
     created_at: '',
-    updated_at: ''
+    updated_at: '',
+    is_owner: false,
+    owner: null
 });
-
+const is_owner = ref()
 // Track original data for comparison
 const originalTagData = ref(null);
 
@@ -271,14 +273,13 @@ const fetchCalendarDetail = async (calendarId) => {
         const res = await axios.get(`${dirApi}tags/${calendarId}/show`, {
             headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("API Response:", res.data);
         tagData.value = {
             ...res.data.data.tag,
-            invite_link: res.data.data.invite_link
+            invite_link: res.data.data.invite_link,
+            is_owner: res.data.data.is_owner,
+            owner: res.data.data.owner
         };
-        // Store original data when fetching
         originalTagData.value = JSON.parse(JSON.stringify(tagData.value));
-        console.log("Tag data after fetch:", tagData.value);
     } catch (error) {
         console.log("Lỗi khi lấy chi tiết tag calendar:", error);
     }

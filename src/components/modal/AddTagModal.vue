@@ -296,7 +296,15 @@ const handleOk = async () => {
         );
 
         if (response.status === 201) {
-            emit('tagAdded', response.data.data);
+            console.log('Tag added successfully:', response.data.data.tag.id);
+            console.log('Tag:', response.data.data.tag);
+            emit('tagAdded', {
+                id: response.data?.data?.tag.id,
+                name: formState.value.name,
+                color_code: formState.value.color_code,
+                description: formState.value.description,
+                shared_user: selectedUsers.value
+            });
             message.success(t('success.tagAdded', { name: formState.value.name }));
             emit('update:open', false);
 
