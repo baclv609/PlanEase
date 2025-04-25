@@ -725,5 +725,56 @@
   },
   "deleteSuccess": "Đã xóa thành công",
   "editSuccess": "Cập nhật thành công",
-  "addSuccess": "Thêm mới thành công"
+  "addSuccess": "Thêm mới thành công",
+  "Invite": {
+    "title": "Tiêu đề sự kiện",
+    "description": "Mô tả",
+    "location": "Địa điểm",
+    "attendee": "Người tham gia",
+    "qsAttend": "Bạn có muoốn tham gia sự kiện này không?",
+    "owner": "Chủ sự kiện",
+    "accept": "người đồng ý tham gia",
+    "yes": "Có",
+    "no": "Không",
+    "message": {
+      "200": "Tham gia sự kiện thành công",
+      "400": "Không thể mời bản thân tham gia sự kiện",
+      "404": "Không tìm thấy sự kiện",
+      "403": "Không thể tham gia sự kiện này",
+      "409": "Bạn đã tham gia sự kiện này",
+      "500": "Đã xảy ra lỗi khi tham gia sự kiện"
+    }
+  },
+  "notify": {
+    "title": "Thông báo",
+    "markAllAsRead": "Đánh dấu tất cả là đã đọc",
+    "noNotifications": "Không có thông báo nào",
+    "showAll": "Hiển thị tất cả thông báo",
+    "showRead": "Hiển thị các thông báo đã đọc",
+    "showUnread": "Hiển thị các thông báo chưa đọc",
+    "deleteAll": "Xóa tất cả thông báo",
+    "markAsRead": "Đánh dấu là đã đọc",
+    "delete": "Xóa thông báo",
+    "success": {
+      "markedAsRead": "Đã đánh dấu thông báo là đã đọc"
+    }
+  },
+  "search": {
+    "placeholder": {
+      "mainSearch": "Tìm kiếm...",
+      "chooseTag": "Chọn thẻ",
+      "enterTitle": "Nhập tiêu đề",
+      "enterLocation": "Nhập địa điểm",
+      "chooseDate": "Chọn ngày"
+    },
+    "searchByTag": "Tìm kiếm theo lịch",
+    "title": "Tiêu đề",
+    "location": "Địa điểm",
+    "start": "Ngày bắt đầu",
+    "end": "Ngày kết thúc",
+    "search": "Tìm kiếm",
+    "reset": "Đặt lại",
+    "to": "đến",
+    "noResults": "Không tìm thấy kết quả nào"
+  }
 }

@@ -419,11 +419,16 @@ onMounted(() => {
   color: #ffffff !important;
   font-weight: 500;
 }
+
 :deep(.fc-daygrid-day:hover .fc-daygrid-day-number) {
   transition: all 0.2s ease;
+  background-color: #595959 !important;
   padding: 2px 6px;
 }
 
+:deep(td .fc-day) {
+  background: none !important;
+}
 
 :deep(.fc-event) {
   border-radius: 50%;
@@ -443,7 +448,7 @@ onMounted(() => {
   bottom: 2px;
 }
 
-:deep(.fc-day-today) {
+:deep(.fc-day-today .fc-daygrid-day-number) {
   background: #FFCC77 !important;
   border-radius: 50% !important;
 }
@@ -454,10 +459,6 @@ onMounted(() => {
 
 :deep(.fc-day) {
   cursor: pointer;
-}
-
-:deep(.fc-day:hover) {
-  background: rgba(255, 255, 255, 0.1) !important;
 }
 
 :deep(.fc-highlight) {
@@ -513,5 +514,28 @@ onMounted(() => {
 
 :deep(.fc-view) {
   width: fit-content !important;
+}
+
+:deep(.fc-daygrid-day-number) {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+}
+
+:deep(.fc-daygrid-day-number) {
+  color: #ffffff !important;
+  font-weight: 500;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 2;
 }
 </style> 

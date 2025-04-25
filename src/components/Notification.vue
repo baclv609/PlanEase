@@ -4,7 +4,7 @@
     <div class="mt-[75px] mr-[80px] bg-white rounded-lg shadow-2xl border border-[#17C3B2]/20 w-full max-w-md transform transition-transform duration-200 ease-out">
       <!-- Header -->
       <div class="flex items-center px-5 py-3 justify-between border-b border-[#17C3B2]/20">
-        <h2 class="text-lg font-semibold text-[#227C9D]">Thông báo</h2>
+        <h2 class="text-lg font-semibold text-[#227C9D]">{{ t('notify.title') }}</h2>
         <div class="flex items-center gap-1">
           <a-dropdown :trigger="['click']">
             <a class="ant-dropdown-link bg-transparent cursor-pointer border-none p-2 rounded-full hover:bg-[#17C3B2]/10 transition-colors" @click.prevent>
@@ -13,19 +13,19 @@
             <template #overlay>
               <a-menu class="shadow-lg rounded-md">
                 <a-menu-item @click="readAll">
-                  <a class="text-[#227C9D] hover:text-[#17C3B2]">Đánh dấu tất cả đã đọc</a>
+                  <a class="text-[#227C9D] hover:text-[#17C3B2]">{{ t('notify.markAllAsRead') }}</a>
                 </a-menu-item>
                 <a-menu-item @click="filterNotifications('all')">
-                  <a class="text-[#227C9D] hover:text-[#17C3B2]">Hiển thị tất cả thông báo</a>
+                  <a class="text-[#227C9D] hover:text-[#17C3B2]">{{ t('notify.showAll') }}</a>
                 </a-menu-item>
                 <a-menu-item  @click="filterNotifications('unread')">
-                  <a class="text-[#227C9D] hover:text-[#17C3B2]">Hiển thị thông báo chưa đọc</a>
+                  <a class="text-[#227C9D] hover:text-[#17C3B2]">{{ t('notify.showUnread') }}</a>
                 </a-menu-item>
                 <a-menu-item @click="filterNotifications('read')">
-                  <a class="text-[#227C9D] hover:text-[#17C3B2]">Hiển thị thông báo đã đọc</a>
+                  <a class="text-[#227C9D] hover:text-[#17C3B2]">{{ t('notify.showRead') }}</a>
                 </a-menu-item>
                 <a-menu-item @click="deleteAllNotification">
-                  <a class="text-[#227C9D] hover:text-[#17C3B2]">Xóa tất cả thông báo</a>
+                  <a class="text-[#227C9D] hover:text-[#17C3B2]">{{ t('notify.deleteAll') }}</a>
                 </a-menu-item>
               </a-menu>
             </template>
@@ -59,10 +59,10 @@
                   <template #overlay>
                     <a-menu class="shadow-lg rounded-md">
                       <a-menu-item v-if="notification.read_at == null" @click="read(notification)">
-                        <a class="text-[#227C9D] hover:text-[#17C3B2]">Đánh dấu là đã đọc</a>
+                        <a class="text-[#227C9D] hover:text-[#17C3B2]">{{ t('notify.markAsRead') }}</a>
                       </a-menu-item>
                       <a-menu-item @click="deleteNotification(notification)" v-if="filterNotificationData.length > 0">
-                        <a class="text-[#227C9D] hover:text-[#17C3B2]">Xóa thông báo</a>
+                        <a class="text-[#227C9D] hover:text-[#17C3B2]">{{ t('notify.delete') }}</a>
                       </a-menu-item>
                     </a-menu>
                   </template>
@@ -82,7 +82,7 @@
         </div>
         <div v-else class="text-center py-8">
           <img :src="emptyNotification" alt="No notifications" class="mx-auto w-32 h-32 object-contain opacity-75">
-          <span class="text-[#227C9D] block mt-4 font-medium">Không có thông báo nào</span>
+          <span class="text-[#227C9D] block mt-4 font-medium">{{ t('notify.noNotifications') }}</span>
         </div>
       </div>
     </div>
@@ -97,11 +97,14 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import relativeTime from "dayjs/plugin/relativeTime";
 import axios from 'axios';
-import emptyNotification from "@/assets/images/empty-notification.png"
+import emptyNotification from "@/assets/images/empty-notification.png";
+import { useI18n } from 'vue-i18n';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(relativeTime);
+
+const { t } = useI18n();
 
 const props = defineProps({
   isNotificationOpen: Boolean,

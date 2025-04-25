@@ -54,7 +54,7 @@
     }
   },
   "profile": {
-    "change_avatar": "Change Avatar",
+    "change_avatar": "Change",
     "email": "Email",
     "phone": "Phone",
     "address": "Address",
@@ -724,5 +724,56 @@
   },
   "deleteSuccess": "Deleted successfully",
   "editSuccess": "Updated successfully",
-  "addSuccess": "Added successfully"
+  "addSuccess": "Added successfully",
+  "Invite": {
+    "title": "Title event",
+    "description": "Description",
+    "location": "Location",
+    "attendee": "Attendee",
+    "owner": "Owner",
+    "accept": "people agree to participate",
+    "qsAttend": "Would you like to participate in this event?",
+    "yes": "Yes",
+    "no": "No",
+    "message": {
+      "200": "Participate in successful events",
+      "400": "Unable to invite myself to the event",
+      "404": "Event not found or deleted by owner",
+      "403": "Unable to attend this event",
+      "409": "You have attended this event",
+      "500": "An error occurred while joining the event."
+    }
+  },
+  "notify": {
+    "title": "Notifications",
+    "markAllAsRead": "Mark all as read",
+    "noNotifications": "No notifications",
+    "showAll": "Show all notifications",
+    "showRead": "Show read notifications",
+    "showUnread": "Show unread notifications",
+    "deleteAll": "Delete all notifications",
+    "markAsRead": "Mark as read",
+    "delete": "Delete",
+    "success": {
+      "markedAsRead": "Notifications marked as read."
+    }
+  },
+  "search": {
+    "placeholder": {
+      "mainSearch": "Search...",
+      "chooseTag": "Select calendar",
+      "enterTitle": "Enter title",
+      "enterLocation": "Enter location",
+      "chooseDate": "Select date"
+    },
+    "searchByTag": "Search by calendar",
+    "title": "Title",
+    "location": "Location",
+    "start": "Start date",
+    "end": "End date",
+    "search": "Search",
+    "reset": "Reset",
+    "to": "to",
+    "noResults": "No results found"
+  }
 }

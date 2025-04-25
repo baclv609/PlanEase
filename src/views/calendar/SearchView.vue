@@ -7,12 +7,16 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import 'dayjs/locale/vi';
+import 'dayjs/locale/en';
+import { useI18n } from 'vue-i18n';
 
 import { useSettingsStore } from '@/stores/settingsStore';
 // Cấu hình dayjs
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.locale('vi');
+
+const { t } = useI18n();
 
 const settingsStore = useSettingsStore();
 
@@ -42,7 +46,7 @@ const formatEventData = (data) => {
     // Format time range string
     let timeRangeStr = '';
     if (event.is_all_day) {
-      timeRangeStr = 'Cả ngày';
+      timeRangeStr = userSettings.language == 'vi' ? 'Cả ngày' : 'All day';
     } else {
       const isSameDay = startDateTime.isSame(endDateTime, 'day');
       if (isSameDay) {
@@ -57,7 +61,7 @@ const formatEventData = (data) => {
       formattedStartDate: startDateTime.format('DD/MM/YYYY'),
       formattedEndDate: endDateTime.format('DD/MM/YYYY'),
       formattedTimeRange: timeRangeStr,
-      formattedWeekday: startDateTime.format('ddd').toUpperCase(),
+      formattedWeekday: startDateTime.locale(userSettings.language).format('ddd').toUpperCase(),
       formattedMonth: startDateTime.format('MM'),
       formattedYear: startDateTime.format('YYYY'),
       displayDate: startDateTime.format('D'),
@@ -179,6 +183,17 @@ onMounted(fetchSearchResults);
 
 // Lắng nghe thay đổi query để cập nhật kết quả tìm kiếm
 watch(() => route.query, fetchSearchResults, { deep: true });
+
+function getMonthName(monthNumber) {
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const index = parseInt(monthNumber, 10) - 1;
+
+  return monthNames[index] ?? '';
+}
 </script>
 
 <template>
@@ -193,7 +208,7 @@ watch(() => route.query, fetchSearchResults, { deep: true });
         
         <!-- Thông tin ngày tháng -->
         <div class="date-info w-[100px] text-xs text-gray-700">
-          <div>THÁNG {{ day.formattedMonth }},</div>
+          <div>{{ userSettings.language == 'vi' ? 'THÁNG' +' '+ day.formattedMonth : getMonthName(day.formattedMonth) }},</div>
           <div>{{ day.formattedYear }}, {{ day.formattedWeekday }}</div>
         </div>
         
@@ -240,7 +255,7 @@ watch(() => route.query, fetchSearchResults, { deep: true });
 
     <!-- Hiển thị khi không có dữ liệu -->
     <div v-else class="text-center py-6 text-gray-500">
-      Không tìm thấy lịch nào.
+      {{ t('search.noResults') }}
     </div>
   </div>
 </template>
