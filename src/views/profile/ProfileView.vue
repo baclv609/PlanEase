@@ -54,7 +54,7 @@
           <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
             <a-form-item :label="$t('profile.first_name')" class="flex-1">
               <a-input
-                v-model:value="user.first_name"
+                v-model:value="tempUser.first_name"
                 :class="errors.first_name ? 'border-red-500' : ''"
               />
 
@@ -65,7 +65,7 @@
 
             <a-form-item :label="$t('profile.last_name')" class="flex-1">
               <a-input
-                v-model:value="user.last_name"
+                v-model:value="tempUser.last_name"
                 :class="errors.last_name ? 'border-red-500' : ''"
               />
 
@@ -77,7 +77,7 @@
 
           <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
             <a-form-item :label="$t('profile.gender')" class="flex-1">
-              <a-select v-model:value="user.gender">
+              <a-select v-model:value="tempUser.gender">
                 <a-select-option value="male">{{ $t("profile.male") }}</a-select-option>
                 <a-select-option value="female">{{
                   $t("profile.female")
@@ -87,7 +87,7 @@
 
             <a-form-item :label="$t('profile.phone')" class="flex-1">
               <a-input
-                v-model:value="user.phone"
+                v-model:value="tempUser.phone"
                 :class="errors.phone ? 'border-red-400' : ''"
               />
 
@@ -99,7 +99,7 @@
           <div class="w-full">
             <a-form-item :label="$t('profile.address')">
               <a-input
-                v-model:value="user.address"
+                v-model:value="tempUser.address"
                 :class="errors.address ? 'border-red-400' : ''"
               />
 
@@ -186,6 +186,7 @@ const router = useRouter();
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const activeTab = ref("1");
 const user = ref({});
+const tempUser = ref({});
 const token = localStorage.getItem("access_token");
 const isLoading = ref(false);
 const errors = reactive({
@@ -220,6 +221,7 @@ const fetchUserProfile = async () => {
 
     if (response.data.code === 200) {
       user.value = response.data.data;
+      tempUser.value = JSON.parse(JSON.stringify(response.data.data));
     } else {
       console.error(
         t("profile.error.user_not_found"),
@@ -242,11 +244,11 @@ const saveChanges = async () => {
     isLoading.value = true;
 
     const formData = new FormData();
-    formData.append("first_name", user.value.first_name);
-    formData.append("last_name", user.value.last_name);
-    formData.append("gender", user.value.gender);
-    formData.append("address", user.value.address ?? "");
-    formData.append("phone", user.value.phone ?? "");
+    formData.append("first_name", tempUser.value.first_name || user.value.first_name);
+    formData.append("last_name", tempUser.value.last_name || user.value.last_name);
+    formData.append("gender", tempUser.value.gender || user.value.gender);
+    formData.append("address", tempUser.value.address || user.value.address);
+    formData.append("phone", tempUser.value.phone || user.value.phone);
     formData.append("_method", "PUT");
     // Append file nếu có
     if (fileList.value[0]) {
@@ -267,6 +269,7 @@ const saveChanges = async () => {
 
       await fetchUserProfile();
       user.value = { ...response.data.data };
+      tempUser.value = JSON.parse(JSON.stringify(response.data.data));
     } else {
       message.error(t("profile.error.update_failed"));
     }
