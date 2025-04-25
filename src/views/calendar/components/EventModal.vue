@@ -132,17 +132,27 @@ const formState = ref({
     : "Asia/Saigon",
 });
 
+const myTags = ref([]);
+const myShareTags = ref([]);
+const allTags = ref([]);
+
 // Lấy tag của người dùng
 const getAllTagByUser = async () => {
   try {
-    const res = await axios.get(`${dirApi}tags`, {
+    const res = await axios.get(`${dirApi}tags/list`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
 
     if(res.data.code == 200) {
-      tags.value = res.data.data;
+      myTags.value = res.data.data.owned;
+      myShareTags.value = res.data.data.shared_as_editor;
+      
+      allTags.value = [...myTags.value, ...myShareTags.value];
+
+      tags.value = allTags.value;
+
       // Set default first tag if available
       if (tags.value.length > 0) {
         formState.value.tag_id = tags.value[0].id;
@@ -1484,10 +1494,10 @@ const selectPlace = (place) => {
             </div>
           </div>
 
-          <div class="form-section flex flex-col gap-2"  v-if="formState.type == 'event'">
+          <div class="form-section flex flex-col gap-2">
             <!-- Privacy and Notification Section -->
             <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
-              <div>
+              <div v-if="formState.type == 'event'">
                 <div class="section-title">
                   <LockOutlined class="text-gray-500 mr-2" />
                   <span>{{ t('eventModal.sections.privacy.label') }}</span>

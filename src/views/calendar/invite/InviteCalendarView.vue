@@ -8,9 +8,14 @@
   import dayjs from 'dayjs';
   import utc from 'dayjs/plugin/utc';
   import timezone from 'dayjs/plugin/timezone';
+  import { useI18n } from 'vue-i18n';
+  import "dayjs/locale/vi";
+  import "dayjs/locale/en";
 
   dayjs.extend(utc);
   dayjs.extend(timezone);
+
+  const { t } = useI18n();
 
   const dirApi = import.meta.env.VITE_API_BASE_URL;
   const route = useRoute();
@@ -50,22 +55,26 @@
 
   const accept = async () => {
     try {
-      const response = await axios.post(`${dirApi}event/${id}/accept`, {}, {
+      const response = await axios.post(`${dirApi}event/${id}/acceptInviteByLink`, {}, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
 
+      if(response.data.code == 403) {
+        message.info(t('Invite.message.403'));
+      }
+
       if(response.data.code == 400) {
-        message.info(response.data.message || 'Can not invite yourself');
+        message.info(t('Invite.message.400'));
       }
 
       if(response.data.code == 409) {
-        message.info(response.data.message || 'You have already accepted this event');
+        message.info(t('Invite.message.409'));
       }
 
       if(response.data.code == 200) {
-        message.info(response.data.message);
+        message.info(t('Invite.message.200'));
       }
 
       router.push({name: 'calendar'});
@@ -85,11 +94,11 @@
       });
 
       if(response.data.code == 404) {
-        message.info(response.data.message || 'Event not found');
+        message.info(t('Invite.message.404'));
       }
 
       if(response.data.code == 200) {
-        message.info(response.data.message)
+        message.info(t('Invite.message.200'));
         router.push({name: 'calendar'});
       }
 
@@ -116,14 +125,14 @@
       <div class="text-gray-800">
         <!-- <div class="text-lg">thứ năm, 27 tháng 2 • 6:00-7:00CH</div> -->
         <div class="text-lg">
-          <p class="text-gray-500 text-sm mb-0">Múi giờ sự kiện</p>
-          {{ dayjs.utc(eventDetails.task.start_time).tz(eventDetails.task.timezone_code).format('dddd, MMMM - D • HH:mm') }} - 
-          {{ dayjs.utc(eventDetails.task.end_time).tz(eventDetails.task.timezone_code).format('dddd, MMMM - D • HH:mm') }}
+          <p class="text-gray-500 text-sm mb-0">{{ t('EventDetailsModal.general.timeEvent') }}</p>
+          {{ dayjs.utc(eventDetails.task.start_time).tz(eventDetails.task.timezone_code).locale(userSetting.language).format('dddd, MMMM - D • HH:mm') }} - 
+          {{ dayjs.utc(eventDetails.task.end_time).tz(eventDetails.task.timezone_code).locale(userSetting.language).format('dddd, MMMM - D • HH:mm') }}
           <span class="text-xs text-gray-500">{{ eventDetails.task.timezone_code }}</span>
         </div>
 
         <div class="text-lg mt-2" v-if="userSetting.timeZone != eventDetails.task.timezone_code">
-          <p class="text-gray-500 text-sm mb-0">Múi giờ của bạn</p>
+          <p class="text-gray-500 text-sm mb-0">{{ t('EventDetailsModal.general.timeSetting') }}</p>
           {{ dayjs.utc(eventDetails.task.start_time).tz(userSetting.timeZone).format('dddd, MMMM - D • HH:mm') }} - 
           {{ dayjs.utc(eventDetails.task.end_time).tz(userSetting.timeZone).format('dddd, MMMM - D • HH:mm') }}
           <span class="text-xs text-gray-500">{{ userSetting.timeZone }}</span>
@@ -133,16 +142,16 @@
       <div class="">
         <!-- Event Title -->
         <div v-if="eventDetails.task.title" class="text-base font-semibold text-gray-800 mb-1">
-          Title: {{ eventDetails.task.title }}
+          {{ t('Invite.title') }}: {{ eventDetails.task.title }}
         </div>
 
         <!-- Event Description -->
         <div v-if="eventDetails.task.description" class="text-sm text-gray-600">
-          Description: <p v-html="eventDetails.task.description"></p>
+          {{ t('Invite.description') }}: <p v-html="eventDetails.task.description"></p>
         </div>
 
         <div v-if="eventDetails.task.location" class="text-sm text-gray-600">
-          Location: {{ eventDetails.task.location }}
+          {{ t('Invite.location') }}: {{ eventDetails.task.location }}
         </div>
       </div>
 
@@ -156,8 +165,8 @@
             </svg>
           </div>
           <div>
-            <div class="text-sm">{{ eventDetails.quantityAttendee }} guest</div>
-            <div class="text-xs text-gray-500">{{ eventDetails.quantityAttendee }} people agree to participate</div>
+            <div class="text-sm">{{ eventDetails.quantityAttendee }} {{ t('Invite.attendee') }}</div>
+            <div class="text-xs text-gray-500">{{ eventDetails.quantityAttendee }} {{ t('Invite.accept') }}</div>
           </div>
         </div>
       </div>
@@ -169,7 +178,7 @@
             <img class="w-10 h-10 rounded-full" :src="eventDetails.task.user.avatar ?? unknowUser" alt="">
           </div>
           <div>
-            <div class="text-sm font-medium">{{ eventDetails.task.user.first_name }} {{ eventDetails.task.user.last_name }} - <span class="text-green-500">Owner</span></div>
+            <div class="text-sm font-medium">{{ eventDetails.task.user.first_name }} {{ eventDetails.task.user.last_name }} - <span class="text-green-500">{{ t('Invite.owner') }}</span></div>
             <div class="text-xs text-gray-500">{{ eventDetails.task.user.email }}</div>
           </div>
         </div>
@@ -190,14 +199,14 @@
       <!-- Email response -->
       <div class="text-center text-sm">
         <div class="mb-4">
-          Would you like to participate in this event?
+          {{ t('Invite.qsAttend') }}
         </div>
         <div class="flex gap-2 justify-center">
-          <button @click.prevent="accept" class="px-4 py-2 bg-orange-500 border-0 text-white cursor-pointer rounded-md hover:bg-orange-300">
-            Yes
+          <button @click.prevent="accept" class="px-4 py-2 bg-orange-500 border-0 text-white cursor-pointer rounded-md hover:bg-orange-300 transition">
+            {{ t('Invite.yes') }}
           </button>
-          <button @click.prevent="refuse" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md border-0 cursor-pointer hover:bg-gray-100">
-            No
+          <button @click.prevent="refuse" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md border-0 cursor-pointer hover:bg-gray-100 transition">
+            {{ t('Invite.no') }}
           </button>
         </div>
       </div>

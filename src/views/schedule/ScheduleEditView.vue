@@ -62,10 +62,11 @@
                         <template #label>
                             {{ t('eventModal.sections.eventType.tag') }}
                         </template>
-                        <a-select v-model:value="formState.tags" class="bg-gray-50 rounded-lg w-full" placeholder="Chọn loại"
+                        <a-select v-if="formState.user_id == user.id" v-model:value="formState.tags" class="bg-gray-50 rounded-lg w-full" placeholder="Chọn loại"
                             :options="tags"
                             :disabled="formState.user_id != user.id">
                             > </a-select>
+                        <a-input type="text" disabled v-else class="bg-gray-50 rounded-lg w-full" v-model:value="formState.tag_name" />
                     </a-form-item>
 
                 </div>
@@ -561,6 +562,7 @@ const updateFormStateFromProps = (event) => {
                 }))
                 : [],
             tags: event.tag_id || null,
+            tag_name: event.tag_name,
             is_private: event.is_private,
             color_code: event.color || "#ff4d4f",
             is_reminder: Boolean(event.is_reminder),
