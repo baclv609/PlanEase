@@ -1,5 +1,5 @@
 <template>
-    <a-modal :open="open" :title="t('calendar.addTag')" @ok="handleOk" @update:open="$emit('update:open', $event)">
+    <a-modal :open="open" :title="t('calendar.addTag')" @ok="handleOk" @update:open="$emit('update:open', $event)"  :confirm-loading="confirmLoading">
         <a-form layout="vertical" :model="formState" :rules="rules" ref="formRef">
             <div class="flex gap-4">
                 <!-- Input: Chiếm phần lớn không gian -->
@@ -46,7 +46,7 @@
             </a-form-item>
 
             <!-- Invite by Email -->
-            <!-- <div class="my-1 w-full pb-2">
+            <div class="my-1 w-full pb-2">
                 <a-select show-search :placeholder="$t('event.guests')" :options="state.data" :filter-option="false"
                     :loading="state.fetching" @search="fetchUser" @select="handleUserSelect" :value="null"
                     class="w-full">
@@ -64,44 +64,71 @@
                 </a-select>
             </div>
 
-            <div v-if="selectedUsers.length > 0" class="mt-4">
-                <div v-for="user in selectedUsers" :key="user.id"
-                    class="flex items-center justify-between mb-2 p-2 bg-gray-50 rounded">
-                    <div class="flex items-center">
-                        <a-avatar :src="user.avatar" :size="32" class="mr-3">
-                            {{ !user.avatar ? getInitials(user.first_name, user.last_name) : '' }}
-                        </a-avatar>
-                        <div>
-                            <div class="font-medium">{{ user.first_name }} {{ user.last_name }}</div>
-                            <div class="text-xs text-gray-500">{{ user.email }}</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <a-radio-group v-model:value="user.role"
-                            @change="(e) => updateUserRole(user.id, e.target.value)">
-                            <a-radio value="viewer">{{ t('event.roles.viewer') }}</a-radio>
-                            <a-radio value="editor">{{ t('event.roles.editor') }}</a-radio>
-                        </a-radio-group>
-                        <a-button type="text" danger @click="removeUser(user.id)">
-                            <template #icon>
-                                <CloseOutlined />
-                            </template>
-                        </a-button>
-                    </div>
-                </div>
-            </div> -->
+<!--  -->
+<div v-if="selectedUsers.length > 0" class="mb-6">
+    <h4 class="text-sm font-medium mb-3">{{ $t('event.guests') }}</h4>
+    <div class="bg-gray-50 rounded-lg">
+        <div v-for="user in selectedUsers" :key="user.value"
+            class="flex items-center p-3 border-b last:border-b-0">
+            <!-- Avatar Section -->
+            <a-avatar :src="user.avatar" :size="32"
+                :style="{ backgroundColor: !user.avatar ? '#1890ff' : 'transparent' }">
+                {{ !user.avatar ? getInitials(user.first_name, user.last_name) : '' }}
+            </a-avatar>
+
+            <!-- User Information Section -->
+            <div class="ml-3">
+                <div class="font-medium">{{ user.first_name }} {{ user.last_name }}</div>
+                <div class="text-xs text-gray-500">{{ user.email }}</div>
+            </div>
+
+            <!-- User Role & Remove Button Section -->
+            <div class="ml-auto flex items-center">
+                <!-- Role Dropdown -->
+                <a-dropdown :trigger="['click']">
+                    <template #overlay>
+                        <a-menu>
+                            <a-menu-item key="editor" @click="() => updateUserRole(user.id, 'editor')">
+                                {{ $t('event.roles.editor') }}
+                            </a-menu-item>
+                            <a-menu-item key="viewer" @click="() => updateUserRole(user.id, 'viewer')">
+                                {{ $t('event.roles.viewer') }}
+                            </a-menu-item>
+                        </a-menu>
+                    </template>
+                    <a-button type="text" size="small">
+                        <!-- Hiển thị quyền người dùng bằng tiếng Việt -->
+                        {{ user.role === 'editor' ? $t('event.roles.editor') : $t('event.roles.viewer') }}
+                        <CaretDownOutlined />
+                    </a-button>
+
+                </a-dropdown>
+
+                <!-- Remove User Button -->
+                <a-button type="text" danger size="small" class="ml-2" @click="() => removeUser(user.id)">
+                    <DeleteOutlined />
+                </a-button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
         </a-form>
     </a-modal>
 </template>
 
 <script setup>
 import { ref, defineProps, defineEmits, onMounted, watch } from 'vue';
-import { CheckOutlined, PlusOutlined, CloseOutlined } from '@ant-design/icons-vue';
+import { CheckOutlined, PlusOutlined, CloseOutlined, DeleteOutlined,CaretDownOutlined } from '@ant-design/icons-vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { message } from 'ant-design-vue';
 import debounce from 'lodash/debounce';
 import { Form } from 'ant-design-vue';
+
+const confirmLoading = ref(false);
 
 const { t } = useI18n();
 const props = defineProps({
@@ -243,46 +270,69 @@ const getInitials = (firstName, lastName) => {
 };
 
 const handleOk = async () => {
-    try {
-        await formRef.value.validate();
-        
-        const response = await axios.post(
-            `${dirApi}tags`,
-            {
-                name: formState.value.name,
-                description: formState.value.description,
-                color_code: formState.value.color_code,
-                shared_user: [],
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        );
+  if (confirmLoading.value) return; // Nếu đang xử lý thì không làm gì
+  confirmLoading.value = true;
 
-        if (response.status === 201) {
-            emit('tagAdded', response.data.data);
-            message.success(t('success.tagAdded', { name: formState.value.name }));
-            emit('update:open', false);
+  try {
+    await formRef.value.validate();
 
-            formState.value = {
-                name: '',
-                color_code: '#FF5733',
-                description: '',
-            };
-        }
-    } catch (error) {
-        if (error.response) {
-            if (error.response.status === 409) {
-                message.error(t('errors.tagExists'));
-            } else {
-                message.error(t('errors.failedToAddTag'));
-            }
-        } else if (!error.errorFields) {
-            message.error('Không thể kết nối đến máy chủ!');
-        }
+    const response = await axios.post(
+      `${dirApi}tags`,
+      {
+        name: formState.value.name,
+        description: formState.value.description,
+        color_code: formState.value.color_code,
+        shared_user: selectedUsers.value.map((user) => ({
+          user_id: user.id,
+          role: user.role,
+          status: 'pending',
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+        })),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.status === 201) {
+      emit('tagAdded', {
+        id: response.data?.data?.tag.id,
+        name: formState.value.name,
+        color_code: formState.value.color_code,
+        description: formState.value.description,
+        shared_user: selectedUsers.value,
+      });
+      message.success(t('success.tagAdded', { name: formState.value.name }));
+      emit('update:open', false);
+      formState.value = {
+        name: '',
+        color_code: '#FF5733',
+        description: '',
+      };
+      selectedUsers.value = [];
     }
+  } catch (error) {
+    if (error.response) {
+      if (error.response.status === 409) {
+        message.error(t('errors.tagExists'));
+      } else {
+        message.error(t('errors.failedToAddTag'));
+      }
+    } else if (!error.errorFields) {
+      message.error('Không thể kết nối đến máy chủ!');
+    }
+  } finally {
+    confirmLoading.value = false; // Bỏ lock sau khi xử lý xong
+  }
+};
+
+const capitalizeFirstLetter = (string) => {
+    if (!string) return '';
+    return string.charAt(0).toUpperCase() + string.slice(1);
 };
 </script>
 

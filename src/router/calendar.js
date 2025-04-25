@@ -130,6 +130,17 @@ const calendar = [
     },
   },
   {
+    path: "/calendar/tag/:uuid/invite",
+    name: "tag-invite",
+    component: () => import("@/views/calendar/invite/InviteTagView.vue"),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      layout: "auth",
+      notAuthRequired: false,
+    },
+},
+  {
     path: "/calendar/search",
     name: "calendar-search",
     component: () => import("@/views/calendar/SearchView.vue"),

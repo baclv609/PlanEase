@@ -132,7 +132,7 @@
                 <template #overlay>
                   <a-menu>
 
-                    <!-- <a-menu-item @click="viewDetails(calendar.id)">Xem chi tiet</a-menu-item> -->
+                    <a-menu-item @click="viewDetails(calendar.id)">Xem chi tiet</a-menu-item>
                     <a-menu-item @click="displayOnly(calendar.id)">{{ t('calendar.calendarSection.displayOnly') }}</a-menu-item>
                     <a-menu-item @click="openUpdateCalendar(calendar.id)">{{
                       $t("calendar.calendarSection.edit")
@@ -160,6 +160,7 @@
     v-model:open="isModalOpenUpdateTag"
     :tag="selectedTagCalendar"
     @tagUpdated="handleTagUpdated"
+    tagId="selectedTagId"
   />
 
   <EventModal
