@@ -187,6 +187,11 @@
       "displayOnly": "Chỉ hiển thị nhãn này",
       "deleteConfirmTitle": "Xác nhận xóa tag",
       "deleteConfirmContent": "Bạn có chắc chắn muốn xóa tag \"{name}\"? Hành động này sẽ xóa tất cả các sự kiện và công việc liên quan đến tag này."
+    },
+    "shareSection": {
+      "title": "Thẻ được chia sẻ",
+      "share": "Chia sẻ",
+      "shareLink": "Chia sẻ link"
     }
   },
   "errors": {
@@ -703,4 +708,5 @@
     "contentChange": "Bạn có chắc chắn muốn thay đổi thời gian của sự kiện này?",
     "chooseOption": "Vui lòng chọn tùy chọn cập nhật trước khi tiếp tục!"
   }
+ 
 }

@@ -89,12 +89,10 @@
               <a-tag :color="getStatusColor(user.status)" class="ml-2">{{
                 capitalizeFirstLetter(user.status)
               }}</a-tag>
-              <!-- <a-button type="text" danger size="small" class="ml-2"
-                                    @click="() => showDeleteConfirm(user)">
-                                    <DeleteOutlined />
-                                </a-button> -->
-
-              <a-dropdown :trigger="['click']">
+              <a-button v-if="formState.is_owner" type="text" danger size="small" class="ml-2" @click="() => showDeleteConfirm(user)">
+                 <DeleteOutlined />
+               </a-button>
+              <!-- <a-dropdown :trigger="['click']">
                 <template #overlay>
                   <a-menu>
                     <a-menu-item key="transfer" @click="() => handleTransferOwnership(user)">
@@ -109,7 +107,7 @@
                 <a-button type="text" size="small">
                   <MoreOutlined />
                 </a-button>
-              </a-dropdown>
+              </a-dropdown> -->
             </div>
           </div>
         </div>
@@ -162,11 +160,11 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, watch } from 'vue';
+import { ref, defineProps, defineEmits, watch, h } from 'vue';
 import { CaretDownOutlined, CheckOutlined, DeleteOutlined, MoreOutlined } from "@ant-design/icons-vue";
 import { useI18n } from "vue-i18n";
 import axios from "axios";
-import { message } from "ant-design-vue";
+import { message, Modal } from "ant-design-vue";
 import { Form } from 'ant-design-vue';
 import { debounce } from 'lodash';
 
@@ -236,6 +234,14 @@ const colorOptions = [
   { value: '#34495E', label: 'Dark Blue' }
 ];
 
+// First, add a function to reset the state
+const resetModalState = () => {
+  state.value.data = [];
+  state.value.fetching = false;
+  invitedUsers.value = [];
+};
+
+// Update the watch function for modal open/close
 watch(
   () => props.open,
   async (newVal) => {
@@ -263,17 +269,19 @@ watch(
         message.error(t('errors.failedToFetchTag'));
       }
     } else {
-      // Reset form khi đóng modal
+      // Reset form and state when modal closes
       formState.value = {
         name: '',
         color_code: '#FF5733',
         description: '',
       };
       formRef.value?.resetFields();
+      resetModalState();
     }
   }
 );
 
+// Update the handleUpdateOk function
 const handleUpdateOk = async () => {
   try {
     await formRef.value.validate();
@@ -308,12 +316,14 @@ const handleUpdateOk = async () => {
       emit('tagUpdated', response.data.data);
       message.success(t("event.success.tag_updated"));
       emit('update:open', false);
-
+      
+      // Reset form and state after successful update
       formState.value = {
         name: '',
         color_code: '#FF5733',
         description: '',
       };
+      resetModalState();
     }
   } catch (error) {
     if (error.response) {
@@ -427,7 +437,7 @@ const removeInvitedUser = (user) => {
   const index = invitedUsers.value.findIndex(u => u.value === user.value);
   if (index !== -1) {
     invitedUsers.value.splice(index, 1);
-    message.success('Đã xóa người dùng khỏi danh sách mời');
+    // message.success('Đã xóa người dùng khỏi danh sách mời');
   }
 };
 const capitalizeFirstLetter = (string) => {
@@ -440,6 +450,95 @@ const getInitials = (firstName, lastName) => {
 const handleRoleChange = (user, newRole) => {
     user.role = newRole;
     user.roleChanged = true;
+};
+
+
+const showDeleteConfirm = async (user) => {
+    const contentMessage = 'Bạn có muốn xóa người dùng này khỏi tag? Các sự kiện (task) của người dùng sẽ bị ảnh hưởng.';
+
+    Modal.confirm({
+        title: t('options.recurrence.delete.confirm'),
+        content: contentMessage,
+        okText: t('options.recurrence.delete.delete'),
+        okType: 'danger',
+        cancelText: t('options.recurrence.delete.cancel'),
+        async onOk() {
+            try {
+                Modal.confirm({
+                    title: 'Bạn có muốn giữ lại các task của người này không?',
+                    content: h('div', [
+                        h('div', { class: 'mb-3' }, [
+                            h('label', { class: 'flex items-center cursor-pointer' }, [
+                                h('input', {
+                                    type: 'radio',
+                                    name: 'taskOption',
+                                    value: 'keep',
+                                    class: 'mr-2'
+                                }),
+                                'Giữ lại các task'
+                            ])
+                        ]),
+                        h('div', [
+                            h('label', { class: 'flex items-center cursor-pointer' }, [
+                                h('input', {
+                                    type: 'radio',
+                                    name: 'taskOption',
+                                    value: 'delete',
+                                    class: 'mr-2'
+                                }),
+                                'Xóa các task'
+                            ])
+                        ])
+                    ]),
+                    okText: 'Xác nhận',
+                    cancelText: 'Hủy',
+                    async onOk() {
+                        const selectedOption = document.querySelector('input[name="taskOption"]:checked')?.value;
+                        if (selectedOption === 'keep') {
+                            await deleteSharedUser(user, true);
+                        } else if (selectedOption === 'delete') {
+                            await deleteSharedUser(user, false);
+                        } else {
+                            message.warning('Vui lòng chọn một tùy chọn');
+                            return Promise.reject();
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error showing keep tasks confirm:', error);
+            }
+        }
+    });
+};
+
+const deleteSharedUser = async (user, keepInTasks) => {
+    try {
+        const response = await axios.delete(
+            `${dirApi}tags/${formState.value.id}/shared-user/${user.user_id}`,
+            {
+                headers: { Authorization: `Bearer ${token}` },
+                data: { keep_in_tasks: keepInTasks }
+            }
+        );
+
+        if (response.data.code === 200) {
+            // message.success("Xóa người dùng khỏi tag thành công");
+            // Refresh the tag data
+            const tagResponse = await axios.get(`${dirApi}tags/${formState.value.id}/show`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (tagResponse.data.code === 200) {
+                const tag = tagResponse.data.data.tag;
+                formState.value = {
+                    ...formState.value,
+                    shared_user: tag.shared_user,
+                };
+            }
+        }
+    } catch (error) {
+        console.error('Error removing user:', error);
+        message.error(t('errors.failedToRemoveUser'));
+    }
 };
 </script>
 
