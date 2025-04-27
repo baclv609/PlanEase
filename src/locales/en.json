@@ -357,7 +357,7 @@
         "label": "Participants",
         "placeholder": "Add guests",
         "permissions": {
-          "label": "Guest Permissions:",
+          "label": "Default Permissions:",
           "viewer": "View Only",
           "editor": "Can Edit"
         }
@@ -496,7 +496,19 @@
     "noEvents": "No events in trash",
     "selectEvents": "Select events to restore or delete",
     "restoreSelected": "Restore Selected",
-    "deleteSelected": "Delete Selected"
+    "deleteSelected": "Delete Selected",
+    "total": "{total} items total",
+    "items_per_page": "/ Page",
+    "confirm": {
+      "title": "Confirm {action}",
+      "content": "Are you sure you want to {action}?",
+      "ok": "Yes",
+      "cancel": "Cancel",
+      "action": {
+        "delete": "delete",
+        "restore": "restore"
+      }
+    }
   },
   "options": {
     "sendMail": {
@@ -581,9 +593,12 @@
       "private": "Private",
       "youAreParticipating": "You have participated in this event",
       "wantToParticipate": "Do you want to participate in this event?",
+      "wantToParticipateReccurence": "Do you want to participate in this series of events?",
       "accept": "Participate in successful event",
       "refuse": "Refuse to participate in the event",
       "yes": "Yes",
+      "join": "Join Event",
+      "joinReccurence": "Participate recurring chain of events",
       "no": "No",
       "leave": "Leave",
       "recurrence": {
@@ -720,7 +735,7 @@
     "search": "Enter attendee's email",
     "no_attendees": "There are no attendees",
     "no_attendees_content": "The event has no attendees listed yet. Please add new attendees.",
-    "invited": "Invitations sent to attendees"
+    "invited": "Successfully updated attendees"
   },
   "deleteSuccess": "Deleted successfully",
   "editSuccess": "Updated successfully",

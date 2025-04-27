@@ -359,7 +359,7 @@
         "label": "Người tham gia",
         "placeholder": "Thêm khách mời",
         "permissions": {
-          "label": "Quyền khách mời:",
+          "label": "Quyền mặc định:",
           "viewer": "Chỉ xem",
           "editor": "Được sửa"
         }
@@ -498,7 +498,19 @@
     "noEvents": "Không có sự kiện trong thùng rác",
     "selectEvents": "Chọn sự kiện để khôi phục hoặc xóa",
     "restoreSelected": "Khôi phục đã chọn",
-    "deleteSelected": "Xóa đã chọn"
+    "deleteSelected": "Xóa đã chọn",
+    "total": "Tổng cộng {total} mục",
+    "items_per_page": "/ Trang",
+    "confirm": {
+      "title": "Xác nhận {action}",
+      "content": "Bạn có chắc chắn muốn {action} không?",
+      "ok": "Đồng ý",
+      "cancel": "Huỷ",
+      "action": {
+        "delete": "xoá",
+        "restore": "khôi phục"
+      }
+    }
   },
   "options": {
     "sendMail": {
@@ -582,9 +594,12 @@
       "reminder": "Nhắc nhở",
       "youAreParticipating": "Bạn đã tham gia sự kiện này",
       "wantToParticipate": "Bạn có muốn tham gia vào sự kiện này không",
+      "wantToParticipateReccurence": "Bạn có muốn tham gia vào chuỗi sự kiện này không",
       "accept": "Tham gia sự kiện thành công",
       "refuse": "Từ chối tham gia sự kiện",
       "yes": "Có",
+      "join": "Tham gia sự kiện",
+      "joinReccurence": "Tham gia vào chuỗi sự kiện",
       "no": "Không",
       "leave": "Rời đi",
       "recurrence": {
@@ -721,7 +736,7 @@
     "search": "Nhập email khách mời",
     "no_attendees": "Không có khách mời",
     "no_attendees_content": "Sự kiện chưa có khách mời nào trong danh sách. Hãy thêm khách mời mới",
-    "invited": "Đã gửi lời mời đến khách mời"
+    "invited": "Cập nhật khách mời thành công"
   },
   "deleteSuccess": "Đã xóa thành công",
   "editSuccess": "Cập nhật thành công",

@@ -5,11 +5,11 @@
                 <h1 class="text-2xl font-bold text-[#227C9D]">{{ $t('trash.titleTrash') }}</h1>
             </div>
             <div class="flex items-center gap-4">
-                <a-button class="action-btn delete-btn" @click="restoreEvent(selectedEvents)" v-if="selectedEvents.length != 0">
-                    <UndoOutlined class="p-2 text-md" /> {{ $t('trash.restoreSelected') }}
+                <a-button class="action-btn restore-btn font-medium" @click="restoreEvent(selectedEvents)" v-if="selectedEvents.length != 0">
+                    <UndoOutlined class="py-2 text-md" /> {{ $t('trash.restoreSelected') }}
                 </a-button>
-                <a-button class="action-btn restore-btn" @click="deleteEvent(selectedEvents)" v-if="selectedEvents.length != 0">
-                    <DeleteOutlined class="p-2 text-md" /> {{ $t('trash.deleteSelected') }}
+                <a-button class="action-btn delete-btn font-medium" @click="deleteEvent(selectedEvents)" v-if="selectedEvents.length != 0">
+                    <DeleteOutlined class="py-2 text-md" /> {{ $t('trash.deleteSelected') }}
                 </a-button>
                 <a-popconfirm 
                     v-if="events.length > 0"
@@ -48,7 +48,7 @@
                 total: totalItems,
                 showSizeChanger: true,
                 showQuickJumper: false,
-                showTotal: (total) => `Tổng cộng ${total} mục`,
+                showTotal: (total) => t('trash.total', { total }),
                 onChange: (page, pageSize) => {
                     currentPage = page;
                     pageSize = pageSize;
@@ -56,6 +56,9 @@
                 onShowSizeChange: (current, size) => {
                     currentPage = 1;
                     pageSize = size;
+                },
+                locale: {
+                    items_per_page: t('trash.items_per_page')
                 }
             }"
             :loading="loading"
@@ -68,14 +71,14 @@
                             <template #icon>
                                 <UndoOutlined />
                             </template>
-                            {{ $t('trash.restore') }}
+                            <!-- {{ $t('trash.restore') }} -->
                         </a-button>
 
                         <a-button class="action-btn delete-btn" @click="deleteEvent([record.id])">
                             <template #icon>
                                 <DeleteOutlined />
                             </template>
-                            {{ $t('trash.delete') }}
+                            <!-- {{ $t('trash.delete') }} -->
                         </a-button>
                     </div>
                 </template>
@@ -118,7 +121,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
-import { message } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -208,6 +211,9 @@ const onSelectChange = (selectedRowKeys) => {
 }
 
 const restoreEvent = async (eventId) => {
+    const confirmed = await showConfirm('restore');
+     if (!confirmed) return;
+
     try {
         const response = await axios.put(`${dirApi}tasks/trash/restoreTask`, { ids: eventId }, {
             headers: {
@@ -229,6 +235,9 @@ const restoreEvent = async (eventId) => {
 }
 
 const deleteEvent = async (eventId, deleteAll = false) => {
+    const confirmed = await showConfirm('delete');
+    if (!confirmed) return;
+
     if (deleteAll) {
         eventId = events.value.map(event => event.id);
     }
@@ -259,7 +268,7 @@ const columns = [
         title: t('trash.date'),
         dataIndex: 'date',
         key: 'date',
-        width: 100,
+        width: 150,
     },
     {
         title: t('trash.time'),
@@ -286,6 +295,27 @@ const columns = [
         fixed: 'right'
     }
 ];
+
+const showConfirm = (type) => {
+
+    const actionText = t(`trash.confirm.action.${type}`);
+
+    return new Promise((resolve, reject) => {
+    Modal.confirm({
+      title: t('trash.confirm.title', { action: t(`trash.confirm.action.${type}`) }),
+      content: t('trash.confirm.content', { action: t(`trash.confirm.action.${type}`) }),
+      okText: t('trash.confirm.ok'),
+      cancelText: t('trash.confirm.cancel'),
+      onOk() {
+        resolve(true);
+      },
+      onCancel() {
+        resolve(false);
+      },
+    });
+  });
+}
+
 </script>
 
 <style scoped>
