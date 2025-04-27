@@ -272,13 +272,13 @@
             </div>
 
             <!-- Participants Section -->
-            <!-- <div class="form-section" v-if="formState.type == 'event'">
+            <div class="form-section" v-if="formState.type == 'event'">
                 <div class="section-title">
                     <UserOutlined class="text-gray-500 mr-2" />
                     <span>{{ t('eventModal.sections.participants.label') }}</span>
                 </div>
                 <div class="space-y-4">
-                    <a-select v-model:value="formState.attendees" mode="multiple"
+                    <!-- <a-select v-model:value="formState.attendees" mode="multiple"
                         label-in-value 
                         :placeholder="t('eventModal.sections.participants.placeholder')" 
                         class="w-full" :filter-option="false"
@@ -288,18 +288,18 @@
                         <template v-if="state.fetching" #notFoundContent>
                             <a-spin size="small" />
                         </template>
-                    </a-select>
+                    </a-select> -->
                     <div class="flex gap-3" v-if="formState.user_id == user.id">
                         <span>{{ t('eventModal.sections.participants.permissions.label') }}</span>
                         <div class="flex gap-4 items-center">
-                            <a-radio-group v-model:value="formState.attendeeRole" class="flex gap-4">
+                            <a-radio-group v-model:value="formState.default_permission" class="flex gap-4">
                                 <a-radio value="viewer">{{ t('eventModal.sections.participants.permissions.viewer') }}</a-radio>
                                 <a-radio value="editor">{{ t('eventModal.sections.participants.permissions.editor') }}</a-radio>
                             </a-radio-group>
                         </div>
                     </div>
                 </div>
-            </div> -->
+            </div>
 
             <!-- Privacy Section -->
             <div class="form-section flex flex-col gap-2">
@@ -576,6 +576,7 @@ const updateFormStateFromProps = (event) => {
             uuid: event.uuid ? event.uuid : null,
             is_busy: event.is_busy == 1,
             parent_id: event.parent_id ? event.parent_id : null,
+            default_permission: event.default_permission || "viewer",
             attendeeRole: event.attendees.length > 0 ? event.attendees[0].role : "viewer", //lấy quyền của khách mời
             attachments: event.attachments || [],
             // Nếu sự kiện lặp lại (is_repeat = true), cập nhật rrule
@@ -680,6 +681,7 @@ const formState = ref({
     recurrence: null,
     timezone_code: "UTC",
     description: "",
+    default_permission: "",
     exclude_time: [],
     uuid: "",
     attendeeRole: "viewer",
@@ -987,17 +989,26 @@ watch(
     { deep: true }
 );
 
+const myTags = ref([]);
+const myShareTags = ref([]);
+const allTags = ref([]);
+
 const getAllTagByUser = async () => {
     try {
-        const res = await axios.get(`${dirApi}tags`, {
+        const res = await axios.get(`${dirApi}tags/list`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
         });
 
         if (res.data.code === 200) {
-            // Cập nhật danh sách tags
-            tags.value = res.data.data.map(tag => ({
+            myTags.value = res.data.data.owned;
+            myShareTags.value = res.data.data.shared_as_editor;
+            
+            allTags.value = [...myTags.value, ...myShareTags.value];
+
+
+            tags.value = allTags.value.map(tag => ({
                 label: tag.name,
                 value: tag.id
             }));
@@ -1410,6 +1421,7 @@ const updateEvent = async ({ code, date, id }) => {
             parent_id: formState.value.parent_id || null,
             is_done: 0,
             rrule: formState.value.rrule || null,
+            default_permission: formState.value.default_permission || null,
             exclude_time: formState.value.exclude_time || null,
             timezone_code: formState.value.timezone_code || null,
             type: formState.value.type || null,

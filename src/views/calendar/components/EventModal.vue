@@ -528,6 +528,7 @@ const handleSave = async () => {
       is_busy: formState.value.is_busy,
       is_all_day: formState.value.is_all_day || 0,
       is_repeat: formState.value.is_repeat || 0,
+      default_permission: formState.value.role || 'viewer',
       link: formState.value.link || null,
       rrule: formState.value.rrule || null,
       exclude_time: formState.value.exclude_time || null,
@@ -1482,7 +1483,7 @@ const selectPlace = (place) => {
                   </div>
                 </div>
               </Form.Item>
-              <!-- <div class="flex gap-3">
+              <div class="flex gap-3">
                 <span>{{ t('eventModal.sections.participants.permissions.label') }}</span>
                 <div class="flex gap-4 items-center">
                   <a-radio-group v-model:value="formState.role" class="flex gap-4">
@@ -1490,7 +1491,7 @@ const selectPlace = (place) => {
                     <a-radio value="editor">{{ t('eventModal.sections.participants.permissions.editor') }}</a-radio>
                   </a-radio-group>
                 </div>
-              </div> -->
+              </div>
             </div>
           </div>
 

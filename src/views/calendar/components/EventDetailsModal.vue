@@ -139,7 +139,7 @@ watch(
   () => props.event, async (newVal) => {
     if(newVal) {
       event.value = newVal;
-
+      console.log("Event Details: ", event.value);
       if(props.event != null && newVal && newVal.attendees?.length > 0){
         
         if (newVal.attendees?.length > 0) {
@@ -464,22 +464,30 @@ const formatTimeInfo = (isoString, timezone) => {
 
 const accept = async (uuid) => {
     try {
-      const response = await axios.post(`${dirApi}event/${uuid}/accept`, {}, {
+      const response = await axios.post(`${dirApi}event/${uuid}/acceptInviteByLink`, {}, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
 
       if(response.data.code == 400) {
-        message.info(response.data.message || 'Can not invite yourself');
+        message.info(t('Invite.message.400'));
       }
 
       if(response.data.code == 409) {
-        message.info(response.data.message || 'You have already accepted this event');
+        message.info(t('Invite.message.409'));
+      }
+
+      if(response.data.code == 404) {
+        message.info(t('Invite.message.404'));
+      }
+
+      if(response.data.code == 403) {
+        message.info(t('Invite.message.403'));
       }
 
       if(response.data.code == 200) {
-        message.success(t('EventDetailsModal.general.accept'));
+        message.success(t('Invite.message.200'));
         emit("delete");
         emit("close", false);
       }
@@ -1411,9 +1419,21 @@ const isChanged = computed(() => {
               <!-- Participant list -->
               <div class="space-y-1 max-h-[100px] overflow-y-auto">
                 <!-- Participant 1 -->
+                 <div class="flex items-center">
+                   <div class="relative mr-3">
+                     <img :src="event.taskOwner.avatar || unknowUser" alt="" class="w-8 h-8 rounded-full object-cover" />
+                   </div>
+                   <div>
+                      <div class="flex items-center">
+                        <p class="-mb-[0.5px] text-md font-medium">{{ event.taskOwner.email }}</p> <span class="text-green-500 text-xs ml-1 fs-1">({{ t('Invite.owner') }})</span>
+                      </div>
+                     <p class="text-xs mb-0 text-gray-600">{{ event.taskOwner.first_name }} {{ event.taskOwner.last_name }}</p>
+                   </div>
+                 </div>
+
                 <div class="flex items-center" v-for="attendee in event.attendees" :key="attendee.user_id">
                   <div class="relative mr-3">
-                    <img :src="attendee.avatar || unknowUser" alt="Paula" class="w-8 h-8 rounded-full object-cover" />
+                    <img :src="attendee.avatar || unknowUser" alt="" class="w-8 h-8 rounded-full object-cover" />
                     <div v-if="attendee.status === 'yes'"
                       class="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full flex items-center justify-center">
                       <CheckOutlined class="w-3 h-3 text-white" />
@@ -1424,7 +1444,7 @@ const isChanged = computed(() => {
                     </div>
                   </div>
                   <div>
-                    <p class="-mb-[0.5px] text-md">{{ attendee.email }}</p>
+                    <p class="-mb-[0.5px] text-md font-medium">{{ attendee.email }}</p>
                     <p class="text-xs mb-0 text-gray-600">{{ attendee.first_name }} {{ attendee.last_name }}</p>
                   </div>
                 </div>
@@ -1485,7 +1505,7 @@ const isChanged = computed(() => {
             </div>
             <div v-if="event.type == 'event'">
               <div class="flex items-center">
-                <p class="font-medium mb-0">{{ t('EventDetailsModal.general.calendar') }}</p>
+                <p class="font-medium mb-0">{{ t('EventDetailsModal.general.calendar') }}</p> <span v-if="event.attendees && event.attendees.length > 0" class="ml-1 text-gray-500">({{ event.tagOwner.email }})</span>
                 <div v-if="event.tag_color_code" class="w-3 h-3 rounded-full ml-1" :style="{ backgroundColor: event.tag_color_code }"></div>
               </div>
               <div class="flex gap-1">
@@ -1512,7 +1532,16 @@ const isChanged = computed(() => {
         <div
           v-else-if="event.attendees && event.attendees.some(attendee => attendee.user_id == user.id && attendee.status == 'pending')"
           class="flex justify-center">
-          <p class="text-yellow-500 mb-0">{{ t('EventDetailsModal.general.wantToParticipate') }}</p>
+          <p class="text-yellow-500 mb-0">{{ event.recurrence ? t('EventDetailsModal.general.wantToParticipateReccurence') : t('EventDetailsModal.general.wantToParticipate') }}</p>
+        </div>
+
+        <div v-if="user.id != event.user_id && !event.attendees.some(attendee => attendee.user_id == user.id)"
+          class="flex justify-center p-4">
+          <button @click="accept(event.uuid)"
+            class="px-3 py-1 rounded-md border-none bg-transparent cursor-pointer hover:bg-gray-100 font-semibold hover:text-blue-500 transition flex items-center ">
+            <CheckOutlined class="mr-1" />
+            {{ event.recurrence ? t("EventDetailsModal.general.joinReccurence") : t("EventDetailsModal.general.join") }}
+          </button>
         </div>
 
         <div v-if="event.attendees && event.attendees.length > 0 && user.id != event.user_id && event.attendees.some(attendee => attendee.user_id == user.id && attendee.status != 'yes')"
@@ -1530,6 +1559,7 @@ const isChanged = computed(() => {
             </button>
           </div>
         </div>
+
         <div v-else-if="event.attendees && event.attendees.length > 0 && user.id != event.user_id && event.attendees.some(attendee => attendee.user_id == user.id && attendee.status == 'yes')"
           class="flex justify-center p-4">
           <div class="flex items-center space-x-2">

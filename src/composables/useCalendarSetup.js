@@ -60,7 +60,7 @@ export function useCalendarEvents() {
         return;
       }
       rawEvents.value = response.data.data || [];
-      // console.log(rawEvents.value);
+      console.log(rawEvents.value);
     } catch (error) {
       console.error('Lỗi khi tải lịch trình:', error);
     }
@@ -123,6 +123,8 @@ export function useCalendarEvents() {
         start,
         end,
         timezone: event.timezone_code,
+        tagOwner: event.tagOwner,
+        taskOwner: event.taskOwner,
         tag_id: event.tag_id,
         tag_name: event.tag_name,
         allDay: event.is_all_day === 1,
@@ -398,11 +400,14 @@ export function useCalendar(calendarRef) {
       type: extendedProps.type || 'task',
       start: event.startStr,
       end: event.endStr || '',
+      default_permission: extendedProps.default_permission || 'viewer',
       link: extendedProps.link,
+      taskOwner: extendedProps.taskOwner,
       is_busy: extendedProps.is_busy,
       start_time: extendedProps.start_time || null,
       end_time: extendedProps.end_time || null,
       tag_id: extendedProps.tag_id || null,
+      tagOwner: extendedProps.tagOwner || null,
       tag_name: extendedProps.tag_name || '',
       tag_color_code: extendedProps.tag_color_code || null,
       timezone: extendedProps.timezone || settingsStore.timeZone,
