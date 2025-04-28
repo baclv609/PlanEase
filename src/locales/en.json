@@ -795,5 +795,12 @@
     "reset": "Reset",
     "to": "to",
     "noResults": "No results found"
+  },
+  "chatbot": {
+    "online": "Online",
+    "startMessage": "Hello! How can I help you today?",
+    "errorCreate": "Sorry, I can not create event as you told me. Please try again later.",
+    "successCreate": "Event have created successfully",
+    "enterYourMessage": "Enter your message..."
   }
 }

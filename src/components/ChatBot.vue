@@ -26,7 +26,7 @@
                             <h3 class="font-medium">Notibro AI</h3>
                             <div class="flex text-indigo-100 text-xs items-center">
                                 <span class="bg-green-400 h-2 rounded-full w-2 mr-1"></span>
-                                Online
+                                {{ t('chatbot.online') }}
                             </div>
                         </div>
                     </div>
@@ -70,7 +70,7 @@
                 <div class="bg-white border border-t-2 border-gray-600 p-3">
                     <div class="flex items-center">
                         <input v-model="newMessage" @keyup.enter="sendMessage" type="text"
-                            placeholder="Nhập tin nhắn..."
+                            :placeholder="t('chatbot.enterYourMessage')"
                             class="flex-1 border border-1 border-[#227C9D] rounded-full px-4 py-2 focus:outline-none" />
                         <button @click="sendMessage"
                             class="bg-[#227C9D] rounded-full text-white cursor-pointer focus:outline-none ml-2 px-[10px] py-2"
@@ -88,7 +88,9 @@
 import { CloseOutlined, MessageOutlined, PlusOutlined, RobotOutlined, SendOutlined, UserOutlined } from '@ant-design/icons-vue'
 import axios from 'axios';
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 
 // State
 const isChatOpen = ref(false)
@@ -98,7 +100,7 @@ const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem('access_token');
 const messages = ref([
     {
-        text: 'Hello! How can I help you today?',
+        text: t('chatbot.startMessage'),
         isUser: false,
         time: formatTime(new Date())
     }
@@ -154,7 +156,7 @@ const sendMessage = async () => {
             console.log(error);
 
             messages.value.push({
-                text: 'Sorry, I can not create event as you told me. Please try again later.',
+                text: t('chatbot.errorMessage'),
                 isUser: false,
                 time: formatTime(new Date())
             });

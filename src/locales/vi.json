@@ -796,6 +796,12 @@
     "reset": "Đặt lại",
     "to": "đến",
     "noResults": "Không tìm thấy kết quả nào"
+  },
+  "chatbot": {
+    "online": "Đang hoạt động",
+    "startMessage": "Xin chào! Tôi có thể giúp gì cho bạn hôm nay?",
+    "errorCreate": "Xin lỗi, tôi không thể tạo sự kiện giống như bạn yêu cầu. Vui lòng thử lại.",
+    "successCreate": "Sự kiện đã được tạo thành công!",
+    "enterYourMessage": "Nhập tin nhắn..."
   }
- 
 }
