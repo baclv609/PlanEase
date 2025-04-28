@@ -303,13 +303,13 @@
 
             <!-- Privacy Section -->
             <div class="form-section flex flex-col gap-2">
-                <div class="grid grid-cols-1 gap-2 md:grid-cols-2" v-if="formState.type == 'event'">
+                <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
                     <div>
                         <div class="section-title">
                             <LockOutlined class="text-gray-500 mr-2" />
                             <span>{{ t('eventModal.sections.privacy.label') }}</span>
                         </div>
-                        <div class="flex gap-6 items-center">
+                        <div class="flex gap-6 items-center" v-if="formState.type == 'event'">
                             <a-checkbox v-model:checked="formState.is_private">{{ t('eventModal.sections.privacy.private') }}</a-checkbox>
                             <a-checkbox v-model:checked="formState.is_busy">{{ t('eventModal.sections.privacy.busy') }}</a-checkbox>
                         </div>

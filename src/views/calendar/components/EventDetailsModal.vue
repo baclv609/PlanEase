@@ -1644,7 +1644,7 @@ const isChanged = computed(() => {
         </div>
       </a-tab-pane>
 
-      <a-tab-pane v-if="event.type == 'event' && event.attendees.length > 0 && event.attendees.some(attendee => attendee.user_id == user.id && attendee.status == 'yes')" key="discuss" :tab="t('EventDetailsModal.tab.discussion')">
+      <a-tab-pane v-if="event.type == 'event' && (event.user_id == user.id || (event.attendees.length > 0 && event.attendees.some(attendee => attendee.user_id == user.id && attendee.status == 'yes')))" key="discuss" :tab="t('EventDetailsModal.tab.discussion')">
         <div class="flex bg-gray-100 h-[550px]">
           <!-- Main chat area -->
           <div class="flex-1 flex flex-col">

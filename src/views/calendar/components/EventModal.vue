@@ -1050,7 +1050,6 @@ watch(
       formState.value.reminder = [];
       formState.value.location = '';
       formState.value.link = '';
-      formState.value.tag_id = null;
       formState.value.sendMail = null;
       formState.value.attachments = [];
       presignedUrls.value = [];
