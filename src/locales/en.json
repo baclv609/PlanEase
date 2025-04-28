@@ -185,6 +185,11 @@
       "displayOnly": "Display only",
       "deleteConfirmTitle": "Confirm Tag Deletion",
       "deleteConfirmContent": "Are you sure you want to delete the tag \"{name}\"? This action will delete all events and tasks associated with this tag."
+    },
+    "shareSection": {
+      "title": "Share tag",
+      "share": "Share",
+      "shareLink": "Share link"
     }
   },
   "errors": {

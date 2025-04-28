@@ -36,9 +36,9 @@
                             </template>
                         </a-button>
 
-                        <a-button type="link" @click="shareViaLink">
+                        <!-- <a-button type="link" @click="shareViaLink">
                             <CopyOutlined />
-                        </a-button>
+                        </a-button> -->
                     </div>
                 </div>
 
@@ -92,12 +92,8 @@
                                 <a-tag :color="getStatusColor(user.status)" class="ml-2">
                                     {{ user.status === 'pending' ? 'Chờ xác nhận' : 'Đã tham gia' }}
                                 </a-tag>
-                                <!-- <a-button type="text" danger size="small" class="ml-2"
-                                    @click="() => showDeleteConfirm(user)">
-                                    <DeleteOutlined />
-                                </a-button> -->
 
-                                <a-dropdown v-if="tagData.is_owner" :trigger="['click']">
+                                <!-- <a-dropdown v-if="tagData.is_owner" :trigger="['click']">
                                     <template #overlay>
                                         <a-menu>
                                             <a-menu-item key="transfer" @click="() => handleTransferOwnership(user)">
@@ -112,7 +108,11 @@
                                     <a-button type="text" size="small">
                                         <MoreOutlined />
                                     </a-button>
-                                </a-dropdown>
+                                </a-dropdown> -->
+
+                                <a-button v-if="tagData.is_owner" type="text" danger size="small" class="ml-2" @click="() => showDeleteConfirm(user)">
+                                        <DeleteOutlined />
+                                </a-button>
                             </div>
                         </div>
                     </div>
@@ -175,7 +175,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, watch, ref, computed, reactive } from 'vue';
+import { defineProps, defineEmits, watch, ref, computed, reactive, h } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PlusOutlined, MoreOutlined, CaretDownOutlined , CopyOutlined} from '@ant-design/icons-vue';
 
@@ -657,12 +657,7 @@ const removeUserFromEvents = async (user, events = []) => {
 
 
 const showDeleteConfirm = async (user) => {
-    const relatedEvents = await getUserEventsInTag(user, props.selectedCalendarId);
-
-    let contentMessage = t('options.recurrence.delete.confirm_content');
-    if (relatedEvents.length > 0) {
-        contentMessage += '\n\n' + t('options.recurrence.delete.confirm_content');
-    }
+    const contentMessage = 'Bạn có muốn xóa người dùng này khỏi tag? Các sự kiện (task) của người dùng sẽ bị ảnh hưởng.';
 
     Modal.confirm({
         title: t('options.recurrence.delete.confirm'),
@@ -671,21 +666,82 @@ const showDeleteConfirm = async (user) => {
         okType: 'danger',
         cancelText: t('options.recurrence.delete.cancel'),
         async onOk() {
-            await removeUserFromTag(user, props.selectedCalendarId);
-
-            if (relatedEvents.length > 0) {
-                await removeUserFromEvents(user, relatedEvents);
+            try {
+                Modal.confirm({
+                    title: 'Bạn có muốn giữ lại các task của người này không?',
+                    content: h('div', [
+                        h('div', { class: 'mb-3' }, [
+                            h('label', { class: 'flex items-center cursor-pointer' }, [
+                                h('input', {
+                                    type: 'radio',
+                                    name: 'taskOption',
+                                    value: 'keep',
+                                    class: 'mr-2'
+                                }),
+                                'Giữ lại các task'
+                            ])
+                        ]),
+                        h('div', [
+                            h('label', { class: 'flex items-center cursor-pointer' }, [
+                                h('input', {
+                                    type: 'radio',
+                                    name: 'taskOption',
+                                    value: 'delete',
+                                    class: 'mr-2'
+                                }),
+                                'Xóa các task'
+                            ])
+                        ])
+                    ]),
+                    okText: 'Xác nhận',
+                    cancelText: 'Hủy',
+                    async onOk() {
+                        const selectedOption = document.querySelector('input[name="taskOption"]:checked')?.value;
+                        if (selectedOption === 'keep') {
+                            await deleteSharedUser(user, true);
+                        } else if (selectedOption === 'delete') {
+                            await deleteSharedUser(user, false);
+                        } else {
+                            message.warning('Vui lòng chọn một tùy chọn');
+                            return Promise.reject();
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error showing keep tasks confirm:', error);
             }
         }
     });
 };
+
+
+const deleteSharedUser = async (user, keepInTasks) => {
+    try {
+        const response = await axios.delete(
+            `${dirApi}tags/${props.selectedCalendarId}/shared-user/${user.user_id}`,
+            {
+                headers: { Authorization: `Bearer ${token}` },
+                data: { keep_in_tasks: keepInTasks }  // gửi kèm body
+            }
+        );
+
+        if (response.data.code === 200) {
+            message.success("Xóa người dùng khỏi tag thành công");
+            await fetchCalendarDetail(props.selectedCalendarId);
+        }
+    } catch (error) {
+        console.error('Error removing user:', error);
+        message.error(t('errors.failedToRemoveUser'));
+    }
+};
+
 
 // Function to remove user from invited list
 const removeInvitedUser = (user) => {
     const index = invitedUsers.value.findIndex(u => u.value === user.value);
     if (index !== -1) {
         invitedUsers.value.splice(index, 1);
-        message.success('Đã xóa người dùng khỏi danh sách mời');
+        // message.success('Đã xóa người dùng khỏi danh sách mời');
     }
 };
 

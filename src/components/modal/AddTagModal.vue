@@ -1,5 +1,5 @@
 <template>
-    <a-modal :open="open" :title="t('calendar.addTag')" @ok="handleOk" @update:open="$emit('update:open', $event)">
+    <a-modal :open="open" :title="t('calendar.addTag')" @ok="handleOk" @update:open="$emit('update:open', $event)"  :confirm-loading="confirmLoading">
         <a-form layout="vertical" :model="formState" :rules="rules" ref="formRef">
             <div class="flex gap-4">
                 <!-- Input: Chiếm phần lớn không gian -->
@@ -127,6 +127,8 @@ import axios from 'axios';
 import { message } from 'ant-design-vue';
 import debounce from 'lodash/debounce';
 import { Form } from 'ant-design-vue';
+
+const confirmLoading = ref(false);
 
 const { t } = useI18n();
 const props = defineProps({
@@ -268,63 +270,64 @@ const getInitials = (firstName, lastName) => {
 };
 
 const handleOk = async () => {
-    try {
-        await formRef.value.validate();
-        
-        const response = await axios.post(
-            `${dirApi}tags`,
-            {
-                name: formState.value.name,
-                description: formState.value.description,
-                color_code: formState.value.color_code,
-                shared_user: selectedUsers.value.map((user) => {
-                    return {
-                        user_id: user.id,
-                        role: user.role, 
-                        status: 'pending',
-                        email: user.email,
-                        first_name: user.first_name,
-                        last_name: user.last_name,
-                    }
-                },)
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        );
+  if (confirmLoading.value) return; // Nếu đang xử lý thì không làm gì
+  confirmLoading.value = true;
 
-        if (response.status === 201) {
-            console.log('Tag added successfully:', response.data.data.tag.id);
-            console.log('Tag:', response.data.data.tag);
-            emit('tagAdded', {
-                id: response.data?.data?.tag.id,
-                name: formState.value.name,
-                color_code: formState.value.color_code,
-                description: formState.value.description,
-                shared_user: selectedUsers.value
-            });
-            message.success(t('success.tagAdded', { name: formState.value.name }));
-            emit('update:open', false);
+  try {
+    await formRef.value.validate();
 
-            formState.value = {
-                name: '',
-                color_code: '#FF5733',
-                description: '',
-            };
-        }
-    } catch (error) {
-        if (error.response) {
-            if (error.response.status === 409) {
-                message.error(t('errors.tagExists'));
-            } else {
-                message.error(t('errors.failedToAddTag'));
-            }
-        } else if (!error.errorFields) {
-            message.error('Không thể kết nối đến máy chủ!');
-        }
+    const response = await axios.post(
+      `${dirApi}tags`,
+      {
+        name: formState.value.name,
+        description: formState.value.description,
+        color_code: formState.value.color_code,
+        shared_user: selectedUsers.value.map((user) => ({
+          user_id: user.id,
+          role: user.role,
+          status: 'pending',
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+        })),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.status === 201) {
+      emit('tagAdded', {
+        id: response.data?.data?.tag.id,
+        name: formState.value.name,
+        color_code: formState.value.color_code,
+        description: formState.value.description,
+        shared_user: selectedUsers.value,
+      });
+      message.success(t('success.tagAdded', { name: formState.value.name }));
+      emit('update:open', false);
+      formState.value = {
+        name: '',
+        color_code: '#FF5733',
+        description: '',
+      };
+      selectedUsers.value = [];
     }
+  } catch (error) {
+    if (error.response) {
+      if (error.response.status === 409) {
+        message.error(t('errors.tagExists'));
+      } else {
+        message.error(t('errors.failedToAddTag'));
+      }
+    } else if (!error.errorFields) {
+      message.error('Không thể kết nối đến máy chủ!');
+    }
+  } finally {
+    confirmLoading.value = false; // Bỏ lock sau khi xử lý xong
+  }
 };
 
 const capitalizeFirstLetter = (string) => {

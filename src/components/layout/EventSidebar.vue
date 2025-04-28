@@ -149,6 +149,39 @@
           
         </a-checkbox-group>
       </div>
+
+      <!-- Events share -->
+      <div v-if="sharedCalendars.length" class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-lg font-semibold">{{ $t("calendar.shareSection.title") }}</h3>
+        </div>
+
+        <a-checkbox-group
+          v-model:value="selectedCalendars"
+          class="flex flex-col gap-2"
+          @change="updateFilteredEvents"
+        >  
+          <div v-for="calendar in sharedCalendars" :key="calendar.id" 
+            class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all">
+            <div class="flex items-center">  
+              <a-checkbox :value="calendar.id" :checked="true" class="" :style="{ '--ant-checkbox-color': calendar.color_code }">  
+                <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>  
+              </a-checkbox>  
+            </div>
+            <a-dropdown :trigger="['click']">
+              <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
+              <template #overlay>
+                <a-menu>
+                  <a-menu-item @click="displayOnly(calendar.id)">
+                    {{ t('calendar.calendarSection.displayOnly') }}
+                  </a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown>
+          </div>
+        </a-checkbox-group>
+      </div>
+    
   </a-card>
 
   <AddTagModal
@@ -160,6 +193,7 @@
     v-model:open="isModalOpenUpdateTag"
     :tag="selectedTagCalendar"
     @tagUpdated="handleTagUpdated"
+    tagId="selectedTagId"
   />
 
   <EventModal
@@ -490,7 +524,28 @@ const updateFilteredEvents = () => {
 //   selectedCalendars.value = allCalendarIds;
 //   updateFilteredEvents();
 // });
-
+// const selectedCalendars = ref([null]); // Initialize with Tasks selected
+      
+      watch(
+        [myCalendars, sharedCalendars],
+        ([newMyCalendars, newSharedCalendars]) => {
+          // Get hidden tags from store
+          const hiddenTags = hiddenTagsStore.hiddenTags;
+          
+          // Get all calendar IDs
+          const allCalendarIds = [
+            ...newMyCalendars.map(cal => cal.id),
+            ...newSharedCalendars.map(cal => cal.id)
+          ];
+          
+          // Set selected calendars excluding hidden ones
+          selectedCalendars.value = [
+            null, // Always include Tasks
+            ...allCalendarIds.filter(id => !hiddenTags.includes(id))
+          ];
+        },
+        { immediate: true }
+      );
 watch(
   [myCalendars, sharedCalendars],
   ([newMyCalendars, newSharedCalendars]) => {
@@ -559,12 +614,14 @@ const fetchCalendars = async () => {
 
     if (myTags.data.code === 200) {
       myCalendars.value = myTags.data.data;
+      console.log("myCalendars.value", myCalendars.value);
     } else {
       message.error("Không thể lấy danh sách tags của bạn");
     }
 
     if (sharedTags.data.code === 200) {
       sharedCalendars.value = sharedTags.data.data;
+      console.log("sharedCalendars.value", sharedCalendars.value);
     } else {
       message.error("Không thể lấy danh sách tags được chia sẻ");
     }
