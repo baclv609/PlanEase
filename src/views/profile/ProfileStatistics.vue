@@ -161,7 +161,7 @@ onMounted(() => {
 }
 
 .filter-select {
-  background: linear-gradient(70deg, #ffcc77, #15c5b2);
+  background: linear-gradient(60deg, #15c5b2 50%, #227ca0 100%);
   border: none;
   border-radius: 8px;
   width: 120px;
@@ -185,7 +185,7 @@ onMounted(() => {
 }
 
 .filter-btn {
-  background: linear-gradient(70deg, #ffcc77, #15c5b2);
+  background: linear-gradient(60deg, #15c5b2 50%, #227ca0 100%);
   border: none;
   height: 40px;
   padding: 0 24px;
@@ -197,7 +197,7 @@ onMounted(() => {
 }
 
 .refresh-button {
-  background: linear-gradient(70deg, #ffcc77, #15c5b2);
+  background: linear-gradient(60deg, #15c5b2 50%, #227ca0 100%);
   border: none;
   height: 40px;
   padding: 0 24px;

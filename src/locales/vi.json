@@ -85,7 +85,13 @@
       "update_failed": "Cập nhật thất bại!",
       "invalid_input": "Vui lòng nhập chính xác đầy đủ thông tin",
       "general_error": "Có lỗi xảy ra",
-      "password_incorrect": "Mật khẩu không chính xác"
+      "password_incorrect": "Mật khẩu không chính xác",
+      "old_password_required": "Vui lòng nhập mật khẩu hiện tại",
+      "new_password_required": "Vui lòng nhập mật khẩu mới",
+      "password_confirmation_required": "Vui lòng xác nhận mật khẩu mới",
+      "password_mismatch": "Mật khẩu xác nhận không khớp",
+      "password_min_length": "Mật khẩu phải có ít nhất 8 ký tự",
+      "password_invalid_format": "Mật khẩu phải bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"
     },
     "success": {
       "update_success": "Cập nhật thông tin thành công!",

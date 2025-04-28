@@ -77,7 +77,6 @@ const { hasMobile } = useResize();
   justify-content: center;
   padding: 16px;
   background: linear-gradient(60deg,
-    #FFCC77 0%,    
     #15C5B2 50%,   
     #227CA0 100%  
   );
