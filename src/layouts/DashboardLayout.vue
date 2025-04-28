@@ -7,6 +7,7 @@ import {
   MenuUnfoldOutlined,
   UserOutlined,
   LogoutOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons-vue";
 import { useRouter } from 'vue-router';
 import axios from 'axios';
@@ -36,10 +37,10 @@ const handleLogout = async () => {
     const response = await axios.post(
       `${dirApi}auth/logout`,
       {},
-      { 
-        headers: { 
-          Authorization: `Bearer ${token}` 
-        } 
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       }
     );
     // Dừng Echo listener nếu có
@@ -57,6 +58,10 @@ const handleLogout = async () => {
   }
 };
 
+const handleCalendar = () => {
+  router.push({ name: 'calendar' });
+};
+
 // Thêm computed properties cho user info
 const userName = computed(() => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -72,25 +77,18 @@ const userAvatar = computed(() => {
 <template>
   <a-layout class="dashboard-layout">
     <Sider :trigger="null" />
-    <a-layout
-      :style="
-        !hasMobile
-          ? {
-              marginLeft: isCollapsed ? '80px' : '240px',
-              transition: 'all 0.2s',
-              background: '#fff'
-            }
-          : { background: '#fff' }
-      "
-    >
+    <a-layout :style="!hasMobile
+        ? {
+          marginLeft: isCollapsed ? '80px' : '240px',
+          transition: 'all 0.2s',
+          background: '#fff'
+        }
+        : { background: '#fff' }
+      ">
       <a-layout-header class="header">
         <div class="header-content">
           <div class="header-left">
-            <a-button 
-              type="text" 
-              class="trigger-button" 
-              @click="handleSider"
-            >
+            <a-button type="text" class="trigger-button" @click="handleSider">
               <MenuUnfoldOutlined v-if="isCollapsed" />
               <MenuFoldOutlined v-else />
             </a-button>
@@ -99,11 +97,7 @@ const userAvatar = computed(() => {
           <div class="header-right">
             <a-dropdown>
               <div class="user-profile">
-                <a-avatar 
-                  :size="36"
-                  :src="userAvatar"
-                  class="user-avatar"
-                >
+                <a-avatar :size="36" :src="userAvatar" class="user-avatar">
                   <template #icon>
                     <UserOutlined />
                   </template>
@@ -123,7 +117,12 @@ const userAvatar = computed(() => {
                     <span>Hồ sơ</span>
                   </a-menu-item>
 
-                  <a-menu-divider />
+                  <a-menu-item @click="handleCalendar">
+                    <template #icon>
+                      <CalendarOutlined />
+                    </template>
+                    <span>Trang lịch</span>
+                  </a-menu-item>
 
                   <a-menu-item @click="handleLogout" danger>
                     <template #icon>
@@ -293,7 +292,7 @@ const userAvatar = computed(() => {
 
   &-danger {
     color: #ff4d4f !important;
-    
+
     &:hover {
       background: rgba(255, 77, 79, 0.1) !important;
       color: #ff4d4f !important;

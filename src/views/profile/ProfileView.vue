@@ -88,24 +88,14 @@
             <a-form-item :label="$t('profile.phone')" class="flex-1">
               <a-input
                 v-model:value="tempUser.phone"
-                :class="errors.phone ? 'border-red-400' : ''"
               />
-
-              <span class="text-red-400 text-sm" v-if="errors.phone">{{
-                errors.phone[0]
-              }}</span>
             </a-form-item>
           </div>
           <div class="w-full">
             <a-form-item :label="$t('profile.address')">
               <a-input
                 v-model:value="tempUser.address"
-                :class="errors.address ? 'border-red-400' : ''"
               />
-
-              <span class="text-red-400 text-sm" v-if="errors.address">{{
-                errors.address[0]
-              }}</span>
             </a-form-item>
           </div>
         </a-form>
@@ -117,6 +107,7 @@
           <a-button class="gradient-danger-btn" @click="handleLogout">{{
             $t("profile.logout")
           }}</a-button>
+          <a-button v-if="tempUser.role === 'admin'" class="gradient-primary-btn" @click="goToAdmin">Quản trị viên</a-button>
         </div>
       </a-tab-pane>
 
@@ -353,6 +344,10 @@ const handleLogout = async () => {
   }
 };
 
+const goToAdmin = () => {
+  router.push('/admin');
+};
+
 // Gọi API khi component mounted
 onMounted(() => {
   fetchUserProfile();
@@ -502,7 +497,7 @@ onMounted(() => {
 }
 
 .gradient-primary-btn {
-  background: linear-gradient(70deg, #ffcc77 0%, #15c5b2 50%, #227ca0 100%);
+  background: linear-gradient(70deg, #15c5b2 50%, #227ca0 100%);
   border: none;
   color: white;
   font-weight: 600;
@@ -518,7 +513,7 @@ onMounted(() => {
 }
 
 .gradient-danger-btn {
-  background: linear-gradient(70deg, #fe6d73 0%, #ff9b85 50%, #ff4d6d 100%);
+  background: linear-gradient(70deg, #fe6d73 0%, #ff4d6d 100%);
   border: none;
   color: white;
   font-weight: 600;
@@ -538,7 +533,7 @@ onMounted(() => {
 }
 
 :deep(.ant-upload .ant-btn) {
-  background: linear-gradient(70deg, #ffcc77, #15c5b2);
+  background: linear-gradient(70deg, #15c5b2);
   border: none;
   color: white;
   font-weight: 500;
