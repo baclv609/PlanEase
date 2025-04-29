@@ -147,7 +147,9 @@
     "decline": "Decline",
     "accept": "Accept",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "reset": "Reset",
+    "all": "All"
   },
   "calendar": {
     "tasks": "My Tasks",
@@ -190,7 +192,16 @@
       "title": "Share tag",
       "share": "Share",
       "shareLink": "Share link"
-    }
+    },
+    "filters": "Filters",
+    "filterByType": "Filter by Type",
+    "filterByDate": "Filter by Date",
+    "filterByPrivacy": "Filter by Privacy",
+    "filterByTime": "Filter by Time",
+    "events": "Events",
+    "tasks": "Tasks",
+    "private": "Private",
+    "public": "Public"
   },
   "errors": {
     "serverError": "Server error, please try again later",
@@ -795,5 +806,33 @@
     "reset": "Reset",
     "to": "to",
     "noResults": "No results found"
+  },
+  "filters": {
+    "title": "Filters",
+    "reset": "Reset",
+    "type": {
+      "label": "Filter by Type",
+      "all": "All",
+      "event": "Events",
+      "task": "My Tasks"
+    },
+    "date": {
+      "label": "Filter by Date",
+      "start": "Start date",
+      "end": "End date"
+    },
+    "privacy": {
+      "label": "Filter by Privacy",
+      "all": "All",
+      "private": "Private",
+      "public": "Public"
+    },
+    "time": {
+      "label": "Filter by Time",
+      "morning": "Morning (6:00 - 12:00)",
+      "afternoon": "Afternoon (12:00 - 18:00)",
+      "evening": "Evening (18:00 - 24:00)",
+      "night": "Night (0:00 - 6:00)"
+    }
   }
 }

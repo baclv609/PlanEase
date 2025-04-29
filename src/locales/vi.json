@@ -796,6 +796,33 @@
     "reset": "Đặt lại",
     "to": "đến",
     "noResults": "Không tìm thấy kết quả nào"
+  },
+  "filters": {
+    "title": "Bộ lọc",
+    "reset": "Đặt lại",
+    "type": {
+      "label": "Lọc theo loại",
+      "all": "Tất cả",
+      "event": "Sự kiện",
+      "task": "Việc cần làm của tôi"
+    },
+    "date": {
+      "label": "Lọc theo ngày",
+      "start": "Ngày bắt đầu",
+      "end": "Ngày kết thúc"
+    },
+    "privacy": {
+      "label": "Lọc theo quyền riêng tư",
+      "all": "Tất cả",
+      "private": "Riêng tư",
+      "public": "Công khai"
+    },
+    "time": {
+      "label": "Lọc theo thời gian",
+      "morning": "Buổi sáng (6:00 - 12:00)",
+      "afternoon": "Buổi chiều (12:00 - 18:00)",
+      "evening": "Buổi tối (18:00 - 24:00)",
+      "night": "Ban đêm (0:00 - 6:00)"
+    }
   }
- 
 }
