@@ -89,98 +89,102 @@
         </template>
       </div>
 
-      <div class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
-        <div class="flex justify-between items-center mb-3">
-          <h3 class="text-lg font-semibold">{{ $t("calendar.calendarSection.title") }}</h3>
-          <PlusOutlined
-            @click="isModalOpenAddTag = true"
-            class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]"
-          />
-        </div>
-
-        <a-checkbox-group
-          v-model:value="selectedCalendars"
-          class="flex flex-col gap-2"
-          @change="updateFilteredEvents"
-        >
-          <!-- Add default Tasks checkbox -->
-          <div class="flex bg-[#FDE4B2] justify-between p-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all">
-            <div class="flex items-center">
-              <a-checkbox :value="null" class="" :checked="true" :style="{ '--ant-checkbox-color': '#1890ff' }">
-                <span class="text-gray-700 text-sm font-medium">{{ t('calendar.tasks') }}</span>
-              </a-checkbox>
-            </div>
-          </div>
-
-          <!-- Existing calendars -->
-          <div v-if="myCalendars.length">
-            <div
-              v-for="calendar in displayedCalendars"
-              :key="calendar.id"
-              class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
-            >
-              <div class="flex items-center">
-                <a-checkbox :value="calendar.id" :checked="true" class="" :style="{ '--ant-checkbox-color': calendar.color_code }">
-                  <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
-                </a-checkbox>
-              </div>
-
-              <a-dropdown :trigger="['click']">
-                <EllipsisOutlined
-                  class="text-gray-500 text-lg cursor-pointer hover:text-black transition"
-                />
-                <template #overlay>
-                  <a-menu>
-
-                    <a-menu-item @click="viewDetails(calendar.id)">Xem chi tiet</a-menu-item>
-                    <a-menu-item @click="displayOnly(calendar.id)">{{ t('calendar.calendarSection.displayOnly') }}</a-menu-item>
-                    <a-menu-item @click="openUpdateCalendar(calendar.id)">{{
-                      $t("calendar.calendarSection.edit")
-                    }}</a-menu-item>
-                    <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red">{{
-                      $t("calendar.calendarSection.delete")
-                    }}</a-menu-item>
-                  </a-menu>
-                </template>
-              </a-dropdown>
-            </div>
-          </div>
-
-          
-        </a-checkbox-group>
+          <!-- Calendars của tôi -->
+    <div class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-semibold">{{ $t("calendar.calendarSection.title") }}</h3>
+        <PlusOutlined
+          @click="isModalOpenAddTag = true"
+          class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]"
+        />
       </div>
 
-      <!-- Events share -->
-      <div v-if="sharedCalendars.length" class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
-        <div class="flex justify-between items-center mb-3">
-          <h3 class="text-lg font-semibold">{{ $t("calendar.shareSection.title") }}</h3>
+      <div class="flex flex-col gap-2">
+        <!-- Checkbox Tasks -->
+        <div class="flex bg-[#FDE4B2] justify-between p-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all">
+          <div class="flex items-center">
+            <a-checkbox
+              :checked="selectedCalendars.includes(null)"
+              @change="e => handleCheckboxChange(null, e.target.checked)"
+              :style="{ '--ant-checkbox-color': '#1890ff' }"
+            >
+              <span class="text-gray-700 text-sm font-medium">{{ t('calendar.tasks') }}</span>
+            </a-checkbox>
+          </div>
         </div>
 
-        <a-checkbox-group
-          v-model:value="selectedCalendars"
-          class="flex flex-col gap-2"
-          @change="updateFilteredEvents"
-        >  
-          <div v-for="calendar in sharedCalendars" :key="calendar.id" 
-            class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all">
-            <div class="flex items-center">  
-              <a-checkbox :value="calendar.id" :checked="true" class="" :style="{ '--ant-checkbox-color': calendar.color_code }">  
-                <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>  
-              </a-checkbox>  
+        <!-- Thẻ của tôi -->
+        <div v-if="myCalendars.length">
+          <div
+            v-for="calendar in displayedCalendars"
+            :key="calendar.id"
+            class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
+          >
+            <div class="flex items-center">
+              <a-checkbox
+                :checked="selectedCalendars.includes(calendar.id)"
+                @change="e => handleCheckboxChange(calendar.id, e.target.checked)"
+                :style="{ '--ant-checkbox-color': calendar.color_code }"
+              >
+                <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
+              </a-checkbox>
             </div>
+
             <a-dropdown :trigger="['click']">
               <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
               <template #overlay>
                 <a-menu>
-                  <a-menu-item @click="displayOnly(calendar.id)">
-                    {{ t('calendar.calendarSection.displayOnly') }}
+                  <a-menu-item @click="viewDetails(calendar.id)">{{ t('calendar.calendarSection.details') }}</a-menu-item>
+                  <a-menu-item @click="displayOnly(calendar.id)">{{ t('calendar.calendarSection.displayOnly') }}</a-menu-item>
+                  <a-menu-item @click="openUpdateCalendar(calendar.id)">
+                    {{ t("calendar.calendarSection.edit") }}
+                  </a-menu-item>
+                  <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red">
+                    {{ t("calendar.calendarSection.delete") }}
                   </a-menu-item>
                 </a-menu>
               </template>
             </a-dropdown>
           </div>
-        </a-checkbox-group>
+        </div>
       </div>
+    </div>
+
+    <!-- Thẻ được chia sẻ -->
+    <div v-if="sharedCalendars.length" class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-semibold">{{ $t("calendar.shareSection.title") }}</h3>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <div
+          v-for="calendar in sharedCalendars"
+          :key="calendar.id"
+          class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
+        >
+          <div class="flex items-center">
+            <a-checkbox
+              :checked="selectedCalendars.includes(calendar.id)"
+              @change="e => handleCheckboxChange(calendar.id, e.target.checked)"
+              :style="{ '--ant-checkbox-color': calendar.color_code }"
+            >
+              <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
+            </a-checkbox>
+          </div>
+          <a-dropdown :trigger="['click']">
+            <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
+            <template #overlay>
+              <a-menu>
+                <a-menu-item @click="displayOnly(calendar.id)">
+                  {{ t('calendar.calendarSection.displayOnly') }}
+                </a-menu-item>
+              </a-menu>
+            </template>
+          </a-dropdown>
+        </div>
+      </div>
+    </div>
+
     
   </a-card>
 
@@ -503,30 +507,9 @@ const updateFilteredEvents = () => {
   hiddenTagsStore.setHiddenTags(unselectedTags);
 };
 
-// watch(
-//   [myCalendars, sharedCalendars],
-//   ([newMyCalendars, newSharedCalendars]) => {
-//     // Khi có dữ liệu mới, cập nhật selectedCalendars
-//     const allCalendarIds = [...newMyCalendars, ...newSharedCalendars].map(
-//       (cal) => cal.id
-//     );
-//     selectedCalendars.value = allCalendarIds;
-//     updateFilteredEvents();
-//   },
-//   { immediate: true }
-// );
-
-
-// onMounted(() => {
-//   const allCalendarIds = [...myCalendars.value, ...sharedCalendars.value].map(
-//     (cal) => cal.id
-//   );
-//   selectedCalendars.value = allCalendarIds;
-//   updateFilteredEvents();
-// });
-// const selectedCalendars = ref([null]); // Initialize with Tasks selected
       
-      watch(
+// watch này có chức năng là khi có dữ liệu mới, cập nhật selectedCalendars
+      watch( 
         [myCalendars, sharedCalendars],
         ([newMyCalendars, newSharedCalendars]) => {
           // Get hidden tags from store
@@ -544,28 +527,17 @@ const updateFilteredEvents = () => {
             ...allCalendarIds.filter(id => !hiddenTags.includes(id))
           ];
         },
-        { immediate: true }
+        { immediate: true } // chỉ chạy khi component được mount
       );
-watch(
-  [myCalendars, sharedCalendars],
-  ([newMyCalendars, newSharedCalendars]) => {
-    // Khi có dữ liệu mới, cập nhật selectedCalendars
-    const allCalendarIds = [...newMyCalendars, ...newSharedCalendars].map(
-      (cal) => cal.id
-    );
-    selectedCalendars.value = [null, ...allCalendarIds]; // Add null for Tasks
-    updateFilteredEvents();
-  },
-  { immediate: true }
-);
 
-onMounted(() => {
-  const allCalendarIds = [...myCalendars.value, ...sharedCalendars.value].map(
-    (cal) => cal.id
-  );
-  selectedCalendars.value = [null, ...allCalendarIds]; // Add null for Tasks
-  updateFilteredEvents();
-});
+// đóng 
+// onMounted(() => {
+//   const allCalendarIds = [...myCalendars.value, ...sharedCalendars.value].map(
+//     (cal) => cal.id
+//   );
+//   selectedCalendars.value = [null, ...allCalendarIds]; // Add null for Tasks
+//   updateFilteredEvents();
+// });
 
 const displayOnly = (calendarId) => {
   // Chỉ giữ lại tag được chọn
@@ -804,24 +776,29 @@ const viewMoreEvents = () => {
 };
 
 // Thêm hàm xử lý khi checkbox thay đổi
-const handleCheckboxChange = (checked, calendarId) => {
-  if (checked) {
-    // Nếu tag đang bị ẩn và được tích, hiển thị tất cả tags
-    const isHidden =
-      !displayedCalendars.value.some((cal) => cal.id === calendarId) ||
-      !displayedSharedCalendars.value.some((cal) => cal.id === calendarId);
+const handleCheckboxChange = (id, isChecked) => {
+  const newSelected = new Set(selectedCalendars.value);
 
-    if (isHidden) {
-      if (myCalendars.value.some((cal) => cal.id === calendarId)) {
-        showAll.value = true;
-      } else if (sharedCalendars.value.some((cal) => cal.id === calendarId)) {
-        showAllShared.value = true;
-      }
-    }
-    // Xóa tag khỏi danh sách ẩn
-    // calendarTagsStore.removeHiddenTagId(calendarId);
+  if (isChecked) {
+    newSelected.add(id);
+  } else {
+    newSelected.delete(id);
   }
+
+  selectedCalendars.value = Array.from(newSelected);
+
+  const allCalendarIds = [
+    ...myCalendars.value.map(cal => cal.id),
+    ...sharedCalendars.value.map(cal => cal.id)
+  ];
+
+  const unselectedTags = allCalendarIds.filter(cid => !newSelected.has(cid));
+  if (!newSelected.has(null)) unselectedTags.push(null);
+
+  hiddenTagsStore.setHiddenTags(unselectedTags);
+  updateFilteredEvents();
 };
+
 
 const viewDetails = (calendarId) => {
   console.log("Xem chi tiết cho calendar ID:", calendarId);
@@ -922,6 +899,41 @@ const createTask = () => {
     start: dayjs(),
     end: dayjs().add(1, 'hour')
   };
+};
+
+const updateSelectedCalendars = (newSelectedCalendars) => {
+  console.log('Selected calendars:', newSelectedCalendars);
+  
+  // Get all available calendar IDs
+  const myCalendarIds = myCalendars.value.map(cal => cal.id);
+  const sharedCalendarIds = sharedCalendars.value.map(cal => cal.id);
+  
+  // Find newly checked calendars
+  const newlyChecked = newSelectedCalendars.filter(id => 
+    id !== null && !selectedCalendars.value.includes(id)
+  );
+  console.log('Newly checked calendars:', newlyChecked);
+  
+  // Find newly unchecked calendars
+  const newlyUnchecked = selectedCalendars.value.filter(id => 
+    id !== null && !newSelectedCalendars.includes(id)
+  );
+  console.log('Newly unchecked calendars:', newlyUnchecked);
+  
+  // Update selected calendars in component
+  selectedCalendars.value = newSelectedCalendars;
+  
+  // Update hidden tags store
+  const unselectedTags = [...myCalendars.value, ...sharedCalendars.value]
+    .filter(cal => !newSelectedCalendars.includes(cal.id))
+    .map(cal => cal.id);
+  
+  // Check if Tasks is hidden
+  if (!newSelectedCalendars.includes(null)) {
+    unselectedTags.push(null);
+  }
+  
+  hiddenTagsStore.setHiddenTags(unselectedTags);
 };
 </script>
 
