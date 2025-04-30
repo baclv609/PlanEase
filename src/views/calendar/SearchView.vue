@@ -92,6 +92,8 @@ const selectDay = (day) => {
     timezone: day.timezone_code,
     tag_id: day.tag_id,
     tag_name: day.tag_name,
+    taskOwner: day.taskOwner,
+    tagOwner: day.tagOwner,
     allDay: day.is_all_day === 1,
     backgroundColor: day.color_code || '#3788d8',
     tag_color_code: day.tag_color_code,
