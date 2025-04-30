@@ -6,6 +6,7 @@
   "english": "English",
   "vietnamese": "Vietnamese",
   "timezone": "Time Zone",
+  "back": "Back",
   "Setting": "Setting",
   "select_timezone": "Select timezone",
   "date_format": "Date format",
@@ -753,6 +754,7 @@
     "owner": "Owner",
     "accept": "people agree to participate",
     "qsAttend": "Would you like to participate in this event?",
+    "hasJoined":"You have participated in this event",
     "yes": "Yes",
     "no": "No",
     "message": {
@@ -802,5 +804,27 @@
     "errorCreate": "Sorry, I can not create event as you told me. Please try again later.",
     "successCreate": "Event have created successfully",
     "enterYourMessage": "Enter your message..."
+  },
+  "InviteTag": {
+    "title": "Invitation to join the tag",
+    "tagName": "Tag name",
+    "subContent": "When you join this tag, you and other members will jointly create schedules, receive notifications, and schedule updates related to the tag.",
+    "tagDescription": "Tag description",
+    "joinContent": "Do you want to join this tag?",
+    "listAtendees": "List of participants",
+    "yes": "Participated",
+    "loading": "Loading...",
+    "pending": "Pending",
+    "hasJoined": "You have joined this tag",
+    "owner": "Creator",
+    "error": {
+      "fetch": "Unable to get invitation information.",
+      "cannotAccept": "Unable to accept invitation to join this tag.",
+      "cannotReject": "It is not possible to decline this tag invitation."
+    },
+    "success": {
+      "accepted": "You have successfully accepted the tag invitation.",
+      "rejected": "You have declined the invitation to join."
+    }
   }
 }

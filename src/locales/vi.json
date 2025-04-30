@@ -757,7 +757,8 @@
     "description": "Mô tả",
     "location": "Địa điểm",
     "attendee": "Người tham gia",
-    "qsAttend": "Bạn có muoốn tham gia sự kiện này không?",
+    "qsAttend": "Bạn có muốn tham gia sự kiện này không?",
+    "hasJoined":"Bạn đã tham gia vào sự kiện này",
     "owner": "Chủ sự kiện",
     "accept": "người đồng ý tham gia",
     "yes": "Có",
@@ -809,5 +810,27 @@
     "errorCreate": "Xin lỗi, tôi không thể tạo sự kiện giống như bạn yêu cầu. Vui lòng thử lại.",
     "successCreate": "Sự kiện đã được tạo thành công!",
     "enterYourMessage": "Nhập tin nhắn..."
+  },
+  "InviteTag": {
+    "title": "Lời mời tham gia vào thẻ",
+    "tagName": "Tên thẻ",
+    "subContent": "Khi bạn tham gia vào thẻ này, bạn và các thành viên khác sẽ cùng nhau lên các lịch trình, nhận thông báo và cập nhật lịch trình liên quan đến thẻ.",
+    "tagDescription": "Mô tả thẻ",
+    "joinContent": "Bạn có muốn tham gia vào thẻ này không?",
+    "listAtendees": "Danh sách người tham gia",
+    "yes": "Đã tham gia",
+    "pending": "Chờ phản hồi",
+    "loading": "Đang tải dữ liệu lời mời...",
+    "hasJoined": "Bạn đã tham gia vào thẻ này",
+    "owner": "Người tạo",
+    "error": {
+      "fetch": "Không thể lấy thông tin lời mời.",
+      "cannotAccept": "Không thể chấp nhận lời mời tham gia thẻ này.",
+      "cannotReject": "Không thể từ chối lời mời tham gia thẻ này."
+    },
+    "success": {
+      "accepted": "Bạn đã chấp nhận lời mời tham gia thẻ thành công.",
+      "rejected": "Bạn đã từ chối lời mời tham gia."
+    }
   }
 }

@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
   import axios from 'axios';
   import { useRoute, useRouter } from 'vue-router';
   import { message } from 'ant-design-vue';
@@ -25,6 +25,7 @@
   const eventDetails = ref(null);
   const attendees = ref([]);
   const userSetting = JSON.parse(localStorage.getItem('userSettings'));
+  const currentUser = ref(JSON.parse(localStorage.getItem('user')));
 
   onMounted(async () => {
     try {
@@ -42,9 +43,17 @@
 
       if(response.data.code == 200) {
         eventDetails.value = response.data.data;
-        console.log(eventDetails.value);
+ 
         attendees.value = response.data.data.attendees;
-        // console.log(attendees);
+
+        attendees.value = attendees.value.map(att => {
+          const match = eventDetails.value.task.attendees.find(d => d.user_id == att.user_id);
+          return {
+            ...att,
+            status: match ? match.status : null // hoặc mặc định là 'pending', 'no', v.v.
+          };
+        });
+
       }
 
     } catch (error) {
@@ -107,6 +116,15 @@
       router.push({name: 'calendar'});
     }
   }
+
+  const backToHome = () => {
+    router.push({name: 'calendar'});
+  }
+
+  const isInvited = computed(() => {
+    const user = attendees.value?.find(u => Number(u.user_id) == Number(currentUser.value.id));
+    return !user || user.status == 'pending';
+});
 </script>
 
 <template>
@@ -189,7 +207,19 @@
               <img class="w-10 h-10 rounded-full" :src="attendee.avatar ?? unknowUser" alt="">
             </div>
             <div>
-              <div class="text-sm font-medium">{{ attendee.name }}</div>
+              <div class="text-sm font-medium">{{ attendee.name }}
+                <span
+                  :class="`text-[10px] ${
+                      attendee.status == 'yes'
+                      ? 'text-green-600'
+                      : attendee.status == 'pending'
+                      ? 'text-yellow-500'
+                      : 'text-red-500'
+                  }`"
+                  >
+                  ({{ t(`InviteTag.${attendee.status}`) }})
+                </span>
+              </div>
               <div class="text-xs text-gray-500">{{ attendee.email }}</div>
             </div>
           </div>
@@ -197,7 +227,7 @@
       </div>
 
       <!-- Email response -->
-      <div class="text-center text-sm">
+      <div class="text-center text-sm" v-if="eventDetails.task.user_id != currentUser.id && isInvited">
         <div class="mb-4">
           {{ t('Invite.qsAttend') }}
         </div>
@@ -209,6 +239,14 @@
             {{ t('Invite.no') }}
           </button>
         </div>
+      </div>
+      <div v-else class="text-center text-sm">
+        <div class="mb-4 text-green-500">
+          {{ t('Invite.hasJoined') }}
+        </div>
+        <button @click.prevent="backToHome" class="px-4 py-2 bg-orange-500 border-0 text-white cursor-pointer rounded-md hover:bg-orange-300 transition">
+            {{ t('back') }}
+        </button>
       </div>
     </div>
   </div>

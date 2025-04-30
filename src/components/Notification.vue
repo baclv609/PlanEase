@@ -124,6 +124,12 @@ const icons = ref({
   update_task: "📅",
   leave_task: "😢",
   delete_task: "🗑️",
+  new_task_in_tag: "🗓",
+  invite_to_tag: "🥳",
+  decline_tag_invite: "😓",
+  accept_tag_invite: "😊",
+  removed_from_tag: "😑",
+  leave_tag: "😞",
   default: "📢",
 });
 

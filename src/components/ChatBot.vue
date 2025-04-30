@@ -145,7 +145,7 @@ const sendMessage = async () => {
             console.log(response);
 
             messages.value.push({
-                text: response.data.message,
+                text: t('chatbot.successCreate'),
                 isUser: false,
                 time: formatTime(new Date())
             });
@@ -156,7 +156,7 @@ const sendMessage = async () => {
             console.log(error);
 
             messages.value.push({
-                text: t('chatbot.errorMessage'),
+                text: t('chatbot.errorCreate'),
                 isUser: false,
                 time: formatTime(new Date())
             });
