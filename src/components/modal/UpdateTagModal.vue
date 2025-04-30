@@ -1,5 +1,5 @@
 <template>
-  <a-modal :open="open" :title="t('calendar.updateTag')" @ok="handleUpdateOk"
+  <a-modal :open="open" :title="t('calendar.updateTag')" @ok="handleUpdateOk" :confirm-loading="confirmLoading"
     @update:open="$emit('update:open', $event)">
     <a-form layout="vertical" :model="formState" :rules="rules" ref="formRef">
       <div class="flex gap-4">
@@ -82,13 +82,13 @@
                   </a-menu>
                 </template>
                 <a-button type="text" size="small">
-                  {{ capitalizeFirstLetter(user.role) }}
+                  {{ user.role === 'editor' ? $t('event.roles.editor') : $t('event.roles.viewer') }}
                   <CaretDownOutlined />
                 </a-button>
               </a-dropdown>
-              <a-tag :color="getStatusColor(user.status)" class="ml-2">{{
-                capitalizeFirstLetter(user.status)
-              }}</a-tag>
+              <a-tag :color="getStatusColor(user.status)" class="ml-2">
+                {{ user.status === 'pending' ? 'Chờ xác nhận' : 'Đã tham gia' }}
+              </a-tag>
               <a-button v-if="formState.is_owner" type="text" danger size="small" class="ml-2" @click="() => showDeleteConfirm(user)">
                  <DeleteOutlined />
                </a-button>
@@ -179,6 +179,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const confirmLoading = ref(false);
 
 const formRef = ref();
 const formState = ref({
@@ -283,6 +285,10 @@ watch(
 
 // Update the handleUpdateOk function
 const handleUpdateOk = async () => {
+
+  if (confirmLoading.value) return; // Nếu đang xử lý thì không làm gì
+  confirmLoading.value = true;
+
   try {
     await formRef.value.validate();
 
@@ -335,6 +341,8 @@ const handleUpdateOk = async () => {
     } else if (!error.errorFields) {
       message.error('Không thể kết nối đến máy chủ!');
     }
+  } finally {
+    confirmLoading.value = false; // Bỏ lock sau khi xử lý xong
   }
 };
 
@@ -353,7 +361,7 @@ const getRoleColor = (role) => {
 
 const getStatusColor = (status) => {
     switch (status) {
-        case 'active':
+        case 'yes':
             return 'green';
         case 'pending':
             return 'orange';
@@ -363,7 +371,6 @@ const getStatusColor = (status) => {
             return 'default';
     }
 };
-
 const changeUserRole = (user, newRole) => {
   const index = invitedUsers.value.findIndex(u => u.value === user.value);
   if (index !== -1) {

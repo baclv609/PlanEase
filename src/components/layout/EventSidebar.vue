@@ -113,7 +113,7 @@
           </div>
         </div>
 
-        <!-- Calendars của tôi -->
+        <!-- Thẻ của tôi -->
         <div v-if="myCalendars.length">
           <div
             v-for="calendar in displayedCalendars"
@@ -134,13 +134,13 @@
               <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
               <template #overlay>
                 <a-menu>
-                  <a-menu-item @click="viewDetails(calendar.id)">Xem chi tiết</a-menu-item>
+                  <a-menu-item @click="viewDetails(calendar.id)">{{ t('calendar.calendarSection.details') }}</a-menu-item>
                   <a-menu-item @click="displayOnly(calendar.id)">{{ t('calendar.calendarSection.displayOnly') }}</a-menu-item>
                   <a-menu-item @click="openUpdateCalendar(calendar.id)">
-                    {{ $t("calendar.calendarSection.edit") }}
+                    {{ t("calendar.calendarSection.edit") }}
                   </a-menu-item>
                   <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red">
-                    {{ $t("calendar.calendarSection.delete") }}
+                    {{ t("calendar.calendarSection.delete") }}
                   </a-menu-item>
                 </a-menu>
               </template>
@@ -150,7 +150,7 @@
       </div>
     </div>
 
-    <!-- Calendars chia sẻ -->
+    <!-- Thẻ được chia sẻ -->
     <div v-if="sharedCalendars.length" class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-lg font-semibold">{{ $t("calendar.shareSection.title") }}</h3>
@@ -171,7 +171,6 @@
               <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
             </a-checkbox>
           </div>
-
           <a-dropdown :trigger="['click']">
             <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
             <template #overlay>

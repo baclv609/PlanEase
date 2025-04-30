@@ -171,12 +171,12 @@
     "details": "Chi tiết",
     "edit": "Chỉnh sửa",
     "delete": "Xóa",
-    "tagName": "Tên tag",
-    "enterTagName": "Nhập tên tag",
+    "tagName": "Tên thẻ",
+    "enterTagName": "Nhập tên thẻ",
     "colorHex": "Màu sắc",
-    "enterTagDescription": "Nhập mô tả cho tag",
-    "updateTag": "Cập nhật tag",
-    "addTag": "Thêm tag mới",
+    "enterTagDescription": "Nhập mô tả cho thẻ",
+    "updateTag": "Cập nhật thẻ",
+    "addTag": "Thêm thẻ mới",
     "views": {
       "day": "Ngày",
       "week": "Tuần",
@@ -185,14 +185,15 @@
       "list": "Danh sách"
     },
     "calendarSection": {
-      "title": "Lịch của tôi",
+      "title": "Thẻ của tôi",
       "edit": "Chỉnh sửa",
       "delete": "Xóa",
       "showMore": "Xem thêm",
       "showLess": "Thu gọn",
-      "displayOnly": "Chỉ hiển thị nhãn này",
-      "deleteConfirmTitle": "Xác nhận xóa tag",
-      "deleteConfirmContent": "Bạn có chắc chắn muốn xóa tag \"{name}\"? Hành động này sẽ xóa tất cả các sự kiện và công việc liên quan đến tag này."
+      "displayOnly": "Chỉ hiển thị thẻ này",
+      "deleteConfirmTitle": "Xác nhận xóa thẻ",
+      "deleteConfirmContent": "Bạn có chắc chắn muốn xóa thẻ \"{name}\"? Hành động này sẽ xóa tất cả các sự kiện và công việc liên quan đến thẻ này.",
+       "details": "Chi tiết thẻ"
     },
     "shareSection": {
       "title": "Thẻ được chia sẻ",

@@ -46,8 +46,9 @@
                     <!-- Invite by Email -->
                     <div v-if="showEmailInput" class="my-1 w-full pb-2">
                         <a-select show-search :placeholder="$t('event.guests')" :options="state.data"
-                            :filter-option="false" :loading="state.fetching" @search="fetchUser"
-                            @select="handleUserSelect" :value="null" class="w-full mb-2">
+                            :filter-option="false" :loading="state.fetching" @search="fetchUser" 
+                            @select="handleUserSelect" :value="null" class="w-full mb-2"
+                            :autofocus="true">
                             <template #option="{ label, value, first_name, last_name, avatar }">
                                 <div class="flex items-center">
                                     <a-avatar :src="avatar" :size="24" class="mr-2">
