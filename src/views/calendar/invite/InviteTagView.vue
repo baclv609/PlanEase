@@ -1,107 +1,19 @@
-<template>
-    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white px-4">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-xl space-y-6">
-            <!-- Loading -->
-            <div v-if="loading" class="text-center text-gray-600">
-                <a-spin />
-                <p class="mt-4 text-base">Đang tải thông tin lời mời...</p>
-            </div>
-
-            <!-- Error -->
-            <div v-else-if="error" class="text-center text-red-500 font-medium">
-                {{ error }}
-            </div>
-
-            <!-- Nội dung chính -->
-            <div v-else class="space-y-6">
-                <!-- Tiêu đề -->
-                <div class="text-center">
-                    <h2 class="text-2xl font-bold text-gray-800">Lời mời tham gia Tag</h2>
-                    <p class="text-gray-500 mt-1 text-sm">Bạn đã được mời tham gia tag</p>
-                </div>
-
-                <!-- Thông tin Tag -->
-                <div class="flex items-center gap-4 bg-gray-50 border rounded-xl p-2">
-                    <div class="w-6 h-6 rounded-full" :style="{ backgroundColor: tagData.color_code }"></div>
-                    <div>
-                        <h3 class="text-xl font-semibold text-gray-800">{{ tagData.name }}</h3>
-                        <p v-if="tagData.description" class="text-sm text-gray-600 mt-1">
-                            {{ tagData.description }}
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Người tạo Tag -->
-                <div class="border-t">
-                    <p class="text-sm text-gray-600 mb-2">Người tạo Tag:</p>
-                    <div class="flex items-center">
-                        <a-avatar :src="tagData.owner?.avatar" :size="40" class="shadow-md">
-                            {{ !tagData.owner?.avatar ? getInitials(tagData.owner?.first_name, tagData.owner?.last_name)
-                                : '' }}
-                        </a-avatar>
-                        <div class="ml-3">
-                            <p class="font-medium text-gray-800">
-                                {{ tagData.owner?.first_name }} {{ tagData.owner?.last_name }}
-                                <span v-if="isOwner" class="text-xs ml-2 text-blue-500 font-semibold">(Chủ sở
-                                    hữu)</span>
-                            </p>
-                            <p class="text-sm text-gray-500">{{ tagData.owner?.email }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Người được chia sẻ -->
-                <div v-if="tagData.shared_user?.length" class="border-t">
-                    <p class="text-sm text-gray-600 mb-2">Người tham gia:</p>
-                    <div class="space-y-3">
-                        <div v-for="user in tagData.shared_user" :key="user.email" class="flex items-center gap-3">
-                            <a-avatar :src="user.avatar" :size="32">
-                                {{ !user.avatar ? getInitials(user.first_name, user.last_name) : '' }}
-                            </a-avatar>
-                            <div>
-                                <p class="text-sm font-medium text-gray-800">{{ user.first_name }} {{ user.last_name }}
-                                </p>
-                                <p class="text-xs text-gray-500">{{ user.email }} • Vai trò: {{ user.role }} • Trạng
-                                    thái:
-                                    <span :class="{
-                                        'text-yellow-500': user.status === 'pending',
-                                        'text-green-500': user.status === 'accepted',
-                                        'text-red-500': user.status === 'refused'
-                                    }">{{ user.status }}</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Nút hành động -->
-                <div class="flex justify-center gap-4 mt-6">
-                    <a-button type="primary" :loading="loadingAccept" :disabled="isOwner" @click="acceptInvitation"
-                        class="px-6">
-                        Chấp nhận
-                    </a-button>
-
-
-                    <a-button danger :loading="loadingDecline" @click="declineInvitation" class="px-6">
-                        Từ chối
-                    </a-button>
-                </div>
-
-            </div>
-        </div>
-    </div>
-</template>
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { message } from 'ant-design-vue';
+import { useI18n } from 'vue-i18n';
+import unknowUser from '@/assets/images/unknow_user.jpg';
+import bgImage from '@/assets/images/backgroundtag.jpg';
+
+const { t } = useI18n();
 
 const route = useRoute();
 const router = useRouter();
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem('access_token');
-
+const currentUser = ref(JSON.parse(localStorage.getItem('user')));
 const loading = ref(true);
 const loadingAccept = ref(false);  // loading cho nút Chấp nhận
 const loadingDecline = ref(false); // loading cho nút Từ chối
@@ -109,11 +21,7 @@ const error = ref(null);
 const tagData = ref({});
 const isOwner = ref(false);
 
-const getInitials = (first, last) => {
-    return `${first?.charAt(0) || ''}${last?.charAt(0) || ''}`.toUpperCase();
-};
-
-const fetchInviteDetails = async () => {
+onMounted(async () => {
     try {
         const res = await axios.get(`${dirApi}tags/${route.params.uuid}/invite`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -121,15 +29,16 @@ const fetchInviteDetails = async () => {
         tagData.value = {
             ...res.data.data.tag,
             owner: res.data.data.owner,
-            shared_user: res.data.data.tag.shared_user,
+            shared_user: res.data.data.shared_user,
         };
+        console.log(tagData.value);
         isOwner.value = res.data.data.is_owner;
     } catch (err) {
-        error.value = 'Không thể tải thông tin lời mời. Vui lòng thử lại sau.';
+        error.value = t('Invite.error.fetch');
     } finally {
         loading.value = false;
     }
-};
+});
 
 const acceptInvitation = async () => {
     loadingAccept.value = true;
@@ -137,10 +46,10 @@ const acceptInvitation = async () => {
         await axios.post(`${dirApi}tags/${route.params.uuid}/accept`, {}, {
             headers: { Authorization: `Bearer ${token}` },
         });
-        message.success('Đã chấp nhận lời mời thành công');
+        message.success(t('InviteTag.success.accepted'));
         router.push('/calendar');
     } catch {
-        message.error('Không thể chấp nhận lời mời. Vui lòng thử lại sau.');
+        message.error(t('InviteTag.error.cannotAccept'));
     } finally {
         loadingAccept.value = false;
     }
@@ -152,16 +61,127 @@ const declineInvitation = async () => {
         await axios.post(`${dirApi}tags/${route.params.uuid}/refuse`, {}, {
             headers: { Authorization: `Bearer ${token}` },
         });
-        message.success('Đã từ chối lời mời');
+        message.success(t('InviteTag.success.declined'));
         router.push('/calendar');
     } catch {
-        message.error('Không thể từ chối lời mời. Vui lòng thử lại sau.');
+        message.error(t('InviteTag.error.cannotReject'));
     } finally {
         loadingDecline.value = false;
     }
 };
 
-onMounted(() => {
-    fetchInviteDetails();
+const isInvited = computed(() => {
+  return tagData.value.shared_user?.some(user =>
+    user.user_id == currentUser.value.id && user.status == 'pending'
+  );
 });
+
+const backToHome = () => {
+    router.push('/calendar');
+};
 </script>
+
+<template>
+    <div v-if="!loading && tagData" class="max-w-2xl mx-auto p-4 bg-white rounded-lg shadow-md">
+        <!-- Header with calendar icon -->
+        <div class="bg-blue-50 rounded-lg mb-4 w-full h-48 bg-cover bg-center"
+            :style="{ backgroundImage: `url(${bgImage})` }"></div>
+
+        <!-- Event details -->
+        <div class="space-y-2">
+            <!-- Tiêu đề -->
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-1 uppercase tracking-wide">{{ t('InviteTag.title') }} <span :style="{ color: tagData.color_code }">{{ tagData.name }}</span></h2>
+            <p class="text-gray-600 text-center text-sm mb-6 max-w-lg mx-auto">
+                {{ t('InviteTag.subContent') }}
+            </p>
+            <hr>
+
+            <!-- Attendees -->
+            <div class="space-y-1 -mb-1">
+                <div class="flex items-center gap-2">
+                    <div class="text-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-sm">{{t('InviteTag.listAtendees')}}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Organizer -->
+            <div class="max-h-60 overflow-y-auto pr-2">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-10 h-10 rounded-full flex align-center justify-center">
+                        <img class="w-10 h-10 rounded-full" :src="tagData.owner?.avatar ?? unknowUser" alt="">
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium">
+                            {{ tagData.owner?.first_name }} {{ tagData.owner?.last_name }}
+                            - <span class="text-green-500 text-sm">{{ t('InviteTag.owner') }}</span>
+                        </div>
+                        <div class="text-xs text-gray-500">{{ tagData.owner?.email }}</div>
+                    </div>
+                </div>
+
+                <template v-for="attendee in tagData.shared_user ?? []" :key="attendee.user_id">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-10 h-10 rounded-full flex align-center justify-center">
+                            <img class="w-10 h-10 rounded-full" :src="attendee.avatar ?? unknowUser" alt="">
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium">{{ attendee.first_name }} {{ attendee.last_name }} 
+                                <span
+                                :class="`text-[10px] ${
+                                    attendee.status == 'yes'
+                                    ? 'text-green-600'
+                                    : attendee.status == 'pending'
+                                    ? 'text-yellow-500'
+                                    : 'text-red-500'
+                                }`"
+                                >
+                                ({{ t(`InviteTag.${attendee.status}`) }})
+                                </span>
+                            </div>
+                            <div class="text-xs text-gray-500">{{ attendee.email }}</div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Email response -->
+            <div class="text-center text-sm" v-if="!isOwner && isInvited">
+                <div class="mb-4">{{ t('InviteTag.joinContent') }}</div>
+                <div class="flex gap-2 justify-center">
+                    <button @click.prevent="acceptInvitation"
+                        class="px-4 py-2 bg-orange-500 border-0 text-white cursor-pointer rounded-md hover:bg-orange-300 transition">
+                        {{ t('Invite.yes') }}
+                    </button>
+                    <button @click.prevent="declineInvitation"
+                        class="px-4 py-2 bg-gray-200 text-gray-800 border-0 cursor-pointer rounded-md hover:bg-gray-100 transition">
+                        {{ t('Invite.no') }}
+                    </button>
+                </div>
+            </div>
+            <div v-else class="text-green-500 text-center text-sm">
+                <div class="mb-4">{{ t('InviteTag.hasJoined') }}</div>
+                <button @click.prevent="backToHome"
+                    class="px-4 py-2 bg-orange-500 border-0 text-white cursor-pointer rounded-md hover:bg-orange-300 transition">
+                    {{ t('back') }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading or error -->
+    <div v-else class="text-center py-10 text-gray-400">
+        <div v-if="error">{{ error }}</div>
+        <div v-else>
+            <a-spin />
+            {{ t('InviteTag.loading') }}
+        </div>
+    </div>
+</template>
