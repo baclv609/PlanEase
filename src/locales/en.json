@@ -148,7 +148,12 @@
     "decline": "Decline",
     "accept": "Accept",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "leave": "Leave",
+    "confirm": "Confirm"
+
   },
   "calendar": {
     "tasks": "My Tasks",
@@ -186,12 +191,19 @@
       "displayOnly": "Display only",
       "deleteConfirmTitle": "Confirm Tag Deletion",
       "deleteConfirmContent": "Are you sure you want to delete the tag \"{name}\"? This action will delete all events and tasks associated with this tag.",
-      "details": "Details"
+      "details": "Details",
+      "leave": "Leave tag" 
     },
     "shareSection": {
       "title": "Share tag",
       "share": "Share",
       "shareLink": "Share link"
+    },
+    "leaveTag": {
+      "confirmTitle": "Confirm Leave Tag",
+      "confirmContent": "Are you sure you want to leave the tag? This action will remove you from all events and tasks associated with this tag.",
+      "success": "Tag removed successfully!",
+      "error": "Failed to leave tag. Please try again."
     }
   },
   "errors": {
