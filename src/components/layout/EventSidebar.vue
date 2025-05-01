@@ -1,113 +1,93 @@
 <template>
-<a-card
-  :bodyStyle="{ padding: '6px' }"
-  class="!bg-transparent border-none shadow-none custom-scrollbar"
->
+  <a-card :bodyStyle="{ padding: '6px' }" class="!bg-transparent border-none shadow-none custom-scrollbar">
     <a-dropdown :trigger="['click']">
       <a-button
-        class="mb-3 w-50 bg-[#FECA7B] text-black font-bold px-6 py-6 border-none flex items-center justify-center gap-2 rounded-full hover:!text-white transition-colors"
-      >
-        <PlusOutlined /> {{ t("common.create") }} <CaretDownOutlined />
+        class="mb-3 w-50 bg-[#FECA7B] text-black font-bold px-6 py-6 border-none flex items-center justify-center gap-2 rounded-full hover:!text-white transition-colors">
+        <PlusOutlined /> {{ t("common.create") }}
+        <CaretDownOutlined />
       </a-button>
       <template #overlay>
         <a-menu class="!bg-[#FECA7B]">
-          <a-menu-item
-            @click="createEvent"
-            class="!text-white transition-colors hover:!bg-[#15C5B2]"
-          >
+          <a-menu-item @click="createEvent" class="!text-white transition-colors hover:!bg-[#15C5B2]">
             <CalendarOutlined class="mr-2" /> {{ t("calendar.createEvent") }}
           </a-menu-item>
-          <a-menu-item
-            @click="createTask"
-            class="!text-white transition-colors hover:!bg-[#15C5B2]"
-          >
+          <a-menu-item @click="createTask" class="!text-white transition-colors hover:!bg-[#15C5B2]">
             <CheckSquareOutlined class="mr-2" /> {{ t("calendar.createTask") }}
           </a-menu-item>
         </a-menu>
       </template>
     </a-dropdown>
 
-      <div class="calendar-section">
-        <MiniCalendar
-          :events="filteredEvents"
-          @dateSelect="handleDateSelect"
-          @rangeSelect="handleRangeSelect"
-          @viewChange="handleViewChange"
-        />
-      </div>
+    <div class="calendar-section">
+      <MiniCalendar :events="filteredEvents" @dateSelect="handleDateSelect" @rangeSelect="handleRangeSelect"
+        @viewChange="handleViewChange" />
+    </div>
 
-      <div class="mt-3">
-        <h2 class="mb-2">{{ t("calendar.upcomingEvents") }}</h2>
-        <!-- <p>{{ t("calendar.dontMissEvents") }}</p> -->
+    <div class="mt-3">
+      <h2 class="mb-2">{{ t("calendar.upcomingEvents") }}</h2>
+      <!-- <p>{{ t("calendar.dontMissEvents") }}</p> -->
 
-        <!-- <div v-if="loading" class="flex justify-center my-4">
+      <!-- <div v-if="loading" class="flex justify-center my-4">
           <a-spin />
         </div> -->
 
-        <!-- Error state -->
-        <a-empty v-if="error" :description="error" class="my-4">
-          <template #extra>
-            <a-button type="primary" @click="fetchUpcomingTasks">
-              {{ t("common.retry") }}
-            </a-button>
-          </template>
-        </a-empty>
-
-        <!-- No events -->
-        <a-empty
-          v-else-if="!formattedUpcomingTasks.length"
-          :description="t('calendar.noUpcomingEvents')"
-          class="my-4"
-        />
-
-        <!-- Events list -->
-        <template v-if="formattedUpcomingTasks.length">
-          <a-list :data-source="displayedUpcomingTasks" bordered>
-            <template #renderItem="{ item }">
-              <a-list-item>
-                <div class="flex justify-between w-full items-center">
-                  <div class="event-details flex-1 mx-3">
-                    <div class="font-medium">{{ item.title }}</div>
-                    <div class="text-sm text-gray-500">
-                      {{ formatDateTime(item.start_time) }}
-                    </div>
-                  </div>
-                  <a-tag :color="getEventColor(item.priority)">
-                    {{ item.formattedTime }}
-                  </a-tag>
-                </div>
-              </a-list-item>
-            </template>
-          </a-list>
-
-          <!-- Nút xem thêm -->
-          <div v-if="hasMoreTasks" class="text-center mt-3">
-            <a-button type="link" @click="viewMoreEvents">
-              {{ t("common.viewMore") }}
-            </a-button>
-          </div>
+      <!-- Error state -->
+      <a-empty v-if="error" :description="error" class="my-4">
+        <template #extra>
+          <a-button type="primary" @click="fetchUpcomingTasks">
+            {{ t("common.retry") }}
+          </a-button>
         </template>
-      </div>
+      </a-empty>
 
-          <!-- Calendars của tôi -->
+      <!-- No events -->
+      <a-empty v-else-if="!formattedUpcomingTasks.length" :description="t('calendar.noUpcomingEvents')" class="my-4" />
+
+      <!-- Events list -->
+      <template v-if="formattedUpcomingTasks.length">
+        <a-list :data-source="displayedUpcomingTasks" bordered>
+          <template #renderItem="{ item }">
+            <a-list-item>
+              <div class="flex justify-between w-full items-center">
+                <div class="event-details flex-1 mx-3">
+                  <div class="font-medium">{{ item.title }}</div>
+                  <div class="text-sm text-gray-500">
+                    {{ formatDateTime(item.start_time) }}
+                  </div>
+                </div>
+                <a-tag :color="getEventColor(item.priority)">
+                  {{ item.formattedTime }}
+                </a-tag>
+              </div>
+            </a-list-item>
+          </template>
+        </a-list>
+
+        <!-- Nút xem thêm -->
+        <div v-if="hasMoreTasks" class="text-center mt-3">
+          <a-button type="link" @click="viewMoreEvents">
+            {{ t("common.viewMore") }}
+          </a-button>
+        </div>
+      </template>
+    </div>
+
+    <!-- Calendars của tôi -->
     <div class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-lg font-semibold">{{ $t("calendar.calendarSection.title") }}</h3>
-        <PlusOutlined
-          @click="isModalOpenAddTag = true"
-          class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]"
-        />
+        <PlusOutlined @click="isModalOpenAddTag = true"
+          class="flex items-center justify-center text-black-500 text-[16px] cursor-pointer bg-[#FFCB77] rounded-full p-[2px]" />
       </div>
 
       <div class="flex flex-col gap-2">
         <!-- Checkbox Tasks -->
-        <div class="flex bg-[#FDE4B2] justify-between p-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all">
+        <div
+          class="flex bg-[#FDE4B2] justify-between p-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all">
           <div class="flex items-center">
-            <a-checkbox
-              :checked="selectedCalendars.includes(null)"
+            <a-checkbox :checked="selectedCalendars.includes(null)"
               @change="e => handleCheckboxChange(null, e.target.checked)"
-              :style="{ '--ant-checkbox-color': '#1890ff' }"
-            >
+              :style="{ '--ant-checkbox-color': '#1890ff' }">
               <span class="text-gray-700 text-sm font-medium">{{ t('calendar.tasks') }}</span>
             </a-checkbox>
           </div>
@@ -115,17 +95,12 @@
 
         <!-- Thẻ của tôi -->
         <div v-if="myCalendars.length">
-          <div
-            v-for="calendar in displayedCalendars"
-            :key="calendar.id"
-            class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
-          >
+          <div v-for="calendar in displayedCalendars" :key="calendar.id"
+            class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all">
             <div class="flex items-center">
-              <a-checkbox
-                :checked="selectedCalendars.includes(calendar.id)"
+              <a-checkbox :checked="selectedCalendars.includes(calendar.id)"
                 @change="e => handleCheckboxChange(calendar.id, e.target.checked)"
-                :style="{ '--ant-checkbox-color': calendar.color_code }"
-              >
+                :style="{ '--ant-checkbox-color': calendar.color_code }">
                 <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
               </a-checkbox>
             </div>
@@ -134,8 +109,10 @@
               <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
               <template #overlay>
                 <a-menu>
-                  <a-menu-item @click="viewDetails(calendar.id)">{{ t('calendar.calendarSection.details') }}</a-menu-item>
-                  <a-menu-item @click="displayOnly(calendar.id)">{{ t('calendar.calendarSection.displayOnly') }}</a-menu-item>
+                  <a-menu-item @click="viewDetails(calendar.id)">{{ t('calendar.calendarSection.details')
+                  }}</a-menu-item>
+                  <a-menu-item @click="displayOnly(calendar.id)">{{ t('calendar.calendarSection.displayOnly')
+                  }}</a-menu-item>
                   <a-menu-item @click="openUpdateCalendar(calendar.id)">
                     {{ t("calendar.calendarSection.edit") }}
                   </a-menu-item>
@@ -157,17 +134,12 @@
       </div>
 
       <div class="flex flex-col gap-2">
-        <div
-          v-for="calendar in sharedCalendars"
-          :key="calendar.id"
-          class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all"
-        >
+        <div v-for="calendar in sharedCalendars" :key="calendar.id"
+          class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all">
           <div class="flex items-center">
-            <a-checkbox
-              :checked="selectedCalendars.includes(calendar.id)"
+            <a-checkbox :checked="selectedCalendars.includes(calendar.id)"
               @change="e => handleCheckboxChange(calendar.id, e.target.checked)"
-              :style="{ '--ant-checkbox-color': calendar.color_code }"
-            >
+              :style="{ '--ant-checkbox-color': calendar.color_code }">
               <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
             </a-checkbox>
           </div>
@@ -178,6 +150,9 @@
                 <a-menu-item @click="displayOnly(calendar.id)">
                   {{ t('calendar.calendarSection.displayOnly') }}
                 </a-menu-item>
+                <a-menu-item @click="leaveTagJoined(calendar.id)">
+                  Rời khỏi thẻ này
+                </a-menu-item>
               </a-menu>
             </template>
           </a-dropdown>
@@ -185,32 +160,18 @@
       </div>
     </div>
 
-    
+
   </a-card>
 
-  <AddTagModal
-    v-model:open="isModalOpenAddTag"
-    @tagAdded="handleTagAdded"
-  />
+  <AddTagModal v-model:open="isModalOpenAddTag" @tagAdded="handleTagAdded" />
 
-  <UpdateTagModal
-    v-model:open="isModalOpenUpdateTag"
-    :tag="selectedTagCalendar"
-    @tagUpdated="handleTagUpdated"
-    tagId="selectedTagId"
-  />
+  <UpdateTagModal v-model:open="isModalOpenUpdateTag" :tag="selectedTagCalendar" @tagUpdated="handleTagUpdated"
+    tagId="selectedTagId" />
 
-  <EventModal
-    :isAddEventModalVisible="isAddEventModalVisible"
-    :event="selectedEventAdd"
-    @save="handleEventModalSuccess"
-    @cancel="isAddEventModalVisible = false"
-  />
-  <TagDetailModal
-    :open="isTagDetailModalVisible"
-    :selectedCalendarId="selectedCalendarId"
-    @update:open="isTagDetailModalVisible = false"
-  />
+  <EventModal :isAddEventModalVisible="isAddEventModalVisible" :event="selectedEventAdd" @save="handleEventModalSuccess"
+    @cancel="isAddEventModalVisible = false" />
+  <TagDetailModal :open="isTagDetailModalVisible" :selectedCalendarId="selectedCalendarId"
+    @update:open="isTagDetailModalVisible = false" />
 </template>
 
 <script setup>
@@ -370,9 +331,12 @@ const previousValues = ref({
 // const calendarTagsStore = useCalendarTagsStore();
 
 // 1.
-const fetchUpcomingTasks = async () => {
-  await store.fetchUpcomingTasks();
-};
+// const fetchUpcomingTasks = async () => {
+//   await store.fetchUpcomingTasks();
+// };
+const debouncedFetchUpcomingTasks = debounce(() => {
+  store.fetchUpcomingTasks();
+}, 300);
 
 watch(
   () => ({
@@ -395,7 +359,7 @@ watch(
         newValues.timeZone !== previousValues.value.timeZone ||
         newValues.timeFormat !== previousValues.value.timeFormat)
     ) {
-      fetchUpcomingTasks();
+      debouncedFetchUpcomingTasks();
     }
 
     previousValues.value = { ...newValues };
@@ -507,28 +471,28 @@ const updateFilteredEvents = () => {
   hiddenTagsStore.setHiddenTags(unselectedTags);
 };
 
-      
+
 // watch này có chức năng là khi có dữ liệu mới, cập nhật selectedCalendars
-      watch( 
-        [myCalendars, sharedCalendars],
-        ([newMyCalendars, newSharedCalendars]) => {
-          // Get hidden tags from store
-          const hiddenTags = hiddenTagsStore.hiddenTags;
-          
-          // Get all calendar IDs
-          const allCalendarIds = [
-            ...newMyCalendars.map(cal => cal.id),
-            ...newSharedCalendars.map(cal => cal.id)
-          ];
-          
-          // Set selected calendars excluding hidden ones
-          selectedCalendars.value = [
-            null, // Always include Tasks
-            ...allCalendarIds.filter(id => !hiddenTags.includes(id))
-          ];
-        },
-        { immediate: true } // chỉ chạy khi component được mount
-      );
+watch(
+  [myCalendars, sharedCalendars],
+  ([newMyCalendars, newSharedCalendars]) => {
+    // Get hidden tags from store
+    const hiddenTags = hiddenTagsStore.hiddenTags;
+
+    // Get all calendar IDs
+    const allCalendarIds = [
+      ...newMyCalendars.map(cal => cal.id),
+      ...newSharedCalendars.map(cal => cal.id)
+    ];
+
+    // Set selected calendars excluding hidden ones
+    selectedCalendars.value = [
+      null, // Always include Tasks
+      ...allCalendarIds.filter(id => !hiddenTags.includes(id))
+    ];
+  },
+  { immediate: true } // chỉ chạy khi component được mount
+);
 
 // đóng 
 // onMounted(() => {
@@ -542,20 +506,58 @@ const updateFilteredEvents = () => {
 const displayOnly = (calendarId) => {
   // Chỉ giữ lại tag được chọn
   selectedCalendars.value = [calendarId];
-  
+
   // Cập nhật danh sách tag bị ẩn
   const allCalendarIds = [...myCalendars.value, ...sharedCalendars.value]
     .filter(cal => cal.id !== calendarId)
     .map(cal => cal.id);
-  
+
   hiddenTagsStore.setHiddenTags(allCalendarIds);
-  
+
   // Hiển thị thông báo
   const selectedTag = [...myCalendars.value, ...sharedCalendars.value].find(cal => cal.id === calendarId);
   if (selectedTag) {
     message.success(t('success.displayOnly', { name: selectedTag.name }));
   }
 };
+const leaveTagJoined = (calendarId) => {
+  const tag = [...sharedCalendars.value].find(cal => cal.id === calendarId);
+  if (!tag) return;
+
+
+
+  Modal.confirm({
+    title: t('calendar.leaveTag.confirmTitle'),
+    content: t('calendar.leaveTag.confirmContent', { name: tag.name }),
+    okText: t('common.confirm'),
+    cancelText: t('common.cancel'),
+    okType: 'danger',
+    async onOk() {
+      try {
+        const token = localStorage.getItem("access_token");
+      const response =  await axios.post(`${dirApi}tags/${calendarId}/leave`, null, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        });
+
+        if (response.status !== 200) {
+          throw new Error(response.data.message);
+        }
+        message.success(t('calendar.leaveTag.success'));
+
+        // Cập nhật store và danh sách lịch
+        sharedCalendars.value = sharedCalendars.value.filter(cal => cal.id !== calendarId);
+        selectedCalendars.value = selectedCalendars.value.filter(id => id !== calendarId);
+        hiddenTagsStore.remove(calendarId);
+
+      } catch (err) {
+        console.error(err);
+        message.error(t('calendar.leaveTag.error'));
+      }
+    }
+  });
+}
 
 const openDrawerAdd = () => {
   isModalOpenAddTag.value = true;
@@ -606,28 +608,28 @@ const fetchCalendars = async () => {
 fetchCalendars();
 
 const handleTagAdded = (newTag) => {
-    // Create complete tag object
-    const tagToAdd = {
-        id: newTag.id,
-        name: newTag.name,
-        color_code: newTag.color_code,
-        description: newTag.description,
-        shared_user: newTag.shared_user || [],
-        is_owner: true // Since this is a newly created tag
-    };
+  // Create complete tag object
+  const tagToAdd = {
+    id: newTag.id,
+    name: newTag.name,
+    color_code: newTag.color_code,
+    description: newTag.description,
+    shared_user: newTag.shared_user || [],
+    is_owner: true // Since this is a newly created tag
+  };
 
-    //thêm vào danh sách myCalendars
-    myCalendars.value.push(tagToAdd);
-    
-    // thêm vào danh sách selectedCalendars
-    selectedCalendars.value.push(newTag.id);
-    
-    // Update filtered events
-    updateFilteredEvents();
+  //thêm vào danh sách myCalendars
+  myCalendars.value.push(tagToAdd);
+
+  // thêm vào danh sách selectedCalendars
+  selectedCalendars.value.push(newTag.id);
+
+  // Update filtered events
+  updateFilteredEvents();
 };
 
 const handleTagUpdated = (updatedTag) => {
-      myCalendars.value = myCalendars.value.map((tag) =>
+  myCalendars.value = myCalendars.value.map((tag) =>
     tag.id === updatedTag.id ? updatedTag : tag
   );
   updateFilteredEvents();
@@ -809,9 +811,9 @@ const viewDetails = (calendarId) => {
 };
 
 const deleteCalendar = async (calendarId) => {
-  const calendar = myCalendars.value.find(cal => cal.id === calendarId) || 
-                  sharedCalendars.value.find(cal => cal.id === calendarId);
-                  
+  const calendar = myCalendars.value.find(cal => cal.id === calendarId) ||
+    sharedCalendars.value.find(cal => cal.id === calendarId);
+
   if (!calendar) return;
 
   // Kiểm tra số lượng tag còn lại
@@ -880,7 +882,7 @@ const openUpdateCalendar = (calendarId) => {
 };
 
 // onBeforeUnmount(() => {
-  // echoStore.stopListening();
+// echoStore.stopListening();
 // });
 
 const createEvent = () => {
@@ -903,36 +905,36 @@ const createTask = () => {
 
 const updateSelectedCalendars = (newSelectedCalendars) => {
   console.log('Selected calendars:', newSelectedCalendars);
-  
+
   // Get all available calendar IDs
   const myCalendarIds = myCalendars.value.map(cal => cal.id);
   const sharedCalendarIds = sharedCalendars.value.map(cal => cal.id);
-  
+
   // Find newly checked calendars
-  const newlyChecked = newSelectedCalendars.filter(id => 
+  const newlyChecked = newSelectedCalendars.filter(id =>
     id !== null && !selectedCalendars.value.includes(id)
   );
   console.log('Newly checked calendars:', newlyChecked);
-  
+
   // Find newly unchecked calendars
-  const newlyUnchecked = selectedCalendars.value.filter(id => 
+  const newlyUnchecked = selectedCalendars.value.filter(id =>
     id !== null && !newSelectedCalendars.includes(id)
   );
   console.log('Newly unchecked calendars:', newlyUnchecked);
-  
+
   // Update selected calendars in component
   selectedCalendars.value = newSelectedCalendars;
-  
+
   // Update hidden tags store
   const unselectedTags = [...myCalendars.value, ...sharedCalendars.value]
     .filter(cal => !newSelectedCalendars.includes(cal.id))
     .map(cal => cal.id);
-  
+
   // Check if Tasks is hidden
   if (!newSelectedCalendars.includes(null)) {
     unselectedTags.push(null);
   }
-  
+
   hiddenTagsStore.setHiddenTags(unselectedTags);
 };
 </script>
@@ -994,7 +996,7 @@ const updateSelectedCalendars = (newSelectedCalendars) => {
 .check-icon {
   color: white;
   font-size: 16px;
-  filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.3));
+  filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.3));
 }
 
 :deep(.ant-select-selector) {
@@ -1013,12 +1015,15 @@ const updateSelectedCalendars = (newSelectedCalendars) => {
   width: 24px;
   height: 24px;
 }
+
 :deep(.ant-list-item) {
   padding: 10px !important;
 }
+
 .custom-scrollbar {
   max-height: 87vh;
-  overflow-y: overlay; /* hoặc auto nếu overlay không hỗ trợ */
+  overflow-y: overlay;
+  /* hoặc auto nếu overlay không hỗ trợ */
   position: relative;
 }
 
@@ -1051,6 +1056,4 @@ const updateSelectedCalendars = (newSelectedCalendars) => {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #CCC;
 }
-
-
 </style>

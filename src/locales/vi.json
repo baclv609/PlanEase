@@ -155,8 +155,14 @@
     "decline": "Từ chối",
     "accept": "Chấp nhận",
     "yes": "Có",
-    "no": "Không"
+    "no": "Không",
+    "cancel": "Hủy",
+    "close": "Đóng",
+    "delete": "Xóa",
+    "leave": "Rời khỏi",
+    "confirm": "Xác nhận"
   },
+
   "calendar": {
     "tasks": "Việc cần làm của tôi",
     "createEvent": "Tạo sự kiện",
@@ -193,13 +199,20 @@
       "displayOnly": "Chỉ hiển thị thẻ này",
       "deleteConfirmTitle": "Xác nhận xóa thẻ",
       "deleteConfirmContent": "Bạn có chắc chắn muốn xóa thẻ \"{name}\"? Hành động này sẽ xóa tất cả các sự kiện và công việc liên quan đến thẻ này.",
-       "details": "Chi tiết thẻ"
+       "details": "Chi tiết thẻ",
+       "leave": "Rời khỏi thẻ"
     },
     "shareSection": {
       "title": "Thẻ được chia sẻ",
       "share": "Chia sẻ",
       "shareLink": "Chia sẻ link"
-    }
+    },
+    "leaveTag": {
+    "confirmTitle": "Xác nhận rời thẻ",
+    "confirmContent": "Bạn có chắc chắn muốn rời khỏi thẻ này? Tất cả sự kiện liên quan sẽ bị xóa khỏi lịch của bạn.",
+    "success": "Đã rời khỏi thẻ thành công.",
+    "error": "Rời thẻ thất bại. Vui lòng thử lại."
+  }
   },
   "errors": {
     "serverError": "Lỗi máy chủ, vui lòng thử lại sau",
