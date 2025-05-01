@@ -11,17 +11,10 @@
                 <a-button class="action-btn delete-btn font-medium" @click="deleteEvent(selectedEvents)" v-if="selectedEvents.length != 0">
                     <DeleteOutlined class="py-2 text-md" /> {{ $t('trash.deleteSelected') }}
                 </a-button>
-                <a-popconfirm 
-                    v-if="events.length > 0"
-                    :title="$t('trash.emptyTrashConfirm')" 
-                    :ok-text="$t('trash.emptyTrashConfirmOk')" 
-                    :cancel-text="$t('trash.emptyTrashConfirmCancel')" 
-                    @confirm="deleteEvent([], true)"
-                    >
-                    <a-button class="bg-[#227C9D] hover:!text-white text-white font-medium">
-                        {{ $t('trash.emptyTrash') }}
-                    </a-button>
-                </a-popconfirm>
+
+                <a-button v-if="events.length > 0" @click="deleteEvent([], true)" class="bg-[#227C9D] hover:!text-white text-white font-medium">
+                    {{ $t('trash.emptyTrash') }}
+                </a-button>
 
                 <!-- Khi không có sự kiện, render nút nhưng dưới dạng disabled -->
                 <a-button v-else disabled class="bg-[#227C9D] text-white font-medium opacity-50 cursor-not-allowed">
@@ -305,6 +298,7 @@ const showConfirm = (type) => {
       title: t('trash.confirm.title', { action: t(`trash.confirm.action.${type}`) }),
       content: t('trash.confirm.content', { action: t(`trash.confirm.action.${type}`) }),
       okText: t('trash.confirm.ok'),
+      centered: true,
       cancelText: t('trash.confirm.cancel'),
       onOk() {
         resolve(true);
