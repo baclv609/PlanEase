@@ -297,6 +297,7 @@ export function useCalendarDrop(t) {
                             type: "radio",
                             name: "editOption",
                             value: "EDIT_1",
+                            checked: editOption.value == "EDIT_1",
                             class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
                             onChange: (e) => {
                                 editOption.value = e.target.value;
@@ -335,24 +336,24 @@ export function useCalendarDrop(t) {
                 ])
             ];
     
-            if (!isFirstEvent) {
-                modalOptions.push(
-                    h("div", { class: "mb-3" }, [
-                        h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
-                            h("input", {
-                                type: "radio",
-                                name: "editOption",
-                                value: "EDIT_A",
-                                class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
-                                onChange: (e) => {
-                                    editOption.value = e.target.value;
-                                },
-                            }),
-                            h("span", { class: "text-lg" }, t('options.recurrence.edit.all')),
-                        ]),
-                    ])
-                );
-            }
+            // if (!isFirstEvent) {
+            //     modalOptions.push(
+            //         h("div", { class: "mb-3" }, [
+            //             h("label", { class: "flex items-center space-x-4 cursor-pointer" }, [
+            //                 h("input", {
+            //                     type: "radio",
+            //                     name: "editOption",
+            //                     value: "EDIT_A",
+            //                     class: "form-radio w-5 h-5 text-blue-600 cursor-pointer",
+            //                     onChange: (e) => {
+            //                         editOption.value = e.target.value;
+            //                     },
+            //                 }),
+            //                 h("span", { class: "text-lg" }, t('options.recurrence.edit.all')),
+            //             ]),
+            //         ])
+            //     );
+            // }
     
             Modal.confirm({
                 title: t('options.recurrence.edit.title'),

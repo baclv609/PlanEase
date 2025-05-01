@@ -11,8 +11,16 @@ import {
 } from "@ant-design/icons-vue";
 import { useRoute, useRouter } from "vue-router";
 import dayjs from 'dayjs';
+import 'dayjs/locale/vi';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import axios from 'axios';
 import { useI18n } from 'vue-i18n';
+
+
+dayjs.extend(isSameOrBefore);
+dayjs.extend(isSameOrAfter);
+dayjs.locale('vi');
 
 const router = useRouter();
 const route = useRoute();
@@ -65,14 +73,19 @@ const toggleFilters = () => {
 };
 
 watch(start, (newStart) => {
-    if (newStart) {
-        end.value = newStart;
+    // Nếu chưa có end, gán end là 1 ngày sau start
+    if (!end.value) {
+        end.value = dayjs(newStart).add(1, 'day'); // Chỉ sử dụng dayjs, không format thành chuỗi
+    } else if (dayjs(newStart).isSameOrAfter(dayjs(end.value), 'day')) {
+        // Nếu start >= end thì đẩy end lên 1 ngày sau start
+        end.value = dayjs(newStart).add(1, 'day'); // Chỉ sử dụng dayjs, không format thành chuỗi
     }
 });
 
 watch(end, (newEnd) => {
-    if (newEnd && newEnd < start.value) {
-        start.value = end.value;
+    if (newEnd && dayjs(newEnd).isSameOrBefore(dayjs(start.value), 'day')) {
+        // Nếu end <= start thì đẩy start lên 1 ngày trước end
+        start.value = dayjs(newEnd).subtract(1, 'day'); // Chỉ sử dụng dayjs, không format thành chuỗi
     }
 });
 
