@@ -454,6 +454,7 @@ const origin = ref(typeof window !== 'undefined' ? window.location.origin : '');
 const isLoading = ref(false);
 const originalIsRepeat = ref(false); // Lưu trạng thái ban đầu của is_repeat
 const originalAttendees = ref([]); // Lưu danh sách người tham gia ban đầu
+const originalUntil = ref(null); // Lưu giá trị until ban đầu
 
 const editOption = ref("EDIT_1");
 
@@ -473,6 +474,7 @@ const handleClose = () => {
         attendees: [],
         color_code: "#ff4d4f",
         is_reminder: false,
+        hasChangeUntil: false,
         reminder: [],
         is_repeat: false,
         is_done: false,
@@ -516,6 +518,8 @@ const updateFormStateFromProps = (event) => {
 
         originalIsRepeat.value = event.recurrence === 1;
         originalAttendees.value = event.attendees || [];
+        originalUntil.value = event.info?.extendedProps?.until != null ? dayjs.utc(event.info?.extendedProps?.until).tz(event.info?.extendedProps?.timezone) : null;
+
         // Xử lý ngày trong tuần nếu là sự kiện lặp lại theo tuần
         let byweekday = [];
         if (event.recurrence === 1 && event.info?.extendedProps?.freq === 'weekly') {
@@ -673,6 +677,7 @@ const formState = ref({
     is_reminder: false,
     reminder: [],
     is_repeat: false,
+    hasChangeUntil: false,
     is_done: false,
     is_busy: false,
     parent_id: null,
@@ -1392,6 +1397,26 @@ const checkPossibleTime = async (start, end, timezone, id) => {
   }
 };
 
+const hasChangeUntil = computed(() => {
+    const oldDate = originalUntil.value;
+  const newDate = formState.value.rrule?.until;
+
+  // Trường hợp 1: null → có giá trị
+  if (!oldDate && newDate) return true;
+
+  // Trường hợp 2: có giá trị → null
+  if (oldDate && !newDate) return true;
+
+  // Trường hợp 3: cả 2 đều null
+  if (!oldDate && !newDate) return false;
+
+  // Trường hợp 4: cả 2 đều có giá trị → so sánh ngày
+  const oldDay = dayjs(oldDate).startOf('day');
+  const newDay = dayjs(newDate).startOf('day');
+
+  return !oldDay.isSame(newDay);
+});
+
 // Hàm cập nhật sự kiện
 const updateEvent = async ({ code, date, id }) => {
     isLoading.value = true;
@@ -1428,7 +1453,7 @@ const updateEvent = async ({ code, date, id }) => {
             freq: formState.value.rrule?.freq || null,
             interval: formState.value.rrule?.interval ?? 1,
             count: formState.value.rrule?.count ?? null,
-            until: formState.value.rrule?.until ? formState.value.rrule.until.format("YYYY-MM-DD HH:mm:ss") : null,
+            until: formState.value.rrule?.until ? formState.value.rrule.until.format("YYYY-MM-DD 00:00:00") : null,
             byweekday: formState.value.rrule?.byweekday.length && formState.value.rrule?.freq === "weekly" ? formState.value.rrule.byweekday : null,
             bymonthday: formState.value.rrule?.bymonthday.length && formState.value.rrule?.freq === "monthly" ? formState.value.rrule.bymonthday : null,
             bymonth: formState.value.rrule?.bymonth.length && formState.value.rrule?.freq === "yearly" ? formState.value.rrule.bymonth : null,
@@ -1436,6 +1461,7 @@ const updateEvent = async ({ code, date, id }) => {
             is_private: formState.value.is_private ? 1 : 0,
             // path: formState.value.attachments.map(att => att.id),
             link: formState.value.link || null,
+            hasChangeUntil: hasChangeUntil.value,
         };
 
         editOption.value = "EDIT_1";
@@ -1462,6 +1488,8 @@ const updateEvent = async ({ code, date, id }) => {
         };
 
         console.log("data send",dataApi);
+        console.log("originalUntil",originalUntil.value);
+        console.log("formState.until",dataApi.until);
 
         const res = await axios.put(`${import.meta.env.VITE_API_BASE_URL}tasks/${id}`, dataApi, {
             headers: {
