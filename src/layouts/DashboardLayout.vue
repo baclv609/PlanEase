@@ -51,7 +51,7 @@ const handleLogout = async () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user');
 
-    message.success('Đăng xuất thành công');
+    // message.success('Đăng xuất thành công');
     router.push({ name: 'home' });
   } catch (error) {
     message.error('Có lỗi xảy ra khi đăng xuất');

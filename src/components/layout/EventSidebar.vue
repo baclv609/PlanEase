@@ -64,7 +64,7 @@
         </a-list>
 
         <!-- Nút xem thêm -->
-        <div v-if="hasMoreTasks" class="text-center mt-3">
+        <div v-if="hasMoreTasks" class="text-center mt-1">
           <a-button type="link" @click="viewMoreEvents">
             {{ t("common.viewMore") }}
           </a-button>
@@ -73,7 +73,7 @@
     </div>
 
     <!-- Calendars của tôi -->
-    <div class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
+    <div class="mt-2 bg-[#FEF9EF] rounded-lg p-3">
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-lg font-semibold">{{ $t("calendar.calendarSection.title") }}</h3>
         <PlusOutlined @click="isModalOpenAddTag = true"
@@ -128,12 +128,12 @@
     </div>
 
     <!-- Thẻ được chia sẻ -->
-    <div v-if="sharedCalendars.length" class="mt-5 bg-[#FEF9EF] rounded-lg p-3">
-      <div class="flex justify-between items-center mb-3">
+    <div v-if="sharedCalendars.length" class="mt-2 bg-[#FEF9EF] rounded-lg p-3">
+      <div class="flex justify-between items-center mb-1">
         <h3 class="text-lg font-semibold">{{ $t("calendar.shareSection.title") }}</h3>
       </div>
 
-      <div class="flex flex-col gap-2">
+      <div class="">
         <div v-for="calendar in sharedCalendars" :key="calendar.id"
           class="flex bg-[#FDE4B2] justify-between p-1 mb-1 rounded-lg shadow-sm hover:shadow-md items-center transition-all">
           <div class="flex items-center">
@@ -147,11 +147,19 @@
             <EllipsisOutlined class="text-gray-500 text-lg cursor-pointer hover:text-black transition" />
             <template #overlay>
               <a-menu>
+                <a-menu-item @click="viewDetails(calendar.id)">{{ t('calendar.calendarSection.details')
+                }}</a-menu-item>
                 <a-menu-item @click="displayOnly(calendar.id)">
                   {{ t('calendar.calendarSection.displayOnly') }}
                 </a-menu-item>
+                <a-menu-item v-if="canEditTag(calendar)" @click="openUpdateCalendar(calendar.id)">
+                  {{ t("calendar.calendarSection.edit") }}
+                </a-menu-item>
+
                 <a-menu-item @click="leaveTagJoined(calendar.id)">
-                  Rời khỏi thẻ này
+                  <span class="text-red-500 font-semibold hover:bg-red-50 block w-full">
+                    {{ t("calendar.leaveTag.leaveTag") }}
+                  </span>
                 </a-menu-item>
               </a-menu>
             </template>
@@ -209,6 +217,7 @@ import UpdateTagModal from "@/components/modal/UpdateTagModal.vue";
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem("access_token");
+const user = JSON.parse(localStorage.getItem("user"));
 
 const { t } = useI18n();
 
@@ -377,6 +386,16 @@ const formattedUpcomingTasks = computed(() => {
 
 // 4. Thêm interval refresh trong onMounted
 onMounted(() => {
+  echoStore.echo.private(`App.Models.User.${user.id}`)
+      .listen(".tag.listTagUpdated", (event) => {      
+        console.log("tag được thay đổi", event);
+        // handleEventModalSuccess();
+        fetchCalendars();
+      });
+
+    console.log("📡 Lắng nghe realtime trong EventSidebar.vue");
+
+
   store.fetchUpcomingTasks();
   isInitialDataLoaded.value = true;
 
@@ -384,6 +403,7 @@ onMounted(() => {
   refreshInterval = setInterval(() => {
     store.fetchUpcomingTasks();
   }, 60000);
+
 });
 
 // 5.
@@ -595,13 +615,13 @@ const fetchCalendars = async () => {
 
     if (sharedTags.data.code === 200) {
       sharedCalendars.value = sharedTags.data.data;
-      console.log("sharedCalendars.value", sharedCalendars.value);
+      // console.log("sharedCalendars.value", sharedCalendars.value);
     } else {
       message.error("Không thể lấy danh sách tags được chia sẻ");
     }
   } catch (error) {
     console.error("Lỗi khi lấy danh sách tags:", error);
-    message.error("Lỗi kết nối đến server");
+    // message.error("Lỗi kết nối đến server");
   }
 };
 
@@ -858,15 +878,41 @@ const deleteCalendar = async (calendarId) => {
 };
 
 // Update
+// const openUpdateCalendar = (calendarId) => {
+//   const calendar = myCalendars.value.find((cal) => cal.id === calendarId);
+//   if (calendar) {
+//     // Chuyển đổi shared_user thành định dạng attendees
+//     const attendees =
+//       calendar.shared_user?.map((user) => ({
+//         label: user.email || user.user?.email || "",
+//         value: user.user_id || user.id || user.user?.id || "",
+//       })) || [];
+
+//     selectedTagCalendar.value = {
+//       id: calendar.id,
+//       name: calendar.name,
+//       color_code: calendar.color_code,
+//       description: calendar.description,
+//       shared_user: calendar.shared_user ?? [],
+//       attendees: attendees,
+//       attendeeRole: "viewer",
+//     };
+//     isModalOpenUpdateTag.value = true;
+//   }
+// };
 const openUpdateCalendar = (calendarId) => {
-  const calendar = myCalendars.value.find((cal) => cal.id === calendarId);
+  // Look in both myCalendars and sharedCalendars
+  const calendar = myCalendars.value.find((cal) => cal.id === calendarId) || 
+                  sharedCalendars.value.find((cal) => cal.id === calendarId);
+                  
   if (calendar) {
-    // Chuyển đổi shared_user thành định dạng attendees
-    const attendees =
-      calendar.shared_user?.map((user) => ({
-        label: user.email || user.user?.email || "",
-        value: user.user_id || user.id || user.user?.id || "",
-      })) || [];
+    // Convert shared_user to attendees format
+    const attendees = calendar.shared_user?.map((user) => ({
+      label: user.email || user.user?.email || "",
+      value: user.user_id || user.id || user.user?.id || "",
+      role: user.role || "viewer",
+      status: user.status || "pending"
+    })) || [];
 
     selectedTagCalendar.value = {
       id: calendar.id,
@@ -876,11 +922,11 @@ const openUpdateCalendar = (calendarId) => {
       shared_user: calendar.shared_user ?? [],
       attendees: attendees,
       attendeeRole: "viewer",
+      is_owner: calendar.is_owner
     };
     isModalOpenUpdateTag.value = true;
   }
 };
-
 // onBeforeUnmount(() => {
 // echoStore.stopListening();
 // });
@@ -937,6 +983,17 @@ const updateSelectedCalendars = (newSelectedCalendars) => {
 
   hiddenTagsStore.setHiddenTags(unselectedTags);
 };
+
+function canEditTag(tag) {
+
+// const user = localStorage.getItem("user");
+const currentUserId = user ? user.id : null;
+
+  if (!tag) return false;
+  const shared = tag.shared_user?.find(u => u.user_id === currentUserId)
+  return shared?.role === 'editor'
+}
+
 </script>
 
 <style scoped>

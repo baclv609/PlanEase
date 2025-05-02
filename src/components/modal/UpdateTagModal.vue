@@ -1,6 +1,13 @@
 <template>
-  <a-modal :open="open" :title="t('calendar.updateTag')" @ok="handleUpdateOk" :confirm-loading="confirmLoading"
-    @update:open="$emit('update:open', $event)">
+  <a-modal 
+    :open="open" 
+    :title="t('calendar.updateTag')" 
+    @ok="handleUpdateOk" 
+    :confirm-loading="confirmLoading"
+    @update:open="$emit('update:open', $event)"
+    :ok-text="t('common.save')"
+    :cancel-text="t('common.cancel')"
+  >
     <a-form layout="vertical" :model="formState" :rules="rules" ref="formRef">
       <div class="flex gap-4">
         <!-- Input: Chiếm phần lớn không gian -->
@@ -44,7 +51,7 @@
 
       <div class="bg-gray-50 rounded-lg">
         <!-- Invite by Email -->
-        <a-select show-search :placeholder="$t('event.guests')" :options="state.data" :filter-option="false"
+        <a-select v-if="formState.is_owner" show-search :placeholder="$t('event.guests')" :options="state.data" :filter-option="false"
           :loading="state.fetching" @search="fetchUser" @select="handleUserSelect" :value="null" class="w-full">
           <template #option="{ label, value, first_name, last_name, avatar }">
             <div class="flex items-center">
@@ -72,42 +79,30 @@
             </div>
 
             <div class="ml-auto flex items-center">
-              <a-dropdown :trigger="['click']">
-                <template #overlay>
-                  <a-menu>
-                    <a-menu-item key="editor" @click="() => handleRoleChange(user, 'editor')">{{
-                      $t('event.roles.editor') }}</a-menu-item>
-                    <a-menu-item key="viewer" @click="() => handleRoleChange(user, 'viewer')">{{
-                      $t('event.roles.viewer') }}</a-menu-item>
-                  </a-menu>
-                </template>
-                <a-button type="text" size="small">
-                  {{ user.role === 'editor' ? $t('event.roles.editor') : $t('event.roles.viewer') }}
-                  <CaretDownOutlined />
-                </a-button>
-              </a-dropdown>
+              <div v-if="formState.is_owner">
+                <a-dropdown  :trigger="['click']">
+                  <template #overlay>
+                    <a-menu>
+                      <a-menu-item key="editor" @click="() => handleRoleChange(user, 'editor')">{{
+                        $t('event.roles.editor') }}</a-menu-item>
+                      <a-menu-item key="viewer" @click="() => handleRoleChange(user, 'viewer')">{{
+                        $t('event.roles.viewer') }}</a-menu-item>
+                    </a-menu>
+                  </template>
+                  <a-button type="text" size="small">
+                    {{ user.role === 'editor' ? $t('event.roles.editor') : $t('event.roles.viewer') }}
+                    <CaretDownOutlined />
+                  </a-button>
+                </a-dropdown>
+              </div>
+              <span v-else>{{ user.role === 'editor' ? $t('event.roles.editor') : $t('event.roles.viewer') }}</span>
               <a-tag :color="getStatusColor(user.status)" class="ml-2">
-                {{ user.status === 'pending' ? 'Chờ xác nhận' : 'Đã tham gia' }}
+                {{ user.status === 'pending' ? $t('event.status.pending') : $t('event.status.yes') }}
               </a-tag>
               <a-button v-if="formState.is_owner" type="text" danger size="small" class="ml-2" @click="() => showDeleteConfirm(user)">
                  <DeleteOutlined />
                </a-button>
-              <!-- <a-dropdown :trigger="['click']">
-                <template #overlay>
-                  <a-menu>
-                    <a-menu-item key="transfer" @click="() => handleTransferOwnership(user)">
-                      {{ $t('options.participants.leave.title') }}
-                    </a-menu-item>
-                    <a-menu-divider />
-                    <a-menu-item key="remove" danger @click="() => showDeleteConfirm(user)">
-                      {{ $t('event.delete') }}
-                    </a-menu-item>
-                  </a-menu>
-                </template>
-                <a-button type="text" size="small">
-                  <MoreOutlined />
-                </a-button>
-              </a-dropdown> -->
+
             </div>
           </div>
         </div>
@@ -461,7 +456,7 @@ const handleRoleChange = (user, newRole) => {
 
 
 const showDeleteConfirm = async (user) => {
-    const contentMessage = 'Bạn có muốn xóa người dùng này khỏi tag? Các sự kiện (task) của người dùng sẽ bị ảnh hưởng.';
+    const contentMessage = t('tag.contentMessage');
 
     Modal.confirm({
         title: t('options.recurrence.delete.confirm'),
@@ -472,7 +467,7 @@ const showDeleteConfirm = async (user) => {
         async onOk() {
             try {
                 Modal.confirm({
-                    title: 'Bạn có muốn giữ lại các task của người này không?',
+                    title: t('tag.keepTasksTitle'),
                     content: h('div', [
                         h('div', { class: 'mb-3' }, [
                             h('label', { class: 'flex items-center cursor-pointer' }, [
@@ -482,7 +477,7 @@ const showDeleteConfirm = async (user) => {
                                     value: 'keep',
                                     class: 'mr-2'
                                 }),
-                                'Giữ lại các task'
+                                t('tag.keepTasks')
                             ])
                         ]),
                         h('div', [
@@ -493,12 +488,12 @@ const showDeleteConfirm = async (user) => {
                                     value: 'delete',
                                     class: 'mr-2'
                                 }),
-                                'Xóa các task'
+                                t('tag.deleteTask')
                             ])
                         ])
                     ]),
-                    okText: 'Xác nhận',
-                    cancelText: 'Hủy',
+                    okText: t('common.confirm'),
+                    cancelText: t('common.cancel'),
                     async onOk() {
                         const selectedOption = document.querySelector('input[name="taskOption"]:checked')?.value;
                         if (selectedOption === 'keep') {

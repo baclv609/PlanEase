@@ -1,5 +1,6 @@
 <template>
-    <a-modal :open="open" :title="t('calendar.addTag')" @ok="handleOk" @update:open="$emit('update:open', $event)"  :confirm-loading="confirmLoading">
+    <a-modal :open="open" :title="t('calendar.addTag')" @ok="handleOk" @update:open="$emit('update:open', $event)"  :confirm-loading="confirmLoading"  :ok-text="t('common.save')"
+    :cancel-text="t('common.cancel')">
         <a-form layout="vertical" :model="formState" :rules="rules" ref="formRef">
             <div class="flex gap-4">
                 <!-- Input: Chiếm phần lớn không gian -->
