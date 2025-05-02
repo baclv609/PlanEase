@@ -94,8 +94,7 @@ const updateChart = () => {
           y2: 0
         },
         stops: [
-          [0, '#ffcc77'],
-          [0.5, '#15c5b2'],
+          [0, '#15c5b2'],
           [1, '#227ca0']
         ]
       }
@@ -119,3 +118,34 @@ const formatDisplayDate = (date) => {
 
 watch(() => props.stats, updateChart, { immediate: true });
 </script>
+
+<style scoped>
+.chart-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.highcharts-figure {
+  min-width: 310px;
+  max-width: 100%;
+  margin: 0;
+  height: calc(100% - 40px);
+}
+
+#users-chart {
+  height: 100%;
+  width: 100%;
+  min-height: 400px;
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #227CA0;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 8px 0;
+}
+</style>

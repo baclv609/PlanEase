@@ -96,7 +96,7 @@
               <a-col :span="12">
                 <a-form-item label="Tên" class="form-item">
                   <a-input 
-                    v-model:value="user.first_name" 
+                    v-model:value="formData.first_name" 
                     :class="{'error-input': errors.first_name}"
                     placeholder="Nhập tên"
                   />
@@ -108,7 +108,7 @@
               <a-col :span="12">
                 <a-form-item label="Họ" class="form-item">
                   <a-input 
-                    v-model:value="user.last_name" 
+                    v-model:value="formData.last_name" 
                     :class="{'error-input': errors.last_name}"
                     placeholder="Nhập họ"
                   />
@@ -123,7 +123,7 @@
               <a-col :span="12">
                 <a-form-item label="Giới tính" class="form-item">
                   <a-select 
-                    v-model:value="user.gender"
+                    v-model:value="formData.gender"
                     placeholder="Chọn giới tính"
                   >
                     <a-select-option value="male">Nam</a-select-option>
@@ -134,7 +134,7 @@
               <a-col :span="12">
                 <a-form-item label="Số điện thoại" class="form-item">
                   <a-input 
-                    v-model:value="user.phone" 
+                    v-model:value="formData.phone" 
                     :class="{'error-input': errors.phone}"
                     placeholder="Nhập số điện thoại"
                   />
@@ -147,7 +147,7 @@
 
             <a-form-item label="Địa chỉ" class="form-item">
               <a-input 
-                v-model:value="user.address" 
+                v-model:value="formData.address" 
                 :class="{'error-input': errors.address}"
                 placeholder="Nhập địa chỉ"
               />
@@ -203,6 +203,7 @@ import unknowUser from '@/assets/images/unknow_user.jpg';
 const open = ref(false);
 const activeTab = ref('1');
 const user = ref({});
+const formData = ref({});
 const isLoading = ref(false);
 const fileList = ref([]);
 const dirApi = import.meta.env.VITE_API_BASE_URL;
@@ -234,6 +235,7 @@ const fetchUserProfile = async () => {
 
     if (response.data.code === 200) {
       user.value = response.data.data;
+      formData.value = { ...response.data.data };
     }
   } catch (error) {
     message.error('Không thể lấy thông tin người dùng');
@@ -245,11 +247,11 @@ const saveChanges = async () => {
     isLoading.value = true;
     const response = await axios.put(`${dirApi}user/update-profile`,
       {
-        first_name: user.value.first_name,
-        last_name: user.value.last_name,
-        gender: user.value.gender,
-        address: user.value.address,
-        phone: user.value.phone,
+        first_name: formData.value.first_name,
+        last_name: formData.value.last_name,
+        gender: formData.value.gender,
+        address: formData.value.address,
+        phone: formData.value.phone,
       },
       {
         headers: {

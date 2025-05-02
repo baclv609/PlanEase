@@ -71,9 +71,9 @@ onMounted(() => {
 
 <style scoped>
 .dashboard-container {
-  padding: 24px;
   background: #f0f2f5;
   min-height: 100vh;
+  max-width: 100%;
 }
 
 .page-title {
@@ -84,6 +84,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 16px;
 
   .subtitle {
     font-size: 14px;
@@ -95,11 +96,6 @@ onMounted(() => {
 
 .filter-section {
   margin-bottom: 24px;
-
-  :deep(.ant-card) {
-    border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  }
 }
 
 .filter-container {
@@ -207,8 +203,8 @@ onMounted(() => {
 }
 
 .chart-card {
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  min-height: 500px;
+  height: 100%;
 }
 
 .highcharts-figure {
@@ -226,8 +222,13 @@ onMounted(() => {
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: auto auto;
   gap: 24px;
   margin-top: 24px;
+}
+
+.charts-grid > :last-child {
+  grid-column: 1 / -1;
 }
 
 .chart-title {
