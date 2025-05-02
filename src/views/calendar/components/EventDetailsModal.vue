@@ -1577,7 +1577,7 @@ const isChanged = computed(() => {
         </div>
       </a-tab-pane>
 
-      <a-tab-pane key="attachments" :tab="t('EventDetailsModal.tab.attachments')" v-if="event.type == 'event'">
+      <a-tab-pane key="attachments" :tab="t('EventDetailsModal.tab.attachments')" v-if="event.type == 'event' && (event.user_id == user.id || (event.attendees.length > 0 && event.attendees.some(attendee => attendee.user_id == user.id && attendee.status == 'yes')))">
         <div class="p-4">
           <div 
             v-if="files?.length > 0" 
@@ -1619,7 +1619,7 @@ const isChanged = computed(() => {
                       {{ t('EventDetailsModal.attachments.download') }}
                     </a>
                   </div>
-                  <div class="mt-3">
+                  <div class="mt-3" v-if="event.user_id == user.id || (event.attendees.length > 0 && event.attendees.some(attendee => attendee.user_id == user.id && attendee.role == 'editor' && attendee.status == 'yes'))">
                     <a @click.prevent="deleteFile(file.file_name)" 
                       class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white !bg-[#FE6D73]">
                       <DeleteOutlined class="mr-2" />
