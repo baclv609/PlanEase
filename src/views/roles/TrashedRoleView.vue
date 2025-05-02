@@ -1,6 +1,5 @@
-<template>
+<!-- <template>
     <div class="trashed-roles-container">
-        <!-- Header Section -->
         <div class="header-section">
             <a-button class="back-button" type="primary" ghost @click="goBack">
                 <template #icon><ArrowLeftOutlined /></template>
@@ -12,7 +11,6 @@
             </div>
         </div>
 
-        <!-- Main Content -->
         <a-card :bordered="false" class="content-card">
             <a-table 
                 :columns="columns" 
@@ -228,7 +226,6 @@ const goBack = () => {
     router.push('/dashboard/roles');
 };
 
-// Fetch data when component mounted
 fetchDeletedRoles();
 </script>
 
@@ -393,7 +390,6 @@ fetchDeletedRoles();
     }
 }
 
-/* Pagination styles */
 :deep(.ant-pagination-item-active) {
     border-color: #15C5B2;
     
@@ -416,7 +412,6 @@ fetchDeletedRoles();
     color: #15C5B2;
 }
 
-/* Popconfirm styles */
 :deep(.ant-popover-buttons) {
     .ant-btn-primary {
         background: linear-gradient(135deg, #15C5B2, #227CA0);
@@ -427,4 +422,4 @@ fetchDeletedRoles();
         }
     }
 }
-</style>
+</style> -->

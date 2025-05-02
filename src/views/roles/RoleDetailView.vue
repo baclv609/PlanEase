@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
     <div class="page-container">
         <div class="header-section">
             <a-button class="back-button" type="primary" ghost @click="goBack">
@@ -299,4 +299,4 @@ export default {
 :deep(.ant-spin-dot i) {
     background-color: #15C5B2;
 }
-</style>
+</style> -->

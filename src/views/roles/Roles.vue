@@ -58,7 +58,6 @@
       </a-col>
     </a-row>
 
-    <!-- Main Content Card -->
     <a-card :bordered="false" class="content-card">
       <template #title>
         <div class="card-title">
@@ -257,14 +256,12 @@ const handleCreate = () => {
 };
 
 const activeRoles = computed(() => {
-  // Chỉ tính những role đang hoạt động
   return dataSource.value.list.length;
 });
 
 const deletedRoles = ref(0);
 
 const totalRoles = computed(() => {
-  // Tổng số role = role đang hoạt động + role đã xóa
   return activeRoles.value + deletedRoles.value;
 });
 
@@ -334,7 +331,6 @@ const isAdminRole = (record) => {
   color: white;
 }
 
-/* Đồng bộ gradient cho các stat cards */
 .total-roles {
   background: linear-gradient(135deg, #15C5B2, #227CA0);
 }
@@ -347,7 +343,6 @@ const isAdminRole = (record) => {
   background: linear-gradient(135deg, #ff7eb3 0%, #ff758c 50%, #ff8c7f 100%);
 }
 
-/* Đồng bộ màu cho statistics */
 :deep(.ant-statistic-title) {
   color: #8c8c8c;
 }
@@ -409,13 +404,11 @@ const isAdminRole = (record) => {
   }
 }
 
-/* Thêm animation cho icon */
 .custom-button:hover .anticon {
   transform: scale(1.1);
   transition: transform 0.3s ease;
 }
 
-/* Thêm spacing cho button container */
 :deep(.ant-space) {
   gap: 16px;
 }
@@ -456,7 +449,6 @@ const isAdminRole = (record) => {
   }
 }
 
-/* Đồng bộ style cho các action buttons */
 :deep(.ant-btn-circle) {
   width: 36px;
   height: 36px;
@@ -494,7 +486,6 @@ const isAdminRole = (record) => {
   }
 }
 
-/* Đồng bộ style cho popconfirm */
 :deep(.ant-popover-buttons) {
   .ant-btn-primary {
     background: linear-gradient(135deg, #15C5B2, #227CA0);
@@ -506,7 +497,6 @@ const isAdminRole = (record) => {
   }
 }
 
-/* Đồng bộ style cho pagination */
 :deep(.ant-pagination-item-active) {
   border-color: #15C5B2;
   
