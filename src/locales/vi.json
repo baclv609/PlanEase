@@ -298,14 +298,14 @@
       "eventType": {
         "label": "Loại sự kiện",
         "type": "Kiểu",
-        "tag": "Lịch",
+        "tag": "Thẻ",
         "options": {
           "event": "Sự kiện",
           "task": "Việc cần làm"
         }
       },
       "color": {
-        "label": "Chọn màu",
+        "label": "Màu sắc",
         "options": {
           "blue": "Xanh dương",
           "red": "Đỏ",
@@ -808,7 +808,7 @@
       "enterLocation": "Nhập địa điểm",
       "chooseDate": "Chọn ngày"
     },
-    "searchByTag": "Tìm kiếm theo lịch",
+    "searchByTag": "Tìm kiếm theo thẻ",
     "title": "Tiêu đề",
     "location": "Địa điểm",
     "start": "Ngày bắt đầu",

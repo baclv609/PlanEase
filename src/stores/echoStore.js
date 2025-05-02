@@ -38,20 +38,20 @@ export const useEchoStore = defineStore("echo", () => {
             .listen(".task.reminder", async (event) => {
                 if (!("Notification" in window)) {
                     // console.log("Trình duyệt này không hỗ trợ thông báo");
-                    alert("🔔🔔 Nhắc nhở sự kiện sắp đến")
+                    alert(`🔔🔔 Nhắc nhở sự kiện sắp đến: ${event.message}`)
                     return;
                 }
 
                 if (Notification.permission === "granted") {
                     new Notification("🔔🔔 Nhắc nhở sự kiện", {
-                        body: "Có một sự kiện sắp đến!",
+                        body: event?.message || "Có một sự kiện sắp đến",
                         icon: LogoIcon
                     });
                 } else if (Notification.permission !== "denied") {
                     const permission = await Notification.requestPermission();
                     if (permission === "granted") {
                         new Notification("🔔🔔 Nhắc nhở sự kiện", {
-                            body: "Có một sự kiện sắp đến!",
+                            body: event?.message || "Có một sự kiện sắp đến",
                             icon: LogoIcon
                         });
                     }

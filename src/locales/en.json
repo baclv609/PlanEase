@@ -290,14 +290,14 @@
       "eventType": {
         "label": "Event Type",
         "type": "Type",
-        "tag": "Calendar",
+        "tag": "Tag",
         "options": {
           "event": "Event",
           "task": "Task"
         }
       },
       "color": {
-        "label": "Choose Color",
+        "label": "Color",
         "options": {
           "blue": "Blue",
           "red": "Red",
