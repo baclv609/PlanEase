@@ -549,10 +549,20 @@ const fetchBannedUsersCount = async () => {
     background: #fafafa;
     font-weight: 600;
     padding: 16px;
+
+    &:last-child {
+      padding-right: 24px;
+      text-align: center;
+      width: 150px;
+    }
   }
 
   :deep(.ant-table-tbody > tr > td) {
     padding: 16px;
+
+    &:last-child {
+      padding-right: 24px;
+    }
   }
 
   :deep(.ant-table-tbody > tr) {
@@ -585,14 +595,26 @@ const fetchBannedUsersCount = async () => {
   display: flex;
   gap: 8px;
   justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 40px;
 
   .action-button, .view-button {
+    flex: 0 0 35px;
     width: 35px;
     height: 35px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s;
+    margin: 0;
+    padding: 0;
+    border-radius: 50%;
+
+    :deep(.anticon) {
+      font-size: 16px;
+      line-height: 1;
+    }
 
     &:hover {
       transform: translateY(-2px);
@@ -601,7 +623,7 @@ const fetchBannedUsersCount = async () => {
   }
 
   .view-button {
-    background: linear-gradient(70deg, #ffcc77 0%, #15c5b2 50%, #227ca0 100%);
+    background: linear-gradient(70deg, #15c5b2 50%, #227ca0 100%);
     border: none;
     color: white;
     
