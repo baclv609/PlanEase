@@ -116,9 +116,13 @@
       "viewer": "View Only",
       "editor": "Can Edit"
     },
+    "status": {
+      "pending": "Pending",
+      "yes": "Has participated"
+    },
     "error": {
       "fetch_tags": "Cannot fetch your tags list",
-      "fetch_shared_tags": "Cannot fetch shared tags list",
+      "fetch_shared_tags": "There is no one in the card list",
       "server_connection": "Server connection error",
       "enter_tag_name": "Please enter tag name!",
       "tag_exists": "This tag already exists!",
@@ -152,7 +156,8 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "leave": "Leave",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "save": "Save"
 
   },
   "calendar": {
@@ -197,13 +202,15 @@
     "shareSection": {
       "title": "Share tag",
       "share": "Share",
-      "shareLink": "Share link"
+      "shareLink": "Share link",
+      "sharedBy": "Shared by"
     },
     "leaveTag": {
       "confirmTitle": "Confirm Leave Tag",
       "confirmContent": "Are you sure you want to leave the tag? This action will remove you from all events and tasks associated with this tag.",
       "success": "Tag removed successfully!",
-      "error": "Failed to leave tag. Please try again."
+      "error": "Failed to leave tag. Please try again.",
+      "leaveTag": "Leave tag"
     }
   },
   "errors": {
@@ -687,7 +694,19 @@
       "success": {
         "accepted": "You have successfully accepted the tag invitation."
       }
-    }
+    },
+    "deleteConfirm": "Do you want to remove this user from the tag?",
+    "deleteWarning": "The user's events (tasks) will be affected.",
+    "keepTasksTitle": "Do you want to keep this user's tasks?",
+    "keepTasks": "Keep tasks",
+    "deleteTasks": "Delete tasks",
+    "selectOption": "Please select an option",
+    "deleteSuccess": "User removed from tag successfully",
+    "deleteFailed": "Failed to remove user",
+    "deleteTask": "Delete tasks",
+    "contentMessage": "Do you want to remove this user from the tag? The user's events will be affected.",
+    "owner": "Owner",
+    "you": "You"
   },
   "ResetPassword": {
     "label": {

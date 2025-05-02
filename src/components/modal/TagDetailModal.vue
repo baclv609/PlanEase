@@ -62,7 +62,31 @@
                             </template>
                         </a-select>
                     </div>
+
+
+                    <!-- chủ sở hữu -->
+                    <div class="flex items-center p-3 border-b bg-gray-50 rounded-t">
+                        <a-avatar
+                            :src="tagData.owner.avatar ? tagData.owner.avatar : null"
+                            :style="{ backgroundColor: !tagData.owner.avatar ? '#1890ff' : 'transparent' }"
+                        >
+                            {{ !tagData.owner.avatar ? getInitials(tagData.owner.first_name, tagData.owner.last_name) : '' }}
+                        </a-avatar>
+
+                        <div class="ml-3">
+                            <div class="font-medium text-sm">
+                            {{ tagData.owner.first_name }} {{ tagData.owner.last_name }}
+                            <span class="ml-1 text-xs text-blue-500">({{ $t('tag.owner') }})</span>
+                            </div>
+                            <div class="text-xs text-gray-500">{{ tagData.owner.email }}</div>
+                        </div>
+                        <a-tag v-if="tagData.is_owner" class="ml-auto" color="blue">
+                            {{ tagData.owner.user_id === user.id ?  $t('tag.you') : $t('tag.owner') }}
+                        </a-tag>
+                    </div>
+
                     <div v-if="tagData.shared_user && tagData.shared_user.length > 0">
+                    
                         <div v-for="(user, index) in tagData.shared_user" :key="index"
                             class="flex items-center p-3 border-b last:border-b-0">
                             <a-avatar :src="user.avatar ? `${user.avatar}` : null"
@@ -91,7 +115,7 @@
                                     </a-button>
                                 </a-dropdown>
                                 <a-tag :color="getStatusColor(user.status)" class="ml-2">
-                                    {{ user.status === 'pending' ? 'Chờ xác nhận' : 'Đã tham gia' }}
+                                    {{ user.status === 'pending' ? $t('event.status.pending') : $t('event.status.yes') }}
                                 </a-tag>
 
                                 <!-- <a-dropdown v-if="tagData.is_owner" :trigger="['click']">
@@ -199,6 +223,9 @@ const tempRoles = reactive({});
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem("access_token");
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+
 
 const props = defineProps({
     open: Boolean,  
@@ -218,7 +245,7 @@ const tagData = ref({
     created_at: '',
     updated_at: '',
     is_owner: false,
-    owner: null
+    owner: []
 });
 const is_owner = ref()
 // Track original data for comparison
@@ -270,16 +297,21 @@ const saveRoleChange = (user) => {
 };
 
 const fetchCalendarDetail = async (calendarId) => {
+    // const user = JSON.parse(localStorage.getItem('user'));
+    // console.log("user", user);
+
     try {
         const res = await axios.get(`${dirApi}tags/${calendarId}/show`, {
             headers: { Authorization: `Bearer ${token}` },
         });
+        console.log("res.data.data", res.data.data);
         tagData.value = {
             ...res.data.data.tag,
             invite_link: res.data.data.invite_link,
             is_owner: res.data.data.is_owner,
             owner: res.data.data.owner
         };
+        console.log(tagData.value.owner);
         originalTagData.value = JSON.parse(JSON.stringify(tagData.value));
     } catch (error) {
         console.log("Lỗi khi lấy chi tiết tag calendar:", error);
@@ -658,18 +690,16 @@ const removeUserFromEvents = async (user, events = []) => {
 
 
 const showDeleteConfirm = async (user) => {
-    const contentMessage = 'Bạn có muốn xóa người dùng này khỏi tag? Các sự kiện (task) của người dùng sẽ bị ảnh hưởng.';
-
     Modal.confirm({
-        title: t('options.recurrence.delete.confirm'),
-        content: contentMessage,
-        okText: t('options.recurrence.delete.delete'),
+        title: t('tag.deleteConfirm'),
+        content: t('tag.deleteWarning'),
+        okText: t('common.delete'),
         okType: 'danger',
-        cancelText: t('options.recurrence.delete.cancel'),
+        cancelText: t('common.cancel'),
         async onOk() {
             try {
                 Modal.confirm({
-                    title: 'Bạn có muốn giữ lại các task của người này không?',
+                    title: t('tag.keepTasksTitle'),
                     content: h('div', [
                         h('div', { class: 'mb-3' }, [
                             h('label', { class: 'flex items-center cursor-pointer' }, [
@@ -679,7 +709,7 @@ const showDeleteConfirm = async (user) => {
                                     value: 'keep',
                                     class: 'mr-2'
                                 }),
-                                'Giữ lại các task'
+                                t('tag.keepTasks')
                             ])
                         ]),
                         h('div', [
@@ -690,12 +720,12 @@ const showDeleteConfirm = async (user) => {
                                     value: 'delete',
                                     class: 'mr-2'
                                 }),
-                                'Xóa các task'
+                                t('tag.deleteTasks')
                             ])
                         ])
                     ]),
-                    okText: 'Xác nhận',
-                    cancelText: 'Hủy',
+                    okText: t('common.confirm'),
+                    cancelText: t('common.cancel'),
                     async onOk() {
                         const selectedOption = document.querySelector('input[name="taskOption"]:checked')?.value;
                         if (selectedOption === 'keep') {
@@ -703,7 +733,7 @@ const showDeleteConfirm = async (user) => {
                         } else if (selectedOption === 'delete') {
                             await deleteSharedUser(user, false);
                         } else {
-                            message.warning('Vui lòng chọn một tùy chọn');
+                            message.warning(t('tag.selectOption', 'Please select an option'));
                             return Promise.reject();
                         }
                     }

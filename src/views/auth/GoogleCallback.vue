@@ -39,7 +39,7 @@ onMounted(() => {
                 echoStore.initEcho();
                 echoStore.startListening();
 
-                message.success(response.data.message || 'Login successfully');
+                // message.success(response.data.message || 'Login successfully');
                 router.push({name: 'calendar'});
             }else{
                 message.error('Login failed');

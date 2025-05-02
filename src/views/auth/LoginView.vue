@@ -39,7 +39,7 @@ const onFinish = async (values) => {
     }
 
     if (res.data.code === 200) {
-      message.success(res.data.message || "Login successfully");
+      // message.success(res.data.message || "Login successfully");
 
       if (res.data.data.setting) {
         // console.log("res.data.data.setting", res.data.data.setting);
