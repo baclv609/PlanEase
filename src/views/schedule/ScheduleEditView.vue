@@ -272,7 +272,7 @@
             </div>
 
             <!-- Participants Section -->
-            <div class="form-section" v-if="formState.type == 'event'">
+            <div class="form-section" v-if="formState.type == 'event' && formState.user_id == user.id">
                 <div class="section-title">
                     <UserOutlined class="text-gray-500 mr-2" />
                     <span>{{ t('eventModal.sections.participants.label') }}</span>
@@ -289,7 +289,7 @@
                             <a-spin size="small" />
                         </template>
                     </a-select> -->
-                    <div class="flex gap-3" v-if="formState.user_id == user.id">
+                    <div class="flex gap-3">
                         <span>{{ t('eventModal.sections.participants.permissions.label') }}</span>
                         <div class="flex gap-4 items-center">
                             <a-radio-group v-model:value="formState.default_permission" class="flex gap-4">
