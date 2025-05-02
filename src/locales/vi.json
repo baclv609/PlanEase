@@ -129,21 +129,21 @@
       "yes": "Đã tham gia"
     },
     "error": {
-      "fetch_tags": "Không thể lấy danh sách tag của bạn",
+      "fetch_tags": "Không thể lấy danh sách thẻ của bạn",
       "fetch_shared_tags": "Không có ai trong danh sách thẻ",
       "server_connection": "Lỗi kết nối máy chủ",
-      "enter_tag_name": "Vui lòng nhập tên tag!",
+      "enter_tag_name": "Vui lòng nhập tên thẻ!",
       "tag_exists": "Tag này đã tồn tại!",
-      "add_tag_error": "Lỗi khi thêm tag: {message}",
+      "add_tag_error": "Lỗi khi thêm thẻ: {message}",
       "server_error": "Không thể kết nối đến máy chủ!",
-      "delete_tag_error": "Không thể xóa tag. Vui lòng thử lại.",
-      "update_tag_error": "Lỗi khi cập nhật tag!",
+      "delete_tag_error": "Không thể xóa thẻ. Vui lòng thử lại.",
+      "update_tag_error": "Lỗi khi cập nhật thẻ!",
       "general_error": "Đã xảy ra lỗi!"
     },
     "success": {
-      "tag_created": "Đã thêm tag: {name}",
-      "tag_deleted": "Đã xóa tag thành công!",
-      "tag_updated": "Đã cập nhật tag thành công!"
+      "tag_created": "Đã thêm thẻ thành công!",
+      "tag_deleted": "Đã xóa thẻ thành công!",
+      "tag_updated": "Đã cập nhật thẻ thành công!"
     }
   },
   "profile_drawer": {
@@ -211,7 +211,8 @@
     "shareSection": {
       "title": "Thẻ được chia sẻ",
       "share": "Chia sẻ",
-      "shareLink": "Chia sẻ link"
+      "shareLink": "Chia sẻ link",
+      "sharedBy": "chia sẻ bởi"
     },
     "leaveTag": {
     "confirmTitle": "Xác nhận rời thẻ",

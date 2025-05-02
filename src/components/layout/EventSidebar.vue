@@ -140,7 +140,13 @@
             <a-checkbox :checked="selectedCalendars.includes(calendar.id)"
               @change="e => handleCheckboxChange(calendar.id, e.target.checked)"
               :style="{ '--ant-checkbox-color': calendar.color_code }">
-              <span class="text-gray-700 text-sm font-medium">{{ calendar.name }}</span>
+              <span class="text-gray-700 text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]" :title="calendar.name + ' (Chia sẻ bởi: ' + calendar.owner.first_name + ' ' + calendar.owner.last_name + ')'">
+                {{ calendar.name }}
+                <span v-if="!calendar.is_owner" class="text-xs text-gray-600 ml-1">
+                  ({{ calendar.owner.first_name }} {{ calendar.owner.last_name }})
+                </span>
+              </span>
+
             </a-checkbox>
           </div>
           <a-dropdown :trigger="['click']">

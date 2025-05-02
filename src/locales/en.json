@@ -202,7 +202,8 @@
     "shareSection": {
       "title": "Share tag",
       "share": "Share",
-      "shareLink": "Share link"
+      "shareLink": "Share link",
+      "sharedBy": "Shared by"
     },
     "leaveTag": {
       "confirmTitle": "Confirm Leave Tag",
