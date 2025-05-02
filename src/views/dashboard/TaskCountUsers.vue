@@ -95,9 +95,8 @@ const renderChart = () => {
             y2: 0
           },
           stops: [
-            [0, '#ffcc77'],
-            [0.3, '#15c5b2'],
-            [0.7, '#15c5b2'],
+            [0, '#15c5b2'],
+            [0.5, '#15c5b2'],
             [1, '#227ca0']
           ]
         },
@@ -113,9 +112,8 @@ const renderChart = () => {
                 y2: 0
               },
               stops: [
-                [0, '#ffd699'],
-                [0.3, '#1ad4c0'],
-                [0.7, '#1ad4c0'],
+                [0, '#1ad4c0'],
+                [0.5, '#1ad4c0'],
                 [1, '#2a8db0']
               ]
             }
@@ -150,17 +148,20 @@ onMounted(() => {
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   grid-column: 1 / -1;
+  height: 100%;
 }
 
 .highcharts-figure {
   min-width: 310px;
   max-width: 100%;
-  margin: 1em auto;
+  margin: 0;
+  height: calc(100% - 40px);
 }
 
 #task-count-chart {
-  height: 400px;
+  height: 100%;
   width: 100%;
+  min-height: 400px;
 }
 
 .chart-title {
@@ -171,5 +172,6 @@ onMounted(() => {
   font-weight: 600;
   font-size: 16px;
   margin-bottom: 16px;
+  padding: 8px 0;
 }
 </style>
