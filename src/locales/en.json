@@ -839,5 +839,11 @@
       "accepted": "You have successfully accepted the tag invitation.",
       "rejected": "You have declined the invitation to join."
     }
+  },
+  "upload": {
+    "nameInvalid": "File name contains invalid characters. Contains only unaccented letters (A-Z, a-z), numbers (0-9), periods, underscores and dashes",
+    "nameTooLong": "File name cannot be longer than 50 characters",
+    "fileTooLarge": "File size must not be larger than 10 MB",
+    "exists": "File already exists"
   }
 }

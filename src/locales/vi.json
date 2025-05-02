@@ -846,5 +846,11 @@
       "accepted": "Bạn đã chấp nhận lời mời tham gia thẻ thành công.",
       "rejected": "Bạn đã từ chối lời mời tham gia."
     }
+  },
+  "upload": {
+    "nameInvalid": "Tên tệp chứa các ký tự không hợp lệ. Chỉ chứa chữ cái không dấu (A-Z, a-z), số (0-9), dấu chấm, gạch dưới và gạch ngang",
+    "nameTooLong": "Tên tệp không được dài hơn 50 ký tự",
+    "fileTooLarge": "Kích thước tệp không được lớn hơn 10 MB",
+    "exists": "Tệp đã tồn tại"
   }
 }

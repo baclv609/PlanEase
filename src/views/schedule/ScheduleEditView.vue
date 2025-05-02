@@ -1786,6 +1786,9 @@ watch(
 const filePresignedMap = ref({});
 const presignedUrls = ref([]);
 const fileUploads = ref([]);
+const invalidNameRegex = /[^a-zA-Z0-9._-]/;
+const MAX_FILENAME_LENGTH = 50;
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 // handle before upload
 const handleBeforeUpload = async (info) => {
@@ -1814,6 +1817,48 @@ const handleBeforeUpload = async (info) => {
     const newFiles = fileList
         .filter(f => f.originFileObj && !filePresignedMap.value[f.uid]) // Tránh reupload file đã xử lý
         .map(f => f.originFileObj);
+
+    for (const f of newFiles) {
+      const name = f.name;
+
+      if (invalidNameRegex.test(name)) {
+        message.warning(t('upload.nameInvalid'));
+        const index = fileList.findIndex(item => item.uid === f.uid);
+        if (index !== -1) {
+          fileList.splice(index, 1);
+        }
+        return false;
+      }
+
+      if (name.length > MAX_FILENAME_LENGTH) {
+        message.warning(t('upload.nameTooLong'));
+        const index = fileList.findIndex(item => item.uid === f.uid);
+        if (index !== -1) {
+          fileList.splice(index, 1);
+        }
+        return false;
+      }
+
+      if (f.size > MAX_FILE_SIZE) {
+        message.warning(t('upload.fileTooLarge'));
+        const index = fileList.findIndex(item => item.uid === f.uid);
+        if (index !== -1) {
+          fileList.splice(index, 1);
+        }
+      return false;
+    }
+
+      // Kiểm tra trùng tên với các file đã chọn
+      const isDuplicate = fileUploads.value.some(existing => existing.name === name);
+      if (isDuplicate) {
+        const index = fileList.findIndex(item => item.uid === f.uid);
+        if (index !== -1) {
+          fileList.splice(index, 1);
+        }
+        message.warning(t('upload.exists'));
+        return false;
+      }
+    }
 
     if (newFiles.length === 0) return false;
 
