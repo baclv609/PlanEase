@@ -33,8 +33,8 @@
                     <TagOutlined class="text-gray-500 mr-2" />
                     <span>{{ t('eventModal.sections.eventType.label') }}</span>
                 </div>
-                <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-                    <a-form-item name="type">
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-8">
+                    <a-form-item name="type" class="col-span-2">
                         <template #label>
                             {{ t('eventModal.sections.eventType.type') }}
                         </template>
@@ -43,7 +43,7 @@
                             <Select.Option value="task">{{ t('eventModal.sections.eventType.options.task') }}</Select.Option>
                         </Select>
                     </a-form-item>
-                    <a-form-item name="color_code">
+                    <a-form-item name="color_code" class="col-span-2">
                         <template #label>
                             {{ t('eventModal.sections.color.label') }}
                         </template>
@@ -58,14 +58,24 @@
                     </a-form-item>
 
                     <!-- Calendar Section -->
-                    <a-form-item name="tags" class="w-full" v-if="formState.type == 'event'">
+                    <a-form-item name="tags" class="w-full col-span-4" v-if="formState.type == 'event'">
                         <template #label>
                             {{ t('eventModal.sections.eventType.tag') }}
                         </template>
-                        <a-select v-if="formState.user_id == user.id" v-model:value="formState.tags" class="bg-gray-50 rounded-lg w-full" placeholder="Chọn loại"
-                            :options="tags"
+                        <a-select 
+                            v-if="formState.user_id == user.id" 
+                            v-model:value="formState.tags" 
+                            class="bg-gray-50 rounded-lg w-full" 
+                            placeholder="Chọn loại"
                             :disabled="formState.user_id != user.id">
-                            > </a-select>
+                            
+                            <a-select-option 
+                                v-for="tag in tags" 
+                                :key="tag.value" 
+                                :value="tag.value">
+                                <span v-html="tag.label"></span> <!-- Render HTML trong tên tag -->
+                            </a-select-option>
+                        </a-select>
                         <a-input type="text" disabled v-else class="bg-gray-50 rounded-lg w-full" v-model:value="formState.tag_name" />
                     </a-form-item>
 
@@ -1008,8 +1018,13 @@ const getAllTagByUser = async () => {
 
         if (res.data.code === 200) {
             myTags.value = res.data.data.owned;
-            myShareTags.value = res.data.data.shared_as_editor;
-            
+            myShareTags.value = res.data.data.shared_as_editor.map(tag => {
+            const ownerEmail = tag.owner?.email || '';
+                return {
+                ...tag,
+                name: `${tag.name} <span class="text-gray-500 text-xs">(${ownerEmail})</span>`
+                };
+            });
             allTags.value = [...myTags.value, ...myShareTags.value];
 
 
