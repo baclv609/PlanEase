@@ -147,7 +147,13 @@ const getAllTagByUser = async () => {
 
     if(res.data.code == 200) {
       myTags.value = res.data.data.owned;
-      myShareTags.value = res.data.data.shared_as_editor;
+      myShareTags.value = res.data.data.shared_as_editor.map(tag => {
+      const ownerEmail = tag.owner?.email || '';
+        return {
+          ...tag,
+          name: `${tag.name} <span class="text-gray-500 text-xs">(${ownerEmail})</span>`
+        };
+      });
       
       allTags.value = [...myTags.value, ...myShareTags.value];
 
@@ -187,14 +193,14 @@ watch(
   { immediate: true }
 );
 
-watch(
-  () => formState.value.is_private,
-  (newVal) => {
-    if(newVal) {
-      formState.value.attendees = [];
-    }
-  }
-)
+//watch(
+//  () => formState.value.is_private,
+//  (newVal) => {
+//    if(newVal) {
+//      formState.value.attendees = [];
+//    }
+//  }
+//)
 
 onMounted(() => {
   if(props.isAddEventModalVisible) {
@@ -1190,8 +1196,8 @@ const selectPlace = (place) => {
               <TagOutlined class="text-gray-500 mr-2" />
               <span>{{ t('eventModal.sections.eventType.label') }}</span>
             </div>
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <Form.Item name="type" class="mb-0">
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-8">
+              <Form.Item name="type" class="mb-0 col-span-2">
                 <template #label>
                   {{ t('eventModal.sections.eventType.type') }}
                 </template>
@@ -1201,7 +1207,7 @@ const selectPlace = (place) => {
                 </Select>
               </Form.Item>
 
-              <Form.Item name="color_code" class="mb-0">
+              <Form.Item name="color_code" class="mb-0 col-span-2">
                 <template #label>
                   {{ t('eventModal.sections.color.label') }}
                 </template>
@@ -1215,13 +1221,13 @@ const selectPlace = (place) => {
                 </a-select>
               </Form.Item>
 
-              <Form.Item name="tag" class="mb-0" v-if="formState.type == 'event'">
+              <Form.Item name="tag" class="mb-0 col-span-4" v-if="formState.type == 'event'">
                 <template #label>
                   {{ t('eventModal.sections.eventType.tag') }}
                 </template>
                 <Select v-model:value="formState.tag_id" :placeholder="t('eventModal.sections.eventType.label')" class="rounded-lg w-full">
                   <Select.Option v-for="tag in tags" :key="tag.id" :value="tag.id">
-                    {{ tag.name }}
+                    <span v-html="tag.name"></span>
                   </Select.Option>
                 </Select>
               </Form.Item>

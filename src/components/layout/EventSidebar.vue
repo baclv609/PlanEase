@@ -207,7 +207,7 @@ import dayjs from "dayjs";
 import { ref, onMounted, onBeforeUnmount, computed, onUnmounted, watch, h } from "vue";
 import { message, Modal } from "ant-design-vue";
 import { useRouter } from "vue-router";
-import axios from "axios";
+import axios, { all } from "axios";
 import { useEchoStore } from "@/stores/echoStore";
 import debounce from "lodash/debounce";
 import MiniCalendar from "@/components/calendar/MiniCalendar.vue";
@@ -538,7 +538,9 @@ const displayOnly = (calendarId) => {
     .filter(cal => cal.id !== calendarId)
     .map(cal => cal.id);
 
-  hiddenTagsStore.setHiddenTags(allCalendarIds);
+  const allTagCalendar = [...allCalendarIds, null];
+
+  hiddenTagsStore.setHiddenTags(allTagCalendar);
 
   // Hiển thị thông báo
   const selectedTag = [...myCalendars.value, ...sharedCalendars.value].find(cal => cal.id === calendarId);
@@ -546,6 +548,8 @@ const displayOnly = (calendarId) => {
     message.success(t('success.displayOnly', { name: selectedTag.name }));
   }
 };
+
+
 const leaveTagJoined = (calendarId) => {
   const tag = [...sharedCalendars.value].find(cal => cal.id === calendarId);
   if (!tag) return;

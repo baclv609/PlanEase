@@ -277,10 +277,10 @@
     }
   },
   "success": {
-    "tagAdded": "Đã thêm tag: {name}",
-    "tagDeleted": "Tag đã được xóa thành công!",
-    "tagUpdated": "Cập nhật tag thành công!",
-    "displayOnly": "Đã hiển thị duy nhất tag {name}"
+    "tagAdded": "Đã thêm thẻ: {name}",
+    "tagDeleted": "Thẻ đã được xóa thành công!",
+    "tagUpdated": "Cập nhật thẻ thành công!",
+    "displayOnly": "Đã hiển thị duy nhất thẻ {name}"
   },
   "eventModal": {
     "title": "Thêm mới",
@@ -573,19 +573,19 @@
         "cancel": "Hủy",
         "confirm": "Xác nhận xóa",
         "confirm_content": "Bạn có chắc chắn muốn xóa sự kiện này?"
-      }
-    },
-    "participants": {
-      "leave": {
-        "title": "Rời khỏi sự kiện",
-        "content": "Bạn có chắc chắn muốn rời khỏi sự kiện này?",
-        "one": "Chỉ rời khỏi sự kiện này",
-        "follow": "Rời khỏi sự kiện này và các sự kiện tiếp theo",
-        "all": "Rời khỏi tất cả sự kiện",
-        "confirm": "Xác nhận rời khỏi",
-        "confirm_content": "Bạn có chắc chắn muốn rời khỏi sự kiện này?",
-        "delete": "Rời đi",
-        "cancel": "Hủy"
+      },
+      "participants": {
+        "leave": {
+          "title": "Rời khỏi sự kiện",
+          "content": "Bạn có chắc chắn muốn rời khỏi sự kiện này?",
+          "one": "Chỉ rời khỏi sự kiện này",
+          "follow": "Rời khỏi sự kiện này và các sự kiện tiếp theo",
+          "all": "Rời khỏi tất cả sự kiện",
+          "confirm": "Xác nhận rời khỏi",
+          "confirm_content": "Bạn có chắc chắn muốn rời khỏi sự kiện này?",
+          "delete": "Rời đi",
+          "cancel": "Hủy"
+        }
       }
     }
   },
