@@ -405,7 +405,7 @@
       "notifications": {
         "label": "Thông báo",
         "enable": "Bật nhắc nhở",
-        "add": "Thêm thông báo nhắc",
+        "add": "Thêm thông báo",
         "types": {
           "label": "Loại thông báo",
           "email": "Email",
@@ -863,7 +863,8 @@
     "error": {
       "fetch": "Không thể lấy thông tin lời mời.",
       "cannotAccept": "Không thể chấp nhận lời mời tham gia thẻ này.",
-      "cannotReject": "Không thể từ chối lời mời tham gia thẻ này."
+      "cannotReject": "Không thể từ chối lời mời tham gia thẻ này.",
+      "notFound": "Thẻ không tồn tại hoặc đã bị chủ sở hữu xóa"
     },
     "success": {
       "accepted": "Bạn đã chấp nhận lời mời tham gia thẻ thành công.",

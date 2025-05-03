@@ -854,7 +854,8 @@
     "error": {
       "fetch": "Unable to get invitation information.",
       "cannotAccept": "Unable to accept invitation to join this tag.",
-      "cannotReject": "It is not possible to decline this tag invitation."
+      "cannotReject": "It is not possible to decline this tag invitation.",
+      "notFound": "The tag does not exist or has been deleted by the owner"
     },
     "success": {
       "accepted": "You have successfully accepted the tag invitation.",
