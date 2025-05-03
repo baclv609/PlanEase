@@ -202,7 +202,7 @@ export function useCalendarDrop(t) {
                 cancelText: t('options.recurrence.edit.cancel'),
                 onOk: async () => {
                     if (!editOption.value) {
-                        message.error("Vui lòng chọn tùy chọn cập nhật trước khi tiếp tục!");
+                        message.error(t('eventModalEdit.message.chooseOption'));
                         info.revert();
                         return;
                     }
@@ -442,7 +442,7 @@ export function useCalendarDrop(t) {
             editOption.value = "EDIT_1";
     
             if (response.status === 200) {
-                message.success(response.data.message);
+                message.success(t('eventModalEdit.message.success'));
             } else {
                 message.error(t('errors.generalError'));
                 info?.revert();
@@ -452,10 +452,10 @@ export function useCalendarDrop(t) {
     
             if (error.response) {
                 if (error.response.status === 401) {
-                    message.error("Bạn không có quyền thực hiện thao tác này!");
+                    message.warning(t('eventModalEdit.message.permission'));
                     info?.revert();
                 } else if (error.response.status === 500) {
-                    message.error(error.response.data.message);
+                    message.error(t('eventModalEdit.message.error'));
                     info?.revert();
                 } else {
                     message.error(t('errors.generalError'));

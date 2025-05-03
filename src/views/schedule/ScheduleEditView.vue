@@ -1199,6 +1199,8 @@ const handleSubmit = async () => {
             }
             // Case 3: Recurrence settings changed
             else if (hasRecurrenceChanges()) {
+                editOption.value = "EDIT_1B";
+
                 Modal.confirm({
                     title: t('options.recurrence.edit.title'),
                     width: 600,

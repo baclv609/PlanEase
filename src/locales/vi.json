@@ -444,7 +444,9 @@
     "title": "Chỉnh sửa",
     "message": {
       "success": "Cập nhật thành công",
-      "error": "Đã xảy ra lỗi"
+      "error": "Đã xảy ra lỗi",
+      "chooseOption": "Vui lòng chọn tùy chọn cập nhật trước khi tiếp tục!",
+      "permission": "Bạn không có quyền thực hiện thao tác này!"
     }
   },
   "settings": {
