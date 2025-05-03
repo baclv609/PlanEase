@@ -60,7 +60,7 @@ export function useCalendarEvents() {
         return;
       }
       rawEvents.value = response.data.data || [];
-      console.log(rawEvents.value);
+      console.log("rawEvents.value", rawEvents.value);
     } catch (error) {
       console.error('Lỗi khi tải lịch trình:', error);
     }

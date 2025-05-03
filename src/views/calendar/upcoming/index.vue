@@ -7,13 +7,9 @@
           {{ language === 'vi' ? 'Sự kiện sắp tới' : 'Upcoming Events' }}
         </h1>
         <div class="flex flex-wrap gap-2 items-center">
-          <a-input-search
-            v-model:value="filters.search"
-            :placeholder="language === 'vi' ? 'Tìm kiếm sự kiện...' : 'Search events...'"
-            @search="handleSearch"
-            class="w-48"
-            size="small"
-          />
+          <a-input-search v-model:value="filters.search"
+            :placeholder="language === 'vi' ? 'Tìm kiếm sự kiện...' : 'Search events...'" @search="handleSearch"
+            class="w-48" size="small" />
           <a-button type="primary" @click="resetFilters" size="small">
             {{ language === 'vi' ? 'Đặt lại' : 'Reset' }}
           </a-button>
@@ -22,8 +18,8 @@
 
       <!-- Filter Section -->
       <div class="filters flex flex-wrap gap-4 items-center">
-       
-        
+
+
         <!-- <a-select
           v-model:value="filters.priority"
           :placeholder="language === 'vi' ? 'Mức độ ưu tiên' : 'Priority'"
@@ -55,7 +51,7 @@
           </a-select-option>
         </a-select> -->
 
-     
+
       </div>
     </div>
 
@@ -65,11 +61,7 @@
       <a-skeleton v-if="loading" active />
 
       <!-- Error state -->
-      <a-empty
-        v-else-if="error"
-        :description="error"
-        class="my-4"
-      >
+      <a-empty v-else-if="error" :description="error" class="my-4">
         <template #extra>
           <a-button type="primary" @click="fetchUpcomingTasks" size="small">
             {{ language === 'vi' ? 'Thử lại' : 'Try again' }}
@@ -78,93 +70,105 @@
       </a-empty>
 
       <!-- No events -->
-      <a-empty
-        v-else-if="!filteredTasks.length"
-        :description="language === 'vi' ? 'Không có sự kiện sắp tới' : 'No upcoming events'"
-        class="my-4"
-      />
+      <a-empty v-else-if="!filteredTasks.length"
+        :description="language === 'vi' ? 'Không có sự kiện sắp tới' : 'No upcoming events'" class="my-4" />
 
       <!-- Events list -->
       <template v-else>
-        <a-list 
-          :data-source="paginatedTasks" 
-          :pagination="pagination"
-          class="events-list"
-        >
-          <template #renderItem="{ item }">
-            <a-list-item class="event-item">
-              <a-card 
-                class="w-full event-card" 
-                :bordered="false"
-                :style="{ borderLeft: `4px solid ${item.color_code || '#1890ff'}` }"
-              >
-                <div class="event-content">
-                  <!-- Event Header -->
-                  <div class="event-header">
-                    <div class="event-title">
-                      <div class="flex items-center gap-2">
-                        <a-tag :color="item.color_code || '#1890ff'" class="m-0">
-                          {{ item.tag_name }}
+        <div class="scrollable-list" style="max-height: calc(100vh - 227px); overflow-y: auto;">
+          <a-list :data-source="paginatedTasks" :pagination="false" class="events-list">
+            <template #renderItem="{ item }">
+              <a-list-item class="event-item">
+                <a-card class="w-full event-card" :bordered="false"
+                  :style="{ borderLeft: `4px solid ${item.color_code || '#1890ff'}` }">
+                  <div class="event-content">
+                    <!-- Event Header -->
+                    <div class="event-header">
+                      <div class="event-title">
+                        <div class="flex items-center gap-2">
+                          <a-tag :color="item.color_code || '#1890ff'" class="m-0">
+                            {{ item.tag_name }}
+                          </a-tag>
+                          <h3 class="text-base font-medium m-0">{{ item.title }}</h3>
+                        </div>
+                      </div>
+                      <div class="event-time">
+                        <a-tag :color="getTimeRemainingColor(item.start_time)">
+                          {{ formatTimeFromNow(item.start_time) }}
                         </a-tag>
-                        <h3 class="text-base font-medium m-0">{{ item.title }}</h3>
-                      </div>
-                    </div>
-                    <div class="event-time">
-                      <a-tag :color="getTimeRemainingColor(item.start_time)">
-                        {{ formatTimeFromNow(item.start_time) }}
-                      </a-tag>
-                    </div>
-                  </div>
-
-                  <!-- Event Details -->
-                  <div class="event-details">
-                    <!-- Time Information -->
-                    <div class="time-info">
-                      <div class="flex items-center gap-2 text-gray-600 text-sm">
-                        <ClockCircleOutlined />
-                        <span>{{ formatDateTime(item.start_time) }} - {{ formatDateTime(item.end_time) }}</span>
-                      </div>
-                      <div v-if="item.is_all_day" class="flex items-center gap-2 text-gray-600 text-sm mt-1">
-                        <CalendarOutlined />
-                        <span>{{ language === 'vi' ? 'Cả ngày' : 'All day' }}</span>
                       </div>
                     </div>
 
-                    <!-- Timezone Information -->
-                    <div class="timezone-info text-gray-600 text-xs mt-2">
-                      <div class="flex items-center gap-2">
-                        <GlobalOutlined />
-                        <span>{{ language === 'vi' ? 'Múi giờ sự kiện:' : 'Event timezone:' }} {{ item.timezone_code }}</span>
-                        <span class="mx-2">|</span>
-                        <span>{{ language === 'vi' ? 'Múi giờ hệ thống:' : 'System timezone:' }} {{ timeZone }}</span>
+                    <!-- Event Details -->
+                    <div class="event-details">
+                      <!-- Time Information -->
+                      <div class="time-info">
+                        <div class="flex items-center gap-2 text-gray-600 text-sm">
+                          <ClockCircleOutlined />
+                          <span>{{ formatDateTime(item.start_time) }} - {{ formatDateTime(item.end_time) }}</span>
+                        </div>
+                        <div v-if="item.is_all_day" class="flex items-center gap-2 text-gray-600 text-sm mt-1">
+                          <CalendarOutlined />
+                          <span>{{ language === 'vi' ? 'Cả ngày' : 'All day' }}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    <!-- Location & Links -->
-                    <div class="event-links" v-if="item.location || item.link">
-                      <div v-if="item.location" class="flex items-center gap-2 text-gray-600 text-sm mt-2">
-                        <EnvironmentOutlined />
-                        <span>{{ item.location }}</span>
+                      <!-- Timezone Information -->
+                      <div class="timezone-info text-gray-600 text-xs mt-2">
+                        <div class="flex items-center gap-2">
+                          <GlobalOutlined />
+                          <span>{{ language === 'vi' ? 'Múi giờ sự kiện:' : 'Event timezone:' }} {{ item.timezone_code
+                          }}</span>
+                          <span class="mx-2">|</span>
+                          <span>{{ language === 'vi' ? 'Múi giờ hệ thống:' : 'System timezone:' }} {{ timeZone }}</span>
+                        </div>
                       </div>
-                      <div v-if="item.link" class="flex items-center gap-2 text-gray-600 text-sm mt-2">
-                        <VideoCameraOutlined />
-                        <a :href="item.link" target="_blank">{{ getMeetingPlatform(item.link) }}</a>
-                      </div>
-                    </div>
 
-                    <!-- Description -->
-                    <div v-if="item.description" class="event-description text-gray-600 text-sm mt-2">
-                      <div class="flex items-center gap-2">
-                        <FileTextOutlined />
-                        <span>{{ item.description }}</span>
+                      <!-- Location & Links -->
+                      <div class="event-links" v-if="item.location || item.link">
+                        <div v-if="item.location" class="flex items-center gap-2 text-gray-600 text-sm mt-2">
+                          <EnvironmentOutlined />
+                          <span>{{ item.location }}</span>
+                        </div>
+                        <div v-if="item.link" class="flex items-center gap-2 text-gray-600 text-sm mt-2">
+                          <VideoCameraOutlined />
+                          <a :href="item.link" target="_blank">{{ getMeetingPlatform(item.link) }}</a>
+                        </div>
+                      </div>
+
+                      <!-- Description -->
+                      <div v-if="item.description" class="event-description text-gray-600 text-sm mt-2">
+                        <div class="flex items-center gap-2">
+                          <FileTextOutlined />
+                          <span>{{ item.description }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </a-card>
-            </a-list-item>
-          </template>
-        </a-list>
+                </a-card>
+              </a-list-item>
+            </template>
+          </a-list>
+        </div>
+        <a-pagination
+          v-model:current="currentPage"
+          :total="filteredTasks.length"
+          :pageSize="pageSize"
+          :showSizeChanger="true"
+          :showQuickJumper="true"
+          :showTotal="(total) => language === 'vi' ? `Tổng ${total} sự kiện` : `Total ${total} events`"
+          :pageSizeOptions="['10', '20', '50', '100']"
+          @change="(page, size) => {
+            currentPage = page;
+            pageSize = size;
+          }"
+          @showSizeChange="(current, size) => {
+            pageSize = size;
+            currentPage = 1;
+          }"
+          size="small"
+          class="mt-4 text-center"
+        />
       </template>
     </div>
   </div>
@@ -200,7 +204,7 @@ import { useUpcomingTasksStore } from '@/stores/upcomingTasksStore'; // Import s
 const settingsStore = useSettingsStore();
 const { language, timeZone, timeFormat } = storeToRefs(settingsStore);
 
-const store = useUpcomingTasksStore(); 
+const store = useUpcomingTasksStore();
 
 const loading = ref(false);
 const error = ref(null);
@@ -277,16 +281,16 @@ const formatTimezone = (tz) => {
 // Format date time
 const formatDateTime = (datetime) => {
   if (!datetime) return '';
-  
+
   const eventTime = moment.utc(datetime).tz(timeZone.value);
-  
+
   let timeStr;
   if (timeFormat.value === '12h') {
     timeStr = eventTime.format('hh:mm A');
   } else {
     timeStr = eventTime.format('HH:mm');
   }
-  
+
   const dateStr = eventTime.format('DD/MM/YYYY');
   return `${timeStr} - ${dateStr}`;
 };
@@ -297,14 +301,14 @@ const formatTimeFromNow = (datetime) => {
 
   moment.locale(language.value);
   moment.tz.setDefault(timeZone.value);
-  
+
   const now = moment();
   const eventTime = moment.utc(datetime).tz(timeZone.value);
-  
+
   const diffMinutes = eventTime.diff(now, 'minutes');
   const diffHours = Math.floor(diffMinutes / 60);
   const diffDays = Math.floor(diffHours / 24);
-  
+
   const isOngoing = diffMinutes <= 0 && diffMinutes > -60;
   const isPast = diffMinutes < 0;
 
@@ -398,7 +402,7 @@ const getMeetingPlatform = (url) => {
 const formatReminder = (reminder) => {
   const time = reminder.set_time;
   let timeText;
-  
+
   if (time < 60) {
     timeText = language.value === 'vi' ? `${time} phút` : `${time} minutes`;
   } else if (time < 1440) {
@@ -409,7 +413,7 @@ const formatReminder = (reminder) => {
     timeText = language.value === 'vi' ? `${days} ngày` : `${days} days`;
   }
 
-  const method = reminder.type === 'email' 
+  const method = reminder.type === 'email'
     ? (language.value === 'vi' ? 'email' : 'email')
     : (language.value === 'vi' ? 'thông báo' : 'notification');
 
@@ -421,7 +425,7 @@ const formatReminder = (reminder) => {
 const fetchUpcomingTasks = async () => {
   loading.value = true;
   error.value = null;
-  
+
   try {
     const token = localStorage.getItem('access_token');
     const response = await axios.get(
@@ -456,16 +460,16 @@ const fetchUpcomingTasks = async () => {
 const filteredTasks = computed(() => {
   return upcomingTasks.value.filter(task => {
     if (!task) return false;
-    
-    const matchSearch = !filters.value.search || 
+
+    const matchSearch = !filters.value.search ||
       task.title?.toLowerCase().includes(filters.value.search.toLowerCase());
-    
-    const matchPriority = !filters.value.priority || 
+
+    const matchPriority = !filters.value.priority ||
       task.priority === filters.value.priority;
-    
-    const matchStatus = !filters.value.status || 
+
+    const matchStatus = !filters.value.status ||
       task.status === filters.value.status;
-    
+
     return matchSearch && matchPriority && matchStatus;
   });
 });
@@ -565,11 +569,11 @@ const handleViewDetails = (event) => {
 // Add new function to determine color based on time remaining
 const getTimeRemainingColor = (startTime) => {
   if (!startTime) return '#1890ff';
-  
+
   const now = moment();
   const eventTime = moment.utc(startTime).tz(timeZone.value);
   const diffMinutes = eventTime.diff(now, 'minutes');
-  
+
   if (diffMinutes < 0) return '#d9d9d9'; // Past
   if (diffMinutes < 60) return '#ff4d4f'; // Less than 1 hour
   if (diffMinutes < 1440) return '#faad14'; // Less than 24 hours
@@ -579,7 +583,7 @@ const getTimeRemainingColor = (startTime) => {
 
 <style scoped>
 .upcoming-events-page {
-  padding: 16px;
+  padding: 0 16px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -598,7 +602,8 @@ const getTimeRemainingColor = (startTime) => {
 
 .events-list {
   flex: 1;
-  overflow-y: auto;
+  /* overflow-y: auto;
+  max-height: 600px; */
   padding-right: 8px;
 }
 
@@ -661,6 +666,12 @@ const getTimeRemainingColor = (startTime) => {
 }
 
 .event-details {
+  /* max-height: 320px;       Hoặc tùy ý: 400px, 500px, v.v. */
+  overflow-y: auto;
+  padding-right: 8px;
+  /* Tránh nội dung bị che bởi scrollbar */
+
+
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -694,13 +705,42 @@ const getTimeRemainingColor = (startTime) => {
     flex-direction: column;
     gap: 4px;
   }
-  
+
   .event-time {
     width: 100%;
     text-align: left;
   }
 }
+
 :deep(.ant-card-body) {
   padding: 10px !important;
+}
+
+:where(.css-dev-only-do-not-override-1aaqe7p).ant-list .ant-list-item {
+  padding: 0 !important;
+  margin-bottom: 10px;
+}
+
+.scrollable-list {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #aaa transparent;
+}
+
+.scrollable-list::-webkit-scrollbar {
+  width: 6px; /* Độ rộng thanh dọc */
+}
+
+.scrollable-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollable-list::-webkit-scrollbar-thumb {
+  background-color: #aaa;
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+.scrollable-list::-webkit-scrollbar-thumb:hover {
+  background-color: #888;
 }
 </style>
