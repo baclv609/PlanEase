@@ -435,7 +435,9 @@
     "title": "Edit",
     "message": {
       "success": "Update successfully",
-      "error": "An error occurred"
+      "error": "An error occurred",
+      "chooseOption": "Please select update options before continuing!",
+      "permission": "You do not have permission to perform this action!"
     }
   },
   "settings": {
