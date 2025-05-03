@@ -34,7 +34,11 @@ onMounted(async () => {
         console.log(tagData.value);
         isOwner.value = res.data.data.is_owner;
     } catch (err) {
-        error.value = t('Invite.error.fetch');
+        if (err.response.data.code == 404) {
+            message.info(t('InviteTag.error.notFound'));
+            router.push('/calendar');
+        } 
+        error.value = t('InviteTag.error.fetch');
     } finally {
         loading.value = false;
     }

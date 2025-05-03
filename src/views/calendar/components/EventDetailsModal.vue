@@ -464,6 +464,41 @@ const formatTimeInfo = (isoString, timezone) => {
 
 const accept = async (uuid) => {
     try {
+      const response = await axios.post(`${dirApi}event/${uuid}/accept`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if(response.data.code == 400) {
+        message.info(t('Invite.message.400'));
+      }
+
+      if(response.data.code == 409) {
+        message.info(t('Invite.message.409'));
+      }
+
+      if(response.data.code == 404) {
+        message.info(t('Invite.message.404'));
+      }
+
+      if(response.data.code == 403) {
+        message.info(t('Invite.message.403'));
+      }
+
+      if(response.data.code == 200) {
+        message.success(t('Invite.message.200'));
+        emit("delete");
+        emit("close", false);
+      }
+
+    } catch(error) {
+      console.log(error);
+    }
+}
+
+const joinEvent = async (uuid) => {
+    try {
       const response = await axios.post(`${dirApi}event/${uuid}/acceptInviteByLink`, {}, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -1537,7 +1572,7 @@ const isChanged = computed(() => {
 
         <div v-if="user.id != event.user_id && !event.attendees.some(attendee => attendee.user_id == user.id)"
           class="flex justify-center p-4">
-          <button @click="accept(event.uuid)"
+          <button @click="joinEvent(event.uuid)"
             class="px-3 py-1 rounded-md border-none bg-transparent cursor-pointer hover:bg-gray-100 font-semibold hover:text-blue-500 transition flex items-center ">
             <CheckOutlined class="mr-1" />
             {{ event.recurrence ? t("EventDetailsModal.general.joinReccurence") : t("EventDetailsModal.general.join") }}
