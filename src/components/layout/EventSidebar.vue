@@ -220,6 +220,7 @@ import { useHiddenTagsStore } from "@/stores/hiddenTagsStore";
 import TagDetailModal from "../modal/TagDetailModal.vue";
 import AddTagModal from "@/components/modal/AddTagModal.vue";
 import UpdateTagModal from "@/components/modal/UpdateTagModal.vue";
+import { useCalendarEvents } from "@/composables/useCalendarSetup";
 
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem("access_token");
@@ -289,7 +290,7 @@ const isTagDetailModalVisible = ref(false);
 const selectedTag = ref(null);
 
 const selectedCalendarId = ref(null);
-
+const { formattedEvents, fetchEvents } = useCalendarEvents();
 // Lấy thông tin khách mời
 const state = ref({
   data: [],
@@ -397,6 +398,7 @@ onMounted(() => {
         console.log("tag được thay đổi", event);
         // handleEventModalSuccess();
         fetchCalendars();
+        fetchEvents();
       });
 
     console.log("📡 Lắng nghe realtime trong EventSidebar.vue");
