@@ -867,5 +867,157 @@
     "nameTooLong": "File name cannot be longer than 50 characters",
     "fileTooLarge": "File size must not be larger than 10 MB",
     "exists": "File already exists"
+  },
+  "landing": {
+    "nav": {
+      "home": "Home",
+      "features": "Features",
+      "howItWorks": "How It Works",
+      "customers": "Customers"
+    },
+    "auth": {
+      "login": "Login",
+      "register": "Register"
+    },
+    "hero": {
+      "title": "Smart Schedule Management",
+      "subtitle": "A comprehensive scheduling solution to help you organize your schedule and work more efficiently",
+      "getStarted": "Get Started",
+      "learnMore": "Learn More",
+      "stats": {
+        "users": "Users",
+        "rating": "Rating",
+        "uptime": "Uptime"
+      }
+    },
+    "features": {
+      "title": "Key Features",
+      "subtitle": "Discover features that help you manage time more effectively",
+      "items": {
+        "smartCalendar": {
+          "title": "Smart Calendar",
+          "description": "Manage and track your schedule visually with smart calendar"
+        },
+        "shareEvents": {
+          "title": "Share Events",
+          "description": "Connect, share and collaborate with others to achieve common goals"
+        },
+        "reminders": {
+          "title": "Reminders",
+          "description": "Never miss important events with smart reminder system"
+        },
+        "reports": {
+          "title": "Reports",
+          "description": "Track upcoming events and evaluate participation and effectiveness over time"
+        },
+        "aiSchedule": {
+          "title": "AI Scheduling",
+          "description": "Use AI to create your personal schedule"
+        },
+        "customization": {
+          "title": "Customization",
+          "description": "Customize interface and features according to your needs"
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "Simple, easy and effective",
+      "steps": {
+        "register": {
+          "title": "Register Account",
+          "description": "Create a free account and start using Notibro"
+        },
+        "setup": {
+          "title": "Set Up Events",
+          "description": "Schedule and invite others to participate"
+        },
+        "manage": {
+          "title": "Manage Schedule",
+          "description": "Easily track, organize and update daily personal events and tasks visually and efficiently"
+        },
+        "track": {
+          "title": "Track Performance",
+          "description": "Monitor your work events statistics"
+        }
+      }
+    },
+    "cta": {
+      "title": "Ready to Start?",
+      "subtitle": "Sign up today to experience Notibro's amazing features",
+      "button": "Start Free"
+    },
+    "footer": {
+      "description": "Comprehensive schedule management solution for everyone",
+      "links": {
+        "quickLinks": "Quick Links",
+        "company": "Company",
+        "support": "Support",
+        "legal": "Legal"
+      },
+      "copyright": "© {year} Notibro. All Rights Reserved."
+    }
+  },
+  "register": {
+    "title": "Register",
+    "subtitle": "Sign up for a free account now to easily manage your schedule and never miss any important tasks!",
+    "form": {
+      "lastName": "Last name",
+      "firstName": "First name",
+      "email": "Email",
+      "phone": "Phone number",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "gender": "Gender",
+      "address": "Address",
+      "submit": "Register",
+      "male": "Male",
+      "female": "Female",
+      "chooseGender": "Choose gender"
+    },
+    "placeholders": {
+      "lastName": "John",
+      "firstName": "Snow",
+      "email": "johnsnow@example.com",
+      "phone": "0xxxxxxxxx",
+      "password": "Enter your password",
+      "confirmPassword": "Re-enter your password",
+      "address": "Enter your address"
+    },
+    "validation": {
+      "required": {
+        "lastName": "Please enter last name!",
+        "firstName": "Please enter first name!",
+        "email": "Please enter email!",
+        "password": "Please enter password!",
+        "confirmPassword": "Please confirm password!",
+        "gender": "Please choose gender!"
+      },
+      "format": {
+        "email": "Email is not in correct format",
+        "phone": "Invalid phone number",
+        "password": "Password must contain uppercase, lowercase, numbers and special characters",
+        "passwordMatch": "Passwords do not match"
+      },
+      "length": {
+        "password": "Password must be at least 8 characters",
+        "maxLength": "cannot exceed 255 characters"
+      }
+    },
+    "errors": {
+      "registerFailed": "Registration failed, please check again.",
+      "generalError": "An error occurred, please try again."
+    },
+    "success": {
+      "register": "Registration successful, please confirm email"
+    },
+    "login": {
+      "prompt": "You already have an account",
+      "link": "Login now"
+    },
+    "tryWithout": {
+      "prompt": "Experience without registration",
+      "link": "Click here!"
+    }
   }
 }

@@ -117,10 +117,14 @@
                       <div class="timezone-info text-gray-600 text-xs mt-2">
                         <div class="flex items-center gap-2">
                           <GlobalOutlined />
-                          <span>{{ language === 'vi' ? 'Múi giờ sự kiện:' : 'Event timezone:' }} {{ item.timezone_code
-                          }}</span>
-                          <span class="mx-2">|</span>
-                          <span>{{ language === 'vi' ? 'Múi giờ hệ thống:' : 'System timezone:' }} {{ timeZone }}</span>
+                          <template v-if="item.timezone_code === timeZone || (item.timezone_code === 'Asia/Saigon' && timeZone === 'Asia/Ho_Chi_Minh') || (item.timezone_code === 'Asia/Ho_Chi_Minh' && timeZone === 'Asia/Saigon')">
+                            <span>{{ language === 'vi' ? 'Múi giờ:' : 'Timezone:' }} {{ timeZone }}</span>
+                          </template>
+                          <template v-else>
+                            <span>{{ language === 'vi' ? 'Múi giờ sự kiện:' : 'Event timezone:' }} {{ item.timezone_code }}</span>
+                            <span class="mx-2">|</span>
+                            <span>{{ language === 'vi' ? 'Múi giờ hệ thống:' : 'System timezone:' }} {{ timeZone }}</span>
+                          </template>
                         </div>
                       </div>
 

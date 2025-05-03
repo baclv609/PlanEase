@@ -876,6 +876,157 @@
     "nameTooLong": "Tên tệp không được dài hơn 50 ký tự",
     "fileTooLarge": "Kích thước tệp không được lớn hơn 10 MB",
     "exists": "Tệp đã tồn tại"
+  },
+  "landing": {
+    "nav": {
+      "home": "Trang chủ",
+      "features": "Tính năng",
+      "howItWorks": "Cách thức",
+      "customers": "Khách hàng"
+    },
+    "auth": {
+      "login": "Đăng nhập",
+      "register": "Đăng ký"
+    },
+    "hero": {
+      "title": "Quản lý lịch trình thông minh",
+      "subtitle": "Giải pháp quản lý lịch trình toàn diện, giúp bạn sắp xếp lịch trình, công việc hiệu quả hơn",
+      "getStarted": "Bắt đầu ngay",
+      "learnMore": "Tìm hiểu thêm",
+      "stats": {
+        "users": "Người dùng",
+        "rating": "Đánh giá",
+        "uptime": "Uptime"
+      }
+    },
+    "features": {
+      "title": "Tính năng nổi bật",
+      "subtitle": "Khám phá những tính năng giúp bạn quản lý thời gian hiệu quả hơn",
+      "items": {
+        "smartCalendar": {
+          "title": "Lịch thông minh",
+          "description": "Quản lý và theo dõi lịch trình một cách trực quan với lịch thông minh"
+        },
+        "shareEvents": {
+          "title": "Chia sẻ sự kiện",
+          "description": "Kết nối, chia sẻ và phối hợp với mọi người để đạt được mục tiêu chung"
+        },
+        "reminders": {
+          "title": "Nhắc nhở",
+          "description": "Không bao giờ bỏ lỡ các sự kiện quan trọng với hệ thống nhắc nhở thông minh"
+        },
+        "reports": {
+          "title": "Báo cáo",
+          "description": "Theo dõi các sự kiện sắp diễn ra và đánh giá mức độ tham gia, hiệu quả theo thời gian"
+        },
+        "aiSchedule": {
+          "title": "Tạo lịch thông minh",
+          "description": "Sử dụng AI để tạo ra lịch trình cho bản thân"
+        },
+        "customization": {
+          "title": "Tùy chỉnh",
+          "description": "Tùy chỉnh giao diện và tính năng theo nhu cầu của bạn"
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "Cách thức hoạt động",
+      "subtitle": "Đơn giản, dễ dàng và hiệu quả",
+      "steps": {
+        "register": {
+          "title": "Đăng ký tài khoản",
+          "description": "Tạo tài khoản miễn phí và bắt đầu sử dụng Notibro"
+        },
+        "setup": {
+          "title": "Thiết lập sự kiện",
+          "description": "Lập lịch trình và mời mời các mọi người tham gia"
+        },
+        "manage": {
+          "title": "Quản lý lịch trình",
+          "description": "Dễ dàng theo dõi, sắp xếp và cập nhật các sự kiện, công việc cá nhân hàng ngày một cách trực quan và hiệu quả"
+        },
+        "track": {
+          "title": "Theo dõi hiệu suất",
+          "description": "Thống kê các sự kiện công việc của bản thân"
+        }
+      }
+    },
+    "cta": {
+      "title": "Sẵn sàng bắt đầu?",
+      "subtitle": "Đăng ký ngay hôm nay để trải nghiệm những tính năng tuyệt vời của Notibro",
+      "button": "Bắt đầu miễn phí"
+    },
+    "footer": {
+      "description": "Giải pháp quản lý lịch trình toàn diện cho tất cả mọi ngời",
+      "links": {
+        "quickLinks": "Liên kết nhanh",
+        "company": "Công ty",
+        "support": "Hỗ trợ",
+        "legal": "Pháp lý"
+      },
+      "copyright": "© {year} Notibro. All Rights Reserved."
+    }
+  },
+  "register": {
+    "title": "Đăng ký",
+    "subtitle": "Đăng ký tài khoản miễn phí ngay bây giờ để dễ dàng quản lý lịch trình và không bao giờ bỏ lỡ bất kỳ công việc quan trọng nào!",
+    "form": {
+      "lastName": "Họ",
+      "firstName": "Tên",
+      "email": "Email",
+      "phone": "Số điện thoại",
+      "password": "Mật khẩu",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "gender": "Giới tính",
+      "address": "Địa chỉ",
+      "submit": "Đăng ký",
+      "male": "Nam",
+      "female": "Nữ",
+      "chooseGender": "Chọn giới tính"
+    },
+    "placeholders": {
+      "lastName": "Nguyễn",
+      "firstName": "Văn A",
+      "email": "nguyenvana@example.com",
+      "phone": "0xxxxxxxxx",
+      "password": "Nhập mật khẩu",
+      "confirmPassword": "Nhập lại mật khẩu",
+      "address": "Nhập địa chỉ của bạn"
+    },
+    "validation": {
+      "required": {
+        "lastName": "Vui lòng nhập họ!",
+        "firstName": "Vui lòng nhập tên!",
+        "email": "Vui lòng nhập email!",
+        "password": "Vui lòng nhập mật khẩu!",
+        "confirmPassword": "Vui lòng xác nhận mật khẩu!",
+        "gender": "Vui lòng chọn giới tính!"
+      },
+      "format": {
+        "email": "Email không đúng định dạng",
+        "phone": "Số điện thoại không hợp lệ",
+        "password": "Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt",
+        "passwordMatch": "Mật khẩu không khớp"
+      },
+      "length": {
+        "password": "Mật khẩu phải có ít nhất 8 ký tự",
+        "maxLength": "không được vượt quá 255 ký tự"
+      }
+    },
+    "errors": {
+      "registerFailed": "Đăng ký thất bại, vui lòng kiểm tra lại.",
+      "generalError": "Đã xảy ra lỗi, vui lòng thử lại."
+    },
+    "success": {
+      "register": "Đăng ký thành công, vui lòng xác nhận email"
+    },
+    "login": {
+      "prompt": "Bạn đã có tài khoản",
+      "link": "Đăng nhập ngay"
+    },
+    "tryWithout": {
+      "prompt": "Trải nghiệm không cần đăng ký",
+      "link": "Bấm vào đây!"
+    }
   }
-  
 }
