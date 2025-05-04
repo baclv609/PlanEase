@@ -549,10 +549,10 @@ const handleSave = async () => {
       until: formState.value.rrule?.until
         ? dayjs(formState.value.rrule?.until).format("YYYY-MM-DD HH:mm:ss")
         : null,
-      byweekday: formState.value.rrule?.byweekday.length
+      byweekday: formState.value.rrule?.freq == "weekly" && formState.value.rrule?.byweekday.length
         ? formState.value.rrule.byweekday
         : null,
-      bymonthday: formState.value.rrule?.bymonthday.length
+      bymonthday: formState.value.rrule?.freq == "monthly" && formState.value.rrule?.bymonthday.length
         ? formState.value.rrule.bymonthday
         : null,
       bymonth: formState.value.rrule?.bymonth.length
