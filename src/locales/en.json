@@ -211,6 +211,9 @@
       "success": "Tag removed successfully!",
       "error": "Failed to leave tag. Please try again.",
       "leaveTag": "Leave tag"
+    },
+    "error": {
+      "deleteFailed": "Failed to delete tag"
     }
   },
   "errors": {
@@ -695,7 +698,8 @@
       },
       "success": {
         "accepted": "You have successfully accepted the tag invitation."
-      }
+      },
+     "userRemoved": "User removed successfully"
     },
     "deleteConfirm": "Do you want to remove this user from the tag?",
     "deleteWarning": "The user's events (tasks) will be affected.",
@@ -708,7 +712,9 @@
     "deleteTask": "Delete tasks",
     "contentMessage": "Do you want to remove this user from the tag? The user's events will be affected.",
     "owner": "Owner",
-    "you": "You"
+    "you": "You",
+     "noNewUsers": "No new users found or all users are already in this tag",
+     "userAlreadyInTag": "This user is already in the tag"
   },
   "ResetPassword": {
     "label": {

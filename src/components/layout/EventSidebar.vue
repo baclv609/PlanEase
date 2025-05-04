@@ -116,7 +116,14 @@
                   <a-menu-item @click="openUpdateCalendar(calendar.id)">
                     {{ t("calendar.calendarSection.edit") }}
                   </a-menu-item>
-                  <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red">
+                  <!-- <a-menu-item @click="deleteCalendar(calendar.id)" style="color: red">
+                    {{ t("calendar.calendarSection.delete") }}
+                  </a-menu-item> -->
+                  <a-menu-item 
+                    v-if="myCalendars.length > 1"
+                    @click="deleteCalendar(calendar.id)" 
+                    style="color: red"
+                  >
                     {{ t("calendar.calendarSection.delete") }}
                   </a-menu-item>
                 </a-menu>
@@ -811,31 +818,36 @@ const viewMoreEvents = () => {
 
 // Thêm hàm xử lý khi checkbox thay đổi
 const handleCheckboxChange = (id, isChecked) => {
+  // Tạo Set mới từ các lựa chọn hiện tại để chỉnh sửa
   const newSelected = new Set(selectedCalendars.value);
 
+  // Thêm hoặc xóa ID dựa vào trạng thái checkbox
   if (isChecked) {
     newSelected.add(id);
   } else {
     newSelected.delete(id);
   }
 
+  // Cập nhật mảng lịch đã chọn
   selectedCalendars.value = Array.from(newSelected);
 
+  // Lấy tất cả ID lịch có sẵn
   const allCalendarIds = [
     ...myCalendars.value.map(cal => cal.id),
     ...sharedCalendars.value.map(cal => cal.id)
   ];
 
+  // Tìm các thẻ không được chọn
   const unselectedTags = allCalendarIds.filter(cid => !newSelected.has(cid));
   if (!newSelected.has(null)) unselectedTags.push(null);
 
-  hiddenTagsStore.setHiddenTags(unselectedTags);
+  // Cập nhật kho lưu trữ và lọc sự kiện
+  hiddenTagsStore.setHiddenTags(unselectedTags); 
   updateFilteredEvents();
 };
 
-
 const viewDetails = (calendarId) => {
-  console.log("Xem chi tiết cho calendar ID:", calendarId);
+  // console.log("Xem chi tiết cho calendar ID:", calendarId);
   isTagDetailModalVisible.value = true;
 
   selectedCalendarId.value = calendarId;
@@ -879,11 +891,11 @@ const deleteCalendar = async (calendarId) => {
 
           message.success(t("success.tagDeleted"));
         } else {
-          message.error(response.data.message || t("error.deleteFailed"));
+          message.error(response.data.message || t("errors.deleteFailed"));
         }
       } catch (error) {
         console.error("Lỗi khi xóa tag:", error);
-        message.error(t("error.deleteFailed"));
+        message.error(t("errors.deleteFailed"));
       }
     },
   });
