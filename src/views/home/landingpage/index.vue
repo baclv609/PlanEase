@@ -423,35 +423,35 @@ const animateOnScroll = () => {
 };
 
 // Testimonials slider
-const currentSlide = ref(0);
-const slideInterval = ref(null);
+//const currentSlide = ref(0);
+//const slideInterval = ref(null);
 
-const nextSlide = () => {
-  currentSlide.value = (currentSlide.value + 1) % testimonials.value.length;
-};
+//const nextSlide = () => {
+//  currentSlide.value = (currentSlide.value + 1) % testimonials.value.length;
+//};
 
-const prevSlide = () => {
-  currentSlide.value = (currentSlide.value - 1 + testimonials.value.length) % testimonials.value.length;
-};
+//const prevSlide = () => {
+//  currentSlide.value = (currentSlide.value - 1 + testimonials.value.length) % testimonials.value.length;
+//};
 
-const startAutoPlay = () => {
-  slideInterval.value = setInterval(nextSlide, 5000);
-};
+//const startAutoPlay = () => {
+//  slideInterval.value = setInterval(nextSlide, 5000);
+//};
 
-const stopAutoPlay = () => {
-  if (slideInterval.value) {
-    clearInterval(slideInterval.value);
-    slideInterval.value = null;
-  }
-};
+//const stopAutoPlay = () => {
+//  if (slideInterval.value) {
+//    clearInterval(slideInterval.value);
+//    slideInterval.value = null;
+//  }
+//};
 
 onMounted(() => {
   animateOnScroll();
-  startAutoPlay();
+  // startAutoPlay();
 });
 
 onBeforeUnmount(() => {
-  stopAutoPlay();
+  // stopAutoPlay();
 });
 </script>
 
