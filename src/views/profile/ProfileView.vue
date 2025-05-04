@@ -238,8 +238,8 @@ const saveChanges = async () => {
     formData.append("first_name", tempUser.value.first_name || user.value.first_name);
     formData.append("last_name", tempUser.value.last_name || user.value.last_name);
     formData.append("gender", tempUser.value.gender || user.value.gender);
-    formData.append("address", tempUser.value.address || user.value.address);
-    formData.append("phone", tempUser.value.phone || user.value.phone);
+    formData.append("address", tempUser.value.address || "");
+    formData.append("phone", tempUser.value.phone || "");
     formData.append("_method", "PUT");
     // Append file nếu có
     if (fileList.value[0]) {
