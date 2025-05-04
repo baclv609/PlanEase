@@ -100,6 +100,10 @@ const resetFilters = () => {
 };
 
 const applyFilters = () => {
+    if(!eventName.value && !searchType.value && !start.value && !end.value && !location.value) {
+        return; // Không làm gì nếu không có bộ lọc nào được chọn
+    }
+
     const queryParams = {
         title: eventName.value,
         tag: searchType.value,

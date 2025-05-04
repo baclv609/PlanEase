@@ -82,7 +82,7 @@
       "fetch_error": "Error fetching user information: {error}",
       "login_required": "Please login again!",
       "update_failed": "Update failed!",
-      "invalid_input": "Please enter correct and complete information",
+      "invalid_input": "Please enter complete and accurate information or thumbnail size less than 2MB",
       "general_error": "An error occurred",
       "password_incorrect": "Incorrect password"
     },
