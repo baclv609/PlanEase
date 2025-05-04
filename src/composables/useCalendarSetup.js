@@ -30,7 +30,8 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 const settingsStore = useSettingsStore();
 const selectedTimezone = computed(() => settingsStore.timeZone);
-const user_id = JSON.parse(localStorage.getItem('user')).id;
+const user = JSON.parse(localStorage.getItem('user'));
+const user_id = user ? user.id : null;
 const calendarRef = ref(null);
 
 

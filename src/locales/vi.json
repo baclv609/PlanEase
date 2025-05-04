@@ -84,7 +84,7 @@
       "fetch_error": "Lỗi khi lấy thông tin user: {error}",
       "login_required": "Vui lòng đăng nhập lại!",
       "update_failed": "Cập nhật thất bại!",
-      "invalid_input": "Vui lòng nhập chính xác đầy đủ thông tin",
+      "invalid_input": "Vui lòng nhập chính xác đầy đủ thông tin hoặc ảnh kích thuớc nhỏ hơn 2MB",
       "general_error": "Có lỗi xảy ra",
       "password_incorrect": "Mật khẩu không chính xác",
       "old_password_required": "Vui lòng nhập mật khẩu hiện tại",
