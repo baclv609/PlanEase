@@ -204,7 +204,7 @@
       "showLess": "Thu gọn",
       "displayOnly": "Chỉ hiển thị thẻ này",
       "deleteConfirmTitle": "Xác nhận xóa thẻ",
-      "deleteConfirmContent": "Bạn có chắc chắn muốn xóa thẻ \"{name}\"? Hành động này sẽ xóa tất cả các sự kiện và công việc liên quan đến thẻ này.",
+      "deleteConfirmContent": "Bạn có chắc chắn muốn xóa thẻ \"{name}\"? Hành động này sẽ xóa tất cả các sự kiện liên quan đến thẻ này.",
        "details": "Chi tiết thẻ",
        "leave": "Rời khỏi thẻ"
     },
@@ -218,8 +218,8 @@
     "confirmTitle": "Xác nhận rời thẻ",
     "confirmContent": "Bạn có chắc chắn muốn rời khỏi thẻ này? Tất cả sự kiện liên quan sẽ bị xóa khỏi lịch của bạn.",
     "success": "Đã rời khỏi thẻ thành công.",
-    "error": "Rời thẻ thất bại. Vui lòng thử lại.",
     "leaveTag": "Rời khỏi thẻ"
+   
   }
   },
   "errors": {
@@ -229,15 +229,15 @@
     "generalError": "Đã xảy ra lỗi, vui lòng thử lại",
     "failedToLoadEvents": "Không thể tải danh sách sự kiện",
     "tagExists": "Tag này đã tồn tại!",
-    "failedToAddTag": "Không thể thêm tag",
-    "failedToDeleteTag": "Không thể xóa tag. Vui lòng thử lại.",
+    "failedToAddTag": "Không thể thêm thẻ",
+    "failedToDeleteTag": "Không thể xóa thẻ. Vui lòng thử lại.",
     "deleteFailed": "Không thể xóa tag. Vui lòng thử lại.",
-    "cannotDeleteLastTag": "Không thể xóa tag cuối cùng. Bạn phải có ít nhất một tag trong hệ thống."
+    "cannotDeleteLastTag": "Không thể xóa tag cuối cùng. Bạn phải có ít nhất một thẻ trong hệ thống."
   },
   "validation": {
-    "tagNameRequired": "Vui lòng nhập tên tag!",
-    "tagNameMinLength": "Tên tag phải có ít nhất 3 ký tự",
-    "tagNameMaxLength": "Tên tag không được vượt quá 50 ký tự",
+    "tagNameRequired": "Vui lòng nhập tên thẻ!",
+    "tagNameMinLength": "Tên thẻ phải có ít nhất 3 ký tự",
+    "tagNameMaxLength": "Tên thẻ không được vượt quá 50 ký tự",
     "colorRequired": "Vui lòng chọn màu sắc",
     "descriptionMaxLength": "Mô tả không được vượt quá 1000 ký tự",
     "locationMaxLength": "Địa điểm quá dài",
@@ -703,21 +703,24 @@
       },
       "success": {
         "accepted": "Bạn đã chấp nhận lời mời tham gia tag thành công."
-      }
+      },
+      "userRemoved": "Đã xóa người dùng thành công"
     },
     "deleteConfirm": "Bạn có muốn xóa người dùng này khỏi tag?",
-    "deleteWarning": "Các sự kiện (task) của người dùng sẽ bị ảnh hưởng.",
-    "keepTasksTitle": "Bạn có muốn giữ lại các task của người này không?",
-    "keepTasks": "Giữ lại các task",
-    "deleteTasks": "Xóa các task",
+    "deleteWarning": "Các sự kiện của người dùng sẽ bị ảnh hưởng.",
+    "keepTasksTitle": "Bạn có muốn giữ lại các sự kiện của người này không?",
+    "keepTasks": "Giữ lại các sự kiện",
+    "deleteTasks": "Xóa các sự kiện",
     "selectOption": "Vui lòng chọn một tùy chọn",
-    "deleteSuccess": "Xóa người dùng khỏi tag thành công",
+    "deleteSuccess": "Xóa người dùng khỏi thẻ thành công",
     "deleteFailed": "Xóa người dùng thất bại",
     "deleteUser": "Xóa người dùng",
-    "deleteTask": "'Xóa các task'",
+    "deleteTask": "'Xóa các sự kiện",
     "contentMessage": "Bạn có muốn xóa người dùng này khỏi thẻ? Các sự kiện của người dùng sẽ bị ảnh hưởng.",
-  "owner": "Chủ sở hữu",
-  "you": "Bạn"
+    "owner": "Chủ sở hữu",
+    "you": "Bạn",
+   "noNewUsers": "Không tìm thấy người dùng hoặc tất cả người dùng đã có trong thẻ này",
+     "userAlreadyInTag": "Người dùng này đã có trong thẻ"
   },
   "ResetPassword": {
     "label": {

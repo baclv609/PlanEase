@@ -64,6 +64,7 @@
                     </div>
 
 
+                <div class="list-user-tag">
                     <!-- chủ sở hữu -->
                     <div class="flex items-center p-3 border-b bg-gray-50 rounded-t">
                         <a-avatar
@@ -95,9 +96,16 @@
                             </a-avatar>
 
                             <div class="ml-3">
-                                <div class="font-medium">{{ user.first_name }} {{ user.last_name }}</div>
+                                <div class="font-medium">
+                                    {{ user.first_name }} {{ user.last_name }}
+                                    <span v-if="user.user_id === currentUser.id" class="ml-1">
+                                        <!-- <a-tag size="small" color="green">{{ $t('tag.you') }}</a-tag> -->
+                                        <span class="ml-1 text-xs text-blue-500">({{ $t('tag.you') }})</span>
+                                    </span>
+                                </div>
                                 <div class="text-xs text-gray-500">{{ user.email }}</div>
                             </div>
+                            
 
                             <div class="ml-auto flex items-center">
                                 <a-dropdown v-if="tagData.is_owner" :trigger="['click']">
@@ -141,16 +149,17 @@
                             </div>
                         </div>
                     </div>
+                </div>
 
                       
 
-                    <div v-else class="p-4 text-center text-gray-500">
+                    <div v-if="!tagData.shared_user && tagData.shared_user.length == 0" class="p-4 text-center text-gray-500">
                         {{ $t('event.error.fetch_shared_tags') }}
                     </div>
                       <!-- Invited Users List -->
                       <div v-if="invitedUsers.length > 0" class="mb-6">
                         <h4 class="text-sm font-medium mb-3">{{ $t('event.guests') }}</h4>
-                        <div class="bg-gray-50 rounded-lg">
+                        <div class="bg-gray-50 rounded-lg list-user-invitedUsersTag">
                             <div v-for="user in invitedUsers" :key="user.value"
                                 class="flex items-center p-3 border-b last:border-b-0">
                                 <a-avatar :src="user.avatar" :size="32"
@@ -224,8 +233,7 @@ const tempRoles = reactive({});
 const dirApi = import.meta.env.VITE_API_BASE_URL;
 const token = localStorage.getItem("access_token");
 const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-
+const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
 const props = defineProps({
     open: Boolean,  
@@ -311,7 +319,7 @@ const fetchCalendarDetail = async (calendarId) => {
             is_owner: res.data.data.is_owner,
             owner: res.data.data.owner
         };
-        console.log(tagData.value.owner);
+        // console.log(tagData.value.owner);
         originalTagData.value = JSON.parse(JSON.stringify(tagData.value));
     } catch (error) {
         console.log("Lỗi khi lấy chi tiết tag calendar:", error);
@@ -419,7 +427,7 @@ const removeUser = async (user) => {
         );
 
         if (response.data.code === 200) {
-            message.success('Đã xóa người dùng thành công');
+            message.success(t('tag.invite.userRemoved'));
             // Refresh the tag data
             await fetchCalendarDetail(props.selectedCalendarId);
         }
@@ -481,7 +489,7 @@ const fetchUser = debounce(async (value) => {
             }));
 
         if (state.value.data.length === 0) {
-            message.info('No new users found or all users are already in this tag');
+            message.info(t('tag.noNewUsers'));
         }
     } catch (error) {
         console.error("Error fetching users:", error);
@@ -500,7 +508,7 @@ const handleUserSelect = (userId) => {
         invitedUsers.value.some(u => u.value === user.value);
 
     if (isAlreadyInTag) {
-        message.warning('This user is already in the tag');
+        message.warning(t('tag.userAlreadyInTag'));
         return;
     }
 
@@ -575,6 +583,9 @@ const saveChanges = async () => {
 
             // Update original data after successful save
             originalTagData.value = JSON.parse(JSON.stringify(tagData.value));
+        }
+        if(response.data.code === 409){
+            message.error('Chủ sở hữu đã có thẻ có tên này');
         }
     } catch (error) {
         console.error('Error saving invitations:', error);
@@ -658,7 +669,7 @@ const removeUserFromTag = async (user, tagId) => {
         );
 
         if (res.data.code === 200) {
-            message.success("Xóa người dùng khỏi tag thành công");
+            // message.success("Xóa người dùng khỏi tag thành công");
             await fetchCalendarDetail(tagId);
         }
     } catch (err) {
@@ -757,7 +768,8 @@ const deleteSharedUser = async (user, keepInTasks) => {
         );
 
         if (response.data.code === 200) {
-            message.success("Xóa người dùng khỏi tag thành công");
+            // message.success("Xóa người dùng khỏi tag thành công");
+            message.success(t('tag.invite.userRemoved'));
             await fetchCalendarDetail(props.selectedCalendarId);
         }
     } catch (error) {
@@ -791,5 +803,61 @@ const removeInvitedUser = (user) => {
 
 .tag-detail-modal :deep(.ant-modal-body) {
     padding: 0;
+}
+.list-user-tag {
+    border: 1px solid #f0f0f0;
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 8px;
+    /* overflow: hidden; */
+}
+.list-user-invitedUsersTag {
+    max-height: 200px;
+    overflow-y: auto; 
+}
+
+/* scoll */
+.list-user-tag,
+.list-user-invitedUsersTag {
+    border: 1px solid #f0f0f0;
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, etc.) */
+.list-user-tag::-webkit-scrollbar,
+.list-user-invitedUsersTag::-webkit-scrollbar {
+    width: 6px;
+}
+
+.list-user-tag::-webkit-scrollbar-track,
+.list-user-invitedUsersTag::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.list-user-tag::-webkit-scrollbar-thumb,
+.list-user-invitedUsersTag::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 3px;
+}
+
+.list-user-tag::-webkit-scrollbar-thumb:hover,
+.list-user-invitedUsersTag::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+}
+
+/* Smooth scrolling */
+.list-user-tag,
+.list-user-invitedUsersTag {
+    scroll-behavior: smooth;
+}
+
+/* Hover effect for list items */
+.list-user-tag > div:hover,
+.list-user-invitedUsersTag > div:hover {
+    background-color: #f9fafb;
 }
 </style>

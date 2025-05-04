@@ -65,7 +65,7 @@
             </div>
           </template>
         </a-select>
-        <div v-if="formState.shared_user && formState.shared_user.length > 0">
+        <div class="list-user-tag" v-if="formState.shared_user && formState.shared_user.length > 0">
           <div v-for="(user, index) in formState.shared_user" :key="index"
             class="flex items-center p-3 border-b last:border-b-0">
             <a-avatar :src="user.avatar ? `${user.avatar}` : null"
@@ -115,8 +115,8 @@
         <!-- Invited Users List -->
         <div v-if="invitedUsers.length > 0" class="mb-6">
           <h4 class="text-sm font-medium mb-3">{{ $t('event.guests') }}</h4>
-          <div class="bg-gray-50 rounded-lg">
-            <div v-for="user in invitedUsers" :key="user.value" class="flex items-center p-3 border-b last:border-b-0">
+          <div class="bg-gray-50 rounded-lg list-user-invitedUsersTag">
+            <div v-for="user in invitedUsers" :key="user.value" class="flex items-center p-3 border-b last:border-b-0 ">
               <a-avatar :src="user.avatar" :size="32"
                 :style="{ backgroundColor: !user.avatar ? '#1890ff' : 'transparent' }">
                 {{ !user.avatar ? getInitials(user.first_name, user.last_name) : '' }}
@@ -381,7 +381,7 @@ const handleUserSelect = (userId) => {
     invitedUsers.value.some(u => u.value === user.value);
 
   if (isAlreadyInTag) {
-    message.warning('This user is already in the tag');
+    message.warning(t('tag.userAlreadyInTag'));
     return;
   }
 
@@ -426,7 +426,7 @@ const fetchUser = debounce(async (value) => {
       }));
 
     if (state.value.data.length === 0) {
-      message.info('No new users found or all users are already in this tag');
+      message.info(t('tag.noNewUsers'));
     }
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -589,5 +589,62 @@ const deleteSharedUser = async (user, keepInTasks) => {
 :deep(.ant-select-selection-item span) {
   width: 24px;
   height: 24px;
+}
+
+.list-user-tag {
+    border: 1px solid #f0f0f0;
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 8px;
+    /* overflow: hidden; */
+}
+.list-user-invitedUsersTag {
+    max-height: 200px;
+    overflow-y: auto; 
+}
+
+/* scoll */
+.list-user-tag,
+.list-user-invitedUsersTag {
+    border: 1px solid #f0f0f0;
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, etc.) */
+.list-user-tag::-webkit-scrollbar,
+.list-user-invitedUsersTag::-webkit-scrollbar {
+    width: 6px;
+}
+
+.list-user-tag::-webkit-scrollbar-track,
+.list-user-invitedUsersTag::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.list-user-tag::-webkit-scrollbar-thumb,
+.list-user-invitedUsersTag::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 3px;
+}
+
+.list-user-tag::-webkit-scrollbar-thumb:hover,
+.list-user-invitedUsersTag::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+}
+
+/* Smooth scrolling */
+.list-user-tag,
+.list-user-invitedUsersTag {
+    scroll-behavior: smooth;
+}
+
+/* Hover effect for list items */
+.list-user-tag > div:hover,
+.list-user-invitedUsersTag > div:hover {
+    background-color: #f9fafb;
 }
 </style>
