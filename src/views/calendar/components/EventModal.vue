@@ -857,7 +857,7 @@ watch(
   (newReminders) => {
     newReminders.forEach((reminder) => {
       if (reminder.unit === "hours" && reminder.time > 24) {
-        message.warning(t('eventModal.sections.reminder.warning.maxHours'));
+        message.warning(t('eventModal.sections.notifications.warning.maxHours'));
         reminder.time = 24; // Giới hạn tối đa 24 giờ
       }
       if (reminder.unit === "minutes" && reminder.time > 60) {
